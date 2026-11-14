@@ -16,11 +16,11 @@ import {
 import { BudgetBar, BudgetRing } from "@/components/budgets/budget-ring";
 import { EmptyState } from "@/components/empty-state";
 import { useFormatMoney } from "@/components/profile-provider";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { Button } from "@/components/ui/button";
-import type { BudgetMonth } from "@/lib/queries/budgets";
+import type { BudgetHint, BudgetMonth } from "@/lib/queries/budgets";
 import { budgetPercent, budgetTone } from "@/lib/schemas/budgets";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 /**
  * The Budgets tab.
@@ -36,6 +36,7 @@ export function BudgetsScreen({
   previousLabel,
   data,
   categories,
+  hints,
   isPastMonth,
 }: {
   /** `yyyy-mm`. */
@@ -45,6 +46,8 @@ export function BudgetsScreen({
   previousLabel: string;
   data: BudgetMonth;
   categories: BudgetCategoryOption[];
+  /** What each category has cost, for the suggestions in the sheet. */
+  hints: BudgetHint[];
   /** True only for a month that has ended, which is when it can be judged. */
   isPastMonth: boolean;
 }) {
@@ -118,6 +121,7 @@ export function BudgetsScreen({
       monthLabel={monthLabel}
       categories={categories}
       draft={draft}
+      hints={hints}
     />
   );
 
@@ -293,12 +297,7 @@ function BudgetRow({
       onClick={onOpen}
       className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
     >
-      <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
-        style={{ backgroundColor: line.color ?? "#64748B" }}
-      >
-        <DynamicIcon name={line.icon} className="size-[18px]" />
-      </span>
+      <ColorDot color={line.color} icon={line.icon} size="lg" />
 
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
@@ -367,12 +366,7 @@ function Unbudgeted({
       <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
         {lines.map((line) => (
           <li key={line.categoryId} className="flex items-center gap-3 py-2 pl-3">
-            <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-full text-white"
-              style={{ backgroundColor: line.color ?? "#64748B" }}
-            >
-              <DynamicIcon name={line.icon} className="size-[18px]" />
-            </span>
+            <ColorDot color={line.color} icon={line.icon} />
 
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">

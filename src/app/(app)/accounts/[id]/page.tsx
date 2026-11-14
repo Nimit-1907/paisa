@@ -8,7 +8,6 @@ import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Receipt } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { PageHeader } from "@/components/layout/page-header";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { currentMonthRange } from "@/lib/dates";
 import { formatWith } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
@@ -21,6 +20,7 @@ import {
 } from "@/lib/queries/accounts";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 export async function generateMetadata({
   params,
@@ -86,12 +86,7 @@ export default async function AccountDetailPage({
 
       <section className="bg-card rounded-2xl border p-4">
         <div className="flex items-center gap-3">
-          <span
-            className="flex size-11 shrink-0 items-center justify-center rounded-full text-white"
-            style={{ backgroundColor: account.color ?? "#64748B" }}
-          >
-            <DynamicIcon name={account.icon} className="size-5" />
-          </span>
+          <ColorDot color={account.color} icon={account.icon} size="lg" />
           <div className="min-w-0">
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Balance
@@ -148,21 +143,18 @@ export default async function AccountDetailPage({
               key={transaction.id}
               className="flex min-h-14 items-center gap-3 px-3 py-2"
             >
-              <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-full text-white"
-                style={{
-                  backgroundColor: transaction.categoryColor ?? "#64748B",
-                }}
-              >
-                <DynamicIcon
-                  name={
-                    transaction.type === "transfer"
-                      ? "ArrowLeftRight"
-                      : transaction.categoryIcon
-                  }
-                  className="size-[18px]"
-                />
-              </span>
+              <ColorDot
+                color={
+                  transaction.type === "transfer"
+                    ? null
+                    : transaction.categoryColor
+                }
+                icon={
+                  transaction.type === "transfer"
+                    ? "ArrowLeftRight"
+                    : transaction.categoryIcon
+                }
+              />
 
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">

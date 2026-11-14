@@ -14,9 +14,9 @@ import {
   useTooltipTrigger,
 } from "@/components/analysis/chart-shell";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { formatCompact } from "@/lib/money";
 import type { CategorySlice } from "@/lib/queries/analysis";
+import { ColorDot } from "@/components/shared/color-dot";
 
 /**
  * Where the money went, by category.
@@ -141,12 +141,7 @@ export function CategoryDonut({
               href={recordsHref(slice.categoryId)}
               className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
             >
-              <span
-                className="flex size-7 shrink-0 items-center justify-center rounded-full text-white"
-                style={{ backgroundColor: slice.fill }}
-              >
-                <DynamicIcon name={slice.icon} className="size-3.5" />
-              </span>
+              <ColorDot color={slice.fill} icon={slice.icon} size="sm" />
 
               <span className="min-w-0 flex-1 truncate text-sm">
                 {slice.name}

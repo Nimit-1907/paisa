@@ -113,7 +113,7 @@ begin
   update public.accounts
   set initial_balance = 480000,  -- ₹4,800 in the wallet on day one
       icon = 'Wallet',
-      color = '#0F766E',
+      color = '#008781',
       sort_order = 0
   where user_id = c_user and name = 'Cash'
   returning id into v_cash;
@@ -121,19 +121,19 @@ begin
   insert into public.accounts (
     user_id, name, type, icon, color, initial_balance, sort_order
   )
-  values (c_user, 'HDFC Savings', 'bank', 'Landmark', '#2563EB', 14250000, 1)
+  values (c_user, 'HDFC Savings', 'bank', 'Landmark', '#4671B7', 14250000, 1)
   returning id into v_bank;
 
   insert into public.accounts (
     user_id, name, type, icon, color, initial_balance, include_in_total, sort_order
   )
-  values (c_user, 'ICICI Credit Card', 'card', 'CreditCard', '#DB2777', 0, true, 2)
+  values (c_user, 'ICICI Credit Card', 'card', 'CreditCard', '#A65175', 0, true, 2)
   returning id into v_card;
 
   insert into public.accounts (
     user_id, name, type, icon, color, initial_balance, sort_order
   )
-  values (c_user, 'Paytm Wallet', 'wallet', 'Smartphone', '#7C3AED', 125000, 3)
+  values (c_user, 'Paytm Wallet', 'wallet', 'Smartphone', '#7D5FAD', 125000, 3)
   returning id into v_wallet;
 
   -- Three months of records ------------------------------------------------

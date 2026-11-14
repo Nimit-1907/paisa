@@ -5,9 +5,9 @@ import * as React from "react";
 import { ArrowRight, Repeat, Trash2 } from "lucide-react";
 
 import { useFormatMoney } from "@/components/profile-provider";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 const REVEAL = 88;
 
@@ -101,7 +101,7 @@ export function RecordRow({
 
   const title =
     record.type === "transfer"
-      ? `${record.accountName} → ${record.toAccountName ?? "—"}`
+      ? "Transfer"
       : (record.categoryName ?? "Uncategorised");
 
   return (
@@ -154,22 +154,13 @@ export function RecordRow({
             highlight && "bg-primary/10 duration-1000",
           )}
         >
-          <span
-            className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
-            style={{
-              backgroundColor:
-                record.type === "transfer"
-                  ? "#64748B"
-                  : (record.categoryColor ?? "#64748B"),
-            }}
-          >
-            <DynamicIcon
-              name={
-                record.type === "transfer" ? "ArrowLeftRight" : record.categoryIcon
-              }
-              className="size-[18px]"
-            />
-          </span>
+          <ColorDot
+            size="lg"
+            color={record.type === "transfer" ? null : record.categoryColor}
+            icon={
+              record.type === "transfer" ? "ArrowLeftRight" : record.categoryIcon
+            }
+          />
 
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1.5">
@@ -190,10 +181,10 @@ export function RecordRow({
                 </>
               ) : null}
               {record.type === "transfer" ? (
-                <span className="flex items-center gap-0.5 truncate">
-                  {record.accountName}
+                <span className="flex min-w-0 items-center gap-0.5">
+                  <span className="truncate">{record.accountName}</span>
                   <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
-                  {record.toAccountName}
+                  <span className="truncate">{record.toAccountName}</span>
                 </span>
               ) : (
                 <span className="truncate">{record.accountName}</span>

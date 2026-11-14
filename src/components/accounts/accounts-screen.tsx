@@ -28,7 +28,6 @@ import type { AccountView } from "@/components/accounts/types";
 import { EmptyState } from "@/components/empty-state";
 import { useFormatMoney } from "@/components/profile-provider";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +42,7 @@ import {
   type AccountType,
 } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 /**
  * The Accounts tab.
@@ -335,12 +335,7 @@ function AccountRow({
         href={`/accounts/${account.id}`}
         className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
       >
-        <span
-          className="flex size-9 shrink-0 items-center justify-center rounded-full text-white"
-          style={{ backgroundColor: account.color ?? "#64748B" }}
-        >
-          <DynamicIcon name={account.icon} className="size-[18px]" />
-        </span>
+        <ColorDot color={account.color} icon={account.icon} />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">

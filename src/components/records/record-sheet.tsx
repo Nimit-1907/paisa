@@ -7,11 +7,14 @@ import { toast } from "sonner";
 
 import type { SavedTransaction } from "@/actions/transactions";
 import type { ActionResult } from "@/lib/action-result";
-import type { EntryDefaults, PartOfDay } from "@/lib/queries/accounts";
+import type {
+  EntryDefaults,
+  PartOfDay,
+  QuickAdd,
+} from "@/lib/queries/accounts";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountKeypad } from "@/components/records/amount-keypad";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import {
   type AccountOption,
   AccountSelect,
@@ -35,8 +38,10 @@ import {
   type TransactionType,
 } from "@/lib/schemas/transactions";
 import { evaluate } from "@/lib/calculator";
+import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 export type { AccountOption, CategoryOption };
 
@@ -113,6 +118,7 @@ export function RecordSheet({
   onDelete,
   timeZone,
   entryDefaults,
+  quickAdds = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -127,6 +133,8 @@ export function RecordSheet({
   timeZone: string;
   /** The account last used, and the categories usual at this hour. */
   entryDefaults?: EntryDefaults;
+  /** One-tap chips for the things this person buys over and over. */
+  quickAdds?: QuickAdd[];
 }) {
   const currency = useCurrency();
   const editing = draft ?? null;
@@ -221,6 +229,40 @@ export function RecordSheet({
    * caption an evening row "in the morning" on the first day of a trip.
    */
   const partOfDay = PART_OF_DAY_LABEL[entryDefaults?.partOfDay ?? "night"];
+
+  /*
+   * The result, spelled out on the button.
+   *
+   * "Save" asks you to remember what you typed; "Save expense · ₹450" shows
+   * you. It is the last thing anybody reads before committing, and it is the
+   * cheapest place to catch a mistyped amount. Falls back to the plain verb
+   * while there is no usable amount yet, so the button never reads
+   * "Save expense · ₹0".
+   */
+  const amountSum = evaluate(amount || "0", currency.decimals);
+  const amountLabel =
+    amountSum.ok && amountSum.minor > 0n
+      ? formatWith(currency, amountSum.minor, {
+          signDisplay: "never",
+          // Whole rupees on a button, the same as on the chips: the paise
+          // are in the field directly above it.
+          whole: true,
+        })
+      : null;
+
+  const toAccountName = accounts.find(
+    (account) => account.id === toAccountId,
+  )?.name;
+
+  const saveLabel = editing
+    ? "Save changes"
+    : type === "transfer"
+      ? amountLabel && toAccountName
+        ? `Move ${amountLabel} to ${toAccountName}`
+        : "Save transfer"
+      : amountLabel
+        ? `Save ${type} · ${amountLabel}`
+        : `Save ${type}`;
 
   /** Whether the field this error belongs to is on screen to show it. */
   const errorShownInline =
@@ -404,6 +446,47 @@ export function RecordSheet({
           }}
         />
 
+        {!editing && quickAdds.length > 0 && type === "expense" ? (
+          <div className="space-y-1.5">
+            <Label id="quick-add-label">Quick add</Label>
+            <div
+              role="group"
+              aria-labelledby="quick-add-label"
+              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1"
+            >
+              {quickAdds.map((quick) => (
+                <button
+                  key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
+                  type="button"
+                  onClick={() => {
+                    // Fills the form rather than saving: the amount is the
+                    // usual one, not necessarily today's one, and the whole
+                    // point is that it can still be edited.
+                    setAmount(minorToText(quick.amount, currency.decimals));
+                    setCategoryId(quick.categoryId);
+                    setAccountId(quick.accountId);
+                    setError(null);
+                    setErrorField(null);
+                  }}
+                  className={cn(
+                    PRESSABLE,
+                    "hoverable:bg-muted/60 focus-visible:ring-ring flex h-11 shrink-0 items-center gap-2 rounded-full border pr-3 pl-1.5 text-sm focus-visible:ring-2 focus-visible:outline-none",
+                  )}
+                >
+                  <ColorDot color={quick.color} icon={quick.icon} size="sm" />
+                  <span className="font-semibold">{quick.name}</span>
+                  <span className="amount text-ink-2">
+                    {formatWith(currency, BigInt(quick.amount), {
+                      signDisplay: "never",
+                      whole: true,
+                    })}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <AmountKeypad
           value={amount}
           onChange={setAmount}
@@ -461,17 +544,11 @@ export function RecordSheet({
                             : "text-muted-foreground hoverable:bg-muted/60",
                         )}
                       >
-                        <span
-                          className="flex size-6 items-center justify-center rounded-full text-white"
-                          style={{
-                            backgroundColor: category.color ?? "#64748B",
-                          }}
-                        >
-                          <DynamicIcon
-                            name={category.icon}
-                            className="size-3.5"
-                          />
-                        </span>
+                        <ColorDot
+                          color={category.color}
+                          icon={category.icon}
+                          size="sm"
+                        />
                         {category.name}
                       </button>
                     );
@@ -686,26 +763,29 @@ export function RecordSheet({
               ) : (
                 <Check className="size-4" aria-hidden="true" />
               )}
-              Save changes
+              {saveLabel}
             </Button>
           </>
         ) : (
           <>
+            {/*
+              One primary, full width, saying what it will do. The run-of-
+              receipts shortcut keeps its place beside it as an icon: it is
+              the rarer action, and spelling it out cost the primary button
+              the room to name the amount.
+            */}
             <Button
               variant="outline"
-              size="touch"
-              className="flex-1"
+              size="icon-touch"
+              aria-label="Save and add another"
               onClick={() => void save(true)}
               disabled={saving}
             >
-              <Plus className="size-4" aria-hidden="true" />
-              {/* Short enough to share a row with Save at 360px. Two
-                  full-width buttons stacked cost a row of categories. */}
-              Save &amp; new
+              <Plus className="size-5" aria-hidden="true" />
             </Button>
             <Button
               size="touch"
-              className="flex-1"
+              className="min-w-0 flex-1"
               onClick={() => void save(false)}
               disabled={saving}
             >
@@ -714,7 +794,7 @@ export function RecordSheet({
               ) : (
                 <Check className="size-4" aria-hidden="true" />
               )}
-              Save
+              <span className="truncate">{saveLabel}</span>
             </Button>
           </>
         )}

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -13,6 +14,7 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
+import { DEFAULT_COLOR } from "@/lib/colors";
 import { findCurrency } from "@/lib/currencies";
 import { toDb, tryToMinor } from "@/lib/money";
 import { HOME_PATH, LOGIN_PATH } from "@/lib/routes";
@@ -99,7 +101,7 @@ export async function completeOnboarding(
       name: accountName,
       type: "cash",
       icon: "Wallet",
-      color: "#0F766E",
+      color: DEFAULT_COLOR,
       initial_balance: toDb(minor),
       sort_order: 0,
     });
@@ -332,24 +334,18 @@ async function setPreference(
 }
 
 /**
- * Throws away the cached render of the app shell, once setup is over.
+ * Leaves the welcome screen for the first record.
  *
- * completeOnboarding() deliberately does not revalidate: this page sends
- * anyone whose setup is done straight to the app, so revalidating from
- * inside it tears the welcome screen off the display a moment after it
- * appears. The welcome screen's own button calls this instead, so the shell
- * is rebuilt with the name and currency that were just chosen rather than
- * served from the cache that predates them.
+ * Rebuilding the shell and navigating are one step on purpose. Doing them
+ * separately is a race: revalidating while still on /onboarding invalidates
+ * that page too, and this page sends anyone whose setup is done straight to
+ * the app — so the welcome screen can be torn off the display underneath the
+ * button being pressed. As one action the order is fixed: throw away the
+ * cache that predates the name and currency just chosen, then leave.
  */
-export async function refreshAfterOnboarding(): Promise<
-  ActionResult<undefined>
-> {
-  const supabase = await createClient();
-  const user = await requireUser(supabase);
-  if (!user.ok) return user;
-
+export async function startTracking(): Promise<void> {
   revalidatePath("/", "layout");
-  return ok(undefined);
+  redirect(`${HOME_PATH}?add=1`);
 }
 
 /** The Settings toggle: should saving and deleting buzz the phone? */

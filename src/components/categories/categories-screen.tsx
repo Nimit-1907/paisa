@@ -18,11 +18,11 @@ import { reorderCategories } from "@/actions/categories";
 import { CategoryFormSheet } from "@/components/categories/category-form-sheet";
 import type { CategoryView } from "@/components/categories/types";
 import { EmptyState } from "@/components/empty-state";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_KINDS, type CategoryKind } from "@/lib/schemas/categories";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 const KIND_LABELS: Record<CategoryKind, string> = {
   expense: "Expense",
@@ -272,17 +272,10 @@ function CategoryBadge({
   size?: "sm" | "lg";
 }) {
   return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-full text-white",
-        size === "lg" ? "size-11" : "size-9",
-      )}
-      style={{ backgroundColor: category.color ?? "#64748B" }}
-    >
-      <DynamicIcon
-        name={category.icon}
-        className={size === "lg" ? "size-5" : "size-[18px]"}
-      />
-    </span>
+    <ColorDot
+      color={category.color}
+      icon={category.icon}
+      size={size === "lg" ? "lg" : "md"}
+    />
   );
 }

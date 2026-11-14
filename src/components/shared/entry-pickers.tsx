@@ -2,7 +2,7 @@
 
 import { Check } from "lucide-react";
 
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
+import { ColorDot } from "@/components/shared/color-dot";
 import { Label } from "@/components/ui/label";
 import { PRESSABLE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -63,12 +63,7 @@ export function AccountSelect({
                   : "text-muted-foreground hoverable:bg-muted/60",
               )}
             >
-              <span
-                className="flex size-6 items-center justify-center rounded-full text-white"
-                style={{ backgroundColor: account.color ?? "#64748B" }}
-              >
-                <DynamicIcon name={account.icon} className="size-3.5" />
-              </span>
+              <ColorDot color={account.color} icon={account.icon} size="sm" />
               {account.name}
             </button>
           );
@@ -117,12 +112,11 @@ export function CategoryGrid({
                     : "border-transparent hoverable:bg-muted/60",
                 )}
               >
-                <span
-                  className="relative flex size-9 items-center justify-center rounded-full text-white"
-                  style={{ backgroundColor: category.color ?? "#64748B" }}
+                <ColorDot
+                  color={category.color}
+                  icon={category.icon}
+                  className="relative"
                 >
-                  <DynamicIcon name={category.icon} className="size-[18px]" />
-
                   <span
                     aria-hidden="true"
                     className={cn(
@@ -133,7 +127,7 @@ export function CategoryGrid({
                   >
                     <Check className="size-3" strokeWidth={3} />
                   </span>
-                </span>
+                </ColorDot>
                 <span className="w-full truncate text-center text-label font-semibold">
                   {category.name}
                 </span>

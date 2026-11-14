@@ -26,8 +26,19 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /*
+   * Two families, one job each.
+   *
+   * `font-sans` is Inter: everything you read, every amount in a list, every
+   * form. `font-display` is Instrument Serif, and it appears in exactly three
+   * places — the number on the month card, page titles, and the landing
+   * headline. A serif on the figure is what makes this app look like
+   * somebody's ledger rather than another dashboard, and keeping it to three
+   * places is what stops it becoming a theme.
+   */
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-heading: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /*
@@ -64,6 +75,25 @@
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
 
+  /*
+   * Three steps of emphasis, as solid colours rather than opacity.
+   *
+   * Opacity over a coloured surface gives a different colour on the page,
+   * on a card and on a tinted row, so the same "secondary" would have three
+   * contrast ratios. These are measured once: 14.9, 6.8 and 4.6 against the
+   * page in light, 16.5, 8.9 and 6.3 in dark. Tertiary is for hints and
+   * placeholders, and it still clears AA — see the note in docs.
+   */
+  /*
+   * The dark icon for a pale circle. Not themed: the circle is the same
+   * colour in light and dark, so the thing on top of it must be too.
+   */
+  --color-dot-ink: oklch(0.2 0.02 255);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -80,6 +110,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /*
+   * Three radii, one family: 20px for a card, 12px for a control, a full
+   * pill for a chip. The scale below stays for the shadcn primitives.
+   */
+  --radius-card: 1.25rem;
+  --radius-control: 0.75rem;
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -119,6 +156,10 @@
 
   --destructive: oklch(0.52 0.19 24);
 
+  --ink: oklch(0.26 0.02 255);
+  --ink-2: oklch(0.46 0.016 255);
+  --ink-3: oklch(0.555 0.013 255);
+
   /*
    * --border is a hairline between surfaces: decoration, and held light on
    * purpose. --input is the edge of a control — a text field, the off state
@@ -130,20 +171,28 @@
   --input: oklch(0.64 0.012 250);
   --ring: oklch(0.55 0.08 192);
 
-  --income: oklch(0.48 0.12 157);
-  --income-soft: oklch(0.945 0.04 157);
-  --expense: oklch(0.51 0.18 20);
-  --expense-soft: oklch(0.955 0.03 20);
-  --transfer: oklch(0.5 0.15 258);
-  --transfer-soft: oklch(0.95 0.03 258);
-  --warning: oklch(0.54 0.13 68);
-  --warning-soft: oklch(0.955 0.04 68);
+  /*
+   * Money colours, a third less saturated than they were.
+   *
+   * They only ever land on an amount, an arrow or a category dot, so they do
+   * not need to carry a surface — and at the old chroma three of them in one
+   * list read as a warning rather than as information. Measured on the page:
+   * 6.2, 6.2, 6.0 and 5.2.
+   */
+  --income: oklch(0.47 0.095 157);
+  --income-soft: oklch(0.95 0.03 157);
+  --expense: oklch(0.5 0.135 22);
+  --expense-soft: oklch(0.96 0.025 22);
+  --transfer: oklch(0.49 0.105 258);
+  --transfer-soft: oklch(0.955 0.022 258);
+  --warning: oklch(0.53 0.105 68);
+  --warning-soft: oklch(0.96 0.03 68);
 
-  --chart-1: oklch(0.48 0.12 157);
-  --chart-2: oklch(0.51 0.18 20);
-  --chart-3: oklch(0.5 0.15 258);
-  --chart-4: oklch(0.58 0.13 70);
-  --chart-5: oklch(0.5 0.14 300);
+  --chart-1: oklch(0.47 0.095 157);
+  --chart-2: oklch(0.5 0.135 22);
+  --chart-3: oklch(0.49 0.105 258);
+  --chart-4: oklch(0.56 0.105 70);
+  --chart-5: oklch(0.5 0.11 300);
 
   --radius: 0.75rem;
 
@@ -178,25 +227,30 @@
 
   --destructive: oklch(0.68 0.17 24);
 
+  --ink: oklch(0.95 0.005 250);
+  --ink-2: oklch(0.76 0.012 255);
+  --ink-3: oklch(0.665 0.012 255);
+
   --border: oklch(1 0 0 / 12%);
   /* 3.31 on the page, 3.33 on a card. See the note in :root. */
   --input: oklch(1 0 0 / 36%);
   --ring: oklch(0.6 0.08 190);
 
-  --income: oklch(0.8 0.15 158);
-  --income-soft: oklch(0.3 0.055 158);
-  --expense: oklch(0.74 0.16 22);
-  --expense-soft: oklch(0.32 0.07 22);
-  --transfer: oklch(0.76 0.12 255);
-  --transfer-soft: oklch(0.31 0.06 255);
-  --warning: oklch(0.81 0.13 75);
-  --warning-soft: oklch(0.31 0.055 75);
+  /* Softened further here: a saturated colour on a dark surface glows. */
+  --income: oklch(0.8 0.105 158);
+  --income-soft: oklch(0.3 0.04 158);
+  --expense: oklch(0.76 0.115 22);
+  --expense-soft: oklch(0.32 0.05 22);
+  --transfer: oklch(0.77 0.09 255);
+  --transfer-soft: oklch(0.31 0.042 255);
+  --warning: oklch(0.82 0.095 75);
+  --warning-soft: oklch(0.31 0.04 75);
 
-  --chart-1: oklch(0.8 0.15 158);
-  --chart-2: oklch(0.74 0.16 22);
-  --chart-3: oklch(0.76 0.12 255);
-  --chart-4: oklch(0.8 0.13 75);
-  --chart-5: oklch(0.75 0.13 300);
+  --chart-1: oklch(0.8 0.105 158);
+  --chart-2: oklch(0.76 0.115 22);
+  --chart-3: oklch(0.77 0.09 255);
+  --chart-4: oklch(0.82 0.095 75);
+  --chart-5: oklch(0.75 0.1 300);
 
   --sidebar: oklch(0.195 0.016 258);
   --sidebar-foreground: oklch(0.96 0.005 250);
@@ -267,6 +321,55 @@
 /* A row arriving in a list it was not in a moment ago. */
 @utility row-in {
   animation: paisa-row-in 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/*
+ * Frosted glass, for the furniture that floats over content: the bottom tab
+ * bar, the sticky page header, the sticky action area in a sheet.
+ *
+ * Three fallbacks, because a translucent surface is only ever a nicety:
+ *
+ *  - no `backdrop-filter` support: a solid surface, via @supports;
+ *  - prefers-reduced-transparency: a solid surface, because the setting
+ *    exists for people who find translucency hard to read through;
+ *  - forced-colors: the system takes the colours over entirely.
+ *
+ * The text on top is the same --ink as everywhere else, and the solid
+ * fallback is the colour the glass averages to, so contrast is the same
+ * either way.
+ */
+@utility glass {
+  background-color: color-mix(in oklab, var(--background) 82%, transparent);
+  border-color: var(--border);
+
+  @supports (backdrop-filter: blur(1px)) {
+    backdrop-filter: blur(12px) saturate(1.4);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--background);
+    backdrop-filter: none;
+  }
+
+  @media (forced-colors: active) {
+    background-color: Canvas;
+    backdrop-filter: none;
+  }
+}
+
+/*
+ * The one gradient in the app.
+ *
+ * Barely there — a wash of the brand colour across a surface, so the star
+ * card, a pressed primary button and the end of onboarding all feel like the
+ * same hand drew them. Anywhere else it would be decoration.
+ */
+@utility accent-wash {
+  background-image: linear-gradient(
+    140deg,
+    color-mix(in oklab, var(--primary) 7%, transparent),
+    transparent 60%
+  );
 }
 
 @layer base {

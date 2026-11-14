@@ -1,5 +1,5 @@
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/shared/color-dot";
 
 /**
  * The coloured circle that stands for a rule.
@@ -26,20 +26,11 @@ export function RuleAvatar({
   const transfer = rule.type === "transfer";
 
   return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center rounded-full text-white",
-        size === "lg" ? "size-11" : "size-10",
-        dimmed && "opacity-50",
-      )}
-      style={{
-        backgroundColor: transfer ? "#64748B" : (rule.categoryColor ?? "#64748B"),
-      }}
-    >
-      <DynamicIcon
-        name={transfer ? "ArrowLeftRight" : rule.categoryIcon}
-        className={size === "lg" ? "size-5" : "size-[18px]"}
-      />
-    </span>
+    <ColorDot
+      className={cn(dimmed && "opacity-50")}
+      size={size}
+      color={transfer ? null : rule.categoryColor}
+      icon={transfer ? "ArrowLeftRight" : rule.categoryIcon}
+    />
   );
 }

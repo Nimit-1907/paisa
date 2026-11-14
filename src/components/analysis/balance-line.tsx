@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { bucketLabel, bucketTitle } from "@/lib/period";
 import type { BalancePoint } from "@/lib/queries/analysis";
 import { cn } from "@/lib/utils";
+import { FALLBACK_COLOR } from "@/lib/colors";
 
 export type BalanceAccount = {
   id: string;
@@ -123,7 +124,7 @@ export function BalanceLine({
                 <span
                   aria-hidden="true"
                   className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: account.color ?? "#64748B" }}
+                  style={{ backgroundColor: account.color ?? FALLBACK_COLOR }}
                 />
                 <span
                   className={cn(
