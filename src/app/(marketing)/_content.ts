@@ -1,0 +1,96 @@
+import {
+  ChartPie,
+  Repeat2,
+  Target,
+  Wallet,
+  WifiOff,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+
+/**
+ * What the public pages say, as data.
+ *
+ * The FAQ answers are also the FAQPage structured data, and the features are
+ * also the OG description. Writing them once is the only way the page and
+ * what search engines are told cannot drift apart.
+ */
+
+export type Feature = {
+  icon: LucideIcon;
+  title: string;
+  body: string;
+};
+
+export const FEATURES: Feature[] = [
+  {
+    icon: Zap,
+    title: "Four taps to log a spend",
+    body: "The sheet opens with the account you used last and the categories you usually pick at this hour. Type the amount, pick the category, save. It does the arithmetic too, so a split bill goes in as 840÷3.",
+  },
+  {
+    icon: Target,
+    title: "A budget per category",
+    body: "Set a monthly limit and the screen leads with the number you came for: what is left, and what that is per day for the days remaining. Amber at 80%, red when it is gone.",
+  },
+  {
+    icon: ChartPie,
+    title: "Charts that agree with the list",
+    body: "Spending by category, day by day, and your running balance — all added up in the database from the same rows the Records tab shows, so the chart and the list never disagree.",
+  },
+  {
+    icon: Wallet,
+    title: "Every account in one total",
+    body: "Cash, bank, cards and wallets, with transfers between them that move money without counting as income or expense.",
+  },
+  {
+    icon: Repeat2,
+    title: "Rent that logs itself",
+    body: "Set up the bills that repeat and they appear on the day they are due — including the months you did not open the app, caught up without ever duplicating a record.",
+  },
+  {
+    icon: WifiOff,
+    title: "Works on your home screen",
+    body: "Install it and it opens like an app, with the screens you have already visited still readable when you have no signal.",
+  },
+];
+
+export type Faq = { question: string; answer: string };
+
+export const FAQS: Faq[] = [
+  {
+    question: "Is Paisa free?",
+    answer:
+      "Yes. There is no paid tier, no advertising and nothing to unlock.",
+  },
+  {
+    question: "Who can see my records?",
+    answer:
+      "Only you. Every table is scoped to your account by Postgres row level security, so a query can only ever return your own rows — that is enforced by the database, not by the app remembering to ask nicely.",
+  },
+  {
+    question: "Can I get my data out?",
+    answer:
+      "Whenever you like. The Export screen hands you every record as a CSV for any date range, or a month as a PDF report with the category breakdown and budget against actual.",
+  },
+  {
+    question: "Does it connect to my bank?",
+    answer:
+      "No. Paisa never asks for a bank login, because it never needs one. You enter what you spend, which takes a few seconds and means there is no third party holding your credentials.",
+  },
+  {
+    question: "Which currency does it use?",
+    answer:
+      "Rupees by default, and you can change the symbol and the number of decimal places in Settings. Amounts are stored as whole paise rather than decimal numbers, so a total never drifts by a rupee.",
+  },
+  {
+    question: "Does it work offline?",
+    answer:
+      "The app installs to your home screen and the screens you have already opened stay readable without a connection. Saving a new record needs a connection, so nothing is ever held in a queue you cannot see.",
+  },
+  {
+    question: "Can I use it on a computer?",
+    answer:
+      "Yes. It is designed for a phone first, and from a laptop width the bottom tabs become a sidebar. The amount keypad takes a physical keyboard, including Enter to save.",
+  },
+];

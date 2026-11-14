@@ -1,0 +1,96 @@
+import Link from "next/link";
+
+import { IndianRupee } from "lucide-react";
+
+import { SkipLink } from "@/components/layout/skip-link";
+import { SITE } from "@/lib/site";
+
+const LINKS = [
+  { href: "/features", label: "Features" },
+  { href: "/faq", label: "FAQ" },
+];
+
+/**
+ * The public shell.
+ *
+ * Server Components only, and no interactivity beyond links: a landing page
+ * that ships a component tree to hydrate is a landing page that measures
+ * badly for no reason. The nav is markup, the theme follows the system, and
+ * there is nothing here to click that is not a destination.
+ */
+export default function MarketingLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <SkipLink />
+
+      <header className="pt-safe bg-background/90 sticky top-0 z-30 border-b backdrop-blur">
+        <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-3">
+          <Link
+            href="/"
+            className="focus-visible:ring-ring flex min-h-11 items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-xl">
+              <IndianRupee className="size-4" aria-hidden="true" />
+            </span>
+            <span className="font-semibold tracking-tight">{SITE.name}</span>
+          </Link>
+
+          <nav aria-label="Main" className="ml-auto">
+            <ul className="flex items-center gap-1">
+              {LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex min-h-11 items-center rounded-lg px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/login"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring ml-1 flex min-h-11 items-center rounded-lg px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  Log in
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+        {children}
+      </main>
+
+      <footer className="pb-safe mt-8 border-t">
+        <div className="text-muted-foreground mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-6 text-sm">
+          <p>
+            {SITE.name} — {SITE.tagline}
+          </p>
+          <nav aria-label="Footer" className="sm:ml-auto">
+            <ul className="flex flex-wrap items-center gap-x-4">
+              {[...LINKS, { href: "/privacy", label: "Privacy" }].map(
+                (link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 items-center rounded focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  );
+}
