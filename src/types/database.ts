@@ -535,6 +535,10 @@ export type Database = {
           money_out: number
         }[]
       }
+      assert_bucket: {
+        Args: { p_from: string; p_to: string; p_bucket: string }
+        Returns: undefined
+      }
       assert_range: {
         Args: { p_from: string; p_to: string }
         Returns: undefined
@@ -551,6 +555,10 @@ export type Database = {
           bucket_start: string
         }[]
       }
+      bucket_starts: {
+        Args: { p_from: string; p_to: string; p_bucket: string }
+        Returns: string[]
+      }
       category_totals: {
         Args: {
           p_from: string
@@ -558,11 +566,11 @@ export type Database = {
           p_kind: Database["public"]["Enums"]["category_kind"]
         }
         Returns: {
-          total: number
-          color: string
           category_id: string
           name: string
           icon: string
+          color: string
+          total: number
         }[]
       }
       check_account_owner: {
@@ -591,12 +599,16 @@ export type Database = {
           sort_order: number
         }[]
       }
+      delete_own_account: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       delete_recurring_rule: {
         Args: { p_rule_id: string; p_delete_transactions?: boolean }
         Returns: number
       }
       local_day_range: {
-        Args: { p_to: string; p_from: string }
+        Args: { p_from: string; p_to: string }
         Returns: Record<string, unknown>
       }
       materialise_recurring: {
@@ -606,10 +618,10 @@ export type Database = {
       month_summary: {
         Args: { p_month: string }
         Returns: {
+          net: number
           month_start: string
           total_income: number
           total_expense: number
-          net: number
           categories: Json
         }[]
       }
@@ -638,10 +650,10 @@ export type Database = {
       recurrence_occurrence: {
         Args:
           | {
+              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
               p_interval: number
               p_n: number
-              p_start: string
             }
           | {
               p_start: string
@@ -662,10 +674,10 @@ export type Database = {
       }
       set_budget: {
         Args: {
-          p_apply_forward?: boolean
           p_category_id: string
           p_month: string
           p_amount: number
+          p_apply_forward?: boolean
           p_horizon?: number
         }
         Returns: number
