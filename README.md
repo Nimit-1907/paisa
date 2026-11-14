@@ -184,7 +184,42 @@ reordering never requires a pointer.
 
 **Theme.** `next-themes` with light/dark/system. Colours are CSS variables in
 `globals.css`; `--income` (green), `--expense` (rose) and `--transfer` (blue)
-carry the money semantics and clear WCAG AA in both themes.
+carry the money semantics and clear WCAG AA in both themes. A small blocking
+script in `<head>` (`app/layout.tsx`) applies the stored choice before the
+first paint, so there is no flash of the wrong theme — next-themes ships the
+same logic but renders it inside `<body>`, after the element carrying the
+background colour.
+
+**Motion** lives in `src/lib/motion.ts` and is deliberately small:
+
+| Export | What it is for |
+| --- | --- |
+| `FAST` (120ms) | Feedback on something just touched — a pressed button, a selected tile |
+| `BASE` (200ms) | Something arriving, leaving or changing shape |
+| `COUNT_UP` (400ms) | The longest anything may take: a number counting to its new value |
+| `EASE` | One curve, `cubic-bezier(0.2, 0, 0, 1)`, everywhere |
+| `PRESSABLE` | The Tailwind classes for a pressable row or button |
+| `usePrefersReducedMotion()` | Starts `true`, so nothing animates before the browser has answered |
+| `useCountUp(value)` | BigInt in, BigInt out; never animates the first value |
+| `useFirstFill(value)` | Zero for one frame, so a progress bar fills rather than appears |
+| `useShake()` | One 240ms shake, suppressed under reduced motion |
+| `haptic(enabled)` | A 10ms vibration where the device has one and the setting is on |
+
+Everything moves `transform` or `opacity` only, and nothing in the app waits
+for an animation before doing its work. `prefers-reduced-motion` is honoured
+globally in `globals.css` and per component through `motion-reduce:`.
+`docs/premium-pass.md` has the full inventory.
+
+**Type scale and spacing.** Two weights in normal use — 400 for body, 600 for
+anything emphasised, including buttons and labels. Sizes are `--text-label`
+(11px, uppercase micro-labels), `text-xs`, `text-sm`, `text-xl` (page titles)
+and `text-3xl` (the one number a screen is for). Spacing steps are multiples
+of 8: `space-y-6` between sections on a screen, `space-y-4` inside a sheet.
+
+**`hoverable:` instead of `hover:`.** Tailwind's built-in variant compiles to a
+bare `:hover`, which a touchscreen fires on tap and leaves on. `globals.css`
+defines `hoverable:` behind `@media (hover: hover)`; use it for every hover
+style so a tapped row does not stay highlighted.
 
 ## Auth and onboarding
 
