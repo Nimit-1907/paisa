@@ -1,7 +1,8 @@
 import {
   ChartPie,
+  Download,
   Ellipsis,
-  FileText,
+  Info,
   type LucideIcon,
   Receipt,
   Repeat,
@@ -29,7 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/more",
     label: "More",
     icon: Ellipsis,
-    owns: ["/categories", "/recurring", "/settings"],
+    owns: ["/about", "/categories", "/export", "/recurring", "/settings"],
   },
 ];
 
@@ -50,14 +51,20 @@ export const MORE_ITEMS = [
   {
     href: "/settings",
     label: "Settings",
-    description: "Currency, theme and account",
+    description: "Name, currency, week start, theme and password",
     icon: Settings,
   },
   {
-    href: "/settings#export",
-    label: "Export PDF",
-    description: "Download a monthly statement",
-    icon: FileText,
+    href: "/export",
+    label: "Export",
+    description: "Download your records as CSV or a monthly PDF",
+    icon: Download,
+  },
+  {
+    href: "/about",
+    label: "About",
+    description: "What this is, and what it keeps",
+    icon: Info,
   },
 ] as const;
 

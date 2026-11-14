@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { InstallButton } from "@/components/pwa/install-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MORE_ITEMS } from "@/lib/nav";
 import { getProfile, getSessionUser } from "@/lib/profile";
@@ -73,7 +74,10 @@ export default async function MorePage() {
         <ThemeToggle />
       </div>
 
-      <SignOutButton className="mt-4 w-full" />
+      <div className="mt-4 space-y-2">
+        <InstallButton />
+        <SignOutButton className="w-full" />
+      </div>
     </>
   );
 }

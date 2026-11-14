@@ -11,7 +11,10 @@ export const APP_PATHS = [
   "/budgets",
   "/accounts",
   "/categories",
+  "/recurring",
   "/settings",
+  "/export",
+  "/about",
   "/more",
   "/onboarding",
 ] as const;
