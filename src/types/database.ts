@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          variables?: Json
           extensions?: Json
           operationName?: string
           query?: string
+          variables?: Json
         }
         Returns: Json
       }
@@ -535,6 +535,36 @@ export type Database = {
           money_out: number
         }[]
       }
+      assert_range: {
+        Args: { p_from: string; p_to: string }
+        Returns: undefined
+      }
+      balance_series: {
+        Args: {
+          p_account_id?: string
+          p_bucket: string
+          p_to: string
+          p_from: string
+        }
+        Returns: {
+          balance: number
+          bucket_start: string
+        }[]
+      }
+      category_totals: {
+        Args: {
+          p_from: string
+          p_to: string
+          p_kind: Database["public"]["Enums"]["category_kind"]
+        }
+        Returns: {
+          total: number
+          color: string
+          category_id: string
+          name: string
+          icon: string
+        }[]
+      }
       check_account_owner: {
         Args: { p_account_id: string; p_user_id: string }
         Returns: undefined
@@ -565,6 +595,10 @@ export type Database = {
         Args: { p_rule_id: string; p_delete_transactions?: boolean }
         Returns: number
       }
+      local_day_range: {
+        Args: { p_to: string; p_from: string }
+        Returns: Record<string, unknown>
+      }
       materialise_recurring: {
         Args: { p_rule_id: string; p_on: string }
         Returns: string
@@ -572,11 +606,19 @@ export type Database = {
       month_summary: {
         Args: { p_month: string }
         Returns: {
-          categories: Json
           month_start: string
           total_income: number
           total_expense: number
           net: number
+          categories: Json
+        }[]
+      }
+      period_series: {
+        Args: { p_from: string; p_to: string; p_bucket: string }
+        Returns: {
+          bucket_start: string
+          income: number
+          expense: number
         }[]
       }
       process_due_recurring: {
@@ -596,10 +638,10 @@ export type Database = {
       recurrence_occurrence: {
         Args:
           | {
-              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
               p_interval: number
               p_n: number
+              p_start: string
             }
           | {
               p_start: string
@@ -620,10 +662,10 @@ export type Database = {
       }
       set_budget: {
         Args: {
+          p_apply_forward?: boolean
           p_category_id: string
           p_month: string
           p_amount: number
-          p_apply_forward?: boolean
           p_horizon?: number
         }
         Returns: number
