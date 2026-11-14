@@ -18,9 +18,9 @@ export type Database = {
       graphql: {
         Args: {
           extensions?: Json
-          operationName?: string
           query?: string
           variables?: Json
+          operationName?: string
         }
         Returns: Json
       }
@@ -545,10 +545,10 @@ export type Database = {
       }
       balance_series: {
         Args: {
-          p_account_id?: string
           p_bucket: string
-          p_to: string
           p_from: string
+          p_account_id?: string
+          p_to: string
         }
         Returns: {
           balance: number
@@ -561,9 +561,9 @@ export type Database = {
       }
       category_totals: {
         Args: {
-          p_from: string
           p_to: string
           p_kind: Database["public"]["Enums"]["category_kind"]
+          p_from: string
         }
         Returns: {
           category_id: string
@@ -573,8 +573,12 @@ export type Database = {
           total: number
         }[]
       }
+      change_currency: {
+        Args: { p_symbol: string; p_decimals: number; p_code: string }
+        Returns: number
+      }
       check_account_owner: {
-        Args: { p_account_id: string; p_user_id: string }
+        Args: { p_user_id: string; p_account_id: string }
         Returns: undefined
       }
       check_category_owner: {
@@ -592,8 +596,8 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          name: string
           kind: Database["public"]["Enums"]["category_kind"]
+          name: string
           icon: string
           color: string
           sort_order: number
@@ -618,10 +622,10 @@ export type Database = {
       month_summary: {
         Args: { p_month: string }
         Returns: {
-          net: number
           month_start: string
           total_income: number
           total_expense: number
+          net: number
           categories: Json
         }[]
       }
@@ -639,8 +643,8 @@ export type Database = {
       }
       recurrence_after: {
         Args: {
-          p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+          p_start: string
           p_interval: number
           p_anchor_day: number
           p_from: string
@@ -674,11 +678,11 @@ export type Database = {
       }
       set_budget: {
         Args: {
+          p_horizon?: number
           p_category_id: string
           p_month: string
           p_amount: number
           p_apply_forward?: boolean
-          p_horizon?: number
         }
         Returns: number
       }
