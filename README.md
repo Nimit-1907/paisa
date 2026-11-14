@@ -107,15 +107,21 @@ src/
     manifest.ts       PWA manifest (/manifest.webmanifest)
     sw.ts             Serwist service worker (built to /public/sw.js)
   components/
+    accounts/         accounts screen + the add/edit sheet
     auth/             the four forms + sign-out button
+    categories/       categories screen + the add/edit sheet
     layout/           app shell: bottom nav, sidebar, sticky page header
     onboarding/       the three-step flow
     records/          FAB + Add Record sheet
+    shared/           sheet, icon picker, colour picker, sortable list
     profile-provider  currency context for Client Components
     ui/               shadcn primitives
   hooks/              use-media-query
   lib/
     currencies.ts     the pickable currency list
+    dates.ts          month ranges in the user's timezone (+ tests)
+    icons.ts          the lucide subset the pickers offer
+    queries/          read helpers for Server Components
     money.ts          minor-unit parsing/formatting (+ money.test.ts)
     nav.ts            the five tabs, in one place
     profile.ts        cached getProfile() for Server Components
@@ -141,6 +147,17 @@ scripts/
 left sidebar from `lg` up with the content capped at 768px. Safe-area insets
 are respected via the `pt-safe` / `pb-safe` / `pb-nav` utilities in
 `globals.css`. Tap targets use the `touch` / `icon-touch` button sizes (44px).
+
+**Archive, do not delete.** An account or category that anything points at
+can only be archived: it keeps showing on the records that use it, and
+disappears from the pickers that offer new ones. Delete is offered only when
+`account_usage` / `category_usage` report nothing referencing it, and the
+Server Action checks again before it runs.
+
+**Reordering** is hand-rolled on Pointer Events (`components/shared/sortable-list`)
+rather than a drag-and-drop library, which CLAUDE.md's stack does not include.
+The handle is also a keyboard control — arrow keys move an item a slot — so
+reordering never requires a pointer.
 
 **Theme.** `next-themes` with light/dark/system. Colours are CSS variables in
 `globals.css`; `--income` (green), `--expense` (rose) and `--transfer` (blue)
@@ -229,8 +246,10 @@ edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phases 1–3 are done: the app shell, the database, and auth with onboarding.
-A new account can sign up, confirm by email, pick a currency, set an opening
-balance and land on Records; the demo account signs straight in.
+Phases 1–4 are done: the app shell, the database, auth with onboarding, and
+managing accounts and categories. A new account can sign up, confirm by
+email, pick a currency, set an opening balance and land on Records; accounts
+and categories can be created, edited, reordered, archived and deleted, and
+every balance comes from the `account_balances` view.
 
-Next: the real Add Record form and wiring the tabs to the data.
+Next: the real Add Record form and the Records list.
