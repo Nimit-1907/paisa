@@ -97,7 +97,7 @@ supabase stop --project-id <other-project>
 ```
 src/
   actions/            Server Actions: auth, profile, accounts,
-                      categories, transactions, recurring
+                      categories, transactions, recurring, budgets
   app/
     (app)/            records, analysis, budgets, accounts, more,
                       categories, recurring, settings — share the shell
@@ -113,6 +113,7 @@ src/
     categories/       categories screen + the add/edit sheet
     layout/           app shell: bottom nav, sidebar, sticky page header
     onboarding/       the three-step flow
+    budgets/          the month card, the rows, the budget sheet
     records/          the month list, the record sheet, the keypad,
                       the filter sheet, the upcoming strip, the FAB
     recurring/        the rules list, the rule sheet, delete choices
@@ -142,7 +143,7 @@ src/
 supabase/
   migrations/         SQL migrations (never change the DB by hand)
   seed.sql            demo user + ~3 months of sample records
-  tests/              pgTAP: rls, schema and recurring
+  tests/              pgTAP: rls, schema, recurring and budgets
 scripts/
   generate-icons.py   regenerates the PWA icon set
 ```
@@ -360,6 +361,49 @@ The app needs no change if you do this, and the two can run side by side: the
 generator is idempotent, so whichever gets there first does the work and the
 other finds nothing to do.
 
+## Budgets
+
+A limit per expense category per month, next to what has actually been spent.
+The month comes from the same `?m=` the rest of the app uses, so stepping back
+through the header's switcher works here too.
+
+**Spent comes from `month_summary`**, the RPC Records and Analysis already
+read. That is the whole point: a budget screen whose numbers disagree with the
+record list is worse than no budget screen, and sharing the source makes
+disagreement impossible rather than unlikely.
+
+**The three states** are green under 80%, amber from 80% to 100%, and red past
+it with "Over by ₹X". The threshold is compared in BigInt — `5 × spent ≥
+4 × budget` rather than `spent / budget ≥ 0.8` — because the rest of the app
+never divides money into a float and this is no place to start. `--warning` is
+a palette colour like `--income` and `--expense`, tuned for AA in both themes.
+
+**"₹1,528/day left for 17 days"** divides what is left by the days remaining,
+today included. It only appears on the month the user is in, and only while
+something is left — telling someone who is over budget what they may spend per
+day is not a helpful sentence.
+
+**Recurring awareness.** When a recurring expense is still to come before the
+month ends, its category says "includes ₹750 scheduled" beside the amount
+left: the ₹1,896 left on Transport already has ₹750 of metro top-ups spoken
+for. Occurrences the generator has already created are left out, because those
+are in `spent` and counting them twice would be worse than not counting them.
+
+**Apply to all future months** carries a limit forward and stops at the first
+month that was set to something else — carrying ₹7,500 forward should not
+quietly overwrite the ₹12,000 someone put against December. The horizon is
+twelve months; writing rows into 2031 to express "from now on" would be a lie
+about how certain anyone is.
+
+**Copy last month** fills in the categories that have no budget yet, which
+makes it safe to press twice, and leaves archived categories behind rather
+than giving a limit to something that can no longer be chosen.
+
+Both of those walk a run of months, so both are single statements in the
+database (`set_budget`, `copy_budgets_from_previous_month`): a run of months
+half-written is worse than one not written at all. `budgets.test.sql` covers
+the stopping rule, the horizon, and pressing copy twice.
+
 ## The database
 
 Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
@@ -402,24 +446,28 @@ Read models and RPCs:
 - `materialise_recurring()` / `skip_recurring_occurrence()` /
   `delete_recurring_rule()` — pay an occurrence early, skip one, and delete a
   rule with or without the records it created, each in a single statement.
+- `set_budget()` / `copy_budgets_from_previous_month()` — the two budget
+  writes that span more than one month; see **Budgets** above.
 
-`npm run db:test` runs three pgTAP files: `rls.test.sql` puts two real
+`npm run db:test` runs four pgTAP files: `rls.test.sql` puts two real
 `authenticated` sessions side by side and checks that neither can read, write
-or delete the other's rows, `schema.test.sql` covers the constraints above, and
-`recurring.test.sql` covers the schedule arithmetic and the generator.
+or delete the other's rows, `schema.test.sql` covers the constraints above,
+`recurring.test.sql` covers the schedule arithmetic and the generator, and
+`budgets.test.sql` covers carrying a budget forward and copying a month.
 
 After any migration, regenerate the types — `npm run db:types` — and never
 edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phases 1–6 are done: the app shell, the database, auth with onboarding,
-managing accounts and categories, the records screen, and recurring
-transactions. A new account can sign up, confirm by email, pick a currency, set
-an opening balance and land on Records; accounts and categories can be created,
-edited, reordered, archived and deleted; records can be added from any tab,
-edited, deleted with undo, searched and filtered; and anything that repeats
-manages itself, catching up whatever was missed and never creating the same
-occurrence twice.
+Phases 1–7 are done: the app shell, the database, auth with onboarding,
+managing accounts and categories, the records screen, recurring transactions
+and monthly budgets. A new account can sign up, confirm by email, pick a
+currency, set an opening balance and land on Records; accounts and categories
+can be created, edited, reordered, archived and deleted; records can be added
+from any tab, edited, deleted with undo, searched and filtered; anything that
+repeats manages itself, catching up whatever was missed and never creating the
+same occurrence twice; and each expense category can carry a monthly limit
+that knows what is still scheduled against it.
 
 Next: analysis — the charts and the per-category breakdown.
