@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { Inter } from "next/font/google";
 
+import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -21,7 +22,6 @@ export const metadata: Metadata = {
   description:
     "Track expenses, income and transfers across accounts, set monthly budgets and see where your money goes.",
   applicationName: "Paisa",
-  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "Paisa",
@@ -57,6 +57,16 @@ export default function RootLayout({
     // The font variable lives on <html> so the `font-sans` utility (applied
     // to html in globals.css) can resolve it.
     <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/*
+          Written here rather than left to `metadata.manifest`, which Next
+          streams into the body: Chrome only resolves <link rel="manifest">
+          from inside <head>, so the streamed one leaves the app
+          uninstallable — the manifest is fetchable, and the browser never
+          asks for it.
+        */}
+        <link rel="manifest" href="/manifest.webmanifest" />
+      </head>
       <body className="antialiased">
         <ThemeProvider
           attribute="class"
@@ -66,6 +76,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster position="top-center" />
+          <ServiceWorkerUpdates />
         </ThemeProvider>
       </body>
     </html>
