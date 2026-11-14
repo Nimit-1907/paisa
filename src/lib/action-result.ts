@@ -55,3 +55,18 @@ export function parseInput<Output>(
 
   return { ok: true, data: parsed.data };
 }
+
+/**
+ * A database failure the user can read, without the parts they should not.
+ *
+ * Postgres and PostgREST messages name tables, columns and constraints. They
+ * belong in the server log, not in a toast, so the caller supplies what the
+ * user sees and known cases are mapped explicitly before this is reached.
+ */
+export function failFromDb(
+  error: { message: string },
+  userMessage: string,
+): ActionResult<never> {
+  console.error("[db]", error.message);
+  return fail(userMessage);
+}
