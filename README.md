@@ -84,7 +84,7 @@ supabase stop --project-id <other-project>
 | --- | --- |
 | `npm run dev` | Next dev server |
 | `npm run build` / `npm start` | Production build / serve (also builds the service worker) |
-| `npm test` | Vitest (money helpers) |
+| `npm test` | Vitest (money, dates, the keypad calculator, routes, icons) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -96,7 +96,8 @@ supabase stop --project-id <other-project>
 
 ```
 src/
-  actions/            Server Actions: auth.ts, profile.ts
+  actions/            Server Actions: auth, profile, accounts,
+                      categories, transactions
   app/
     (app)/            records, analysis, budgets, accounts, more,
                       categories, settings  — share the app shell layout
@@ -112,17 +113,21 @@ src/
     categories/       categories screen + the add/edit sheet
     layout/           app shell: bottom nav, sidebar, sticky page header
     onboarding/       the three-step flow
-    records/          FAB + Add Record sheet
+    records/          the month list, the record sheet, the keypad,
+                      the filter sheet, the FAB
     shared/           sheet, icon picker, colour picker, sortable list
     profile-provider  currency context for Client Components
     ui/               shadcn primitives
   hooks/              use-media-query
   lib/
+    auth-guard.ts     requireUser() for every Server Action
+    calculator.ts     the keypad's arithmetic, no eval (+ tests)
     currencies.ts     the pickable currency list
     dates.ts          month ranges in the user's timezone (+ tests)
     icons.ts          the lucide subset the pickers offer
     queries/          read helpers for Server Components
     money.ts          minor-unit parsing/formatting (+ money.test.ts)
+    month-param.ts    reads ?m= and the filters off a URL
     nav.ts            the five tabs, in one place
     profile.ts        cached getProfile() for Server Components
     routes.ts         which paths are app / auth / neutral
@@ -200,6 +205,59 @@ per request) for Server Components, and `ProfileProvider` / `useFormatMoney()`
 for Client Components, so an amount is never rendered with somebody else's
 symbol.
 
+## Records
+
+`/records` is the screen the app exists for, so adding one is built to feel
+immediate: the row, the day total and the month summary all update before the
+server has answered.
+
+**The month lives in the URL** as `?m=2026-11`. The header's stepper and
+picker rewrite that one parameter (with `replace`, so stepping through months
+does not fill the back stack), the server reads it, and a reload or a shared
+link lands on the same month. Anything unparseable, or a month in the future,
+clamps to the current one. `src/lib/month-param.ts` is the single reader.
+
+**The keypad is a calculator, not an input.** `120+45` resolves to ₹165.00 on
+`=`. `src/lib/calculator.ts` tokenises the expression and evaluates it in
+BigInt at a scale of 10⁻⁹ — there is no `eval`, no `Function`, and no float, so
+`0.1+0.2` is exactly `0.30` and a pasted `constructor` is just a rejected
+token. The result is handed to `toMinor()` with the profile's decimal places,
+which is the only thing that ever reaches the database.
+
+**Writes are optimistic.** `records-screen.tsx` holds the list in
+`useOptimistic` and registers its own submit and delete handlers with the
+shared sheet provider, so the FAB in the app shell saves through the Records
+screen whenever that screen is mounted and falls back to a plain action
+elsewhere. A save shows the row at once, then merges the server's version by
+id; a failure removes it again and says why in a toast. Delete leaves for five
+seconds behind an **Undo** toast, which re-inserts the row under its original
+id rather than creating a new one. On a phone a left swipe reveals the same
+delete.
+
+**Paging** is 40 rows at a time, newest first, by offset: a month is a bounded
+set, and a keyset cursor would have to be spliced into a PostgREST filter
+string. `loadMoreTransactions` returns the next page to the client, the
+sentinel below the list requests it, and already-loaded pages survive a
+`router.refresh()`, so editing a row on page 2 does not snap the list back to
+page 1.
+
+**Search and filters** live in the URL too (`q`, `type`, `account`,
+`category`, `min`, `max`, `from`, `to`), shown as chips above the list with a
+clear-all. The note search is a `pg_trgm`-backed `ilike` with the user's own
+`%` and `_` escaped so they match literally; the account filter matches either
+leg, so an account's history includes transfers into it. Ids are re-validated
+as uuids before they go anywhere near a filter string.
+
+**Repeat** on a record creates a `recurring_rules` row alongside the first
+transaction and links the two. The record is written first: a rule with no
+transaction is a schedule nobody asked for, whereas a transaction with no rule
+is just a record. From then on `process_due_recurring()` owns it.
+
+Amounts cross the server/client boundary as minor-unit **strings**: an RSC
+payload cannot carry a BigInt, and a `number` would quietly lose precision
+above 2^53 paise. `fromDb` / `toDb` in `money.ts` are the only places that
+convert.
+
 ## The database
 
 Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
@@ -246,10 +304,12 @@ edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phases 1–4 are done: the app shell, the database, auth with onboarding, and
-managing accounts and categories. A new account can sign up, confirm by
-email, pick a currency, set an opening balance and land on Records; accounts
-and categories can be created, edited, reordered, archived and deleted, and
-every balance comes from the `account_balances` view.
+Phases 1–5 are done: the app shell, the database, auth with onboarding,
+managing accounts and categories, and the records screen. A new account can
+sign up, confirm by email, pick a currency, set an opening balance and land on
+Records; accounts and categories can be created, edited, reordered, archived
+and deleted; and records can be added from any tab, edited, deleted with undo,
+repeated on a schedule, searched and filtered, with balances and month totals
+following along.
 
-Next: the real Add Record form and the Records list.
+Next: analysis — the charts and the per-category breakdown.
