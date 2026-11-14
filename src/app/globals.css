@@ -178,9 +178,14 @@
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
-/* Bottom nav height (4rem) + home bar, for page content and the FAB. */
+/*
+ * Clearance under the fixed furniture: the 4rem bottom nav *and* the FAB,
+ * which floats 4.5rem up and is 3.5rem tall. Padding for the nav alone leaves
+ * the last row of a list sitting under the FAB, where its buttons cannot be
+ * tapped.
+ */
 @utility pb-nav {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
 }
 
 @layer base {
