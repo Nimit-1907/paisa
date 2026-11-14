@@ -57,6 +57,21 @@ function sheet(page: Page) {
   );
 }
 
+/**
+ * The sheet's primary button, whatever it currently says.
+ *
+ * It names the result — "Save expense · ₹250", "Move ₹500 to Paytm Wallet" —
+ * so matching on the exact word "Save" stopped working the moment that
+ * became true, and matching the whole string would make this test assert the
+ * copy rather than the flow. The kind of record is in the pattern because
+ * "Save and add another" sits beside it and would otherwise match too.
+ */
+async function saveRecord(page: Page) {
+  await sheet(page)
+    .getByRole("button", { name: /^(Save (expense|income|changes)|Move) / })
+    .click();
+}
+
 test("signup, onboarding, records, budget, recurring, analysis, export", async ({
   page,
 }) => {
@@ -134,7 +149,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     // none of them, and a shorter sheet is why a record takes four taps.
     await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
-    await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
+    await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
 
     await expect(page.getByText(EXPENSE_NOTE).first()).toBeVisible();
@@ -158,7 +173,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
     await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
-    await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
+    await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
 
     await expect(page.getByText(TRANSFER_NOTE).first()).toBeVisible();
@@ -177,7 +192,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(RENT_NOTE);
     await sheet(page).getByRole("radio", { name: "Monthly" }).click();
-    await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
+    await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
 
     await expect(page.getByText(RENT_NOTE).first()).toBeVisible();
