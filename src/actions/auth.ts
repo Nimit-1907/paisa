@@ -15,22 +15,8 @@ import {
   updatePasswordSchema,
 } from "@/lib/schemas/auth";
 import { HOME_PATH, LOGIN_PATH, safeNextPath } from "@/lib/routes";
+import { siteOrigin } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
-
-/**
- * The origin Supabase should build email links from.
- *
- * Read from configuration, never from the request's Origin or Host header:
- * those are attacker-controlled, and a forged one turns a genuine
- * password-reset mail into a link that hands the victim's code to someone
- * else's domain. Set NEXT_PUBLIC_SITE_URL per environment.
- */
-function siteOrigin(): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) return configured.replace(/\/+$/, "");
-
-  return "http://localhost:3000";
-}
 
 export type SignUpData = { needsEmailConfirmation: boolean; email: string };
 

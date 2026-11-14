@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import {
+  HOME_PATH,
   LOGIN_PATH,
   isAppPath,
   isAuthPath,
@@ -57,6 +58,15 @@ export async function updateSession(request: NextRequest) {
     target.search = "";
     // Remember where they were headed, so signing in finishes the journey.
     target.searchParams.set("next", `${pathname}${search}`);
+    return redirectKeepingCookies(target, supabaseResponse);
+  }
+
+  // The landing page is a pitch, and someone signed in has already been
+  // pitched. The other public pages stay readable either way.
+  if (user && pathname === "/") {
+    const target = request.nextUrl.clone();
+    target.pathname = HOME_PATH;
+    target.search = "";
     return redirectKeepingCookies(target, supabaseResponse);
   }
 

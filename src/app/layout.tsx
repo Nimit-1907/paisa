@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { SITE, siteOrigin } from "@/lib/site";
 
 import "./globals.css";
 
@@ -15,12 +16,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Absolute URLs for the canonical links, the sitemap and the OG card are
+  // resolved against this; without it Next warns and falls back to localhost.
+  metadataBase: new URL(siteOrigin()),
   title: {
-    default: "Paisa — Expense tracker",
-    template: "%s · Paisa",
+    default: `${SITE.name} — ${SITE.tagline}`,
+    template: `%s · ${SITE.name}`,
   },
-  description:
-    "Track expenses, income and transfers across accounts, set monthly budgets and see where your money goes.",
+  description: SITE.description,
   applicationName: "Paisa",
   appleWebApp: {
     capable: true,

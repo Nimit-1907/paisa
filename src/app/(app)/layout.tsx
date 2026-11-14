@@ -6,9 +6,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
 import { AddRecordFab } from "@/components/records/add-record-fab";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
-import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
-import { Toaster } from "@/components/ui/sonner";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import {
   currencyOf,
@@ -81,8 +79,6 @@ export default async function AppLayout({
           <BottomNav />
           <AddRecordFab />
           <RecurringCreatedToast created={created} />
-          <Toaster position="top-center" />
-          <ServiceWorkerUpdates />
         </div>
       </RecordSheetProvider>
     </ProfileProvider>
