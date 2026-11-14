@@ -5,6 +5,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
 import { AddRecordFab } from "@/components/records/add-record-fab";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
+import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
 import {
   currencyOf,
   getProfile,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/profile";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
+import { runDueRecurring } from "@/lib/recurring-check";
 import { LOGIN_PATH, ONBOARDING_PATH } from "@/lib/routes";
 
 /**
@@ -40,9 +42,14 @@ export default async function AppLayout({
 
   // Loaded once for the whole shell: the Add Record sheet opens from every
   // tab, and it needs something to put in its pickers wherever it is opened.
-  const [accounts, categories] = await Promise.all([
+  //
+  // The recurring catch-up rides along here because this layout is the one
+  // thing every signed-in page renders through, and it only does any work on
+  // the first page of a new day.
+  const [accounts, categories, created] = await Promise.all([
     getActiveAccounts(),
     getActiveCategories(),
+    runDueRecurring(),
   ]);
 
   return (
@@ -74,6 +81,7 @@ export default async function AppLayout({
 
           <BottomNav />
           <AddRecordFab />
+          <RecurringCreatedToast created={created} />
         </div>
       </RecordSheetProvider>
     </ProfileProvider>
