@@ -18,8 +18,14 @@ import { signIn } from "./sign-in";
  *
  *   npm run test:e2e -- e2e/visual.spec.ts
  *
- * Motion is switched off and the data is the seeded demo account, so two
- * runs of the same build produce the same pixels.
+ * Motion is switched off, so two runs of the same build produce the same
+ * pixels — *given the same data*. These read the shared demo account, which
+ * the other suites write to, so regenerate the baselines from a known state:
+ *
+ *   npm run db:reset && npm run test:e2e -- e2e/visual.spec.ts
+ *
+ * A diff of a few hundred pixels of height usually means the demo data has
+ * moved rather than the design.
  */
 
 const SCREENS = [
