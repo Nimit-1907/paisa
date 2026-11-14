@@ -4,9 +4,10 @@ import * as React from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import Link from "next/link";
+
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
+  ChevronRight,
   Plus,
   Receipt,
   SlidersHorizontal,
@@ -23,6 +24,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
+import { type DaySpend, MonthStar } from "@/components/records/month-star";
 import { PullToRefresh } from "@/components/records/pull-to-refresh";
 import { UpcomingStrip } from "@/components/records/upcoming-strip";
 import type {
@@ -37,7 +39,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { evaluate } from "@/lib/calculator";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
-import { useCountUp } from "@/lib/motion";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -57,6 +58,10 @@ export type RecordsScreenProps = {
   rows: TransactionRow[];
   hasMore: boolean;
   summary: { income: string; expense: string; net: string };
+  /** One row per day of the month, for the bars on the card. */
+  monthDays: DaySpend[];
+  /** `yyyy-mm`, for the link behind each bar. */
+  monthKey: string;
   accounts: AccountOption[];
   categories: CategoryOption[];
   filters: TransactionFilters;
@@ -81,6 +86,8 @@ export function RecordsScreen({
   rows,
   hasMore,
   summary,
+  monthDays,
+  monthKey,
   accounts,
   categories,
   filters,
@@ -450,7 +457,7 @@ export function RecordsScreen({
   return (
     <PullToRefresh onRefresh={refresh}>
       <div className="space-y-4">
-      <MonthSummary summary={summary} />
+      <MonthStar summary={summary} days={monthDays} today={today} />
 
       <UpcomingStrip items={upcoming} today={today} />
 
@@ -506,9 +513,21 @@ export function RecordsScreen({
         <div className="space-y-4">
           {days.map((day) => (
             <section key={day.key} aria-label={day.label}>
-              <div className="mb-1.5 flex items-baseline justify-between px-1">
-                <h2 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  {day.label}
+              <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
+                <h2 className="min-w-0">
+                  {/*
+                    The day heading is the way into a single day. It used to
+                    be the bars on the card above, which were seven pixels
+                    wide; this is the same destination with a target you can
+                    actually hit.
+                  */}
+                  <Link
+                    href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
+                    className="text-ink-2 hoverable:text-ink focus-visible:ring-ring inline-flex min-h-11 items-center gap-1 rounded text-xs font-semibold tracking-[0.08em] uppercase focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    {day.label}
+                    <ChevronRight className="size-3.5" aria-hidden="true" />
+                  </Link>
                 </h2>
                 <span
                   className={cn(
@@ -568,74 +587,6 @@ export function RecordsScreen({
       />
       </div>
     </PullToRefresh>
-  );
-}
-
-/**
- * The month, in one number.
- *
- * This screen exists to answer "what have I spent, and what is left?", and
- * three bold figures of equal weight answer it three times over — the eye has
- * nowhere to land. Net is the answer; income and expense are the working, so
- * they sit underneath at label size.
- *
- * The arrows carry the direction as well as the colour, because a red number
- * and a green one are the same number to anyone who cannot tell them apart.
- */
-function MonthSummary({
-  summary,
-}: {
-  summary: { income: string; expense: string; net: string };
-}) {
-  const formatMoney = useFormatMoney();
-  const net = BigInt(summary.net);
-
-  /*
-   * The headline number counts to its new value after a save.
-   *
-   * Not decoration: it is the one figure on the screen that a new record
-   * changes, and a silent swap while the eye is on the list that just grew
-   * leaves people checking whether it moved at all. 400ms, and instant under
-   * reduced motion.
-   */
-  const shown = useCountUp(net < 0n ? -net : net);
-
-  return (
-    <section
-      aria-label="This month"
-      className="bg-card rounded-2xl border px-4 py-3"
-    >
-      <h2 className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
-        {net < 0n ? "Overspent this month" : "Left this month"}
-      </h2>
-
-      <p
-        className={cn(
-          "amount mt-0.5 truncate text-3xl font-semibold",
-          net < 0n ? "text-expense" : "text-foreground",
-        )}
-      >
-        {formatMoney(shown, { signDisplay: "never" })}
-      </p>
-
-      <p className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
-        <span className="flex items-center gap-1">
-          <ArrowDownLeft className="text-income size-3.5" aria-hidden="true" />
-          <span className="amount text-foreground font-semibold">
-            {formatMoney(BigInt(summary.income), { signDisplay: "never" })}
-          </span>
-          in
-        </span>
-
-        <span className="flex items-center gap-1">
-          <ArrowUpRight className="text-expense size-3.5" aria-hidden="true" />
-          <span className="amount text-foreground font-semibold">
-            {formatMoney(BigInt(summary.expense), { signDisplay: "never" })}
-          </span>
-          out
-        </span>
-      </p>
-    </section>
   );
 }
 

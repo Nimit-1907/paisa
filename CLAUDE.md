@@ -14,6 +14,13 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - vaul (bottom sheet drawers), lucide-react (icons), recharts (charts)
 - react-hook-form + zod (forms & validation), date-fns (dates)
 - next-themes (light/dark/system)
+- Typography: two families via next/font, and no more.
+  Inter is the body face — every list, form and amount, with tabular figures.
+  Instrument Serif is the anchor, used in exactly three places: the figure on
+  the month card, page titles, and the landing headline. Chosen in Phase 12
+  against Space Grotesk and against no anchor at all; see
+  docs/visual-identity.md. `font-sans` and `font-display` are the only two
+  font utilities any component should use.
 - @serwist/next (PWA service worker), sonner (toasts)
 - @react-pdf/renderer (PDF export)
 
@@ -51,3 +58,10 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - Skeleton loaders, empty states with a clear call-to-action, and swipe-friendly lists.
 - Accessible: semantic HTML, aria-labels on icon buttons, visible focus, AA contrast in both themes.
 - Default currency ₹ (INR), user-changeable.
+- Colour comes from tokens, never from a literal. Accounts and categories
+  pick from the sixteen curated swatches in `src/lib/colors.ts`; the icon on
+  a coloured circle takes its colour from that circle's luminance
+  (`ColorDot`). Text uses the three emphasis steps — `text-ink`, `text-ink-2`,
+  `text-ink-3` — all of which clear AA in both themes.
+- Radii come from the family: `rounded-card` (20px) for cards,
+  `rounded-control` (12px) for controls, `rounded-full` for chips.

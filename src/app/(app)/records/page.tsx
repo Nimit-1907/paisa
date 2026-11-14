@@ -13,6 +13,7 @@ import {
   getRecurringRules,
 } from "@/lib/queries/recurring";
 import {
+  getMonthDays,
   getMonthSummary,
   getMonthTransactions,
 } from "@/lib/queries/transactions";
@@ -117,7 +118,7 @@ export default async function RecordsPage({
     ),
   );
 
-  const [page, summary, accounts, categories, rules, created] =
+  const [page, summary, monthDays, accounts, categories, rules, created] =
     await Promise.all([
       getMonthTransactions({
         year: month.year,
@@ -127,6 +128,8 @@ export default async function RecordsPage({
         filters,
       }),
       getMonthSummary(month.year, month.month),
+      // The shape of the month, for the bars on the card.
+      getMonthDays(month.year, month.month),
       getActiveAccounts(),
       getActiveCategories(),
       rulesPromise,
@@ -160,6 +163,8 @@ export default async function RecordsPage({
           expense: summary.expense.toString(),
           net: summary.net.toString(),
         }}
+        monthDays={monthDays}
+        monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
         filters={filters}

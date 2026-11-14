@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MoneyParseError,
   formatMoney,
+  friendlyAmount,
   fromDb,
   fromMinor,
   toDb,
@@ -210,5 +211,47 @@ describe("formatMoney", () => {
     expect(formatMoney(1234567n, { decimals: 3, symbol: "$" })).toBe(
       "$1,234.567",
     );
+  });
+});
+
+describe("whole", () => {
+  it("drops the paise for a hero figure", () => {
+    expect(formatMoney(4998100n, { whole: true })).toBe("₹49,981");
+    expect(formatMoney(4998199n, { whole: true })).toBe("₹49,981");
+  });
+
+  it("rounds towards zero, both ways", () => {
+    expect(formatMoney(-4998199n, { whole: true })).toBe("-₹49,981");
+  });
+
+  it("leaves the paise alone by default", () => {
+    expect(formatMoney(4998100n)).toBe("₹49,981.00");
+  });
+
+  it("is a no-op for a currency with no minor unit", () => {
+    expect(formatMoney(4998n, { decimals: 0, whole: true })).toBe("₹4,998");
+  });
+});
+
+describe("friendlyAmount", () => {
+  it("rounds up to a number somebody would choose", () => {
+    expect(friendlyAmount(784_200n, 2)).toBe(800_000n);
+    expect(friendlyAmount(1_234_500n, 2)).toBe(1_300_000n);
+    expect(friendlyAmount(25_000_000n, 2)).toBe(25_000_000n);
+  });
+
+  it("never suggests less than was spent", () => {
+    for (const spent of [1n, 99n, 50_001n, 999_999n, 10_000_100n]) {
+      expect(friendlyAmount(spent, 2)).toBeGreaterThanOrEqual(spent);
+    }
+  });
+
+  it("is zero for nothing", () => {
+    expect(friendlyAmount(0n, 2)).toBe(0n);
+    expect(friendlyAmount(-500n, 2)).toBe(0n);
+  });
+
+  it("works for a currency with no minor unit", () => {
+    expect(friendlyAmount(7_842n, 0)).toBe(8_000n);
   });
 });

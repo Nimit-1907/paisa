@@ -32,6 +32,15 @@ export type FormatMoneyOptions = {
    * - `never`: magnitude only (the UI colours the sign instead)
    */
   signDisplay?: "auto" | "always" | "never";
+  /**
+   * Drop the paise, rounding down.
+   *
+   * For the one figure a screen is built around, where ".00" is four
+   * characters of noise under a 44px number and the exact paise are in the
+   * list underneath anyway. Never for a figure somebody might add up: this
+   * rounds towards zero, so a column of these would not sum to the total.
+   */
+  whole?: boolean;
 };
 
 /** A user's currency, as stored on their profile. */
@@ -245,6 +254,7 @@ export function formatMoney(
     decimals = DEFAULT_DECIMALS,
     grouping = INDIAN_GROUPING_SYMBOLS.has(symbol) ? "indian" : "western",
     signDisplay = "auto",
+    whole: wholeOnly = false,
   } = options;
 
   assertDecimals(decimals);
@@ -253,9 +263,10 @@ export function formatMoney(
   const plain = fromMinor(negative ? -minor : minor, decimals);
   const [whole, frac] = plain.split(".");
 
-  const body = frac
-    ? `${groupDigits(whole, grouping)}.${frac}`
-    : groupDigits(whole, grouping);
+  const body =
+    frac && !wholeOnly
+      ? `${groupDigits(whole, grouping)}.${frac}`
+      : groupDigits(whole, grouping);
 
   let sign = "";
   if (signDisplay === "always") {
@@ -377,4 +388,29 @@ export function toDb(minor: bigint): number {
   }
 
   return value;
+}
+
+/**
+ * The nearest number somebody would actually choose.
+ *
+ * A budget suggested as ₹7,842 looks like arithmetic; ₹8,000 looks like a
+ * decision. Rounds up — a limit set below what was spent last month is a
+ * limit that is already broken — to the nearest 500 under ₹10,000, the
+ * nearest 1,000 under ₹1,00,000, and the nearest 5,000 above that.
+ */
+export function friendlyAmount(minor: bigint, decimals: number): bigint {
+  if (minor <= 0n) return 0n;
+
+  const unit = 10n ** BigInt(decimals);
+
+  // Rounded up, not truncated: a spend of one paisa divides to zero whole
+  // rupees, and a suggestion of ₹0 is below what was already spent — which
+  // is the one thing this must never produce.
+  const whole = (minor + unit - 1n) / unit;
+
+  const step =
+    whole < 10_000n ? 500n : whole < 100_000n ? 1_000n : 5_000n;
+
+  const rounded = ((whole + step - 1n) / step) * step;
+  return rounded * unit;
 }

@@ -18,7 +18,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main"
-      className="bg-background/85 supports-[backdrop-filter]:bg-background/70 fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-lg lg:hidden"
+      className="glass fixed inset-x-0 bottom-0 z-40 border-t lg:hidden"
     >
       <ul className="px-safe pb-safe mx-auto grid max-w-lg grid-cols-5">
         {NAV_ITEMS.map((item) => {

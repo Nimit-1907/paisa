@@ -80,7 +80,7 @@ export default function LandingPage() {
       */}
       <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
+          <h1 className="font-display text-ink text-[2.5rem] leading-[1.05] text-balance sm:text-[3.5rem]">
             Know where the month went.
           </h1>
 

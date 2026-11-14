@@ -235,3 +235,35 @@ export async function getTransaction(
 
   return toRow(data as unknown as JoinedRow);
 }
+
+/**
+ * What went out on each day of a month, including the days nothing did.
+ *
+ * Feeds the bars on the month card. `period_series` generates a row per
+ * bucket in the range, so a quiet Sunday comes back as a zero rather than as
+ * a gap — which is what lets the card draw a calendar rather than a list of
+ * the days that happened to have something on them.
+ */
+export async function getMonthDays(
+  year: number,
+  month: number,
+): Promise<{ on: string; expense: string }[]> {
+  const supabase = await createClient();
+
+  const from = `${year}-${String(month).padStart(2, "0")}-01`;
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const to = `${year}-${String(month).padStart(2, "0")}-${String(last).padStart(2, "0")}`;
+
+  const { data, error } = await supabase.rpc("period_series", {
+    p_from: from,
+    p_to: to,
+    p_bucket: "day",
+  });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => ({
+    on: row.bucket_start,
+    expense: fromDb(row.expense).toString(),
+  }));
+}

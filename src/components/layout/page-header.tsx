@@ -33,7 +33,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "bg-background/85 supports-[backdrop-filter]:bg-background/70 sticky top-0 z-30 -mx-4 mb-4 border-b px-4 backdrop-blur-lg lg:-mx-6 lg:px-6",
+        "glass sticky top-0 z-30 -mx-4 mb-4 border-b px-4 lg:-mx-6 lg:px-6",
         className,
       )}
     >

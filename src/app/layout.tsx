@@ -1,20 +1,14 @@
 import type { Metadata, Viewport } from "next";
 
-import { Inter } from "next/font/google";
 
 import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
+import { body, instrumentSerif } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE, siteOrigin } from "@/lib/site";
 import { SPLASHES, splashHref, splashMedia } from "@/lib/splash";
 
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   // Absolute URLs for the canonical links, the sitemap and the OG card are
@@ -68,7 +62,11 @@ export default function RootLayout({
   return (
     // The font variable lives on <html> so the `font-sans` utility (applied
     // to html in globals.css) can resolve it.
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${body.variable} ${instrumentSerif.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/*
           Written here rather than left to `metadata.manifest`, which Next
