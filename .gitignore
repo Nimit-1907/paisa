@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env files: keep the template committed
+!.env.example
+
+# serwist / generated service worker
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js
+
+# playwright / browser automation scratch output
+/.playwright-mcp
