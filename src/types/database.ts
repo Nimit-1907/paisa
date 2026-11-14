@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          operationName?: string
           extensions?: Json
           query?: string
           variables?: Json
+          operationName?: string
         }
         Returns: Json
       }
@@ -171,6 +171,7 @@ export type Database = {
           decimal_places: number
           display_name: string | null
           id: string
+          last_recurring_check: string | null
           theme: string
           timezone: string
           updated_at: string
@@ -183,6 +184,7 @@ export type Database = {
           decimal_places?: number
           display_name?: string | null
           id: string
+          last_recurring_check?: string | null
           theme?: string
           timezone?: string
           updated_at?: string
@@ -195,6 +197,7 @@ export type Database = {
           decimal_places?: number
           display_name?: string | null
           id?: string
+          last_recurring_check?: string | null
           theme?: string
           timezone?: string
           updated_at?: string
@@ -207,14 +210,17 @@ export type Database = {
           account_id: string
           active: boolean
           amount: number
+          anchor_day: number | null
           category_id: string | null
           created_at: string
           end_date: string | null
           frequency: Database["public"]["Enums"]["recurrence_frequency"]
           id: string
           interval_count: number
+          last_run_on: string | null
           next_run_on: string
           note: string | null
+          skipped_dates: string[]
           start_date: string
           to_account_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
@@ -225,14 +231,17 @@ export type Database = {
           account_id: string
           active?: boolean
           amount: number
+          anchor_day?: number | null
           category_id?: string | null
           created_at?: string
           end_date?: string | null
           frequency: Database["public"]["Enums"]["recurrence_frequency"]
           id?: string
           interval_count?: number
+          last_run_on?: string | null
           next_run_on: string
           note?: string | null
+          skipped_dates?: string[]
           start_date?: string
           to_account_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
@@ -243,14 +252,17 @@ export type Database = {
           account_id?: string
           active?: boolean
           amount?: number
+          anchor_day?: number | null
           category_id?: string | null
           created_at?: string
           end_date?: string | null
           frequency?: Database["public"]["Enums"]["recurrence_frequency"]
           id?: string
           interval_count?: number
+          last_run_on?: string | null
           next_run_on?: string
           note?: string | null
+          skipped_dates?: string[]
           start_date?: string
           to_account_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
@@ -399,6 +411,13 @@ export type Database = {
             foreignKeyName: "transactions_recurring_rule_id_fkey"
             columns: ["recurring_rule_id"]
             isOneToOne: false
+            referencedRelation: "recurring_rule_usage"
+            referencedColumns: ["rule_id"]
+          },
+          {
+            foreignKeyName: "transactions_recurring_rule_id_fkey"
+            columns: ["recurring_rule_id"]
+            isOneToOne: false
             referencedRelation: "recurring_rules"
             referencedColumns: ["id"]
           },
@@ -489,6 +508,24 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_rule_usage: {
+        Row: {
+          rule_id: string | null
+          transaction_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          rule_id?: string | null
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Update: {
+          rule_id?: string | null
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       account_month_flow: {
@@ -499,52 +536,74 @@ export type Database = {
         }[]
       }
       check_account_owner: {
-        Args: { p_account_id: string; p_user_id: string }
+        Args: { p_user_id: string; p_account_id: string }
         Returns: undefined
       }
       check_category_owner: {
         Args: {
           p_user_id: string
-          p_expected_kind?: Database["public"]["Enums"]["category_kind"]
           p_category_id: string
+          p_expected_kind?: Database["public"]["Enums"]["category_kind"]
         }
         Returns: undefined
       }
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          icon: string
           color: string
-          sort_order: number
           name: string
           kind: Database["public"]["Enums"]["category_kind"]
+          icon: string
+          sort_order: number
         }[]
+      }
+      delete_recurring_rule: {
+        Args: { p_rule_id: string; p_delete_transactions?: boolean }
+        Returns: number
+      }
+      materialise_recurring: {
+        Args: { p_rule_id: string; p_on: string }
+        Returns: string
       }
       month_summary: {
         Args: { p_month: string }
         Returns: {
-          categories: Json
           month_start: string
           total_income: number
           total_expense: number
           net: number
+          categories: Json
         }[]
       }
       process_due_recurring: {
         Args: Record<PropertyKey, never>
-        Returns: {
-          created_count: number
-          rule_id: string
-          next_run_on: string
-        }[]
+        Returns: number
       }
-      recurrence_occurrence: {
+      recurrence_after: {
         Args: {
-          p_interval: number
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          p_n: number
+          p_interval: number
+          p_anchor_day: number
+          p_from: string
         }
+        Returns: string
+      }
+      recurrence_occurrence: {
+        Args:
+          | {
+              p_start: string
+              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_interval: number
+              p_n: number
+            }
+          | {
+              p_start: string
+              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_interval: number
+              p_n: number
+              p_anchor_day: number
+            }
         Returns: string
       }
       reorder_accounts: {
@@ -554,6 +613,10 @@ export type Database = {
       reorder_categories: {
         Args: { p_ids: string[] }
         Returns: number
+      }
+      skip_recurring_occurrence: {
+        Args: { p_rule_id: string; p_on: string }
+        Returns: string
       }
       user_timezone: {
         Args: Record<PropertyKey, never>

@@ -318,8 +318,7 @@ where c.user_id = 'cccccccc-0000-4000-8000-000000000001'
   and c.kind = 'expense' and c.name = 'Food';
 
 select is(
-  (select created_count from public.process_due_recurring()
-    where created_count is not null limit 1),
+  public.process_due_recurring(),
   3,
   'a weekly rule that ended last week creates exactly its three occurrences'
 );
@@ -345,9 +344,7 @@ where c.user_id = 'cccccccc-0000-4000-8000-000000000001'
   and c.kind = 'expense' and c.name = 'Rent';
 
 select is(
-  (select created_count from public.process_due_recurring()
-    where rule_id = (select id from public.recurring_rules
-                      where note = 'Month-end rent')),
+  public.process_due_recurring(),
   3,
   'a month-end rule runs until its end date and no further'
 );
