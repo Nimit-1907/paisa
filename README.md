@@ -84,7 +84,7 @@ supabase stop --project-id <other-project>
 | --- | --- |
 | `npm run dev` | Next dev server |
 | `npm run build` / `npm start` | Production build / serve (also builds the service worker) |
-| `npm test` | Vitest (money, dates, recurrence, the keypad calculator, routes, icons) |
+| `npm test` | Vitest (money, dates, recurrence, periods, the keypad calculator, routes, icons) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -113,6 +113,7 @@ src/
     categories/       categories screen + the add/edit sheet
     layout/           app shell: bottom nav, sidebar, sticky page header
     onboarding/       the three-step flow
+    analysis/         the period selector and the three charts
     budgets/          the month card, the rows, the budget sheet
     records/          the month list, the record sheet, the keypad,
                       the filter sheet, the upcoming strip, the FAB
@@ -131,6 +132,7 @@ src/
     money.ts          minor-unit parsing/formatting (+ money.test.ts)
     month-param.ts    reads ?m= and the filters off a URL
     nav.ts            the five tabs, in one place
+    period.ts         week/month/year/range maths (+ tests)
     profile.ts        cached getProfile() for Server Components
     recurrence.ts     the schedule calendar, mirroring SQL (+ tests)
     recurring-check.ts  runs the catch-up once a day
@@ -143,7 +145,7 @@ src/
 supabase/
   migrations/         SQL migrations (never change the DB by hand)
   seed.sql            demo user + ~3 months of sample records
-  tests/              pgTAP: rls, schema, recurring and budgets
+  tests/              pgTAP: rls, schema, recurring, budgets, analysis
 scripts/
   generate-icons.py   regenerates the PWA icon set
 ```
@@ -404,6 +406,50 @@ database (`set_budget`, `copy_budgets_from_previous_month`): a run of months
 half-written is worse than one not written at all. `budgets.test.sql` covers
 the stopping rule, the horizon, and pressing copy twice.
 
+## Analysis
+
+A period, a side of the ledger, and three charts drawn from the same rows
+Records lists.
+
+**The period** is Week, Month, Year or a range of your own, with arrows to walk
+through them, and it lives in the URL (`?p=month&d=2026-11-01`) so a view can
+be shared and the back button steps through what was actually looked at.
+`src/lib/period.ts` owns the arithmetic — where a week starts given the
+profile's `week_start`, what "the month before" means, how far a custom range
+steps — and it is tested, because a period that is wrong by one day is wrong
+quietly for months.
+
+**Grouped in the database.** `category_totals`, `period_series` and
+`balance_series` each answer one question with one query. Pulling the rows back
+to add them up in JavaScript would mean a year of records crossing the wire to
+produce twelve numbers, and the arithmetic would then exist twice.
+
+All three evaluate in the profile's timezone, like `month_summary` does, which
+is what keeps the charts and the record list agreeing: `analysis.test.sql`
+checks the totals against `month_summary` and the closing balance against
+`account_balances` rather than against numbers typed into the test.
+
+**The charts.** A donut by category with the total in the hole and a legend
+underneath — at 360px a pie with labels around it is unreadable, and every
+legend row links into Records filtered to that category over the same dates.
+Income against expense as side-by-side bars, daily for a week or a month and
+monthly for a year, since stacking them would make "did I earn more than I
+spent" a subtraction the reader has to do. And the running balance as an area,
+for every account in your total or one you pick, with a y-axis that is *not*
+forced to zero — a balance moving between ₹30,000 and ₹34,000 against a zero
+baseline is a flat line, which is the opposite of the information wanted.
+
+**At 360px.** Axis values are abbreviated the way the user already reads them
+— `formatCompact` gives ₹1.2K, ₹3.4L, ₹1.1Cr for ₹ and K/M/B otherwise — and
+the x-axis thins its own labels, because a 31-day month leaves about 11px per
+bar. Tooltips trigger on tap rather than hover on a touchscreen, where a hover
+tooltip appears under the thumb covering it and then will not go away.
+
+**Colours are CSS variables**, not hex strings: an SVG `fill` of
+`var(--income)` resolves against the element's own computed style, so the
+charts follow light and dark with no theme hook and no re-render. Category
+slices keep their own colour, the one their icon uses everywhere else.
+
 ## The database
 
 Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
@@ -448,26 +494,31 @@ Read models and RPCs:
   rule with or without the records it created, each in a single statement.
 - `set_budget()` / `copy_budgets_from_previous_month()` — the two budget
   writes that span more than one month; see **Budgets** above.
+- `category_totals()` / `period_series()` / `balance_series()` — the three
+  groupings behind the charts; see **Analysis** above.
 
-`npm run db:test` runs four pgTAP files: `rls.test.sql` puts two real
+`npm run db:test` runs five pgTAP files: `rls.test.sql` puts two real
 `authenticated` sessions side by side and checks that neither can read, write
 or delete the other's rows, `schema.test.sql` covers the constraints above,
-`recurring.test.sql` covers the schedule arithmetic and the generator, and
-`budgets.test.sql` covers carrying a budget forward and copying a month.
+`recurring.test.sql` covers the schedule arithmetic and the generator,
+`budgets.test.sql` covers carrying a budget forward and copying a month, and
+`analysis.test.sql` checks the chart RPCs against the totals the rest of the
+app already shows.
 
 After any migration, regenerate the types — `npm run db:types` — and never
 edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phases 1–7 are done: the app shell, the database, auth with onboarding,
-managing accounts and categories, the records screen, recurring transactions
-and monthly budgets. A new account can sign up, confirm by email, pick a
+Phases 1–8 are done: the app shell, the database, auth with onboarding,
+managing accounts and categories, the records screen, recurring transactions,
+monthly budgets and the analysis charts. A new account can sign up, confirm by email, pick a
 currency, set an opening balance and land on Records; accounts and categories
 can be created, edited, reordered, archived and deleted; records can be added
 from any tab, edited, deleted with undo, searched and filtered; anything that
 repeats manages itself, catching up whatever was missed and never creating the
 same occurrence twice; and each expense category can carry a monthly limit
-that knows what is still scheduled against it.
+that knows what is still scheduled against it; and Analysis draws the period
+— by category, day by day, and the balance over time.
 
-Next: analysis — the charts and the per-category breakdown.
+Next: settings and export — the PDF statement.
