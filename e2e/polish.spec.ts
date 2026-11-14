@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+import { signIn } from "./sign-in";
+
 /**
  * The polish pass, as a test rather than a checklist.
  *
@@ -13,11 +15,8 @@ import { expect, test, type Page } from "@playwright/test";
  * an empty screen passes everything and proves nothing.
  */
 
-const DEMO_EMAIL = process.env.E2E_DEMO_EMAIL ?? "demo@example.com";
-const DEMO_PASSWORD = process.env.E2E_DEMO_PASSWORD ?? "password123";
-
 /** The widths CLAUDE.md names, plus the two the layout changes at. */
-const WIDTHS = [360, 390, 430, 768, 1280];
+const WIDTHS = [320, 360, 390, 430, 768, 1280];
 
 const SCREENS = [
   { path: "/records", ready: "Records" },
@@ -31,21 +30,6 @@ const SCREENS = [
   { path: "/export", ready: "Export" },
   { path: "/about", ready: "About" },
 ];
-
-async function signIn(page: Page) {
-  await page.goto("/login");
-  await page.waitForFunction(() => {
-    const node = document.querySelector("button");
-    return node
-      ? Object.keys(node).some((key) => key.startsWith("__reactFiber$"))
-      : false;
-  });
-
-  await page.getByLabel("Email").fill(DEMO_EMAIL);
-  await page.getByLabel("Password", { exact: true }).fill(DEMO_PASSWORD);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await page.waitForURL(/\/records/, { timeout: 60_000 });
-}
 
 /** Everything a thumb is meant to hit, and how big it actually is. */
 async function smallTargets(page: Page) {
@@ -96,7 +80,7 @@ test.describe("polish", () => {
         ).toBeVisible();
 
         const results = await new AxeBuilder({ page })
-          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
           .analyze();
 
         const violations = results.violations.map((violation) => ({
