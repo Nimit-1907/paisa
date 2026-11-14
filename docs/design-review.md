@@ -157,10 +157,13 @@ the structured data cannot drift apart.
 - A signed-in visitor hitting `/` is redirected to `/records` in middleware,
   which keeps the page static. The other three stay readable either way —
   somebody logged in who taps "Privacy" wants the privacy page.
-- The toast host and the service-worker listener moved out of the root layout
-  into the signed-in, auth and onboarding shells. First Load JS for `/` did not
-  change (104kB is Next's own runtime), but the public pages no longer mount a
-  toast library and a service-worker listener they have nothing to say through.
+- The toast host and the service-worker listener were moved out of the root
+  layout and then moved back. First Load JS for `/` was 109kB either way —
+  104kB of that is Next's own runtime, and sonner was already split out of the
+  landing page's chunk — so the move bought nothing measurable and left four
+  shells to remember instead of one. The only client component the public
+  pages mount is the theme provider, which has to be at the root to set the
+  class on `<html>` before the first paint.
 
 **Measured** (Lighthouse 11.7.1, mobile preset, production build, on a
 developer laptop — so these are noisy; `/` is the median of three runs and the
