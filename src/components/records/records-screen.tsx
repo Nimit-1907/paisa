@@ -351,12 +351,7 @@ export function RecordsScreen({
           {more ? "+" : ""}
         </p>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 px-3"
-          asChild
-        >
+        <Button variant="ghost" size="touch" className="px-3" asChild>
           <Link href="/recurring">
             <Repeat className="size-4" aria-hidden="true" />
             Recurring
@@ -365,8 +360,8 @@ export function RecordsScreen({
 
         <Button
           variant={activeFilterCount > 0 ? "default" : "ghost"}
-          size="sm"
-          className="h-9 px-3"
+          size="touch"
+          className="px-3"
           onClick={() => setFiltersOpen(true)}
         >
           <SlidersHorizontal className="size-4" aria-hidden="true" />

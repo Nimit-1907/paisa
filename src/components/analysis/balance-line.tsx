@@ -98,7 +98,7 @@ export function BalanceLine({
       actions={
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 shrink-0 px-2.5">
+            <Button variant="outline" size="touch" className="min-w-11 shrink-0 px-2.5">
               {selected ? selected.name : "All"}
             </Button>
           </DropdownMenuTrigger>

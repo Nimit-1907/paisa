@@ -138,8 +138,8 @@ export function UpcomingStrip({
 
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="h-11 shrink-0 px-3"
+                  size="touch"
+                  className="shrink-0 px-3"
                   disabled={paying !== null}
                   onClick={() => void pay(item)}
                 >

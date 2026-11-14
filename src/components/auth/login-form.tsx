@@ -47,7 +47,15 @@ export function LoginForm({ next }: { next?: string }) {
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form
+      // Before React hydrates, a submit falls back to the browser, which
+      // defaults to GET — and a GET puts the password in the URL, where it
+      // lands in history and in the server log.
+      method="post"
+      onSubmit={onSubmit}
+      className="space-y-4"
+      noValidate
+    >
       <FormRow id="email" label="Email" error={errors.email?.message}>
         {(field) => (
           <Input

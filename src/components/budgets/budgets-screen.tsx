@@ -351,8 +351,8 @@ function Unbudgeted({
 
             <Button
               variant="ghost"
-              size="sm"
-              className="h-11 shrink-0 px-3"
+              size="touch"
+              className="shrink-0 px-3"
               onClick={() => onSet(line.categoryId)}
             >
               Set budget

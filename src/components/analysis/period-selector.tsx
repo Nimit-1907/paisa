@@ -154,7 +154,7 @@ export function PeriodSelector({
         <button
           type="button"
           onClick={() => setRangeOpen(true)}
-          className="focus-visible:ring-ring min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-center text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring min-h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-center text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
         >
           {periodLabel(period)}
         </button>

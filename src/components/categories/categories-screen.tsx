@@ -132,8 +132,8 @@ export function CategoriesScreen({
 
             <Button
               variant={reordering ? "default" : "ghost"}
-              size="sm"
-              className="h-9 px-3"
+              size="touch"
+              className="px-3"
               onClick={() => setReordering((on) => !on)}
             >
               {reordering ? (

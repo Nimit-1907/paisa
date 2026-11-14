@@ -37,8 +37,13 @@ export function AccountSelect({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <div id={id} className="flex flex-wrap gap-1.5">
+      <Label id={`${id}-label`}>{label}</Label>
+      <div
+        id={id}
+        role="group"
+        aria-labelledby={`${id}-label`}
+        className="flex flex-wrap gap-1.5"
+      >
         {accounts.map((account) => {
           const active = account.id === value;
           return (
@@ -87,8 +92,11 @@ export function CategoryGrid({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label>Category</Label>
-      <ul className="grid grid-cols-4 gap-1.5 sm:grid-cols-5">
+      <Label id="category-grid-label">Category</Label>
+      <ul
+        aria-labelledby="category-grid-label"
+        className="grid grid-cols-4 gap-1.5 sm:grid-cols-5"
+      >
         {categories.map((category) => {
           const active = category.id === value;
           return (
