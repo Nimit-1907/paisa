@@ -34,6 +34,36 @@ export type FormatMoneyOptions = {
   signDisplay?: "auto" | "always" | "never";
 };
 
+/** A user's currency, as stored on their profile. */
+export type CurrencySettings = {
+  code: string;
+  symbol: string;
+  decimals: number;
+};
+
+/** The app default, used before a profile exists (CLAUDE.md: ₹ INR). */
+export const DEFAULT_CURRENCY_SETTINGS: CurrencySettings = {
+  code: "INR",
+  symbol: DEFAULT_CURRENCY_SYMBOL,
+  decimals: DEFAULT_DECIMALS,
+};
+
+/**
+ * {@link formatMoney} bound to a user's currency — the form every screen
+ * should use, so an amount is never rendered with somebody else's symbol.
+ */
+export function formatWith(
+  settings: CurrencySettings,
+  minor: bigint,
+  options: Omit<FormatMoneyOptions, "symbol" | "decimals"> = {},
+): string {
+  return formatMoney(minor, {
+    ...options,
+    symbol: settings.symbol,
+    decimals: settings.decimals,
+  });
+}
+
 /** Thrown by {@link toMinor} when a string is not a usable amount. */
 export class MoneyParseError extends Error {
   constructor(input: string) {
@@ -268,4 +298,21 @@ export function fromDb(value: number | string | bigint | null): bigint {
   }
 
   return BigInt(value.trim());
+}
+
+/**
+ * The counterpart to {@link fromDb}: minor units on their way into a BIGINT
+ * column. supabase-js serialises to JSON, which cannot carry a BigInt, so the
+ * value has to be a number — and has to still be exact when it gets there.
+ *
+ * @throws {MoneyParseError} when the amount is too large to survive JSON.
+ */
+export function toDb(minor: bigint): number {
+  const value = Number(minor);
+
+  if (!Number.isSafeInteger(value)) {
+    throw new MoneyParseError(minor.toString());
+  }
+
+  return value;
 }

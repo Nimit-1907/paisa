@@ -5,6 +5,7 @@ import {
   formatMoney,
   fromDb,
   fromMinor,
+  toDb,
   toMinor,
   tryToMinor,
   usesIndianGrouping,
@@ -122,6 +123,18 @@ describe("fromDb", () => {
     expect(() => fromDb(1.5)).toThrow(MoneyParseError);
     expect(() => fromDb(Number.MAX_SAFE_INTEGER + 2)).toThrow(MoneyParseError);
     expect(() => fromDb("12.5")).toThrow(MoneyParseError);
+  });
+});
+
+describe("toDb", () => {
+  it("hands back a number JSON can carry", () => {
+    expect(toDb(12345678n)).toBe(12345678);
+    expect(toDb(-50000n)).toBe(-50000);
+    expect(toDb(0n)).toBe(0);
+  });
+
+  it("refuses an amount that JSON would round", () => {
+    expect(() => toDb(9007199254740993n)).toThrow(MoneyParseError);
   });
 });
 

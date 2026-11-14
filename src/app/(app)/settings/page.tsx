@@ -2,27 +2,43 @@ import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { DEFAULT_CURRENCY_SYMBOL, formatMoney } from "@/lib/money";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { findCurrency } from "@/lib/currencies";
+import { formatWith } from "@/lib/money";
+import { currencyOf, getProfile, getSessionUser } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const [profile, user] = await Promise.all([getProfile(), getSessionUser()]);
+  const currency = currencyOf(profile);
+  const currencyName = findCurrency(currency.code)?.name ?? currency.code;
+
   return (
     <>
-      <PageHeader title="Settings" description="Currency, theme and data" />
+      <PageHeader title="Settings" description="Currency, theme and account" />
 
       <dl className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+        <div className="flex min-h-[60px] items-center justify-between gap-3 px-4 py-3">
+          <div className="min-w-0">
+            <dt className="text-sm font-medium">Signed in as</dt>
+            <dd className="text-muted-foreground truncate text-xs">
+              {profile?.display_name
+                ? `${profile.display_name} · ${user?.email}`
+                : user?.email}
+            </dd>
+          </div>
+        </div>
+
         <div className="flex min-h-[60px] items-center justify-between gap-3 px-4 py-3">
           <div>
             <dt className="text-sm font-medium">Currency</dt>
             <dd className="text-muted-foreground text-xs">
-              Indian Rupee · {formatMoney(123456n, {
-                symbol: DEFAULT_CURRENCY_SYMBOL,
-              })}
+              {currencyName} · {formatWith(currency, 123456n)}
             </dd>
           </div>
           <span className="amount text-lg font-semibold">
-            {DEFAULT_CURRENCY_SYMBOL}
+            {currency.symbol}
           </span>
         </div>
 
@@ -48,6 +64,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </dl>
+
+      <SignOutButton className="mt-4 w-full" />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Scale } from "lucide-react";
 
-import { formatMoney } from "@/lib/money";
+import { formatWith } from "@/lib/money";
+import { currencyOf, getProfile } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 
 const TILES = [
@@ -30,7 +31,9 @@ const TILES = [
  * Phase 2 feeds it real totals from Supabase; the zeros keep the shell honest
  * until then.
  */
-export function MonthSummary() {
+export async function MonthSummary() {
+  const currency = currencyOf(await getProfile());
+
   return (
     <section aria-label="This month" className="grid grid-cols-3 gap-2">
       {TILES.map(({ label, minor, icon: Icon, tone }) => (
@@ -49,7 +52,7 @@ export function MonthSummary() {
             </p>
           </div>
           <p className="amount mt-2 truncate text-base font-semibold sm:text-lg">
-            {formatMoney(minor)}
+            {formatWith(currency, minor)}
           </p>
         </div>
       ))}

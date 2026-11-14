@@ -17,8 +17,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useFormatMoney } from "@/components/profile-provider";
 import { useIsDesktop } from "@/hooks/use-media-query";
-import { DEFAULT_CURRENCY_SYMBOL, formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const RECORD_TYPES = [
@@ -41,6 +41,7 @@ type AddRecordSheetProps = {
  */
 export function AddRecordSheet({ open, onOpenChange }: AddRecordSheetProps) {
   const isDesktop = useIsDesktop();
+  const formatMoney = useFormatMoney();
   const [type, setType] = React.useState<RecordType>("expense");
 
   const body = (
@@ -77,7 +78,7 @@ export function AddRecordSheet({ open, onOpenChange }: AddRecordSheetProps) {
           Amount
         </p>
         <p className="amount mt-1 text-3xl font-semibold">
-          {formatMoney(0n, { symbol: DEFAULT_CURRENCY_SYMBOL })}
+          {formatMoney(0n)}
         </p>
       </div>
 

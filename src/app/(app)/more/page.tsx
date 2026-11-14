@@ -4,16 +4,34 @@ import Link from "next/link";
 
 import { ChevronRight } from "lucide-react";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MORE_ITEMS } from "@/lib/nav";
+import { getProfile, getSessionUser } from "@/lib/profile";
 
 export const metadata: Metadata = { title: "More" };
 
-export default function MorePage() {
+export default async function MorePage() {
+  const [profile, user] = await Promise.all([getProfile(), getSessionUser()]);
+
   return (
     <>
       <PageHeader title="More" />
+
+      <div className="bg-card mb-4 flex items-center gap-3 rounded-xl border px-4 py-3">
+        <span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+          {(profile?.display_name ?? user?.email ?? "?").slice(0, 1).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">
+            {profile?.display_name ?? "Your account"}
+          </p>
+          <p className="text-muted-foreground truncate text-xs">
+            {user?.email}
+          </p>
+        </div>
+      </div>
 
       <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
         {MORE_ITEMS.map((item) => {
@@ -55,9 +73,7 @@ export default function MorePage() {
         <ThemeToggle />
       </div>
 
-      <p className="text-muted-foreground mt-6 text-center text-xs">
-        Paisa · Phase 1 shell
-      </p>
+      <SignOutButton className="mt-4 w-full" />
     </>
   );
 }
