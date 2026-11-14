@@ -155,3 +155,15 @@ export const transactionFiltersSchema = z.object({
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
+
+/** The URL parameters the filter sheet owns, for clearing them in one go. */
+export const FILTER_PARAM_KEYS = [
+  "q",
+  "type",
+  "account",
+  "category",
+  "min",
+  "max",
+  "from",
+  "to",
+] as const;

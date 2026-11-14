@@ -1,4 +1,9 @@
 import { currentMonth } from "@/lib/dates";
+import { type CurrencySettings } from "@/lib/money";
+import { currencyOf, getProfile } from "@/lib/profile";
+
+/** Where a profile has no timezone of its own (CLAUDE.md: India first). */
+export const DEFAULT_TIME_ZONE = "Asia/Kolkata";
 
 export type SelectedMonth = {
   year: number;
@@ -63,5 +68,27 @@ export function parseFilters(params: Record<string, string | undefined>) {
     maxAmount: params.max?.trim() || undefined,
     from: /^\d{4}-\d{2}-\d{2}$/.test(params.from ?? "") ? params.from : undefined,
     to: /^\d{4}-\d{2}-\d{2}$/.test(params.to ?? "") ? params.to : undefined,
+  };
+}
+
+/**
+ * Everything a month-scoped page needs: which month is selected, the
+ * timezone that decides where it starts, and the currency to render in.
+ *
+ * Records, Analysis and Budgets had grown their own copy of this, each with
+ * its own hard-coded fallback timezone.
+ */
+export async function getMonthContext(m: string | undefined): Promise<{
+  month: SelectedMonth;
+  timeZone: string;
+  currency: CurrencySettings;
+}> {
+  const profile = await getProfile();
+  const timeZone = profile?.timezone ?? DEFAULT_TIME_ZONE;
+
+  return {
+    month: selectedMonth(m, timeZone),
+    timeZone,
+    currency: currencyOf(profile),
   };
 }

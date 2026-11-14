@@ -4,13 +4,21 @@ import { ChartPie } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
+import { getMonthContext } from "@/lib/month-param";
 
 export const metadata: Metadata = { title: "Analysis" };
 
-export default function AnalysisPage() {
+export default async function AnalysisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ m?: string }>;
+}) {
+  const { m } = await searchParams;
+  const { month } = await getMonthContext(m);
+
   return (
     <>
-      <PageHeader title="Analysis" month />
+      <PageHeader title="Analysis" monthNav={month} />
       <EmptyState
         icon={ChartPie}
         title="Nothing to chart yet"

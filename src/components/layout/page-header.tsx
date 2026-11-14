@@ -8,7 +8,12 @@ type PageHeaderProps = {
   /** Buttons rendered on the right of the title row. */
   actions?: React.ReactNode;
   /** Show the month stepper (Records, Analysis, Budgets). */
-  month?: boolean;
+  monthNav?: {
+    year: number;
+    month: number;
+    maxYear: number;
+    maxMonth: number;
+  };
   className?: string;
 };
 
@@ -22,7 +27,7 @@ export function PageHeader({
   title,
   description,
   actions,
-  month = false,
+  monthNav,
   className,
 }: PageHeaderProps) {
   return (
@@ -38,11 +43,11 @@ export function PageHeader({
             {title}
           </h1>
           <div className="flex shrink-0 items-center gap-1">
-            {month ? <MonthSwitcher /> : null}
+            {monthNav ? <MonthSwitcher {...monthNav} /> : null}
             {actions}
           </div>
         </div>
-        {description && !month ? (
+        {description && !monthNav ? (
           <p className="text-muted-foreground -mt-1 pb-3 text-sm">
             {description}
           </p>

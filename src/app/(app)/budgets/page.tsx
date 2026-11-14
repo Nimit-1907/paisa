@@ -4,14 +4,22 @@ import { Target } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
+import { getMonthContext } from "@/lib/month-param";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Budgets" };
 
-export default function BudgetsPage() {
+export default async function BudgetsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ m?: string }>;
+}) {
+  const { m } = await searchParams;
+  const { month } = await getMonthContext(m);
+
   return (
     <>
-      <PageHeader title="Budgets" month />
+      <PageHeader title="Budgets" monthNav={month} />
       <EmptyState
         icon={Target}
         title="No budgets set"
