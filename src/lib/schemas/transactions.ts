@@ -120,7 +120,16 @@ export const createTransactionSchema = z
   .superRefine(checkShape);
 
 export const updateTransactionSchema = z
-  .object({ ...transactionFields, id: uuid })
+  .object({
+    ...transactionFields,
+    id: uuid,
+    /**
+     * Push the same template onto the recurring rule that created this
+     * record, so future occurrences follow. The schedule is untouched, and so
+     * are the records already created — "future occurrences only".
+     */
+     applyToRule: z.boolean().optional(),
+  })
   .superRefine(checkShape);
 
 export const transactionIdSchema = z.object({ id: uuid });

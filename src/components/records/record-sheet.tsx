@@ -9,6 +9,7 @@ import type { SavedTransaction } from "@/actions/transactions";
 import type { ActionResult } from "@/lib/action-result";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountKeypad } from "@/components/records/amount-keypad";
+import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
 import {
   type AccountOption,
   AccountSelect,
@@ -47,6 +48,8 @@ export type RecordDraft = {
   note: string | null;
   /** Local `yyyy-mm-ddThh:mm`. */
   occurredAtLocal: string;
+  /** Set when a recurring rule created this record. */
+  recurringRuleId?: string | null;
 };
 
 export type RecordSubmit = (
@@ -63,6 +66,8 @@ export type RecordSubmit = (
       interval: number;
       endDate: string | null;
     } | null;
+    /** Push the same change onto the rule that created this record. */
+    applyToRule?: boolean;
   },
   context: { editingId: string | null },
 ) => Promise<ActionResult<SavedTransaction>>;
@@ -114,6 +119,7 @@ export function RecordSheet({
   const [interval, setInterval] = React.useState("1");
   const [endDate, setEndDate] = React.useState("");
   const [saving, setSaving] = React.useState(false);
+  const [scopeOpen, setScopeOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
 
@@ -139,6 +145,7 @@ export function RecordSheet({
     setEndDate("");
     setError(null);
     setErrorField(null);
+    setScopeOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingId]);
 
@@ -146,7 +153,7 @@ export function RecordSheet({
     (category) => category.kind === (type === "income" ? "income" : "expense"),
   );
 
-  async function save(andAnother: boolean) {
+  async function save(andAnother: boolean, applyToRule = false) {
     setSaving(true);
     setError(null);
     setErrorField(null);
@@ -169,6 +176,7 @@ export function RecordSheet({
                   interval: Number(interval) || 1,
                   endDate: endDate || null,
                 },
+          applyToRule,
         },
         { editingId },
       );
@@ -184,6 +192,14 @@ export function RecordSheet({
         toast.warning(
           "Saved, but the repeat could not be set up. Try adding it again.",
         );
+      }
+
+      if (result.data.ruleSaved === false) {
+        toast.warning(
+          "The record was saved, but the recurring rule was not. Edit it from Recurring.",
+        );
+      } else if (result.data.ruleSaved === true) {
+        toast.success("Saved — future occurrences updated too");
       }
 
       if (andAnother) {
@@ -420,7 +436,13 @@ export function RecordSheet({
             <Button
               size="touch"
               className="flex-1"
-              onClick={() => void save(false)}
+              onClick={() => {
+                if (editing.recurringRuleId) {
+                  setScopeOpen(true);
+                  return;
+                }
+                void save(false);
+              }}
               disabled={saving || !canSave}
             >
               {saving ? (
@@ -459,6 +481,16 @@ export function RecordSheet({
           </>
         )}
       </SheetFooter>
+
+      <EditScopeDialog
+        open={scopeOpen}
+        onOpenChange={setScopeOpen}
+        pending={saving}
+        onChoose={(applyToRule) => {
+          setScopeOpen(false);
+          void save(false, applyToRule);
+        }}
+      />
     </ResponsiveSheet>
   );
 }

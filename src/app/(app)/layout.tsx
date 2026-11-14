@@ -6,6 +6,7 @@ import { ProfileProvider } from "@/components/profile-provider";
 import { AddRecordFab } from "@/components/records/add-record-fab";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
 import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
+import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import {
   currencyOf,
   getProfile,
@@ -56,19 +57,8 @@ export default async function AppLayout({
     <ProfileProvider currency={currencyOf(profile)}>
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
-        accounts={accounts.map((account) => ({
-          id: account.id,
-          name: account.name,
-          icon: account.icon,
-          color: account.color,
-        }))}
-        categories={categories.map((category) => ({
-          id: category.id,
-          name: category.name,
-          icon: category.icon,
-          color: category.color,
-          kind: category.kind,
-        }))}
+        accounts={toAccountOptions(accounts)}
+        categories={toCategoryOptions(categories)}
       >
         <div className="min-h-dvh">
           <SidebarNav />

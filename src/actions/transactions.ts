@@ -107,6 +107,8 @@ export type SavedTransaction = {
   id: string;
   /** Present when a repeat was asked for: false means only the record saved. */
   repeatSaved?: boolean;
+  /** Present when the edit was meant for the rule too. */
+  ruleSaved?: boolean;
 };
 
 export async function createTransaction(
@@ -226,14 +228,38 @@ export async function updateTransaction(
     })
     .eq("id", parsed.data.id)
     .eq("user_id", user.id)
-    .select("id")
+    .select("id, recurring_rule_id")
     .maybeSingle();
 
   if (error) return failFromDb(error, "Could not save the record.");
   if (!data) return fail("That record no longer exists.");
 
+  let ruleSaved: boolean | undefined;
+
+  if (parsed.data.applyToRule && data.recurring_rule_id) {
+    // The template only. Frequency, anchor and end date stay where the user
+    // put them on the rule's own screen, and nothing already created moves —
+    // that is what makes this "future occurrences only".
+    const { error: ruleError } = await supabase
+      .from("recurring_rules")
+      .update({
+        type: parsed.data.type,
+        amount: prepared.value.amount,
+        account_id: parsed.data.accountId,
+        to_account_id: parsed.data.toAccountId ?? null,
+        category_id: parsed.data.categoryId ?? null,
+        note: parsed.data.note ?? null,
+      })
+      .eq("id", data.recurring_rule_id)
+      .eq("user_id", user.id);
+
+    ruleSaved = !ruleError;
+    if (ruleError) console.error("[records] rule not updated:", ruleError.message);
+    else revalidatePath("/recurring");
+  }
+
   revalidateRecords();
-  return ok({ id: data.id });
+  return ok({ id: data.id, ruleSaved });
 }
 
 export async function deleteTransaction(

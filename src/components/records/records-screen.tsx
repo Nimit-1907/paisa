@@ -2,9 +2,10 @@
 
 import * as React from "react";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Plus, Receipt, SlidersHorizontal } from "lucide-react";
+import { Plus, Receipt, Repeat, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -17,6 +18,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
+import { UpcomingStrip } from "@/components/records/upcoming-strip";
 import type {
   AccountOption,
   CategoryOption,
@@ -30,6 +32,7 @@ import { evaluate } from "@/lib/calculator";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import type { TransactionRow } from "@/lib/queries/transactions";
+import type { UpcomingOccurrence } from "@/lib/recurring-rule";
 import { useClearFilters } from "@/components/records/use-clear-filters";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 import { cn } from "@/lib/utils";
@@ -50,6 +53,10 @@ export type RecordsScreenProps = {
   categories: CategoryOption[];
   filters: TransactionFilters;
   activeFilterCount: number;
+  /** Scheduled items in the next seven days; empty unless this is this month. */
+  upcoming: UpcomingOccurrence[];
+  /** Today where the user is, `yyyy-mm-dd`. */
+  today: string;
 };
 
 /**
@@ -70,6 +77,8 @@ export function RecordsScreen({
   categories,
   filters,
   activeFilterCount,
+  upcoming,
+  today,
 }: RecordsScreenProps) {
   const router = useRouter();
   const currency = useCurrency();
@@ -334,11 +343,25 @@ export function RecordsScreen({
         <Total label="Net" value={summary.net} tone="net" />
       </section>
 
+      <UpcomingStrip items={upcoming} today={today} />
+
       <div className="flex items-center justify-between gap-2">
         <p className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
           {visible.length} {visible.length === 1 ? "record" : "records"}
           {more ? "+" : ""}
         </p>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 px-3"
+          asChild
+        >
+          <Link href="/recurring">
+            <Repeat className="size-4" aria-hidden="true" />
+            Recurring
+          </Link>
+        </Button>
 
         <Button
           variant={activeFilterCount > 0 ? "default" : "ghost"}
@@ -420,6 +443,7 @@ export function RecordsScreen({
                             record.occurredAt,
                             timeZone,
                           ),
+                          recurringRuleId: record.recurringRuleId,
                         })
                       }
                       onDelete={() => remove(record)}
