@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          variables?: Json
-          extensions?: Json
           operationName?: string
+          extensions?: Json
           query?: string
+          variables?: Json
         }
         Returns: Json
       }
@@ -491,14 +491,21 @@ export type Database = {
       }
     }
     Functions: {
+      account_month_flow: {
+        Args: { p_account_id: string; p_month: string }
+        Returns: {
+          money_in: number
+          money_out: number
+        }[]
+      }
       check_account_owner: {
-        Args: { p_user_id: string; p_account_id: string }
+        Args: { p_account_id: string; p_user_id: string }
         Returns: undefined
       }
       check_category_owner: {
         Args: {
-          p_expected_kind?: Database["public"]["Enums"]["category_kind"]
           p_user_id: string
+          p_expected_kind?: Database["public"]["Enums"]["category_kind"]
           p_category_id: string
         }
         Returns: undefined
@@ -506,39 +513,47 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          kind: Database["public"]["Enums"]["category_kind"]
-          name: string
           icon: string
           color: string
           sort_order: number
+          name: string
+          kind: Database["public"]["Enums"]["category_kind"]
         }[]
       }
       month_summary: {
         Args: { p_month: string }
         Returns: {
+          categories: Json
           month_start: string
           total_income: number
           total_expense: number
           net: number
-          categories: Json
         }[]
       }
       process_due_recurring: {
         Args: Record<PropertyKey, never>
         Returns: {
           created_count: number
-          next_run_on: string
           rule_id: string
+          next_run_on: string
         }[]
       }
       recurrence_occurrence: {
         Args: {
+          p_interval: number
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          p_interval: number
           p_n: number
         }
         Returns: string
+      }
+      reorder_accounts: {
+        Args: { p_ids: string[] }
+        Returns: number
+      }
+      reorder_categories: {
+        Args: { p_ids: string[] }
+        Returns: number
       }
       user_timezone: {
         Args: Record<PropertyKey, never>
