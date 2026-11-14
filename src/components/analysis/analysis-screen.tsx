@@ -110,7 +110,7 @@ export function AnalysisScreen({
               aria-checked={active}
               onClick={() => chooseKind(value)}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 "text-muted-foreground",
                 active && value === "expense" && "bg-expense-soft text-expense",
                 active && value === "income" && "bg-income-soft text-income",
@@ -125,6 +125,7 @@ export function AnalysisScreen({
 
       {nothing ? (
         <EmptyState
+          art="analysis"
           icon={ChartPie}
           title="Nothing in this period"
           description="The charts fill in from the same rows Records lists, so they need a record or two first."
@@ -133,7 +134,7 @@ export function AnalysisScreen({
       ) : (
         <>
           {insight ? (
-            <p className="bg-card rounded-2xl border px-4 py-3 text-sm font-medium">
+            <p className="bg-card rounded-2xl border px-4 py-3 text-sm font-semibold">
               {insight}
             </p>
           ) : null}

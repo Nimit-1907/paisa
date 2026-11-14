@@ -74,6 +74,7 @@ export function RecurringScreen({
   if (rules.length === 0) {
     return (
       <EmptyState
+          art="recurring"
         icon={Repeat}
         title="No recurring records"
         description="Rent, salary, a subscription: add the record once with Repeat set, and it will show up here creating itself every month."
@@ -83,7 +84,7 @@ export function RecurringScreen({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Section
         title="Active"
         count={active.length}
@@ -212,12 +213,12 @@ function RuleItem({
     <li className="flex items-stretch">
       <Link
         href={`/recurring/${rule.id}`}
-        className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-16 min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
       >
         <RuleAvatar rule={rule} dimmed={!rule.active} />
 
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">{title}</span>
+          <span className="block truncate text-sm font-semibold">{title}</span>
           <span className="text-muted-foreground block truncate text-xs">
             {describeSchedule(scheduleOf(rule))} · {rule.accountName}
           </span>

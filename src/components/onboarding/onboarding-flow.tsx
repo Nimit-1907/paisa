@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Loader2, Search, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { completeOnboarding } from "@/actions/profile";
+import {
+  completeOnboarding,
+  refreshAfterOnboarding,
+} from "@/actions/profile";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
@@ -21,7 +24,15 @@ import { cn } from "@/lib/utils";
 
 const STEPS = ["You", "Currency", "Account"] as const;
 
-type Step = 0 | 1 | 2;
+/**
+ * 0–2 are the questions; 3 is the end.
+ *
+ * Setup used to finish with a toast and a redirect, which lands somebody on
+ * a screen full of someone else's demo data with no idea whether anything
+ * was saved. The last step says what was set up and offers the one thing
+ * there is to do next.
+ */
+type Step = 0 | 1 | 2 | 3;
 
 export function OnboardingFlow({
   initialName,
@@ -80,9 +91,10 @@ export function OnboardingFlow({
         return;
       }
 
-      toast.success(`You are all set, ${displayName.trim()}`);
-      router.replace(result.data.next);
-      router.refresh();
+      // No refresh here: this page redirects anyone whose setup is already
+      // done, and refreshing would bounce them off the welcome screen that
+      // was the point of finishing.
+      setStep(3);
     } catch (thrown) {
       // A dropped connection rejects the action. Without this the button
       // would sit on "Setting up…" for ever with nothing explaining why.
@@ -97,7 +109,10 @@ export function OnboardingFlow({
 
   return (
     <div className="w-full max-w-md">
-      <ol className="mb-8 flex items-center gap-2" aria-label="Setup progress">
+      <ol
+        className={cn("mb-8 flex items-center gap-2", step === 3 && "hidden")}
+        aria-label="Setup progress"
+      >
         {STEPS.map((label, index) => (
           <li key={label} className="flex-1">
             <span
@@ -108,7 +123,7 @@ export function OnboardingFlow({
             />
             <span
               className={cn(
-                "mt-2 block text-xs font-medium",
+                "mt-2 block text-xs font-semibold",
                 index === step ? "text-foreground" : "text-muted-foreground",
               )}
               aria-current={index === step ? "step" : undefined}
@@ -120,7 +135,7 @@ export function OnboardingFlow({
       </ol>
 
       {step === 0 ? (
-        <section className="space-y-5">
+        <section className="space-y-6">
           <header>
             <h1 className="text-2xl font-semibold tracking-tight">
               First, your name
@@ -157,7 +172,7 @@ export function OnboardingFlow({
       ) : null}
 
       {step === 2 ? (
-        <section className="space-y-5">
+        <section className="space-y-6">
           <header>
             <h1 className="text-2xl font-semibold tracking-tight">
               Your first account
@@ -174,7 +189,7 @@ export function OnboardingFlow({
                 <Wallet className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium">Created for you at signup</p>
+                <p className="text-sm font-semibold">Created for you at signup</p>
                 <p className="text-muted-foreground text-xs">
                   Rename it or set what is in it right now.
                 </p>
@@ -229,6 +244,54 @@ export function OnboardingFlow({
         </section>
       ) : null}
 
+      {step === 3 ? (
+        <section className="text-center">
+          <span className="bg-income-soft text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl">
+            <Check className="size-7" aria-hidden="true" />
+          </span>
+
+          <h2 className="text-2xl font-semibold tracking-tight">
+            You are set up, {displayName.trim()}.
+          </h2>
+
+          <p className="text-muted-foreground mt-2 text-sm">
+            Tracking in {currency.name} ({currency.symbol}), starting with{" "}
+            {accountName.trim() || "your first account"}.
+          </p>
+
+          <div className="pb-safe mt-8">
+            <Button
+              type="button"
+              size="touch"
+              className="w-full"
+              onClick={() => {
+                void (async () => {
+                  // The shell is cached from before setup finished, so it
+                  // still holds the old name and currency. Rebuilt here
+                  // rather than inside completeOnboarding, which would have
+                  // taken this screen away as soon as it appeared.
+                  try {
+                    await refreshAfterOnboarding();
+                  } catch (thrown) {
+                    // A stale shell is better than a stuck button; the next
+                    // navigation rebuilds it anyway.
+                    console.error("[onboarding]", thrown);
+                  }
+
+                  // Straight into the sheet: the next thing to do is the
+                  // whole point of the app, and a screen with a button on it
+                  // is one more decision than it needs.
+                  router.replace("/records?add=1");
+                })();
+              }}
+            >
+              Add your first expense
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      {step === 3 ? null : (
       <div className="pb-safe mt-8 flex gap-2">
         {step > 0 ? (
           <Button
@@ -269,6 +332,7 @@ export function OnboardingFlow({
           </Button>
         )}
       </div>
+      )}
     </div>
   );
 }
@@ -284,7 +348,7 @@ function CurrencyStep({
   const results = React.useMemo(() => searchCurrencies(query), [query]);
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">
           Which currency?
@@ -325,7 +389,7 @@ function CurrencyStep({
                 aria-checked={active}
                 onClick={() => onSelect(currency)}
                 className={cn(
-                  "hover:bg-muted/60 focus-visible:ring-ring flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none",
+                  "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none",
                   active && "bg-primary/5",
                 )}
               >
@@ -333,7 +397,7 @@ function CurrencyStep({
                   {currency.symbol}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
+                  <span className="block truncate text-sm font-semibold">
                     {currency.name}
                   </span>
                   <span className="text-muted-foreground block text-xs">

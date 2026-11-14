@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 import {
   type ActionResult,
@@ -120,7 +121,15 @@ export async function completeOnboarding(
     return fail(profileError.message);
   }
 
-  revalidatePath("/", "layout");
+  /*
+   * No revalidation here, deliberately.
+   *
+   * Setup now ends on a welcome screen rather than a redirect, and this page
+   * sends anyone whose setup is done straight to the app — so revalidating
+   * from inside the action tears that screen off the display a moment after
+   * it appears. The button on it navigates, and the destination is rendered
+   * per request anyway.
+   */
   return ok({ next: HOME_PATH });
 }
 
@@ -290,4 +299,120 @@ export async function deleteAccount(
   // Server Action reaches the caller as something that looks like an error,
   // and the only thing a caller can do with it is re-throw it.
   return ok({ next: LOGIN_PATH });
+}
+
+/**
+ * The three things the interface remembers about a person.
+ *
+ * Preferences and one-time notes, not data: a direct update rather than a
+ * function, because row level security and the column grants already say
+ * exactly which rows and which columns a signed-in user may touch, and a
+ * SECURITY DEFINER function would only be re-stating that in PL/pgSQL.
+ */
+async function setPreference(
+  patch: Partial<{
+    haptics: boolean;
+    recap_seen_for: string;
+    first_record_seen: boolean;
+  }>,
+  message: string,
+  /** Only where the layout actually renders the value. */
+  revalidate: "layout" | "none" = "none",
+): Promise<ActionResult<undefined>> {
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(patch)
+    .eq("id", user.id);
+
+  if (error) return failFromDb(error, message);
+
+  if (revalidate === "layout") revalidatePath("/", "layout");
+  return ok(undefined);
+}
+
+/**
+ * Throws away the cached render of the app shell, once setup is over.
+ *
+ * completeOnboarding() deliberately does not revalidate: this page sends
+ * anyone whose setup is done straight to the app, so revalidating from
+ * inside it tears the welcome screen off the display a moment after it
+ * appears. The welcome screen's own button calls this instead, so the shell
+ * is rebuilt with the name and currency that were just chosen rather than
+ * served from the cache that predates them.
+ */
+export async function refreshAfterOnboarding(): Promise<
+  ActionResult<undefined>
+> {
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
+  revalidatePath("/", "layout");
+  return ok(undefined);
+}
+
+/** The Settings toggle: should saving and deleting buzz the phone? */
+export async function setHaptics(
+  enabled: boolean,
+): Promise<ActionResult<undefined>> {
+  if (typeof enabled !== "boolean") return fail("Could not save that.");
+
+  // The layout hands this to every client component that can buzz.
+  return setPreference(
+    { haptics: enabled },
+    "Could not save that setting.",
+    "layout",
+  );
+}
+
+/**
+ * The first day of a month that has already started.
+ *
+ * `new Date("9999-99-99")` is Invalid Date rather than a throw, and the
+ * regex alone would let it through to the column.
+ */
+const monthStartSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-01$/, "not a month")
+  .refine((value) => {
+    const parsed = new Date(`${value}T00:00:00Z`);
+    return (
+      !Number.isNaN(parsed.getTime()) &&
+      parsed.toISOString().slice(0, 10) === value &&
+      parsed.getTime() <= Date.now()
+    );
+  }, "not a month that has happened");
+
+/** Called once, the first time somebody saves a record. */
+export async function markFirstRecordSeen(): Promise<ActionResult<undefined>> {
+  return setPreference(
+    { first_record_seen: true },
+    "Could not save that. It is only a note to ourselves.",
+  );
+}
+
+/**
+ * Hides this month's recap card.
+ *
+ * Takes the month it is dismissing rather than "now": the card is for the
+ * month that just ended, and a clock a few seconds out should not be able to
+ * dismiss the wrong one.
+ */
+export async function dismissRecap(
+  month: string,
+): Promise<ActionResult<undefined>> {
+  // The first of a real month, and not one that has not happened yet: the
+  // column decides whether a recap is ever shown again, so a value the
+  // client made up should not reach it.
+  const parsed = monthStartSchema.safeParse(month);
+  if (!parsed.success) return fail("Could not dismiss that.");
+
+  return setPreference(
+    { recap_seen_for: parsed.data },
+    "Could not dismiss that.",
+  );
 }

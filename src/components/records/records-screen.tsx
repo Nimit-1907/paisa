@@ -2,15 +2,13 @@
 
 import * as React from "react";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
   ArrowDownLeft,
   ArrowUpRight,
   Plus,
   Receipt,
-  Repeat,
   SlidersHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +23,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
+import { PullToRefresh } from "@/components/records/pull-to-refresh";
 import { UpcomingStrip } from "@/components/records/upcoming-strip";
 import type {
   AccountOption,
@@ -38,6 +37,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { evaluate } from "@/lib/calculator";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
+import { useCountUp } from "@/lib/motion";
+import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
 import { useClearFilters } from "@/components/records/use-clear-filters";
@@ -92,8 +93,33 @@ export function RecordsScreen({
   const clearFilters = useClearFilters();
   const formatMoney = useFormatMoney();
   const sheet = useRecordSheet();
+  const pathname = usePathname();
+  const params = useSearchParams();
 
-  const [, startTransition] = React.useTransition();
+  /**
+   * `?add=1` opens the sheet on arrival.
+   *
+   * It is how the end of setup hands over to the first record: the welcome
+   * screen's button is "Add your first expense", and landing on a list with
+   * the sheet already open is what makes that sentence true. The parameter
+   * is stripped straight away so a refresh or a back button does not reopen
+   * it.
+   */
+  React.useEffect(() => {
+    if (params.get("add") !== "1") return;
+
+    sheet.openAdd();
+
+    const rest = new URLSearchParams(params.toString());
+    rest.delete("add");
+    const query = rest.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  const [pending, startTransition] = React.useTransition();
   const [loaded, setLoaded] = React.useState(rows);
   const [more, setMore] = React.useState(hasMore);
   const [loadingMore, setLoadingMore] = React.useState(false);
@@ -102,6 +128,21 @@ export function RecordsScreen({
   // Ids the user has deleted, so a refresh that still carries them (or a
   // page loaded earlier) does not put them back.
   const deleted = React.useRef(new Set<string>());
+
+  /**
+   * The pull-to-refresh in flight, if there is one.
+   *
+   * `pending` is the only signal that router.refresh() has come back, and it
+   * is false both before the transition starts and after it ends — so the
+   * resolver waits for it to have been true at least once. The timer belongs
+   * to this refresh alone, so a second pull cannot be ended by the first
+   * one's clock.
+   */
+  const refreshing = React.useRef<{
+    resolve: () => void;
+    started: boolean;
+    timers: number[];
+  } | null>(null);
 
   // Two keys, because a refresh means two different things. Changing month or
   // filters is a different list: start again. Everything else — a save, a
@@ -306,6 +347,8 @@ export function RecordsScreen({
   async function loadMore() {
     if (loadingMore || !more) return;
 
+    const retry = { label: "Try again", onClick: () => void loadMore() };
+
     setLoadingMore(true);
 
     try {
@@ -320,7 +363,7 @@ export function RecordsScreen({
       });
 
       if (!result.ok) {
-        toast.error(result.error);
+        toast.error(result.error, { action: retry });
         return;
       }
 
@@ -328,19 +371,85 @@ export function RecordsScreen({
       setMore(result.data.hasMore);
     } catch (thrown) {
       console.error("[records]", thrown);
-      toast.error("Could not load more records.");
+      // Never a dead end: the page that failed is still the next page, so
+      // the only thing to offer is another go at it.
+      toast.error("Could not load more records.", { action: retry });
     } finally {
       setLoadingMore(false);
     }
   }
 
   const days = React.useMemo(
-    () => groupByDay(visible, timeZone),
-    [visible, timeZone],
+    () => groupByDay(visible, timeZone, today),
+    [visible, timeZone, today],
   );
 
+  /*
+   * A refresh that finishes when the refresh finishes.
+   *
+   * router.refresh() returns nothing, so the only signal that the server's
+   * answer has arrived and painted is the transition going from pending back
+   * to idle. The resolver is parked in a ref and called by the effect below,
+   * which is what keeps the pull indicator up for exactly as long as the
+   * work takes rather than for an arbitrary moment.
+   */
+  const settle = React.useCallback(() => {
+    const current = refreshing.current;
+    if (!current) return;
+
+    for (const timer of current.timers) window.clearTimeout(timer);
+    refreshing.current = null;
+    current.resolve();
+  }, []);
+
+  const refresh = React.useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        // A pull while one is already running joins it rather than starting
+        // a second.
+        settle();
+
+        refreshing.current = {
+          resolve,
+          started: false,
+          timers: [
+            /*
+             * Two fallbacks, for two different failures.
+             *
+             * A transition with nothing to fetch can finish before React
+             * ever reports it as pending, and then the effect below has
+             * nothing to react to — so after a beat, if it never started,
+             * the refresh is already over.
+             */
+            window.setTimeout(() => {
+              if (refreshing.current && !refreshing.current.started) settle();
+            }, 600),
+
+            // And a ceiling, for a transition that starts and never ends.
+            window.setTimeout(settle, 10_000),
+          ],
+        };
+
+        startTransition(() => router.refresh());
+      }),
+    [router, settle],
+  );
+
+  React.useEffect(() => {
+    const current = refreshing.current;
+    if (!current) return;
+
+    if (pending) {
+      current.started = true;
+      return;
+    }
+
+    if (current.started) settle();
+  }, [pending, settle]);
+
   return (
-    <div className="space-y-4">
+    <PullToRefresh onRefresh={refresh}>
+      <div className="space-y-4">
       <MonthSummary summary={summary} />
 
       <UpcomingStrip items={upcoming} today={today} />
@@ -350,13 +459,6 @@ export function RecordsScreen({
           {visible.length} {visible.length === 1 ? "record" : "records"}
           {more ? "+" : ""}
         </p>
-
-        <Button variant="ghost" size="touch" className="px-3" asChild>
-          <Link href="/recurring">
-            <Repeat className="size-4" aria-hidden="true" />
-            Recurring
-          </Link>
-        </Button>
 
         <Button
           variant={activeFilterCount > 0 ? "default" : "ghost"}
@@ -371,6 +473,7 @@ export function RecordsScreen({
 
       {visible.length === 0 ? (
         <EmptyState
+          art="records"
           icon={Receipt}
           title={
             activeFilterCount > 0
@@ -380,7 +483,7 @@ export function RecordsScreen({
           description={
             activeFilterCount > 0
               ? "Try widening the search, or clear the filters to see everything again."
-              : "Tap the + button to log your first expense, income or transfer."
+              : "Expenses, income and transfers you log will be listed here, newest first."
           }
           action={
             activeFilterCount > 0 ? (
@@ -425,6 +528,7 @@ export function RecordsScreen({
                     <RecordRow
                       record={record}
                       pending={record.id.startsWith("optimistic-")}
+                      highlight={record.id === sheet.lastSavedId}
                       onOpen={() =>
                         sheet.openEdit({
                           id: record.id,
@@ -462,7 +566,8 @@ export function RecordsScreen({
         categories={categories}
         filters={filters}
       />
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
 
@@ -485,12 +590,22 @@ function MonthSummary({
   const formatMoney = useFormatMoney();
   const net = BigInt(summary.net);
 
+  /*
+   * The headline number counts to its new value after a save.
+   *
+   * Not decoration: it is the one figure on the screen that a new record
+   * changes, and a silent swap while the eye is on the list that just grew
+   * leaves people checking whether it moved at all. 400ms, and instant under
+   * reduced motion.
+   */
+  const shown = useCountUp(net < 0n ? -net : net);
+
   return (
     <section
       aria-label="This month"
       className="bg-card rounded-2xl border px-4 py-3"
     >
-      <h2 className="text-muted-foreground text-label font-medium tracking-wide uppercase">
+      <h2 className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
         {net < 0n ? "Overspent this month" : "Left this month"}
       </h2>
 
@@ -500,13 +615,13 @@ function MonthSummary({
           net < 0n ? "text-expense" : "text-foreground",
         )}
       >
-        {formatMoney(net < 0n ? -net : net, { signDisplay: "never" })}
+        {formatMoney(shown, { signDisplay: "never" })}
       </p>
 
       <p className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
         <span className="flex items-center gap-1">
           <ArrowDownLeft className="text-income size-3.5" aria-hidden="true" />
-          <span className="amount text-foreground font-medium">
+          <span className="amount text-foreground font-semibold">
             {formatMoney(BigInt(summary.income), { signDisplay: "never" })}
           </span>
           in
@@ -514,7 +629,7 @@ function MonthSummary({
 
         <span className="flex items-center gap-1">
           <ArrowUpRight className="text-expense size-3.5" aria-hidden="true" />
-          <span className="amount text-foreground font-medium">
+          <span className="amount text-foreground font-semibold">
             {formatMoney(BigInt(summary.expense), { signDisplay: "never" })}
           </span>
           out
@@ -622,7 +737,14 @@ function formattersFor(timeZone: string) {
 }
 
 /** Groups rows under a local day, with that day's net. */
-function groupByDay(rows: TransactionRow[], timeZone: string) {
+/**
+ * The day headings in the list.
+ *
+ * "Today" and "Yesterday" by name, because that is how anybody scanning what
+ * they spent thinks about the last two days; anything older gets its date,
+ * which is what you need once "how long ago" stops being obvious.
+ */
+function groupByDay(rows: TransactionRow[], timeZone: string, today: string) {
   const { day: dayFormatter, label: labelFormatter } = formattersFor(timeZone);
 
   const groups = new Map<
@@ -636,7 +758,7 @@ function groupByDay(rows: TransactionRow[], timeZone: string) {
 
     const group = groups.get(key) ?? {
       key,
-      label: labelFormatter.format(date),
+      label: relativeDayHeading(key, today, labelFormatter.format(date)),
       rows: [],
       net: 0n,
     };
@@ -652,6 +774,14 @@ function groupByDay(rows: TransactionRow[], timeZone: string) {
   }
 
   return [...groups.values()];
+}
+
+/** "Today", "Yesterday", or the date it already had. */
+function relativeDayHeading(day: string, today: string, fallback: string) {
+  if (day === today) return "Today";
+  if (dayDifference(today, day) === -1) return "Yesterday";
+
+  return fallback;
 }
 
 /** A row good enough to show while the server catches up. */

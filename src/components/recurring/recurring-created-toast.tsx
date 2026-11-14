@@ -24,11 +24,20 @@ export function RecurringCreatedToast({ created }: { created: number }) {
     if (created <= 0 || handled.current) return;
     handled.current = true;
 
+    // Says what happened, where it landed, and how to change it: a record
+    // appearing on its own is only reassuring if you can see why.
     toast.success(
       created === 1
-        ? "1 recurring record added"
-        : `${created} recurring records added`,
-      { id: "recurring-created" },
+        ? "1 scheduled record added"
+        : `${created} scheduled records added`,
+      {
+        id: "recurring-created",
+        description: "They are in this month's list, dated when they were due.",
+        action: {
+          label: "Rules",
+          onClick: () => router.push("/recurring"),
+        },
+      },
     );
 
     router.refresh();

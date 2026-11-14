@@ -6,11 +6,18 @@ import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
+import { markFirstRecordSeen } from "@/actions/profile";
 import {
   createTransaction,
   deleteTransaction,
   updateTransaction,
 } from "@/actions/transactions";
+import {
+  useCurrency,
+  useFormatMoney,
+  useHaptic,
+} from "@/components/profile-provider";
+import { evaluate } from "@/lib/calculator";
 import type { EntryDefaults } from "@/lib/queries/accounts";
 import {
   type AccountOption,
@@ -19,6 +26,13 @@ import {
   RecordSheet,
   type RecordSubmit,
 } from "@/components/records/record-sheet";
+
+/** What the toast calls each kind of record. */
+const LABELS = {
+  expense: "Expense",
+  income: "Income",
+  transfer: "Transfer",
+} as const;
 
 type RecordSheetContextValue = {
   openAdd: () => void;
@@ -29,6 +43,13 @@ type RecordSheetContextValue = {
    */
   setSubmitHandler: (handler: RecordSubmit | null) => () => void;
   setDeleteHandler: (handler: ((id: string) => void) | null) => () => void;
+  /**
+   * The record saved a moment ago, so the list can point at it.
+   *
+   * Clears itself after a second and a half: it marks "this one is new", not
+   * "this one is selected".
+   */
+  lastSavedId: string | null;
   ready: boolean;
 };
 
@@ -37,6 +58,7 @@ const RecordSheetContext = React.createContext<RecordSheetContextValue>({
   openEdit: () => {},
   setSubmitHandler: () => () => {},
   setDeleteHandler: () => () => {},
+  lastSavedId: null,
   ready: false,
 });
 
@@ -53,16 +75,26 @@ export function RecordSheetProvider({
   categories,
   timeZone,
   entryDefaults,
+  firstRecordSeen,
   children,
 }: {
   accounts: AccountOption[];
   categories: CategoryOption[];
   timeZone: string;
   entryDefaults: EntryDefaults;
+  /** False until the "first record" note has been shown once. */
+  firstRecordSeen: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const currency = useCurrency();
+  const formatMoney = useFormatMoney();
+  const tap = useHaptic();
   const [open, setOpen] = React.useState(false);
+  const [lastSavedId, setLastSavedId] = React.useState<string | null>(null);
+  // Within this page's lifetime the profile prop is stale the moment the
+  // first record is saved, so the ref stops a second celebration.
+  const celebrated = React.useRef(false);
   const [draft, setDraft] = React.useState<RecordDraft | null>(null);
   const handlerRef = React.useRef<RecordSubmit | null>(null);
   const deleteRef = React.useRef<((id: string) => void) | null>(null);
@@ -101,19 +133,144 @@ export function RecordSheetProvider({
           if (deleteRef.current === handler) deleteRef.current = null;
         };
       },
+      lastSavedId,
       ready: accounts.length > 0,
     }),
-    [accounts.length],
+    [accounts.length, lastSavedId],
   );
 
+  /**
+   * Every save ends the same way, wherever the sheet was opened from.
+   *
+   * This is the ending people repeat most, so it says what was saved rather
+   * than that something was: "Expense saved / ₹450 · Food". Undo deletes the
+   * record it just made, with no second toast — the row leaving the list is
+   * the confirmation.
+   */
   const submit = React.useCallback<RecordSubmit>(
-    (values, context) =>
-      (handlerRef.current ?? defaultSubmit)(values, context),
-    [defaultSubmit],
+    async (values, context) => {
+      const result = await (handlerRef.current ?? defaultSubmit)(
+        values,
+        context,
+      );
+
+      if (!result.ok) return result;
+
+      tap();
+
+      if (context.editingId) {
+        setLastSavedId(context.editingId);
+        return result;
+      }
+
+      const saved = result.data.id;
+      setLastSavedId(saved);
+
+      const sum = evaluate(values.amount || "0", currency.decimals);
+      const category = categories.find(
+        (option) => option.id === values.categoryId,
+      );
+
+      const parts = [
+        sum.ok ? formatMoney(sum.minor, { signDisplay: "never" }) : null,
+        values.type === "transfer" ? "Transfer" : (category?.name ?? null),
+      ].filter(Boolean);
+
+      // The first record is the moment this app either becomes a habit or
+      // does not. It gets the sentence; every one after it gets the receipt.
+      const first = !firstRecordSeen && !celebrated.current;
+
+      if (first) {
+        celebrated.current = true;
+
+        // Nothing user-facing hangs on this: the worst a failure costs is
+        // the same friendly line a second time. It is still logged rather
+        // than dropped, because a rejection nobody handles is how a broken
+        // action stays broken.
+        markFirstRecordSeen()
+          .then((noted) => {
+            if (!noted.ok) console.error("[records]", noted.error);
+          })
+          .catch((thrown: unknown) => console.error("[records]", thrown));
+      }
+
+      /*
+       * No Undo where a repeat was just set up.
+       *
+       * Undo deletes the record, and the rule created alongside it would
+       * carry on making more — an undo that leaves the thing it undid
+       * running is worse than no undo at all. Recurring is where the rule
+       * can be removed, so that is what the toast offers instead.
+       */
+      const repeating = Boolean(values.repeat);
+
+      const undo = {
+        label: "Undo",
+        onClick: () => {
+          void (async () => {
+            try {
+              const undone = await deleteTransaction({ id: saved });
+              if (!undone.ok) toast.error(undone.error);
+            } catch (thrown) {
+              console.error("[records]", thrown);
+              toast.error("Could not undo that. Check your connection.");
+            } finally {
+              router.refresh();
+            }
+          })();
+        },
+      };
+
+      toast.success(
+        first
+          ? "Your first record is in. Nice start."
+          : `${LABELS[values.type]} saved`,
+        {
+          /*
+           * One toast, replaced each time.
+           *
+           * "Save & new" leaves the sheet open for the next receipt, so a
+           * run of five would otherwise stack five toasts, each with its own
+           * Undo pointing at a different record. One that updates in place
+           * says the same thing more calmly, and its Undo always means the
+           * last thing saved.
+           */
+          id: "record-saved",
+          description:
+            [...parts, repeating ? "repeating" : null]
+              .filter(Boolean)
+              .join(" · ") || undefined,
+          action: repeating
+            ? { label: "Rules", onClick: () => router.push("/recurring") }
+            : undo,
+        },
+      );
+
+      return result;
+    },
+    [
+      defaultSubmit,
+      categories,
+      currency.decimals,
+      firstRecordSeen,
+      formatMoney,
+      router,
+      tap,
+    ],
   );
+
+  // Long enough to notice the new row, short enough not to read as a state.
+  React.useEffect(() => {
+    if (!lastSavedId) return;
+
+    const timer = window.setTimeout(() => setLastSavedId(null), 1500);
+    return () => window.clearTimeout(timer);
+  }, [lastSavedId]);
 
   const remove = React.useCallback(
     async (id: string) => {
+      tap();
+
       // The Records screen registers its own, which can show the row
       // disappearing and offer undo; elsewhere this is the fallback.
       if (deleteRef.current) {
@@ -139,7 +296,7 @@ export function RecordSheetProvider({
         router.refresh();
       }
     },
-    [router],
+    [router, tap],
   );
 
   return (

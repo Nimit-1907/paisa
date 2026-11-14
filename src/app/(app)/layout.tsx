@@ -56,12 +56,16 @@ export default async function AppLayout({
   ]);
 
   return (
-    <ProfileProvider currency={currencyOf(profile)}>
+    <ProfileProvider
+      currency={currencyOf(profile)}
+      haptics={profile?.haptics ?? true}
+    >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
         entryDefaults={entryDefaults}
+        firstRecordSeen={profile?.first_record_seen ?? true}
       >
         <div className="min-h-dvh">
           <SkipLink />

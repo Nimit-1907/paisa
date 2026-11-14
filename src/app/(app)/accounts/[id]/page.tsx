@@ -77,7 +77,7 @@ export default async function AccountDetailPage({
           <Link
             href="/accounts"
             aria-label="Back to accounts"
-            className="hover:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+            className="hoverable:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Link>
@@ -93,7 +93,7 @@ export default async function AccountDetailPage({
             <DynamicIcon name={account.icon} className="size-5" />
           </span>
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               Balance
             </p>
             <p
@@ -109,7 +109,7 @@ export default async function AccountDetailPage({
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="bg-income-soft rounded-xl p-3">
-            <p className="text-income flex items-center gap-1 text-xs font-medium">
+            <p className="text-income flex items-center gap-1 text-xs font-semibold">
               <ArrowDownLeft className="size-3.5" aria-hidden="true" />
               In this month
             </p>
@@ -119,7 +119,7 @@ export default async function AccountDetailPage({
           </div>
 
           <div className="bg-expense-soft rounded-xl p-3">
-            <p className="text-expense flex items-center gap-1 text-xs font-medium">
+            <p className="text-expense flex items-center gap-1 text-xs font-semibold">
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
               Out this month
             </p>
@@ -165,7 +165,7 @@ export default async function AccountDetailPage({
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">
+                <span className="block truncate text-sm font-semibold">
                   {transaction.note ??
                     transaction.categoryName ??
                     (transaction.type === "transfer" ? "Transfer" : "Record")}

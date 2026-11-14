@@ -170,10 +170,13 @@ export type Database = {
           currency_symbol: string
           decimal_places: number
           display_name: string | null
+          first_record_seen: boolean
+          haptics: boolean
           id: string
           last_recurring_check: string | null
           password_attempt_window: string | null
           password_attempts: number
+          recap_seen_for: string | null
           theme: string
           timezone: string
           updated_at: string
@@ -185,10 +188,13 @@ export type Database = {
           currency_symbol?: string
           decimal_places?: number
           display_name?: string | null
+          first_record_seen?: boolean
+          haptics?: boolean
           id: string
           last_recurring_check?: string | null
           password_attempt_window?: string | null
           password_attempts?: number
+          recap_seen_for?: string | null
           theme?: string
           timezone?: string
           updated_at?: string
@@ -200,10 +206,13 @@ export type Database = {
           currency_symbol?: string
           decimal_places?: number
           display_name?: string | null
+          first_record_seen?: boolean
+          haptics?: boolean
           id?: string
           last_recurring_check?: string | null
           password_attempt_window?: string | null
           password_attempts?: number
+          recap_seen_for?: string | null
           theme?: string
           timezone?: string
           updated_at?: string
@@ -535,14 +544,14 @@ export type Database = {
     }
     Functions: {
       account_month_flow: {
-        Args: { p_account_id: string; p_month: string }
+        Args: { p_month: string; p_account_id: string }
         Returns: {
           money_in: number
           money_out: number
         }[]
       }
       assert_bucket: {
-        Args: { p_from: string; p_to: string; p_bucket: string }
+        Args: { p_bucket: string; p_from: string; p_to: string }
         Returns: undefined
       }
       assert_range: {
@@ -584,7 +593,7 @@ export type Database = {
         Returns: number
       }
       check_account_owner: {
-        Args: { p_account_id: string; p_user_id: string }
+        Args: { p_user_id: string; p_account_id: string }
         Returns: undefined
       }
       check_category_owner: {
@@ -606,10 +615,10 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
+          color: string
           name: string
           kind: Database["public"]["Enums"]["category_kind"]
           icon: string
-          color: string
           sort_order: number
         }[]
       }
@@ -657,9 +666,9 @@ export type Database = {
       }
       recurrence_after: {
         Args: {
+          p_interval: number
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          p_interval: number
           p_anchor_day: number
           p_from: string
         }
@@ -668,8 +677,8 @@ export type Database = {
       recurrence_occurrence: {
         Args:
           | {
-              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_start: string
               p_interval: number
               p_n: number
             }

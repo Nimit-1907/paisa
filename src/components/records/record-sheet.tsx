@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Check, Loader2, Plus, Repeat, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Loader2, Plus, Repeat, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { SavedTransaction } from "@/actions/transactions";
@@ -34,9 +34,21 @@ import {
   REPEAT_LABELS,
   type TransactionType,
 } from "@/lib/schemas/transactions";
+import { evaluate } from "@/lib/calculator";
+import { PRESSABLE, useShake } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type { AccountOption, CategoryOption };
+
+/** What lives behind "More options", so an error there can open it. */
+const FOLDED_FIELDS = new Set([
+  "occurredAt",
+  "note",
+  "repeat",
+  "frequency",
+  "interval",
+  "endDate",
+]);
 
 /** How the suggestion row introduces itself. */
 const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
@@ -135,6 +147,8 @@ export function RecordSheet({
   const [scopeOpen, setScopeOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
+  const [shaking, shake] = useShake();
+  const [moreOpen, setMoreOpen] = React.useState(false);
 
   const editingId = editing?.id ?? null;
 
@@ -164,8 +178,24 @@ export function RecordSheet({
     setError(null);
     setErrorField(null);
     setScopeOpen(false);
+    setMoreOpen(
+      Boolean(
+        editing &&
+          (editing.note ||
+            editing.recurringRuleId ||
+            editing.occurredAtLocal.slice(0, 10) !==
+              nowLocal(timeZone).slice(0, 10)),
+      ),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingId]);
+
+  // A hidden field cannot be corrected. Every field inside the fold, not
+  // only the date: a collapsed section with the error in it is a form that
+  // refuses to save and will not say why.
+  React.useEffect(() => {
+    if (errorField && FOLDED_FIELDS.has(errorField)) setMoreOpen(true);
+  }, [errorField]);
 
   const visibleCategories = categories.filter(
     (category) => category.kind === (type === "income" ? "income" : "expense"),
@@ -192,7 +222,89 @@ export function RecordSheet({
    */
   const partOfDay = PART_OF_DAY_LABEL[entryDefaults?.partOfDay ?? "night"];
 
+  /** What is folded away, so the row says whether it is worth opening. */
+  const moreSummary = [
+    occurredAt.slice(0, 10) === nowLocal(timeZone).slice(0, 10)
+      ? null
+      : "dated",
+    note.trim() ? "note" : null,
+    frequency === "none" ? null : "repeats",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  /**
+   * What is still missing, in the order the sheet asks for it.
+   *
+   * The Save button used to be disabled until everything was filled in,
+   * which is a dead end: a button that does nothing never says why. It is
+   * live now, and pressing it points at the first thing that is not ready.
+   */
+  function firstProblem():
+    | { field: string; message: string }
+    | null {
+    const sum = evaluate(amount || "0", currency.decimals);
+
+    if (amount.trim() === "" || (sum.ok && sum.minor <= 0n)) {
+      return { field: "amount", message: "Enter an amount first." };
+    }
+
+    if (!sum.ok) return { field: "amount", message: sum.error };
+
+    if (!accountId) {
+      return {
+        field: "accountId",
+        message: type === "transfer" ? "Choose where it came from." : "Choose an account.",
+      };
+    }
+
+    if (type === "transfer" && !toAccountId) {
+      return { field: "toAccountId", message: "Choose where it went." };
+    }
+
+    if (type !== "transfer" && !categoryId) {
+      return { field: "categoryId", message: "Choose a category." };
+    }
+
+    return null;
+  }
+
+  /**
+   * Save, or ask the one question that has to come first.
+   *
+   * Editing a record that belongs to a rule asks whether the change is for
+   * this one or for every future one. That question is only worth asking if
+   * the form is actually saveable — otherwise somebody answers it and then
+   * gets told the amount is missing.
+   */
+  function requestSave() {
+    const problem = firstProblem();
+
+    if (problem) {
+      setError(problem.message);
+      setErrorField(problem.field);
+      if (problem.field === "amount") shake();
+      return;
+    }
+
+    if (editing?.recurringRuleId) {
+      setScopeOpen(true);
+      return;
+    }
+
+    void save(false);
+  }
+
   async function save(andAnother: boolean, applyToRule = false) {
+    const problem = firstProblem();
+
+    if (problem) {
+      setError(problem.message);
+      setErrorField(problem.field);
+      if (problem.field === "amount") shake();
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setErrorField(null);
@@ -243,11 +355,12 @@ export function RecordSheet({
 
       if (andAnother) {
         // Keep the type, account and date; clear what is specific to the
-        // record just saved, so a run of receipts is a few taps each.
+        // record just saved, so a run of receipts is a few taps each. No
+        // toast of its own: the shared one already names what was saved, and
+        // the cleared amount says the sheet is ready for the next.
         setAmount("");
         setNote("");
         setError(null);
-        toast.success("Saved — add another");
         return;
       }
 
@@ -262,19 +375,12 @@ export function RecordSheet({
     }
   }
 
-  const canSave =
-    amount.trim() !== "" &&
-    accountId !== "" &&
-    (type === "transfer" ? toAccountId !== "" : categoryId !== "");
 
   return (
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
       title={editing ? "Edit record" : "Add record"}
-      description={
-        editing ? undefined : "Log an expense, income or transfer."
-      }
     >
       <SheetBody>
         <TypeTabs
@@ -295,13 +401,12 @@ export function RecordSheet({
           onChange={setAmount}
           tone={type}
           focusOnOpen={!editing}
+          invalid={errorField === "amount"}
+          error={errorField === "amount" ? (error ?? undefined) : undefined}
+          shaking={shaking}
           onEnter={() => {
-            if (saving || !canSave) return;
-            if (editing?.recurringRuleId) {
-              setScopeOpen(true);
-              return;
-            }
-            void save(false);
+            if (saving) return;
+            void requestSave();
           }}
         />
 
@@ -342,10 +447,10 @@ export function RecordSheet({
                         aria-pressed={active}
                         onClick={() => setCategoryId(category.id)}
                         className={cn(
-                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                           active
                             ? "border-primary bg-primary/5"
-                            : "text-muted-foreground hover:bg-muted/60",
+                            : "text-muted-foreground hoverable:bg-muted/60",
                         )}
                       >
                         <span
@@ -384,6 +489,30 @@ export function RecordSheet({
           </>
         )}
 
+        <button
+          type="button"
+          aria-expanded={moreOpen}
+          aria-controls="more-options"
+          onClick={() => setMoreOpen((open) => !open)}
+          className={cn(
+            PRESSABLE,
+            "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 rounded-xl border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
+          )}
+        >
+          <span className="flex-1 text-left">More options</span>
+          <span className="text-muted-foreground truncate text-xs font-normal">
+            {moreSummary}
+          </span>
+          <ChevronDown
+            className={cn(
+              "text-muted-foreground size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
+              moreOpen && "rotate-180",
+            )}
+            aria-hidden="true"
+          />
+        </button>
+
+        <div id="more-options" hidden={!moreOpen} className="space-y-4">
         <FormRow
           id="occurred-at"
           label="When"
@@ -439,10 +568,10 @@ export function RecordSheet({
                     aria-checked={active}
                     onClick={() => setFrequency(value)}
                     className={cn(
-                      "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                      "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                       active
                         ? "border-primary bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted",
+                        : "text-muted-foreground hoverable:bg-muted",
                     )}
                   >
                     {value === "none" ? "No" : REPEAT_LABELS[value]}
@@ -481,6 +610,7 @@ export function RecordSheet({
             ) : null}
           </div>
         )}
+        </div>
 
         {error && !errorField ? (
           <p role="alert" className="text-destructive text-sm">
@@ -510,7 +640,10 @@ export function RecordSheet({
         ) : null}
       </SheetBody>
 
-      <SheetFooter className="flex-col gap-2 sm:flex-row">
+      {/* One row even at 360px: stacked, the two buttons cost a whole row of
+          categories on a short screen, and the labels are short enough to
+          share. */}
+      <SheetFooter className="gap-2">
         {editing ? (
           <>
             <Button
@@ -525,14 +658,8 @@ export function RecordSheet({
             <Button
               size="touch"
               className="flex-1"
-              onClick={() => {
-                if (editing.recurringRuleId) {
-                  setScopeOpen(true);
-                  return;
-                }
-                void save(false);
-              }}
-              disabled={saving || !canSave}
+              onClick={requestSave}
+              disabled={saving}
             >
               {saving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -549,16 +676,18 @@ export function RecordSheet({
               size="touch"
               className="flex-1"
               onClick={() => void save(true)}
-              disabled={saving || !canSave}
+              disabled={saving}
             >
               <Plus className="size-4" aria-hidden="true" />
-              Save &amp; add another
+              {/* Short enough to share a row with Save at 360px. Two
+                  full-width buttons stacked cost a row of categories. */}
+              Save &amp; new
             </Button>
             <Button
               size="touch"
               className="flex-1"
               onClick={() => void save(false)}
-              disabled={saving || !canSave}
+              disabled={saving}
             >
               {saving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

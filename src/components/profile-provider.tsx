@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { haptic } from "@/lib/motion";
 import {
   type CurrencySettings,
   DEFAULT_CURRENCY_SETTINGS,
@@ -12,6 +13,9 @@ import {
 const CurrencyContext = React.createContext<CurrencySettings>(
   DEFAULT_CURRENCY_SETTINGS,
 );
+
+/** Whether this person wants the phone to buzz when something is saved. */
+const HapticsContext = React.createContext(true);
 
 /**
  * Carries the signed-in user's currency down to Client Components.
@@ -24,15 +28,35 @@ const CurrencyContext = React.createContext<CurrencySettings>(
  */
 export function ProfileProvider({
   currency,
+  haptics,
   children,
 }: {
   currency: CurrencySettings;
+  haptics: boolean;
   children: React.ReactNode;
 }) {
   return (
     <CurrencyContext.Provider value={currency}>
-      {children}
+      <HapticsContext.Provider value={haptics}>
+        {children}
+      </HapticsContext.Provider>
     </CurrencyContext.Provider>
+  );
+}
+
+/**
+ * A light tap, for the two actions that change data.
+ *
+ * Returns a function rather than a boolean so the caller never has to
+ * remember the check: `tap()` does nothing when the setting is off, and
+ * nothing again on hardware that cannot vibrate.
+ */
+export function useHaptic() {
+  const enabled = React.useContext(HapticsContext);
+
+  return React.useCallback(
+    (pattern?: number | number[]) => haptic(enabled, pattern),
+    [enabled],
   );
 }
 

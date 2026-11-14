@@ -166,7 +166,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         aria-label="Total balance"
         className="bg-card rounded-2xl border p-4"
       >
-        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           Total balance
         </p>
         <p
@@ -185,6 +185,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
 
       {active.length === 0 ? (
         <EmptyState
+          art="accounts"
           icon={Wallet}
           title="No accounts yet"
           description="Add Cash, a bank account or a UPI wallet, then every record can move money between them."
@@ -252,7 +253,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+            className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -332,7 +333,7 @@ function AccountRow({
 
       <Link
         href={`/accounts/${account.id}`}
-        className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
       >
         <span
           className="flex size-9 shrink-0 items-center justify-center rounded-full text-white"
@@ -342,7 +343,7 @@ function AccountRow({
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">
+          <span className="block truncate text-sm font-semibold">
             {account.name}
           </span>
           {!account.includeInTotal || account.archived ? (

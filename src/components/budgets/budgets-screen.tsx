@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { useRouter } from "next/navigation";
 
-import { CalendarClock, CopyPlus, Plus, Target } from "lucide-react";
+import { CalendarClock, Check, CopyPlus, Plus, Target } from "lucide-react";
 import { toast } from "sonner";
 
 import { copyPreviousMonthBudgets } from "@/actions/budgets";
@@ -36,6 +36,7 @@ export function BudgetsScreen({
   previousLabel,
   data,
   categories,
+  isPastMonth,
 }: {
   /** `yyyy-mm`. */
   month: string;
@@ -44,6 +45,8 @@ export function BudgetsScreen({
   previousLabel: string;
   data: BudgetMonth;
   categories: BudgetCategoryOption[];
+  /** True only for a month that has ended, which is when it can be judged. */
+  isPastMonth: boolean;
 }) {
   const router = useRouter();
   const formatMoney = useFormatMoney();
@@ -51,6 +54,18 @@ export function BudgetsScreen({
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<BudgetDraft | null>(null);
   const [copying, setCopying] = React.useState(false);
+
+  /*
+   * How the month finished, said once and quietly.
+   *
+   * Only for a month that has ended: while one is running "under budget" is
+   * a guess, and in a month that has not started it is meaningless. No
+   * celebration, no colour beyond the one the amounts already use — the
+   * reward for keeping to a budget is the number, not applause.
+   */
+  const kept = data.lines.filter(
+    (line) => BigInt(line.spent) <= BigInt(line.budget),
+  ).length;
 
   const totalBudget = BigInt(data.totalBudget);
   const totalSpent = BigInt(data.totalSpent);
@@ -110,6 +125,7 @@ export function BudgetsScreen({
     return (
       <div className="space-y-4">
         <EmptyState
+          art="budgets"
           icon={Target}
           title="No budgets this month"
           description="Set a monthly limit per category and watch what is left, day by day."
@@ -145,7 +161,7 @@ export function BudgetsScreen({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <section
         aria-label="This month's budget"
         className="bg-card rounded-2xl border p-4"
@@ -165,7 +181,7 @@ export function BudgetsScreen({
           </BudgetRing>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-muted-foreground text-label font-medium tracking-wide uppercase">
+            <h2 className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
               {remaining >= 0n ? "Left to spend" : "Over budget"}
             </h2>
             <p
@@ -180,7 +196,7 @@ export function BudgetsScreen({
             </p>
 
             {data.daysLeft > 0 && remaining > 0n ? (
-              <p className="text-foreground mt-1 text-sm font-medium">
+              <p className="text-foreground mt-1 text-sm font-semibold">
                 {formatMoney(remaining / BigInt(data.daysLeft), {
                   signDisplay: "never",
                 })}
@@ -221,6 +237,14 @@ export function BudgetsScreen({
           ) : null}
         </div>
       </section>
+
+      {isPastMonth && kept > 0 ? (
+        <p className="text-income flex items-center gap-2 px-1 text-sm font-semibold">
+          <Check className="size-4 shrink-0" aria-hidden="true" />
+          You stayed under budget in {kept} of {data.lines.length}{" "}
+          {data.lines.length === 1 ? "category" : "categories"}.
+        </p>
+      ) : null}
 
       <section>
         <h2 className="text-muted-foreground mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
@@ -267,7 +291,7 @@ function BudgetRow({
     <button
       type="button"
       onClick={onOpen}
-      className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+      className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
     >
       <span
         className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
@@ -278,7 +302,7 @@ function BudgetRow({
 
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-sm font-medium">{line.name}</span>
+          <span className="truncate text-sm font-semibold">{line.name}</span>
           <span className="amount shrink-0 text-xs font-semibold tabular-nums">
             {formatMoney(spent, { signDisplay: "never" })}
             <span className="text-muted-foreground font-normal">
@@ -296,7 +320,7 @@ function BudgetRow({
           <span
             className={cn(
               "shrink-0 text-xs whitespace-nowrap",
-              tone === "over" ? "text-expense font-medium" : "text-muted-foreground",
+              tone === "over" ? "text-expense font-semibold" : "text-muted-foreground",
             )}
           >
             {tone === "over"
@@ -351,7 +375,7 @@ function Unbudgeted({
             </span>
 
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium">
+              <span className="block truncate text-sm font-semibold">
                 {line.name}
               </span>
               <span className="amount text-muted-foreground block text-xs">

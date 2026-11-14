@@ -32,6 +32,14 @@ export default async function BudgetsPage({
   const isCurrentMonth =
     month.year === month.maxYear && month.month === month.maxMonth;
 
+  // Strictly before the month we are in. A future month can have budgets —
+  // "Apply to all future months" makes them — and nothing has been spent in
+  // one yet, so "you stayed under budget" would be true of a month that has
+  // not happened.
+  const isPastMonth =
+    month.year < month.maxYear ||
+    (month.year === month.maxYear && month.month < month.maxMonth);
+
   const [data, categories] = await Promise.all([
     getBudgetMonth({
       year: month.year,
@@ -56,6 +64,7 @@ export default async function BudgetsPage({
         previousLabel={SHORT_MONTH.format(previous)}
         data={data}
         categories={categories}
+        isPastMonth={isPastMonth}
       />
     </>
   );
