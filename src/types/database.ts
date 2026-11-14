@@ -546,12 +546,12 @@ export type Database = {
       account_month_flow: {
         Args: { p_month: string; p_account_id: string }
         Returns: {
-          money_in: number
           money_out: number
+          money_in: number
         }[]
       }
       assert_bucket: {
-        Args: { p_bucket: string; p_from: string; p_to: string }
+        Args: { p_from: string; p_to: string; p_bucket: string }
         Returns: undefined
       }
       assert_range: {
@@ -560,36 +560,44 @@ export type Database = {
       }
       balance_series: {
         Args: {
-          p_from: string
-          p_to: string
-          p_bucket: string
           p_account_id?: string
+          p_bucket: string
+          p_to: string
+          p_from: string
         }
         Returns: {
-          bucket_start: string
           balance: number
+          bucket_start: string
         }[]
       }
       bucket_starts: {
         Args: { p_from: string; p_to: string; p_bucket: string }
         Returns: string[]
       }
+      budget_hints: {
+        Args: { p_month: string }
+        Returns: {
+          three_month_average: number
+          last_month: number
+          category_id: string
+        }[]
+      }
       category_totals: {
         Args: {
-          p_from: string
           p_to: string
+          p_from: string
           p_kind: Database["public"]["Enums"]["category_kind"]
         }
         Returns: {
-          category_id: string
-          name: string
           icon: string
           color: string
           total: number
+          category_id: string
+          name: string
         }[]
       }
       change_currency: {
-        Args: { p_code: string; p_symbol: string; p_decimals: number }
+        Args: { p_decimals: number; p_symbol: string; p_code: string }
         Returns: number
       }
       check_account_owner: {
@@ -615,11 +623,11 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          color: string
+          sort_order: number
           name: string
           kind: Database["public"]["Enums"]["category_kind"]
           icon: string
-          sort_order: number
+          color: string
         }[]
       }
       delete_own_account: {
@@ -627,7 +635,7 @@ export type Database = {
         Returns: undefined
       }
       delete_recurring_rule: {
-        Args: { p_rule_id: string; p_delete_transactions?: boolean }
+        Args: { p_delete_transactions?: boolean; p_rule_id: string }
         Returns: number
       }
       entry_defaults: {
@@ -635,21 +643,21 @@ export type Database = {
         Returns: Json
       }
       local_day_range: {
-        Args: { p_from: string; p_to: string }
+        Args: { p_to: string; p_from: string }
         Returns: Record<string, unknown>
       }
       materialise_recurring: {
-        Args: { p_rule_id: string; p_on: string }
+        Args: { p_on: string; p_rule_id: string }
         Returns: string
       }
       month_summary: {
         Args: { p_month: string }
         Returns: {
           categories: Json
-          month_start: string
-          total_income: number
-          total_expense: number
           net: number
+          total_expense: number
+          total_income: number
+          month_start: string
         }[]
       }
       period_series: {
@@ -664,30 +672,43 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      quick_adds: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          category_id: string
+          name: string
+          icon: string
+          color: string
+          amount: number
+          account_id: string
+          account_name: string
+          used: number
+        }[]
+      }
       recurrence_after: {
         Args: {
-          p_interval: number
+          p_from: string
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+          p_interval: number
           p_anchor_day: number
-          p_from: string
         }
         Returns: string
       }
       recurrence_occurrence: {
         Args:
           | {
-              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-              p_start: string
-              p_interval: number
               p_n: number
+              p_start: string
+              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_interval: number
+              p_anchor_day: number
             }
           | {
               p_start: string
-              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-              p_interval: number
               p_n: number
-              p_anchor_day: number
+              p_interval: number
+              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
             }
         Returns: string
       }
@@ -701,26 +722,26 @@ export type Database = {
       }
       set_budget: {
         Args: {
+          p_apply_forward?: boolean
+          p_horizon?: number
           p_category_id: string
           p_month: string
           p_amount: number
-          p_apply_forward?: boolean
-          p_horizon?: number
         }
         Returns: number
       }
       skip_recurring_occurrence: {
-        Args: { p_rule_id: string; p_on: string }
+        Args: { p_on: string; p_rule_id: string }
         Returns: string
       }
       update_settings: {
         Args: {
-          p_display_name: string
           p_decimals: number
-          p_week_start: number
           p_theme: string
           p_code: string
           p_symbol: string
+          p_display_name: string
+          p_week_start: number
         }
         Returns: number
       }

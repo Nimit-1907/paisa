@@ -288,3 +288,42 @@ export async function getEntryDefaults(): Promise<EntryDefaults> {
     partOfDay: partOfDay ?? "night",
   };
 }
+
+export type QuickAdd = {
+  categoryId: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  /** Minor units as text — an RSC payload cannot carry a BigInt. */
+  amount: string;
+  accountId: string;
+  accountName: string;
+};
+
+/**
+ * The handful of things this person buys over and over.
+ *
+ * One tap fills the sheet instead of three. Worked out in the database from
+ * the last sixty days — see `quick_adds()` — and never fatal: a sheet with
+ * no chips is the sheet everybody had before.
+ */
+export async function getQuickAdds(): Promise<QuickAdd[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("quick_adds");
+
+  if (error) {
+    console.error("[records]", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    categoryId: row.category_id,
+    name: row.name,
+    icon: row.icon,
+    color: row.color,
+    amount: fromDb(row.amount).toString(),
+    accountId: row.account_id,
+    accountName: row.account_name,
+  }));
+}

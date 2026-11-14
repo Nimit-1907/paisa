@@ -41,7 +41,10 @@ export function MonthRecap({
   if (hidden) return null;
 
   const change = recap.changePercent;
-  const spent = formatMoney(BigInt(recap.spent), { signDisplay: "never" });
+  const spent = formatMoney(BigInt(recap.spent), {
+    signDisplay: "never",
+    whole: true,
+  });
 
   const facts = [
     recap.topCategory

@@ -18,7 +18,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
-import { fromMinor } from "@/lib/money";
+import { Label } from "@/components/ui/label";
+import { formatWith, friendlyAmount, fromMinor } from "@/lib/money";
+import { PRESSABLE } from "@/lib/motion";
+import type { BudgetHint } from "@/lib/queries/budgets";
+import { cn } from "@/lib/utils";
 import { APPLY_FORWARD_MONTHS } from "@/lib/schemas/budgets";
 
 export type BudgetCategoryOption = {
@@ -48,6 +52,7 @@ export function BudgetSheet({
   monthLabel,
   categories,
   draft,
+  hints,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,6 +63,8 @@ export function BudgetSheet({
   categories: BudgetCategoryOption[];
   /** Null when adding from scratch. */
   draft: BudgetDraft | null;
+  /** What each category has actually cost, for the suggestions. */
+  hints: BudgetHint[];
 }) {
   const router = useRouter();
   const currency = useCurrency();
@@ -68,6 +75,35 @@ export function BudgetSheet({
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
+
+  /*
+   * Two numbers worth offering: what this category cost last month, and what
+   * it has averaged over three. Rounded to something somebody would choose,
+   * de-duplicated when they round to the same figure, and absent entirely
+   * for a category with no history — a suggestion of ₹500 based on nothing
+   * is worse than no suggestion.
+   */
+  const hint = hints.find((entry) => entry.categoryId === categoryId);
+
+  const suggestions = React.useMemo(() => {
+    if (!hint) return [];
+
+    const options = [
+      { label: "last month", minor: friendlyAmount(BigInt(hint.lastMonth), currency.decimals) },
+      {
+        label: "3-month average",
+        minor: friendlyAmount(
+          BigInt(hint.threeMonthAverage),
+          currency.decimals,
+        ),
+      },
+    ].filter((option) => option.minor > 0n);
+
+    return options.filter(
+      (option, index) =>
+        options.findIndex((other) => other.minor === option.minor) === index,
+    );
+  }, [hint, currency.decimals]);
 
   const draftKey = draft ? `${draft.categoryId}:${draft.amount}` : null;
   const editing = Boolean(draft?.amount);
@@ -170,6 +206,43 @@ export function BudgetSheet({
             }
           />
         )}
+
+        {suggestions.length > 0 ? (
+          <div className="space-y-1.5">
+            <Label id="budget-suggestions">Suggested</Label>
+            <div
+              role="group"
+              aria-labelledby="budget-suggestions"
+              className="flex flex-wrap gap-1.5"
+            >
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.label}
+                  type="button"
+                  onClick={() =>
+                    setAmount(
+                      fromMinor(suggestion.minor, currency.decimals),
+                    )
+                  }
+                  className={cn(
+                    PRESSABLE,
+                    "hoverable:bg-muted/60 focus-visible:ring-ring flex h-11 items-center gap-2 rounded-full border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none",
+                  )}
+                >
+                  <span className="amount font-semibold">
+                    {formatWith(currency, suggestion.minor, {
+                      signDisplay: "never",
+                      whole: true,
+                    })}
+                  </span>
+                  <span className="text-ink-2 text-xs">
+                    {suggestion.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <FormRow
           id="budget-amount"

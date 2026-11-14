@@ -245,3 +245,40 @@ export async function getBudgetableCategories() {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export type BudgetHint = {
+  categoryId: string;
+  /** Minor units as text. */
+  lastMonth: string;
+  threeMonthAverage: string;
+};
+
+/**
+ * What this category has actually cost, for suggesting a limit.
+ *
+ * Last month and the three-month average, both straight from the rows. The
+ * rounding to a number somebody would choose — ₹8,000 rather than ₹7,842 —
+ * happens at the edge, next to the currency's decimal places.
+ */
+export async function getBudgetHints(
+  year: number,
+  month: number,
+): Promise<BudgetHint[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("budget_hints", {
+    p_month: monthStart(year, month),
+  });
+
+  // Never fatal: the sheet still works, it just stops offering to help.
+  if (error) {
+    console.error("[budgets]", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    categoryId: row.category_id,
+    lastMonth: fromDb(row.last_month).toString(),
+    threeMonthAverage: fromDb(row.three_month_average).toString(),
+  }));
+}

@@ -18,7 +18,7 @@ import {
   useHaptic,
 } from "@/components/profile-provider";
 import { evaluate } from "@/lib/calculator";
-import type { EntryDefaults } from "@/lib/queries/accounts";
+import type { EntryDefaults, QuickAdd } from "@/lib/queries/accounts";
 import {
   type AccountOption,
   type CategoryOption,
@@ -75,6 +75,7 @@ export function RecordSheetProvider({
   categories,
   timeZone,
   entryDefaults,
+  quickAdds,
   firstRecordSeen,
   children,
 }: {
@@ -82,6 +83,8 @@ export function RecordSheetProvider({
   categories: CategoryOption[];
   timeZone: string;
   entryDefaults: EntryDefaults;
+  /** The things this person buys over and over, as one-tap chips. */
+  quickAdds: QuickAdd[];
   /** False until the "first record" note has been shown once. */
   firstRecordSeen: boolean;
   children: React.ReactNode;
@@ -313,6 +316,7 @@ export function RecordSheetProvider({
         onDelete={remove}
         timeZone={timeZone}
         entryDefaults={entryDefaults}
+        quickAdds={quickAdds}
       />
     </RecordSheetContext.Provider>
   );

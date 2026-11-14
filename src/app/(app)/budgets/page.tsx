@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/page-header";
 import { BudgetsScreen } from "@/components/budgets/budgets-screen";
 import { getMonthContext } from "@/lib/month-param";
-import { getBudgetMonth, getBudgetableCategories } from "@/lib/queries/budgets";
+import {
+  getBudgetHints,
+  getBudgetMonth,
+  getBudgetableCategories,
+} from "@/lib/queries/budgets";
 import { localToday } from "@/lib/recurring-check";
 
 export const metadata: Metadata = { title: "Budgets" };
@@ -40,7 +44,7 @@ export default async function BudgetsPage({
     month.year < month.maxYear ||
     (month.year === month.maxYear && month.month < month.maxMonth);
 
-  const [data, categories] = await Promise.all([
+  const [data, categories, hints] = await Promise.all([
     getBudgetMonth({
       year: month.year,
       month: month.month,
@@ -49,6 +53,7 @@ export default async function BudgetsPage({
       isCurrentMonth,
     }),
     getBudgetableCategories(),
+    getBudgetHints(month.year, month.month),
   ]);
 
   const key = `${month.year}-${String(month.month).padStart(2, "0")}`;
@@ -64,6 +69,7 @@ export default async function BudgetsPage({
         previousLabel={SHORT_MONTH.format(previous)}
         data={data}
         categories={categories}
+        hints={hints}
         isPastMonth={isPastMonth}
       />
     </>

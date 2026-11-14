@@ -14,7 +14,11 @@ import {
   getSessionUser,
   needsOnboarding,
 } from "@/lib/profile";
-import { getActiveAccounts, getEntryDefaults } from "@/lib/queries/accounts";
+import {
+  getActiveAccounts,
+  getEntryDefaults,
+  getQuickAdds,
+} from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import { runDueRecurring } from "@/lib/recurring-check";
 import { LOGIN_PATH, ONBOARDING_PATH } from "@/lib/routes";
@@ -48,12 +52,14 @@ export default async function AppLayout({
   // The recurring catch-up rides along here because this layout is the one
   // thing every signed-in page renders through, and it only does any work on
   // the first page of a new day.
-  const [accounts, categories, created, entryDefaults] = await Promise.all([
-    getActiveAccounts(),
-    getActiveCategories(),
-    runDueRecurring(),
-    getEntryDefaults(),
-  ]);
+  const [accounts, categories, created, entryDefaults, quickAdds] =
+    await Promise.all([
+      getActiveAccounts(),
+      getActiveCategories(),
+      runDueRecurring(),
+      getEntryDefaults(),
+      getQuickAdds(),
+    ]);
 
   return (
     <ProfileProvider
@@ -65,6 +71,7 @@ export default async function AppLayout({
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
         entryDefaults={entryDefaults}
+        quickAdds={quickAdds}
         firstRecordSeen={profile?.first_record_seen ?? true}
       >
         <div className="min-h-dvh">

@@ -2,15 +2,10 @@
 
 import * as React from "react";
 
-import { useRouter } from "next/navigation";
-
 import { ArrowLeft, Check, Loader2, Search, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  completeOnboarding,
-  refreshAfterOnboarding,
-} from "@/actions/profile";
+import { completeOnboarding, startTracking } from "@/actions/profile";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
@@ -41,7 +36,6 @@ export function OnboardingFlow({
   initialName: string;
   initialAccountName: string;
 }) {
-  const router = useRouter();
 
   const [step, setStep] = React.useState<Step>(0);
   const [displayName, setDisplayName] = React.useState(initialName);
@@ -68,25 +62,6 @@ export function OnboardingFlow({
     setError(null);
     setStep((current) => Math.max(current - 1, 0) as Step);
   }
-
-  /*
-   * The app shell is cached from before setup finished, so it still holds
-   * the old name and currency. Thrown away the moment the welcome screen
-   * appears rather than when its button is pressed — somebody might leave
-   * this screen another way, and a stale shell would follow them.
-   *
-   * Invalidating the cache does not re-render this page; only a refresh
-   * would, and that is what would have taken this screen away.
-   */
-  const shellRefreshed = React.useRef<Promise<unknown> | null>(null);
-
-  React.useEffect(() => {
-    if (step !== 3 || shellRefreshed.current) return;
-
-    shellRefreshed.current = refreshAfterOnboarding().catch(
-      (thrown: unknown) => console.error("[onboarding]", thrown),
-    );
-  }, [step]);
 
   async function finish() {
     if (openingMinor === null) {
@@ -279,25 +254,18 @@ export function OnboardingFlow({
           </p>
 
           <div className="pb-safe mt-8">
-            <Button
-              type="button"
-              size="touch"
-              className="w-full"
-              onClick={() => {
-                void (async () => {
-                  // Tapping straight away would otherwise race the effect
-                  // above and navigate into the very cache it is clearing.
-                  await shellRefreshed.current;
-
-                  // Straight into the sheet: the next thing to do is the
-                  // whole point of the app, and a screen with a button on
-                  // it is one more decision than it needs.
-                  router.replace("/records?add=1");
-                })();
-              }}
-            >
-              Add your first expense
-            </Button>
+            {/*
+              A form, not an onClick: the action rebuilds the shell and
+              redirects in one step, so there is no window where this page
+              has been invalidated and is still on screen waiting to be
+              clicked. Straight into the sheet, because the next thing to do
+              is the whole point of the app.
+            */}
+            <form action={startTracking}>
+              <Button type="submit" size="touch" className="w-full">
+                Add your first expense
+              </Button>
+            </form>
           </div>
         </section>
       ) : null}
