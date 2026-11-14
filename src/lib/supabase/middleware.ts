@@ -2,17 +2,24 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 
+import {
+  LOGIN_PATH,
+  isAppPath,
+  isAuthPath,
+  safeNextPath,
+} from "@/lib/routes";
 import type { Database } from "@/types/database";
 
 import { supabaseEnv } from "./env";
 
 /**
- * Refreshes the Supabase session on every matched request and keeps the auth
- * cookies in sync between the request and the response.
+ * Refreshes the Supabase session on every matched request, keeps the auth
+ * cookies in sync between request and response, and decides who may see what.
  *
- * Returning `supabaseResponse` unmodified is important: a brand new
- * `NextResponse` would drop the refreshed cookies and sign the user out at
- * random.
+ * Returning `supabaseResponse` (rather than a fresh NextResponse) is
+ * important: a new response object drops the refreshed cookies and signs the
+ * user out at random. The redirects below copy those cookies across for the
+ * same reason.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,10 +45,42 @@ export async function updateSession(request: NextRequest) {
 
   // Do not run code between createServerClient and getUser(): this call is
   // what refreshes the token and writes the cookies above.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Phase 2 (auth): once /login exists, redirect unauthenticated requests for
-  // the (app) route group here, using the user returned by getUser().
+  const { pathname, search } = request.nextUrl;
+
+  if (!user && isAppPath(pathname)) {
+    const target = request.nextUrl.clone();
+    target.pathname = LOGIN_PATH;
+    target.search = "";
+    // Remember where they were headed, so signing in finishes the journey.
+    target.searchParams.set("next", `${pathname}${search}`);
+    return redirectKeepingCookies(target, supabaseResponse);
+  }
+
+  if (user && isAuthPath(pathname)) {
+    const target = request.nextUrl.clone();
+    target.pathname = safeNextPath(request.nextUrl.searchParams.get("next"));
+    target.search = "";
+    return redirectKeepingCookies(target, supabaseResponse);
+  }
 
   return supabaseResponse;
+}
+
+/**
+ * A redirect built from scratch would throw away the Set-Cookie headers the
+ * refresh just produced, so the next request would arrive unauthenticated and
+ * bounce again — the classic redirect loop.
+ */
+function redirectKeepingCookies(target: URL, carrying: NextResponse) {
+  const response = NextResponse.redirect(target);
+
+  for (const cookie of carrying.cookies.getAll()) {
+    response.cookies.set(cookie);
+  }
+
+  return response;
 }
