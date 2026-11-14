@@ -13,6 +13,8 @@ import { PeriodBars } from "@/components/analysis/period-bars";
 import { PeriodSelector } from "@/components/analysis/period-selector";
 import { SummaryCards } from "@/components/analysis/summary-cards";
 import { EmptyState } from "@/components/empty-state";
+import { AddRecordButton } from "@/components/records/add-record-button";
+import { describeInsight } from "@/lib/insight";
 import type { Period } from "@/lib/period";
 import type { AnalysisData } from "@/lib/queries/analysis";
 import { cn } from "@/lib/utils";
@@ -70,6 +72,20 @@ export function AnalysisScreen({
     return `/records?${search.toString()}`;
   }
 
+  // The headline: what changed, in words, before any chart asks to be read.
+  const insight = describeInsight({
+    kind,
+    periodKind: period.kind,
+    top: data.categories[0]
+      ? {
+          name: data.categories[0].name,
+          total: BigInt(data.categories[0].total),
+        }
+      : null,
+    topPrevious: data.topPrevious === null ? null : BigInt(data.topPrevious),
+    total: BigInt(data.total),
+  });
+
   const nothing =
     data.categories.length === 0 &&
     BigInt(data.incomeTotal) === 0n &&
@@ -111,10 +127,17 @@ export function AnalysisScreen({
         <EmptyState
           icon={ChartPie}
           title="Nothing in this period"
-          description="Add a few records, or step back to a period that has some — the charts fill in from the same rows Records lists."
+          description="The charts fill in from the same rows Records lists, so they need a record or two first."
+          action={<AddRecordButton />}
         />
       ) : (
         <>
+          {insight ? (
+            <p className="bg-card rounded-2xl border px-4 py-3 text-sm font-medium">
+              {insight}
+            </p>
+          ) : null}
+
           <SummaryCards data={data} kind={kind} />
 
           {data.categories.length > 0 ? (

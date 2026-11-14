@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { useFormatMoney } from "@/components/profile-provider";
+import { AddRecordButton } from "@/components/records/add-record-button";
 import { DeleteRuleDialog } from "@/components/recurring/delete-rule-dialog";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";
 import { RuleSheet } from "@/components/recurring/rule-sheet";
@@ -75,7 +76,8 @@ export function RecurringScreen({
       <EmptyState
         icon={Repeat}
         title="No recurring records"
-        description="Set Repeat when you add a record — rent, salary, a subscription — and it will show up here, creating itself every month."
+        description="Rent, salary, a subscription: add the record once with Repeat set, and it will show up here creating itself every month."
+        action={<AddRecordButton label="Add a repeating record" />}
       />
     );
   }

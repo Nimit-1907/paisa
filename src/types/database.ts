@@ -621,6 +621,10 @@ export type Database = {
         Args: { p_rule_id: string; p_delete_transactions?: boolean }
         Returns: number
       }
+      entry_defaults: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       local_day_range: {
         Args: { p_from: string; p_to: string }
         Returns: Record<string, unknown>

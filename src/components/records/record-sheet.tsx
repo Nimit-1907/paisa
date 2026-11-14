@@ -7,9 +7,11 @@ import { toast } from "sonner";
 
 import type { SavedTransaction } from "@/actions/transactions";
 import type { ActionResult } from "@/lib/action-result";
+import type { EntryDefaults, PartOfDay } from "@/lib/queries/accounts";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountKeypad } from "@/components/records/amount-keypad";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
+import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import {
   type AccountOption,
   AccountSelect,
@@ -35,6 +37,14 @@ import {
 import { cn } from "@/lib/utils";
 
 export type { AccountOption, CategoryOption };
+
+/** How the suggestion row introduces itself. */
+const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
+  morning: "in the morning",
+  afternoon: "in the afternoon",
+  evening: "in the evening",
+  night: "at night",
+};
 
 /** What the sheet is editing, if anything. */
 export type RecordDraft = {
@@ -90,6 +100,7 @@ export function RecordSheet({
   onSubmit,
   onDelete,
   timeZone,
+  entryDefaults,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -102,6 +113,8 @@ export function RecordSheet({
   /** Only offered while editing. Undo lives in the toast it raises. */
   onDelete?: (id: string) => void | Promise<void>;
   timeZone: string;
+  /** The account last used, and the categories usual at this hour. */
+  entryDefaults?: EntryDefaults;
 }) {
   const currency = useCurrency();
   const editing = draft ?? null;
@@ -135,7 +148,12 @@ export function RecordSheet({
     setAmount(
       editing ? minorToText(editing.amount, currency.decimals) : defaultAmountText,
     );
-    setAccountId(editing?.accountId ?? accounts[0]?.id ?? "");
+    setAccountId(
+      editing?.accountId ??
+        entryDefaults?.lastAccountId ??
+        accounts[0]?.id ??
+        "",
+    );
     setToAccountId(editing?.toAccountId ?? "");
     setCategoryId(editing?.categoryId ?? "");
     setNote(editing?.note ?? "");
@@ -152,6 +170,27 @@ export function RecordSheet({
   const visibleCategories = categories.filter(
     (category) => category.kind === (type === "income" ? "income" : "expense"),
   );
+
+  /**
+   * The categories usually picked at this hour, in order.
+   *
+   * Only for a new expense: editing already has its category, and income has
+   * too few categories for a shortcut to shorten anything.
+   */
+  const suggestions =
+    editing || type !== "expense"
+      ? []
+      : (entryDefaults?.suggestedCategoryIds ?? [])
+          .map((id) => visibleCategories.find((category) => category.id === id))
+          .filter((category): category is CategoryOption => Boolean(category))
+          .slice(0, 4);
+
+  /*
+   * The wording comes from the same decision the categories did, which was
+   * made in the profile's timezone. Reading the device's clock here would
+   * caption an evening row "in the morning" on the first day of a trip.
+   */
+  const partOfDay = PART_OF_DAY_LABEL[entryDefaults?.partOfDay ?? "night"];
 
   async function save(andAnother: boolean, applyToRule = false) {
     setSaving(true);
@@ -255,7 +294,15 @@ export function RecordSheet({
           value={amount}
           onChange={setAmount}
           tone={type}
-          autoFocus={!editing}
+          focusOnOpen={!editing}
+          onEnter={() => {
+            if (saving || !canSave) return;
+            if (editing?.recurringRuleId) {
+              setScopeOpen(true);
+              return;
+            }
+            void save(false);
+          }}
         />
 
         {type === "transfer" ? (
@@ -278,6 +325,48 @@ export function RecordSheet({
           </>
         ) : (
           <>
+            {suggestions.length > 0 ? (
+              <div className="space-y-1.5">
+                <Label id="suggested-label">Usually {partOfDay}</Label>
+                <div
+                  role="group"
+                  aria-labelledby="suggested-label"
+                  className="flex flex-wrap gap-1.5"
+                >
+                  {suggestions.map((category) => {
+                    const active = category.id === categoryId;
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => setCategoryId(category.id)}
+                        className={cn(
+                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                          active
+                            ? "border-primary bg-primary/5"
+                            : "text-muted-foreground hover:bg-muted/60",
+                        )}
+                      >
+                        <span
+                          className="flex size-6 items-center justify-center rounded-full text-white"
+                          style={{
+                            backgroundColor: category.color ?? "#64748B",
+                          }}
+                        >
+                          <DynamicIcon
+                            name={category.icon}
+                            className="size-3.5"
+                          />
+                        </span>
+                        {category.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
             <CategoryGrid
               categories={visibleCategories}
               value={categoryId}

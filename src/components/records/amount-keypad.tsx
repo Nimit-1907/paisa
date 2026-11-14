@@ -8,6 +8,31 @@ import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { evaluate, isExpression, pressKey } from "@/lib/calculator";
 import { cn } from "@/lib/utils";
 
+/**
+ * What a physical keyboard types, in the characters the parser knows.
+ *
+ * `*` and `/` are what the keys are actually labelled, and the sum they make
+ * is the same sum; rejecting them would have shown "Not a number" to someone
+ * typing `1200/3` perfectly reasonably.
+ */
+function fromKeyboard(text: string): string {
+  return text
+    .replace(/[*x]/gi, "×")
+    .replace(/\//g, "÷")
+    .replace(/[^\d.+\-×÷]/g, "");
+}
+
+/** Minor units back to the text the field holds, the way a calculator does. */
+function resolved(minor: bigint, decimals: number): string {
+  const factor = 10n ** BigInt(decimals);
+  const whole = minor / factor;
+
+  if (decimals === 0) return whole.toString();
+
+  const fraction = (minor % factor).toString().padStart(decimals, "0");
+  return `${whole}.${fraction}`;
+}
+
 const KEYS = [
   ["7", "8", "9", "÷"],
   ["4", "5", "6", "×"],
@@ -31,13 +56,17 @@ export function AmountKeypad({
   value,
   onChange,
   tone,
-  autoFocus = false,
+  focusOnOpen = false,
+  onEnter,
 }: {
   /** The raw expression, e.g. "120+45". */
   value: string;
   onChange: (next: string) => void;
   tone: "expense" | "income" | "transfer";
-  autoFocus?: boolean;
+  /** Put the caret in the amount when the sheet opens. */
+  focusOnOpen?: boolean;
+  /** Enter on a physical keyboard: save, the way a form would. */
+  onEnter?: () => void;
 }) {
   const currency = useCurrency();
   const formatMoney = useFormatMoney();
@@ -60,23 +89,33 @@ export function AmountKeypad({
 
   return (
     <div className="space-y-3">
-      <div
-        className="bg-muted/50 rounded-2xl px-4 py-3 text-right"
-        onClick={() => inputRef.current?.focus()}
+      <label
+        htmlFor="amount-field"
+        className="bg-muted/50 block rounded-2xl px-4 py-3 text-right"
       >
         <input
+          id="amount-field"
           ref={inputRef}
           // Not a number input: it has to hold "120+45" as well as "165".
           type="text"
           inputMode="decimal"
           autoComplete="off"
-          autoFocus={autoFocus}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- the sheet has just been opened, and the amount is what it was opened to take.
+          autoFocus={focusOnOpen}
           aria-label="Amount"
           value={value}
-          onChange={(event) =>
-            // Only the characters the keypad itself can produce.
-            onChange(event.target.value.replace(/[^\d.+\-×÷*/]/g, ""))
-          }
+          onChange={(event) => onChange(fromKeyboard(event.target.value))}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") return;
+            // A keypad is not a form, so Enter would otherwise do nothing on
+            // the one screen a desktop user types the most into.
+            event.preventDefault();
+            if (isExpression(value) && result.ok) {
+              onChange(resolved(result.minor, currency.decimals));
+              return;
+            }
+            onEnter?.();
+          }}
           className="sr-only"
         />
 
@@ -103,7 +142,7 @@ export function AmountKeypad({
               ? `= ${formatMoney(result.minor)}`
               : " "}
         </p>
-      </div>
+      </label>
 
       <div className="grid grid-cols-4 gap-1.5">
         {KEYS.flat().map((key) => (
@@ -133,16 +172,7 @@ export function AmountKeypad({
           type="button"
           onClick={() => {
             if (!result.ok) return;
-            // Replace the sum with its answer, the way a calculator does.
-            const whole = result.minor / 10n ** BigInt(currency.decimals);
-            const fraction = (
-              result.minor % 10n ** BigInt(currency.decimals)
-            ).toString().padStart(currency.decimals, "0");
-            onChange(
-              currency.decimals === 0
-                ? whole.toString()
-                : `${whole}.${fraction}`,
-            );
+            onChange(resolved(result.minor, currency.decimals));
           }}
           disabled={!result.ok}
           className="bg-secondary text-secondary-foreground hover:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"

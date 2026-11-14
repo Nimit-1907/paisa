@@ -11,6 +11,7 @@ import {
   deleteTransaction,
   updateTransaction,
 } from "@/actions/transactions";
+import type { EntryDefaults } from "@/lib/queries/accounts";
 import {
   type AccountOption,
   type CategoryOption,
@@ -51,11 +52,13 @@ export function RecordSheetProvider({
   accounts,
   categories,
   timeZone,
+  entryDefaults,
   children,
 }: {
   accounts: AccountOption[];
   categories: CategoryOption[];
   timeZone: string;
+  entryDefaults: EntryDefaults;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -152,6 +155,7 @@ export function RecordSheetProvider({
         onSubmit={submit}
         onDelete={remove}
         timeZone={timeZone}
+        entryDefaults={entryDefaults}
       />
     </RecordSheetContext.Provider>
   );

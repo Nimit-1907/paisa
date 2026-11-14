@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Receipt } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
+import { AddRecordButton } from "@/components/records/add-record-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { currentMonthRange } from "@/lib/dates";
@@ -138,6 +139,7 @@ export default async function AccountDetailPage({
           icon={Receipt}
           title="Nothing here yet"
           description="Records booked against this account will show up here."
+          action={<AddRecordButton />}
         />
       ) : (
         <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">

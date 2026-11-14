@@ -46,6 +46,11 @@ export type AnalysisData = {
   expenseTotal: string;
   /** Busiest bucket by the selected kind, or null when nothing was spent. */
   peak: { on: string; amount: string } | null;
+  /**
+   * The top category's total in the period before, for the one sentence that
+   * leads the screen. Null when it had none.
+   */
+  topPrevious: string | null;
   /** Days in the period. */
   days: number;
   /**
@@ -85,7 +90,8 @@ export async function getAnalysis({
   const bucket = bucketFor(period);
   const before = previousPeriod(period);
 
-  const [categories, series, balances, previous] = await Promise.all([
+  const [categories, series, balances, previousCategories, previous] =
+    await Promise.all([
     supabase.rpc("category_totals", {
       p_from: period.from,
       p_to: period.to,
@@ -104,6 +110,13 @@ export async function getAnalysis({
       // generated type says so.
       p_account_id: accountId ?? undefined,
     }),
+    // The same breakdown for the period before, so the headline can say what
+    // changed rather than only what is.
+    supabase.rpc("category_totals", {
+      p_from: before.from,
+      p_to: before.to,
+      p_kind: kind,
+    }),
     supabase.rpc("period_series", {
       p_from: before.from,
       p_to: before.to,
@@ -117,6 +130,9 @@ export async function getAnalysis({
   ]);
 
   if (categories.error) throw new Error(categories.error.message);
+  if (previousCategories.error) {
+    throw new Error(previousCategories.error.message);
+  }
   if (series.error) throw new Error(series.error.message);
   if (balances.error) throw new Error(balances.error.message);
   if (previous.error) throw new Error(previous.error.message);
@@ -160,6 +176,11 @@ export async function getAnalysis({
   const total = kind === "income" ? incomeTotal : expenseTotal;
   const busiest = peak as { on: string; amount: bigint } | null;
 
+  const topName = slices[0]?.name;
+  const topBefore = topName
+    ? previousCategories.data.find((row) => row.name === topName)
+    : undefined;
+
   return {
     bucket,
     categories: slices,
@@ -175,6 +196,7 @@ export async function getAnalysis({
     peak: busiest
       ? { on: busiest.on, amount: busiest.amount.toString() }
       : null,
+    topPrevious: topBefore ? fromDb(topBefore.total).toString() : null,
     days: periodLength(period),
     daysElapsed: elapsedDays(period, today),
   };

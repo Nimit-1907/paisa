@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { SkipLink } from "@/components/layout/skip-link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
 import { AddRecordFab } from "@/components/records/add-record-fab";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
+import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
+import { Toaster } from "@/components/ui/sonner";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import {
   currencyOf,
@@ -13,7 +16,7 @@ import {
   getSessionUser,
   needsOnboarding,
 } from "@/lib/profile";
-import { getActiveAccounts } from "@/lib/queries/accounts";
+import { getActiveAccounts, getEntryDefaults } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import { runDueRecurring } from "@/lib/recurring-check";
 import { LOGIN_PATH, ONBOARDING_PATH } from "@/lib/routes";
@@ -47,10 +50,11 @@ export default async function AppLayout({
   // The recurring catch-up rides along here because this layout is the one
   // thing every signed-in page renders through, and it only does any work on
   // the first page of a new day.
-  const [accounts, categories, created] = await Promise.all([
+  const [accounts, categories, created, entryDefaults] = await Promise.all([
     getActiveAccounts(),
     getActiveCategories(),
     runDueRecurring(),
+    getEntryDefaults(),
   ]);
 
   return (
@@ -59,12 +63,17 @@ export default async function AppLayout({
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
+        entryDefaults={entryDefaults}
       >
         <div className="min-h-dvh">
+          <SkipLink />
           <SidebarNav />
 
           <div className="lg:pl-64">
-            <main className="pb-nav mx-auto w-full max-w-3xl px-4 lg:px-6 lg:pb-16">
+            <main
+              id="main"
+              className="pb-nav mx-auto w-full max-w-3xl px-4 lg:px-6 lg:pb-16"
+            >
               {children}
             </main>
           </div>
@@ -72,6 +81,8 @@ export default async function AppLayout({
           <BottomNav />
           <AddRecordFab />
           <RecurringCreatedToast created={created} />
+          <Toaster position="top-center" />
+          <ServiceWorkerUpdates />
         </div>
       </RecordSheetProvider>
     </ProfileProvider>

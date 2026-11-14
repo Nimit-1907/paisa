@@ -229,3 +229,62 @@ export async function getActiveAccounts() {
   if (error) throw new Error(error.message);
   return data;
 }
+
+/** The four buckets `entry_defaults()` sorts the day into. */
+export type PartOfDay = "morning" | "afternoon" | "evening" | "night";
+
+const PARTS_OF_DAY: PartOfDay[] = [
+  "morning",
+  "afternoon",
+  "evening",
+  "night",
+];
+
+export type EntryDefaults = {
+  /** The account the last record was booked against, if it still exists. */
+  lastAccountId: string | null;
+  /** Categories usually picked at this time of day, most likely first. */
+  suggestedCategoryIds: string[];
+  /**
+   * Which part of the day those categories were drawn from.
+   *
+   * Decided in the database, in the profile's timezone, so the label above
+   * the row cannot disagree with the row — which is what reading the
+   * device's own clock would do the moment somebody travelled.
+   */
+  partOfDay: PartOfDay;
+};
+
+/**
+ * What the Add Record sheet can know before it is opened.
+ *
+ * Worked out from the records rather than remembered on the device: a
+ * preference in localStorage is wrong the moment someone picks up their other
+ * phone, and it is empty on the first one.
+ */
+export async function getEntryDefaults(): Promise<EntryDefaults> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("entry_defaults");
+
+  // Never fatal: the sheet opens with its old defaults, which is a worse
+  // guess rather than a broken screen.
+  if (error) {
+    console.error("[records]", error.message);
+    return { lastAccountId: null, suggestedCategoryIds: [], partOfDay: "night" };
+  }
+
+  const value = (data ?? {}) as {
+    lastAccountId?: string | null;
+    suggestedCategoryIds?: string[];
+    partOfDay?: string;
+  };
+
+  const partOfDay = PARTS_OF_DAY.find((part) => part === value.partOfDay);
+
+  return {
+    lastAccountId: value.lastAccountId ?? null,
+    suggestedCategoryIds: (value.suggestedCategoryIds ?? []).filter(isUuid),
+    partOfDay: partOfDay ?? "night",
+  };
+}
