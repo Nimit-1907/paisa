@@ -46,11 +46,77 @@ function fromWallClock(
   month: number,
   day: number,
   timeZone: string,
+  hour = 0,
+  minute = 0,
 ): Date {
-  const guess = Date.UTC(year, month, day);
-  // One correction is enough: the offset at the guess is the offset at the
-  // answer unless a DST change lands inside the few hours between them.
-  return new Date(guess - offsetMs(new Date(guess), timeZone));
+  const guess = Date.UTC(year, month, day, hour, minute);
+
+  // Two passes, not one. The first correction uses the offset at the guess,
+  // which is the wall-clock time read as UTC; in a zone behind UTC that can
+  // still be on the other side of a daylight-saving change, and the answer
+  // comes out an hour off. The second pass measures the offset next to the
+  // answer itself.
+  const first = guess - offsetMs(new Date(guess), timeZone);
+  const second = guess - offsetMs(new Date(first), timeZone);
+
+  return new Date(second);
+}
+
+/** Days in a month, so "31 February" is refused rather than rolled over. */
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/**
+ * Turns a local date and time into the instant it happened.
+ *
+ * The picker hands over what the user sees — "2026-11-14T13:45" — and the
+ * profile's timezone decides which moment that was. Reading it as UTC would
+ * file an evening in Kolkata under the next day.
+ */
+export function localToInstant(local: string, timeZone: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(local.trim());
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+
+  // The pattern only counts digits. Without these checks "2026-02-31T10:00"
+  // and "2026-01-01T99:99" roll over into some other day entirely, and a
+  // record lands on a date nobody chose.
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > daysInMonth(year, month)) return null;
+  if (hour > 23 || minute > 59) return null;
+
+  const date = fromWallClock(year, month - 1, day, timeZone, hour, minute);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** The inverse: an instant as the `yyyy-mm-ddThh:mm` a picker wants. */
+export function instantToLocal(instant: Date | string, timeZone: string): string {
+  const date = typeof instant === "string" ? new Date(instant) : instant;
+
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+
+  const hour = parts.hour === "24" ? "00" : parts.hour;
+
+  return `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}`;
 }
 
 /** Year and month as the user's calendar sees them right now. */
