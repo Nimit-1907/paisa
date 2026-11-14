@@ -222,6 +222,14 @@ export function RecordSheet({
    */
   const partOfDay = PART_OF_DAY_LABEL[entryDefaults?.partOfDay ?? "night"];
 
+  /** Whether the field this error belongs to is on screen to show it. */
+  const errorShownInline =
+    errorField === "amount" ||
+    errorField === "accountId" ||
+    (errorField === "toAccountId" && type === "transfer") ||
+    (errorField === "categoryId" && type !== "transfer") ||
+    (errorField === "occurredAt" && moreOpen);
+
   /** What is folded away, so the row says whether it is worth opening. */
   const moreSummary = [
     occurredAt.slice(0, 10) === nowLocal(timeZone).slice(0, 10)
@@ -485,6 +493,9 @@ export function RecordSheet({
               accounts={accounts}
               value={accountId}
               onChange={setAccountId}
+              error={
+                errorField === "accountId" ? (error ?? undefined) : undefined
+              }
             />
           </>
         )}
@@ -612,7 +623,16 @@ export function RecordSheet({
         )}
         </div>
 
-        {error && !errorField ? (
+        {/*
+          The catch-all, for any error with nowhere else to appear.
+
+          Which fields have a slot depends on what is on screen: a transfer
+          has no category, an expense has no second account, and the date
+          lives behind "More options". Asking whether this error's field is
+          actually being rendered — rather than whether it is on a list of
+          fields that usually are — is what stops a save refusing silently.
+        */}
+        {error && !errorShownInline ? (
           <p role="alert" className="text-destructive text-sm">
             {error}
           </p>

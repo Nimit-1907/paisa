@@ -316,8 +316,6 @@ async function setPreference(
     first_record_seen: boolean;
   }>,
   message: string,
-  /** Only where the layout actually renders the value. */
-  revalidate: "layout" | "none" = "none",
 ): Promise<ActionResult<undefined>> {
   const supabase = await createClient();
   const user = await requireUser(supabase);
@@ -330,7 +328,6 @@ async function setPreference(
 
   if (error) return failFromDb(error, message);
 
-  if (revalidate === "layout") revalidatePath("/", "layout");
   return ok(undefined);
 }
 
@@ -361,12 +358,16 @@ export async function setHaptics(
 ): Promise<ActionResult<undefined>> {
   if (typeof enabled !== "boolean") return fail("Could not save that.");
 
-  // The layout hands this to every client component that can buzz.
-  return setPreference(
+  const saved = await setPreference(
     { haptics: enabled },
     "Could not save that setting.",
-    "layout",
   );
+
+  // The only one of the three the shell renders: it hands this value to
+  // every client component that can buzz.
+  if (saved.ok) revalidatePath("/", "layout");
+
+  return saved;
 }
 
 /**

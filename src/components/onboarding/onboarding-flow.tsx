@@ -69,6 +69,25 @@ export function OnboardingFlow({
     setStep((current) => Math.max(current - 1, 0) as Step);
   }
 
+  /*
+   * The app shell is cached from before setup finished, so it still holds
+   * the old name and currency. Thrown away the moment the welcome screen
+   * appears rather than when its button is pressed — somebody might leave
+   * this screen another way, and a stale shell would follow them.
+   *
+   * Invalidating the cache does not re-render this page; only a refresh
+   * would, and that is what would have taken this screen away.
+   */
+  const shellRefreshed = React.useRef<Promise<unknown> | null>(null);
+
+  React.useEffect(() => {
+    if (step !== 3 || shellRefreshed.current) return;
+
+    shellRefreshed.current = refreshAfterOnboarding().catch(
+      (thrown: unknown) => console.error("[onboarding]", thrown),
+    );
+  }, [step]);
+
   async function finish() {
     if (openingMinor === null) {
       setError("That opening balance is not a number.");
@@ -266,21 +285,13 @@ export function OnboardingFlow({
               className="w-full"
               onClick={() => {
                 void (async () => {
-                  // The shell is cached from before setup finished, so it
-                  // still holds the old name and currency. Rebuilt here
-                  // rather than inside completeOnboarding, which would have
-                  // taken this screen away as soon as it appeared.
-                  try {
-                    await refreshAfterOnboarding();
-                  } catch (thrown) {
-                    // A stale shell is better than a stuck button; the next
-                    // navigation rebuilds it anyway.
-                    console.error("[onboarding]", thrown);
-                  }
+                  // Tapping straight away would otherwise race the effect
+                  // above and navigate into the very cache it is clearing.
+                  await shellRefreshed.current;
 
                   // Straight into the sheet: the next thing to do is the
-                  // whole point of the app, and a screen with a button on it
-                  // is one more decision than it needs.
+                  // whole point of the app, and a screen with a button on
+                  // it is one more decision than it needs.
                   router.replace("/records?add=1");
                 })();
               }}

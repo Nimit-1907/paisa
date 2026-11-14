@@ -65,10 +65,13 @@ export async function getMonthRecap(
       .eq("month", start),
   ]);
 
-  if (summary.expense === 0n) return null;
-
   if (categories.error) throw new Error(categories.error.message);
   if (budgets.error) throw new Error(budgets.error.message);
+
+  // A month with nothing spent in it has no recap worth showing. Checked
+  // after the errors above, so a failed query cannot look like an empty
+  // month.
+  if (summary.expense === 0n) return null;
 
   const slices = (categories.data ?? []) as {
     category_id: string;
