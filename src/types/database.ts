@@ -115,6 +115,13 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "category_usage"
+            referencedColumns: ["category_id"]
+          },
         ]
       }
       categories: {
@@ -262,6 +269,13 @@ export type Database = {
             foreignKeyName: "recurring_rules_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "account_usage"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "recurring_rules_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
@@ -273,10 +287,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recurring_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "category_usage"
+            referencedColumns: ["category_id"]
+          },
+          {
             foreignKeyName: "recurring_rules_to_account_id_fkey"
             columns: ["to_account_id"]
             isOneToOne: false
             referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "recurring_rules_to_account_id_fkey"
+            columns: ["to_account_id"]
+            isOneToOne: false
+            referencedRelation: "account_usage"
             referencedColumns: ["account_id"]
           },
           {
@@ -343,6 +371,13 @@ export type Database = {
             foreignKeyName: "transactions_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "account_usage"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
@@ -352,6 +387,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "category_usage"
+            referencedColumns: ["category_id"]
           },
           {
             foreignKeyName: "transactions_recurring_rule_id_fkey"
@@ -365,6 +407,13 @@ export type Database = {
             columns: ["to_account_id"]
             isOneToOne: false
             referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "transactions_to_account_id_fkey"
+            columns: ["to_account_id"]
+            isOneToOne: false
+            referencedRelation: "account_usage"
             referencedColumns: ["account_id"]
           },
           {
@@ -395,6 +444,51 @@ export type Database = {
         }
         Relationships: []
       }
+      account_usage: {
+        Row: {
+          account_id: string | null
+          recurring_rule_count: number | null
+          transaction_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          recurring_rule_count?: never
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          recurring_rule_count?: never
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      category_usage: {
+        Row: {
+          budget_count: number | null
+          category_id: string | null
+          recurring_rule_count: number | null
+          transaction_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          budget_count?: never
+          category_id?: string | null
+          recurring_rule_count?: never
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Update: {
+          budget_count?: never
+          category_id?: string | null
+          recurring_rule_count?: never
+          transaction_count?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_account_owner: {
@@ -412,21 +506,21 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          icon: string
-          sort_order: number
-          color: string
-          name: string
           kind: Database["public"]["Enums"]["category_kind"]
+          name: string
+          icon: string
+          color: string
+          sort_order: number
         }[]
       }
       month_summary: {
         Args: { p_month: string }
         Returns: {
+          month_start: string
+          total_income: number
+          total_expense: number
           net: number
           categories: Json
-          total_expense: number
-          total_income: number
-          month_start: string
         }[]
       }
       process_due_recurring: {
@@ -436,6 +530,15 @@ export type Database = {
           next_run_on: string
           rule_id: string
         }[]
+      }
+      recurrence_occurrence: {
+        Args: {
+          p_start: string
+          p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+          p_interval: number
+          p_n: number
+        }
+        Returns: string
       }
       user_timezone: {
         Args: Record<PropertyKey, never>
