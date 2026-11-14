@@ -54,3 +54,8 @@ next-env.d.ts
 
 # playwright / browser automation scratch output
 /.playwright-mcp
+
+# Phase 10 before/after screenshots. Kept on disk as a reference for
+# docs/design-review.md; not in history, where every revision of a PNG would
+# live forever.
+docs/screenshots/
