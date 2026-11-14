@@ -267,6 +267,68 @@ export function formatMoney(
   return `${sign}${symbol}${body}`;
 }
 
+/**
+ * A short form for a chart axis: ₹1.2K, ₹3.4L, ₹1.1Cr.
+ *
+ * An axis has about six characters to play with at 360px, and "₹1,23,456.78"
+ * is twelve. The scale follows the grouping the user already reads: thousand,
+ * lakh and crore for ₹, thousand/million/billion otherwise.
+ *
+ * Only the label shortens — every number this is given has already been
+ * through BigInt arithmetic, and nothing is computed from the result.
+ */
+export function formatCompact(
+  minor: bigint,
+  options: Omit<FormatMoneyOptions, "signDisplay"> = {},
+): string {
+  const {
+    symbol = DEFAULT_CURRENCY_SYMBOL,
+    decimals = DEFAULT_DECIMALS,
+    grouping = INDIAN_GROUPING_SYMBOLS.has(symbol) ? "indian" : "western",
+  } = options;
+
+  assertDecimals(decimals);
+
+  const negative = minor < 0n;
+  const abs = negative ? -minor : minor;
+
+  const steps =
+    grouping === "indian"
+      ? ([
+          [10n ** 7n, "Cr"],
+          [10n ** 5n, "L"],
+          [10n ** 3n, "K"],
+        ] as const)
+      : ([
+          [10n ** 9n, "B"],
+          [10n ** 6n, "M"],
+          [10n ** 3n, "K"],
+        ] as const);
+
+  const unit = 10n ** BigInt(decimals);
+  const major = abs / unit;
+
+  // Taken from the rounded value, not the raw one: -50 paise is ₹0 once the
+  // sub-unit is dropped, and "-₹0" on an axis is just wrong.
+  const sign = negative && major > 0n ? "-" : "";
+
+  for (const [threshold, suffix] of steps) {
+    if (major < threshold) continue;
+
+    // One decimal place, worked out in BigInt and trimmed: 1.0K reads as
+    // noise next to 1K.
+    const tenths = (major * 10n) / threshold;
+    const whole = tenths / 10n;
+    const rest = tenths % 10n;
+
+    return `${sign}${symbol}${whole}${rest === 0n ? "" : `.${rest}`}${suffix}`;
+  }
+
+  // Below a thousand there is nothing to abbreviate, and the paise are noise
+  // on an axis.
+  return `${sign}${symbol}${groupDigits(major.toString(), grouping)}`;
+}
+
 /** `true` when the symbol groups Indian-style — exported for tests/UI copy. */
 export function usesIndianGrouping(symbol: string): boolean {
   return INDIAN_GROUPING_SYMBOLS.has(symbol);
