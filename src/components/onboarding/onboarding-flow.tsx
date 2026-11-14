@@ -83,9 +83,10 @@ export function OnboardingFlow({
       toast.success(`You are all set, ${displayName.trim()}`);
       router.replace(result.data.next);
       router.refresh();
-    } catch {
+    } catch (thrown) {
       // A dropped connection rejects the action. Without this the button
       // would sit on "Setting up…" for ever with nothing explaining why.
+      console.error("[onboarding]", thrown);
       const message = "Could not save your setup. Check your connection and try again.";
       setError(message);
       toast.error(message);

@@ -129,7 +129,8 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         account.archived ? "Account restored" : `${account.name} archived`,
       );
       router.refresh();
-    } catch {
+    } catch (thrown) {
+      console.error("[accounts]", thrown);
       toast.error("Could not save that. Check your connection and try again.");
     }
   }
@@ -150,7 +151,8 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
       toast.success("Account deleted");
       setPendingDelete(null);
       router.refresh();
-    } catch {
+    } catch (thrown) {
+      console.error("[accounts]", thrown);
       toast.error("Could not delete that. Check your connection and try again.");
     } finally {
       // In a finally so a thrown action cannot leave the dialog spinning.

@@ -120,7 +120,8 @@ export function AccountFormSheet({
       // revalidatePath marks the cache; this is what makes the open page
       // actually re-render with the new data.
       router.refresh();
-    } catch {
+    } catch (thrown) {
+      console.error("[accounts]", thrown);
       const message = "Could not save the account. Check your connection.";
       setError(message);
       toast.error(message);

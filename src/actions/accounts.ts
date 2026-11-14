@@ -22,6 +22,32 @@ import {
 } from "@/lib/schemas/accounts";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * The signed-in user, or the failure to return.
+ *
+ * RLS is the real guard — rls.test.sql proves a user cannot touch another's
+ * rows — but filtering on user_id as well makes "no row matched" mean what it
+ * says, and gives an expired session a message of its own.
+ */
+async function requireUser(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+): Promise<
+  { ok: true; id: string } | { ok: false; error: string; field?: string }
+> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      ok: false,
+      error: "Your session has expired. Sign in and try again.",
+    };
+  }
+
+  return { ok: true, id: user.id };
+}
+
 /** Every screen that can show an account or a balance. */
 function revalidateAccounts(id?: string) {
   revalidatePath("/accounts");
@@ -63,10 +89,8 @@ export async function createAccount(
 
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return fail("Your session has expired. Sign in and try again.");
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
 
   // New accounts go to the end of the list.
   const { data: last } = await supabase
@@ -109,6 +133,9 @@ export async function updateAccount(
 
   const supabase = await createClient();
 
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
   const { data, error } = await supabase
     .from("accounts")
     .update({
@@ -120,6 +147,7 @@ export async function updateAccount(
       include_in_total: parsed.data.includeInTotal,
     })
     .eq("id", parsed.data.id)
+    .eq("user_id", user.id)
     .select("id")
     .maybeSingle();
 
@@ -141,10 +169,14 @@ export async function setAccountArchived(
 
   const supabase = await createClient();
 
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
   const { data, error } = await supabase
     .from("accounts")
     .update({ archived: parsed.data.archived })
     .eq("id", parsed.data.id)
+    .eq("user_id", user.id)
     .select("id")
     .maybeSingle();
 
@@ -171,6 +203,9 @@ export async function deleteAccount(
 
   const supabase = await createClient();
 
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
   // The UI only offers delete for an unused account, but the check has to
   // live here too: the page data could be minutes old, and the foreign keys
   // would otherwise fail at commit with a message no user should read.
@@ -194,10 +229,13 @@ export async function deleteAccount(
     );
   }
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("accounts")
     .delete()
-    .eq("id", parsed.data.id);
+    .eq("id", parsed.data.id)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     // A record could have been added between the check above and this
@@ -210,6 +248,8 @@ export async function deleteAccount(
     }
     return failFromDb(error, "Could not delete the account.");
   }
+
+  if (!deleted) return fail("That account no longer exists.");
 
   revalidateAccounts();
   return ok(undefined);
