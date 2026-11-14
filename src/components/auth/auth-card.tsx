@@ -1,18 +1,27 @@
 import Link from "next/link";
 
-import { IndianRupee } from "lucide-react";
+import { IndianRupee, Lock } from "lucide-react";
 
-/** The frame every auth screen shares: brand mark, title, form, footer line. */
+/**
+ * The frame every auth screen shares: brand mark, title, form, footer line.
+ *
+ * Centred and deliberately empty around the edges. This is the first screen
+ * of the app most people will see, and the only things on it are what you
+ * came to do and one line saying what happens to what you type.
+ */
 export function AuthCard({
   title,
   description,
   children,
   footer,
+  reassurance = true,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** The privacy line under the form. Off where it would be noise. */
+  reassurance?: boolean;
 }) {
   return (
     <div className="w-full max-w-sm">
@@ -34,8 +43,15 @@ export function AuthCard({
 
       {children}
 
+      {reassurance ? (
+        <p className="text-muted-foreground mt-6 flex items-center justify-center gap-1.5 text-xs">
+          <Lock className="size-3 shrink-0" aria-hidden="true" />
+          Your records stay yours. No ads, no trackers.
+        </p>
+      ) : null}
+
       {footer ? (
-        <div className="text-muted-foreground mt-6 text-center text-sm">
+        <div className="text-muted-foreground mt-4 text-center text-sm">
           {footer}
         </div>
       ) : null}

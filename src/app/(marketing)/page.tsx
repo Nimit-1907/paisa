@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ArrowRight, Check } from "lucide-react";
 
+import { AppPreview } from "@/app/(marketing)/_app-preview";
 import { FEATURES } from "@/app/(marketing)/_content";
 import { SITE, siteOrigin } from "@/lib/site";
 
@@ -72,34 +73,31 @@ export default function LandingPage() {
         {JSON.stringify(structuredData)}
       </script>
 
-      <section className="py-6 sm:py-12">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-          Know where the month went.
-        </h1>
+      {/*
+        Above the fold: a headline, a sentence, one button, and the app.
+        What used to be here too — a second button and a line of
+        reassurance — competed with the only decision this page asks for.
+      */}
+      <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
+            Know where the month went.
+          </h1>
 
-        <p className="text-muted-foreground mt-4 max-w-[52ch] text-base sm:text-lg">
-          {SITE.description}
-        </p>
+          <p className="text-muted-foreground mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
+            {SITE.description}
+          </p>
 
-        <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/signup"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none active:scale-[0.97]"
           >
             Start tracking — it&rsquo;s free
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
-          <Link
-            href="/features"
-            className="hover:bg-muted focus-visible:ring-ring inline-flex min-h-12 items-center rounded-xl border px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
-          >
-            See what it does
-          </Link>
         </div>
 
-        <p className="text-muted-foreground mt-4 text-sm">
-          No bank login. No advertising. Your records stay yours.
-        </p>
+        <AppPreview />
       </section>
 
       <section className="bg-card rounded-2xl border p-5 sm:p-6">
@@ -120,7 +118,7 @@ export default function LandingPage() {
               <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
                 {index + 1}
               </span>
-              <span className="text-sm font-medium">{step}</span>
+              <span className="text-sm font-semibold">{step}</span>
             </li>
           ))}
         </ol>
@@ -165,6 +163,7 @@ export default function LandingPage() {
 
         <ul className="mt-3 space-y-2">
           {[
+            "No bank login, no advertising, no trackers.",
             "Your rows are isolated by the database itself, not by the app remembering to filter.",
             "Amounts are whole paise end to end — nothing divides your money into a decimal.",
             "Export every record as a CSV, or a month as a PDF, whenever you want it.",
@@ -182,7 +181,7 @@ export default function LandingPage() {
         <p className="mt-6">
           <Link
             href="/signup"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
           >
             Create your account
             <ArrowRight className="size-4" aria-hidden="true" />

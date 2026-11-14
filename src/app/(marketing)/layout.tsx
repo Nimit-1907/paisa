@@ -45,7 +45,7 @@ export default function MarketingLayout({
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex min-h-11 items-center rounded-lg px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                    className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                   >
                     {link.label}
                   </Link>
@@ -54,7 +54,7 @@ export default function MarketingLayout({
               <li>
                 <Link
                   href="/login"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring ml-1 flex min-h-11 items-center rounded-lg px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                  className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring ml-1 flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                 >
                   Log in
                 </Link>
@@ -80,7 +80,7 @@ export default function MarketingLayout({
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 items-center rounded focus-visible:ring-2 focus-visible:outline-none"
+                      className="hoverable:text-foreground focus-visible:ring-ring inline-flex min-h-11 items-center rounded focus-visible:ring-2 focus-visible:outline-none"
                     >
                       {link.label}
                     </Link>

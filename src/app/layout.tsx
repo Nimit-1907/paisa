@@ -6,6 +6,7 @@ import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE, siteOrigin } from "@/lib/site";
+import { SPLASHES, splashHref, splashMedia } from "@/lib/splash";
 
 import "./globals.css";
 
@@ -41,6 +42,14 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
 };
 
+/**
+ * Reads the stored choice, falls back to the system, and sets the class.
+ *
+ * Wrapped in try/catch because localStorage throws rather than returning null
+ * in a locked-down browser, and a theme is not worth a blank page.
+ */
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light"}catch(e){}})()`;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -68,7 +77,35 @@ export default function RootLayout({
           uninstallable — the manifest is fetchable, and the browser never
           asks for it.
         */}
+        {/*
+          The theme, decided before anything paints.
+
+          next-themes ships this same logic, but it renders where the provider
+          is — inside <body>, after the element carrying the background
+          colour. Running it here makes the first paint already the right
+          theme rather than a white flash corrected a moment later. The
+          provider re-applies the same value afterwards, which is a no-op.
+
+          Passed as a text child rather than as raw inner HTML: React writes a
+          script's children out unescaped, so no HTML sink is involved.
+        */}
+        <script>{THEME_SCRIPT}</script>
+
         <link rel="manifest" href="/manifest.webmanifest" />
+
+        {/*
+          iOS launch screens. Safari matches on exact device dimensions, so
+          each size needs its own link; the images are generated rather than
+          committed. Without them an installed app opens on a white gap.
+        */}
+        {SPLASHES.map((splash) => (
+          <link
+            key={splashHref(splash)}
+            rel="apple-touch-startup-image"
+            media={splashMedia(splash)}
+            href={splashHref(splash)}
+          />
+        ))}
       </head>
       <body className="antialiased">
         <ThemeProvider
