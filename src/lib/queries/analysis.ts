@@ -199,7 +199,7 @@ export async function getBalanceAccounts() {
 
   const { data, error } = await supabase
     .from("accounts")
-    .select("id, name, icon, color")
+    .select("id, name, color")
     .eq("archived", false)
     .order("sort_order", { ascending: true });
 

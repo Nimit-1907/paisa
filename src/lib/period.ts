@@ -30,6 +30,15 @@ export const PERIOD_LABELS: Record<PeriodKind, string> = {
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
+ * How long a custom range may be.
+ *
+ * Five years of records is already more than a chart can say anything about,
+ * and the database refuses more than ten. The sheet checks against this too,
+ * so a range is never accepted by the form and then quietly changed.
+ */
+export const MAX_RANGE_DAYS = 366 * 5;
+
+/**
  * A `yyyy-mm-dd` that is also a real date.
  *
  * The shape alone is not enough: `?d=2026-13-45` matches the pattern and then
@@ -194,7 +203,7 @@ export function parsePeriod(
     const from = isValidDay(params.from) ? params.from : null;
     const to = isValidDay(params.to) ? params.to : null;
 
-    if (from && to && from <= to && dayDifference(from, to) <= 366 * 5) {
+    if (from && to && from <= to && dayDifference(from, to) <= MAX_RANGE_DAYS) {
       return { kind: "custom", from, to };
     }
 
