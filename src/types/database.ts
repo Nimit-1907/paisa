@@ -18,9 +18,9 @@ export type Database = {
       graphql: {
         Args: {
           extensions?: Json
+          operationName?: string
           query?: string
           variables?: Json
-          operationName?: string
         }
         Returns: Json
       }
@@ -172,6 +172,8 @@ export type Database = {
           display_name: string | null
           id: string
           last_recurring_check: string | null
+          password_attempt_window: string | null
+          password_attempts: number
           theme: string
           timezone: string
           updated_at: string
@@ -185,6 +187,8 @@ export type Database = {
           display_name?: string | null
           id: string
           last_recurring_check?: string | null
+          password_attempt_window?: string | null
+          password_attempts?: number
           theme?: string
           timezone?: string
           updated_at?: string
@@ -198,6 +202,8 @@ export type Database = {
           display_name?: string | null
           id?: string
           last_recurring_check?: string | null
+          password_attempt_window?: string | null
+          password_attempts?: number
           theme?: string
           timezone?: string
           updated_at?: string
@@ -545,14 +551,14 @@ export type Database = {
       }
       balance_series: {
         Args: {
-          p_bucket: string
           p_from: string
-          p_account_id?: string
           p_to: string
+          p_bucket: string
+          p_account_id?: string
         }
         Returns: {
-          balance: number
           bucket_start: string
+          balance: number
         }[]
       }
       bucket_starts: {
@@ -561,9 +567,9 @@ export type Database = {
       }
       category_totals: {
         Args: {
+          p_from: string
           p_to: string
           p_kind: Database["public"]["Enums"]["category_kind"]
-          p_from: string
         }
         Returns: {
           category_id: string
@@ -574,11 +580,11 @@ export type Database = {
         }[]
       }
       change_currency: {
-        Args: { p_symbol: string; p_decimals: number; p_code: string }
+        Args: { p_code: string; p_symbol: string; p_decimals: number }
         Returns: number
       }
       check_account_owner: {
-        Args: { p_user_id: string; p_account_id: string }
+        Args: { p_account_id: string; p_user_id: string }
         Returns: undefined
       }
       check_category_owner: {
@@ -589,6 +595,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      claim_password_attempt: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       copy_budgets_from_previous_month: {
         Args: { p_month: string }
         Returns: number
@@ -596,8 +606,8 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          kind: Database["public"]["Enums"]["category_kind"]
           name: string
+          kind: Database["public"]["Enums"]["category_kind"]
           icon: string
           color: string
           sort_order: number
@@ -622,11 +632,11 @@ export type Database = {
       month_summary: {
         Args: { p_month: string }
         Returns: {
+          categories: Json
           month_start: string
           total_income: number
           total_expense: number
           net: number
-          categories: Json
         }[]
       }
       period_series: {
@@ -643,8 +653,8 @@ export type Database = {
       }
       recurrence_after: {
         Args: {
-          p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
           p_start: string
+          p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
           p_interval: number
           p_anchor_day: number
           p_from: string
@@ -678,17 +688,28 @@ export type Database = {
       }
       set_budget: {
         Args: {
-          p_horizon?: number
           p_category_id: string
           p_month: string
           p_amount: number
           p_apply_forward?: boolean
+          p_horizon?: number
         }
         Returns: number
       }
       skip_recurring_occurrence: {
         Args: { p_rule_id: string; p_on: string }
         Returns: string
+      }
+      update_settings: {
+        Args: {
+          p_display_name: string
+          p_decimals: number
+          p_week_start: number
+          p_theme: string
+          p_code: string
+          p_symbol: string
+        }
+        Returns: number
       }
       user_timezone: {
         Args: Record<PropertyKey, never>

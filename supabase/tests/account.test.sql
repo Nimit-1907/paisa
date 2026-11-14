@@ -12,7 +12,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(8);
+select plan(14);
 
 -- ------------------------------------------------------------- fixtures ----
 
@@ -72,6 +72,72 @@ select ok(
     where user_id = 'a9999999-0000-4000-8000-000000000001') = 1,
   'the leaver starts with a record'
 );
+
+-- ------------------------------------------- the password-check throttle ---
+
+set local role authenticated;
+set local request.jwt.claims =
+  '{"sub":"a9999999-0000-4000-8000-000000000001","role":"authenticated"}';
+
+select is(
+  public.claim_password_attempt(),
+  4,
+  'the first attempt leaves four'
+);
+
+select is(
+  (select public.claim_password_attempt()
+     from generate_series(1, 4) limit 1 offset 3),
+  0,
+  'the fifth attempt leaves none'
+);
+
+select throws_ok(
+  $$ select public.claim_password_attempt() $$,
+  '53400',
+  null,
+  'the sixth is refused — a stolen session is not a guessing machine'
+);
+
+-- There is no reset to call: one would be callable by the same stolen
+-- session the limit exists to stop, so the window expiring is the only way
+-- back.
+select is(
+  (select count(*)::int
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'clear_password_attempts'),
+  0,
+  'and there is no client-callable way to reset the count'
+);
+
+-- Winding the clock back has to be done as the owner, because the column is
+-- exactly the one the user may not write — which is the point.
+reset role;
+
+update public.profiles
+set password_attempt_window = now() - interval '20 minutes'
+where id = 'a9999999-0000-4000-8000-000000000001';
+
+set local role authenticated;
+
+select is(
+  public.claim_password_attempt(),
+  4,
+  'once the window has passed, the attempts come back'
+);
+
+select throws_ok(
+  $$
+    update public.profiles set password_attempts = 0
+    where id = 'a9999999-0000-4000-8000-000000000001'
+  $$,
+  '42501',
+  null,
+  '…and the user cannot wind it back themselves'
+);
+
+reset role;
 
 -- -------------------------------------------------------- the deletion -----
 
