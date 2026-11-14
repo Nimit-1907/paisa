@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          extensions?: Json
-          query?: string
           variables?: Json
+          extensions?: Json
           operationName?: string
+          query?: string
         }
         Returns: Json
       }
@@ -536,7 +536,7 @@ export type Database = {
         }[]
       }
       check_account_owner: {
-        Args: { p_user_id: string; p_account_id: string }
+        Args: { p_account_id: string; p_user_id: string }
         Returns: undefined
       }
       check_category_owner: {
@@ -547,13 +547,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      copy_budgets_from_previous_month: {
+        Args: { p_month: string }
+        Returns: number
+      }
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          color: string
           name: string
           kind: Database["public"]["Enums"]["category_kind"]
           icon: string
+          color: string
           sort_order: number
         }[]
       }
@@ -568,11 +572,11 @@ export type Database = {
       month_summary: {
         Args: { p_month: string }
         Returns: {
+          categories: Json
           month_start: string
           total_income: number
           total_expense: number
           net: number
-          categories: Json
         }[]
       }
       process_due_recurring: {
@@ -612,6 +616,16 @@ export type Database = {
       }
       reorder_categories: {
         Args: { p_ids: string[] }
+        Returns: number
+      }
+      set_budget: {
+        Args: {
+          p_category_id: string
+          p_month: string
+          p_amount: number
+          p_apply_forward?: boolean
+          p_horizon?: number
+        }
         Returns: number
       }
       skip_recurring_occurrence: {
