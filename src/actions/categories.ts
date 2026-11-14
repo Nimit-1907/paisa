@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireUser } from "@/lib/auth-guard";
 import {
   type ActionResult,
   fail,
@@ -25,31 +26,6 @@ const archiveCategorySchema = z.object({
   archived: z.boolean(),
 });
 
-/**
- * The signed-in user, or the failure to return.
- *
- * RLS is the real guard — rls.test.sql proves a user cannot touch another's
- * rows — but filtering on user_id as well makes "no row matched" mean what it
- * says, and gives an expired session a message of its own.
- */
-async function requireUser(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-): Promise<
-  { ok: true; id: string } | { ok: false; error: string; field?: string }
-> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return {
-      ok: false,
-      error: "Your session has expired. Sign in and try again.",
-    };
-  }
-
-  return { ok: true, id: user.id };
-}
 
 /** The kind a category actually has, for an accurate duplicate message. */
 async function storedKind(

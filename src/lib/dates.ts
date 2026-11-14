@@ -174,3 +174,45 @@ export function currentMonthRange(
   const { year, month } = currentMonth(timeZone, now);
   return monthRange(year, month, timeZone);
 }
+
+/**
+ * The next occurrence of a repeat, on the user's local calendar.
+ *
+ * Month ends are clamped the way Postgres clamps them — 31 January plus a
+ * month is 28 February, and plus two months is back to 31 March — so this
+ * agrees with recurrence_occurrence() in SQL. Letting a Date roll over
+ * instead would turn 31 January into 3 March and drift from there.
+ */
+export function nextRecurrence(
+  localDay: string,
+  frequency: "daily" | "weekly" | "monthly" | "yearly",
+  interval: number,
+): string {
+  const [year, month, day] = localDay.split("-").map(Number);
+
+  const afterDays = (days: number) =>
+    new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+
+  const afterMonths = (months: number) => {
+    const total = year * 12 + (month - 1) + months;
+    const targetYear = Math.floor(total / 12);
+    const targetMonth = (total % 12) + 1;
+    // Day 0 of the next month is the last day of this one.
+    const lastDay = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate();
+
+    return `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(
+      Math.min(day, lastDay),
+    ).padStart(2, "0")}`;
+  };
+
+  switch (frequency) {
+    case "daily":
+      return afterDays(interval);
+    case "weekly":
+      return afterDays(7 * interval);
+    case "monthly":
+      return afterMonths(interval);
+    case "yearly":
+      return afterMonths(12 * interval);
+  }
+}

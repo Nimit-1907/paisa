@@ -6,6 +6,7 @@ import {
   instantToLocal,
   localToInstant,
   monthRange,
+  nextRecurrence,
 } from "./dates";
 
 describe("monthRange", () => {
@@ -141,5 +142,27 @@ describe("localToInstant / instantToLocal", () => {
     // A leap day is a real date; the day after it in a common year is not.
     expect(localToInstant("2028-02-29T10:00", "UTC")).not.toBeNull();
     expect(localToInstant("2026-02-29T10:00", "UTC")).toBeNull();
+  });
+});
+
+describe("nextRecurrence", () => {
+  it("clamps a month end instead of rolling it over", () => {
+    expect(nextRecurrence("2026-01-31", "monthly", 1)).toBe("2026-02-28");
+    expect(nextRecurrence("2028-01-31", "monthly", 1)).toBe("2028-02-29");
+    expect(nextRecurrence("2026-01-31", "monthly", 2)).toBe("2026-03-31");
+    expect(nextRecurrence("2026-03-31", "monthly", 1)).toBe("2026-04-30");
+  });
+
+  it("counts days and weeks", () => {
+    expect(nextRecurrence("2026-11-14", "daily", 1)).toBe("2026-11-15");
+    expect(nextRecurrence("2026-11-14", "daily", 10)).toBe("2026-11-24");
+    expect(nextRecurrence("2026-11-14", "weekly", 1)).toBe("2026-11-21");
+    expect(nextRecurrence("2026-11-28", "weekly", 2)).toBe("2026-12-12");
+  });
+
+  it("rolls the year over", () => {
+    expect(nextRecurrence("2026-12-15", "monthly", 1)).toBe("2027-01-15");
+    expect(nextRecurrence("2026-11-14", "yearly", 1)).toBe("2027-11-14");
+    expect(nextRecurrence("2028-02-29", "yearly", 1)).toBe("2029-02-28");
   });
 });
