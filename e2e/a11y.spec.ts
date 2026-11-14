@@ -183,7 +183,12 @@ test.describe("the keyboard", () => {
     await page.keyboard.press("Enter");
 
     await expect(page.getByRole("dialog")).toBeHidden();
-    await expect(page.getByText("₹400.00").first()).toBeVisible();
+
+    // Undo, straight away. This runs against the shared demo account, and a
+    // test that leaves a record behind quietly rewrites the data every other
+    // test reads — the visual baselines noticed before anybody else did.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeHidden();
   });
 
   test("finds no violation inside an open sheet", async ({ page }) => {

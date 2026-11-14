@@ -88,7 +88,25 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await page.getByLabel("Opening balance").fill("5000");
     await page.getByRole("button", { name: "Start tracking" }).click();
 
+    // Setup ends on a welcome screen rather than a redirect, so the last
+    // thing it says is what was set up and what to do next.
+    await expect(
+      page.getByRole("heading", { name: /You are set up/ }),
+    ).toBeVisible();
+
+    await page
+      .getByRole("button", { name: "Add your first expense" })
+      .click();
+
     await page.waitForURL(/\/records/, { timeout: 60_000 });
+
+    // That button lands on Records with the sheet already open, which is the
+    // point of it. Close it: a dialog hides the page behind it from a screen
+    // reader, and from a role query.
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+
     await expect(
       page.getByRole("heading", { name: "Records", exact: true }),
     ).toBeVisible();
@@ -111,6 +129,10 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(sheet(page)).toBeVisible();
     await typeAmount(page, "250");
     await sheet(page).getByRole("button", { name: "Food", exact: true }).click();
+
+    // The note, the date and the repeat are folded away: most records need
+    // none of them, and a shorter sheet is why a record takes four taps.
+    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
     await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
     await expect(sheet(page)).toBeHidden();
@@ -134,6 +156,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
       .getByRole("button", { name: "Paytm Wallet" })
       .click();
 
+    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
     await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
     await expect(sheet(page)).toBeHidden();
@@ -150,6 +173,8 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
     await typeAmount(page, "12000");
     await sheet(page).getByRole("button", { name: "Rent", exact: true }).click();
+
+    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(RENT_NOTE);
     await sheet(page).getByRole("radio", { name: "Monthly" }).click();
     await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
