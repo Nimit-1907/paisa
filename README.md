@@ -48,8 +48,21 @@ anon key: eyJhbGciOi...
 
 Those two values are what `.env.local` holds (`NEXT_PUBLIC_SUPABASE_URL`,
 `NEXT_PUBLIC_SUPABASE_ANON_KEY`). They are the CLI's defaults — identical on
-every machine, valid only against 127.0.0.1, and not secrets. Stop the stack
-with `supabase stop` (add `--no-backup` to wipe the volume).
+every machine, valid only against 127.0.0.1, and not secrets. Stop the stack with `supabase stop` (add `--no-backup` to wipe the volume).
+
+### Email goes to Mailpit, not to an inbox
+
+Nothing is actually sent while developing. Every confirmation and
+password-reset mail the app triggers is caught by the local mail server that
+ships with the Supabase CLI — Mailpit, which the CLI still calls Inbucket:
+
+```
+http://127.0.0.1:54324
+```
+
+Sign up, open that page, click the link in the message. Confirmations are on
+locally (`auth.email.enable_confirmations` in `supabase/config.toml`) so the
+signup flow is the same one production will run.
 
 ### Port 54321 already in use
 
@@ -83,22 +96,33 @@ supabase stop --project-id <other-project>
 
 ```
 src/
+  actions/            Server Actions: auth.ts, profile.ts
   app/
     (app)/            records, analysis, budgets, accounts, more,
                       categories, settings  — share the app shell layout
+    (auth)/           login, signup, forgot-password, reset-password
+    auth/callback/    exchanges the emailed code for a session
+    onboarding/       first-run setup, its own full-screen layout
     layout.tsx        Inter, viewport (viewport-fit=cover), theme, toasts
     manifest.ts       PWA manifest (/manifest.webmanifest)
     sw.ts             Serwist service worker (built to /public/sw.js)
   components/
+    auth/             the four forms + sign-out button
     layout/           app shell: bottom nav, sidebar, sticky page header
+    onboarding/       the three-step flow
     records/          FAB + Add Record sheet
+    profile-provider  currency context for Client Components
     ui/               shadcn primitives
   hooks/              use-media-query
   lib/
+    currencies.ts     the pickable currency list
     money.ts          minor-unit parsing/formatting (+ money.test.ts)
     nav.ts            the five tabs, in one place
+    profile.ts        cached getProfile() for Server Components
+    routes.ts         which paths are app / auth / neutral
+    schemas/          zod schemas shared by forms and actions
     supabase/         server.ts, client.ts, middleware.ts, env.ts
-  middleware.ts       refreshes the Supabase session on every navigation
+  middleware.ts       refreshes the session and guards the route groups
 supabase/
   migrations/         SQL migrations (never change the DB by hand)
   seed.sql            demo user + ~3 months of sample records
@@ -121,6 +145,43 @@ are respected via the `pt-safe` / `pb-safe` / `pb-nav` utilities in
 **Theme.** `next-themes` with light/dark/system. Colours are CSS variables in
 `globals.css`; `--income` (green), `--expense` (rose) and `--transfer` (blue)
 carry the money semantics and clear WCAG AA in both themes.
+
+## Auth and onboarding
+
+Email and password through Supabase Auth. Every mutation is a Server Action in
+`src/actions`, validated with zod and returning
+`{ ok: true, data } | { ok: false, error }` — never a thrown error, which
+reaches the browser as an opaque digest. The forms show the message in a
+toast and, when the failure belongs to one field, under that field.
+
+The flow a new account goes through:
+
+```
+/signup → confirmation mail (Mailpit) → /auth/callback → /onboarding → /records
+```
+
+`/auth/callback` handles both shapes Supabase sends — `?code=` (PKCE) and
+`?token_hash=&type=` — and sends failures to `/login?error=…` rather than
+leaving the user on a blank page.
+
+Middleware refreshes the session on every navigation and does the routing:
+no session on an app route goes to `/login?next=…`, and a session on
+`/login`, `/signup` or `/forgot-password` goes to `/records`.
+`/reset-password` is exempt — the recovery link signs the user in before they
+can choose a new password, so bouncing a session off that page would make
+reset impossible.
+
+Onboarding runs exactly once, gated on `profiles.display_name` being null:
+name, then currency (searchable, sets symbol and decimal places), then the
+opening balance of the Cash account signup created. The signup trigger
+deliberately leaves `display_name` null even when the form sent a name, since
+that column is the flag; the name is kept in user metadata and pre-fills
+step 1.
+
+Currency reaches the UI two ways: `getProfile()` (React `cache()`, one query
+per request) for Server Components, and `ProfileProvider` / `useFormatMoney()`
+for Client Components, so an amount is never rendered with somebody else's
+symbol.
 
 ## The database
 
@@ -168,9 +229,8 @@ edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phase 1 (setup + app shell) and Phase 2 (database) are done. Every tab renders
-a placeholder with an empty state, the FAB opens the Add Record sheet, the PWA
-manifest/icons/service worker are in place, and the schema above is applied,
-seeded and tested locally.
+Phases 1–3 are done: the app shell, the database, and auth with onboarding.
+A new account can sign up, confirm by email, pick a currency, set an opening
+balance and land on Records; the demo account signs straight in.
 
-Next: auth screens, the real Add Record form, and wiring the tabs to the data.
+Next: the real Add Record form and wiring the tabs to the data.
