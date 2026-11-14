@@ -241,3 +241,31 @@ export function formatMoney(
 export function usesIndianGrouping(symbol: string): boolean {
   return INDIAN_GROUPING_SYMBOLS.has(symbol);
 }
+
+/**
+ * Converts a BIGINT column as it arrives from PostgREST into minor units.
+ *
+ * supabase-js hands back `number` for a bigint column (JSON has no integer
+ * type), which is exact up to 2^53 — about ₹90 trillion in paise — but is
+ * still a float the moment anything multiplies it. Convert at the boundary and
+ * keep BigInt everywhere above it.
+ *
+ * @throws {MoneyParseError} when the value is not a whole number.
+ */
+export function fromDb(value: number | string | bigint | null): bigint {
+  if (value === null) return 0n;
+  if (typeof value === "bigint") return value;
+
+  if (typeof value === "number") {
+    if (!Number.isSafeInteger(value)) {
+      throw new MoneyParseError(String(value));
+    }
+    return BigInt(value);
+  }
+
+  if (!/^-?\d+$/.test(value.trim())) {
+    throw new MoneyParseError(value);
+  }
+
+  return BigInt(value.trim());
+}

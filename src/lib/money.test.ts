@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MoneyParseError,
   formatMoney,
+  fromDb,
   fromMinor,
   toMinor,
   tryToMinor,
@@ -104,6 +105,23 @@ describe("tryToMinor", () => {
     expect(tryToMinor("12.34")).toBe(1234n);
     expect(tryToMinor("")).toBeNull();
     expect(tryToMinor("abc")).toBeNull();
+  });
+});
+
+describe("fromDb", () => {
+  it("accepts what PostgREST returns for a bigint column", () => {
+    expect(fromDb(12345678)).toBe(12345678n);
+    expect(fromDb(-50000)).toBe(-50000n);
+    expect(fromDb(0)).toBe(0n);
+    expect(fromDb(null)).toBe(0n);
+    expect(fromDb("9007199254740993")).toBe(9007199254740993n);
+    expect(fromDb(123n)).toBe(123n);
+  });
+
+  it("refuses a value that already lost precision", () => {
+    expect(() => fromDb(1.5)).toThrow(MoneyParseError);
+    expect(() => fromDb(Number.MAX_SAFE_INTEGER + 2)).toThrow(MoneyParseError);
+    expect(() => fromDb("12.5")).toThrow(MoneyParseError);
   });
 });
 
