@@ -4,6 +4,7 @@ import {
   FileText,
   type LucideIcon,
   Receipt,
+  Repeat,
   Settings,
   Tags,
   Target,
@@ -28,12 +29,18 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/more",
     label: "More",
     icon: Ellipsis,
-    owns: ["/categories", "/settings"],
+    owns: ["/categories", "/recurring", "/settings"],
   },
 ];
 
 /** Secondary destinations, listed on the More tab. */
 export const MORE_ITEMS = [
+  {
+    href: "/recurring",
+    label: "Recurring",
+    description: "Rent, salary and subscriptions that repeat",
+    icon: Repeat,
+  },
   {
     href: "/categories",
     label: "Categories",

@@ -42,6 +42,28 @@ export type RecurringRule = {
   recordCount: number;
 };
 
+/**
+ * What to call a rule.
+ *
+ * The note if there is one, then the two accounts for a transfer — which has
+ * no category to fall back on — then the category.
+ */
+export function ruleTitle(rule: {
+  note: string | null;
+  type: RecurringRule["type"];
+  accountName: string;
+  toAccountName: string | null;
+  categoryName: string | null;
+}): string {
+  if (rule.note) return rule.note;
+
+  if (rule.type === "transfer") {
+    return `${rule.accountName} → ${rule.toAccountName ?? "—"}`;
+  }
+
+  return rule.categoryName ?? "Recurring";
+}
+
 /** The schedule half of a rule, for lib/recurrence. */
 export function scheduleOf(rule: {
   frequency: RecurringRule["frequency"];
