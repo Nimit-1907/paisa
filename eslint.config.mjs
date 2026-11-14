@@ -11,6 +11,26 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  /*
+   * jsx-a11y's strict preset, on top of the handful of rules next ships.
+   *
+   * Lint is the cheap half of accessibility: it catches a label with no
+   * control and a div with a click handler while the file is still open,
+   * which is a much shorter loop than finding the same thing in an axe run
+   * against a built page.
+   */
+  ...compat.extends("plugin:jsx-a11y/strict"),
+  {
+    rules: {
+      /*
+       * A checkbox row here is a label wrapping the input, a title and a
+       * line of explanation — three levels, because the title and the
+       * explanation have to stack beside the box. The default of two would
+       * call that labelless, which it is not.
+       */
+      "jsx-a11y/label-has-associated-control": ["error", { depth: 3 }],
+    },
+  },
   {
     ignores: [
       "node_modules/**",

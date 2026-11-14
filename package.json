@@ -55,6 +55,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "serwist": "^9.5.13",
     "tailwindcss": "^4",
     "typescript": "^5",

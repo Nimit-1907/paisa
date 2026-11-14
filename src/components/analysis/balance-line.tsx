@@ -18,6 +18,7 @@ import {
   axisInterval,
   CHART_COLORS,
   ChartCard,
+  ChartTable,
   ChartTooltip,
   useCompactMoney,
   useTooltipTrigger,
@@ -138,12 +139,29 @@ export function BalanceLine({
         </DropdownMenu>
       }
     >
+      {/* The table below carries these numbers; recharts' own SVG would
+          read out as a list of paths. */}
+      <div aria-hidden="true">
       <ResponsiveContainer width="100%" height={180}>
-        <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <AreaChart
+          data={data}
+          margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+          // See period-bars: the surface is focusable by default, and this
+          // one is hidden in favour of the table underneath it.
+          tabIndex={-1}
+        >
           <defs>
             <linearGradient id="balance-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={CHART_COLORS.balance} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={CHART_COLORS.balance} stopOpacity={0} />
+              <stop
+                offset="0%"
+                stopColor={CHART_COLORS.balance}
+                stopOpacity={0.3}
+              />
+              <stop
+                offset="100%"
+                stopColor={CHART_COLORS.balance}
+                stopOpacity={0}
+              />
             </linearGradient>
           </defs>
 
@@ -180,8 +198,7 @@ export function BalanceLine({
             wrapperStyle={{ outline: "none", zIndex: 20 }}
             content={({ active, payload }) => {
               const point = payload?.[0]?.payload as
-                | (typeof data)[number]
-                | undefined;
+                (typeof data)[number] | undefined;
               if (!active || !point) return null;
 
               return (
@@ -211,12 +228,23 @@ export function BalanceLine({
           />
         </AreaChart>
       </ResponsiveContainer>
+      </div>
 
       {negative ? (
         <p className="text-expense mt-1 px-1 text-xs">
           The balance went below zero during this period.
         </p>
       ) : null}
+
+      <ChartTable
+        caption={`Running balance for ${selected ? selected.name : "all accounts"}, ${bucket === "day" ? "day by day" : "month by month"}`}
+        columns={[bucket === "day" ? "Day" : "Month", "Balance"]}
+        rows={data.map((point) => ({
+          label: point.label,
+          values: [point.balanceMinor],
+        }))}
+        signed
+      />
     </ChartCard>
   );
 }

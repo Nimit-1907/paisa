@@ -16,6 +16,7 @@ import {
   axisInterval,
   CHART_COLORS,
   ChartCard,
+  ChartTable,
   ChartTooltip,
   useCompactMoney,
   useTooltipTrigger,
@@ -71,7 +72,6 @@ export function PeriodBars({
     [series, bucket, period],
   );
 
-
   return (
     <ChartCard
       title={bucket === "day" ? "Day by day" : "Month by month"}
@@ -82,11 +82,18 @@ export function PeriodBars({
         </span>
       }
     >
+      {/* The table below carries these numbers; recharts' own SVG would
+          read out as a list of paths. */}
+      <div aria-hidden="true">
       <ResponsiveContainer width="100%" height={200}>
         <BarChart
           data={data}
           margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
           barGap={1}
+          // Recharts makes its surface focusable. Hidden from a screen
+          // reader and still in the tab order is the worst of both, and the
+          // table below is the accessible version of this.
+          tabIndex={-1}
         >
           <CartesianGrid
             vertical={false}
@@ -115,8 +122,7 @@ export function PeriodBars({
             wrapperStyle={{ outline: "none", zIndex: 20 }}
             content={({ active, payload }) => {
               const point = payload?.[0]?.payload as
-                | (typeof data)[number]
-                | undefined;
+                (typeof data)[number] | undefined;
               if (!active || !point) return null;
 
               return (
@@ -155,6 +161,7 @@ export function PeriodBars({
           />
         </BarChart>
       </ResponsiveContainer>
+      </div>
 
       <p className="text-muted-foreground mt-1 px-1 text-xs">
         <span className="text-income font-medium">
@@ -165,6 +172,19 @@ export function PeriodBars({
           {compact(expenseTotal)} out
         </span>
       </p>
+
+      <ChartTable
+        caption={
+          bucket === "day"
+            ? "Income and expense for each day of the period"
+            : "Income and expense for each month of the period"
+        }
+        columns={[bucket === "day" ? "Day" : "Month", "In", "Out"]}
+        rows={data.map((point) => ({
+          label: point.label,
+          values: [point.incomeMinor, point.expenseMinor],
+        }))}
+      />
     </ChartCard>
   );
 }

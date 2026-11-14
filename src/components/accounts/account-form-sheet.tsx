@@ -153,6 +153,7 @@ export function AccountFormSheet({
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="HDFC Savings"
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- the sheet has just been opened; this is the field it was opened for.
               autoFocus={!account}
             />
           )}

@@ -122,7 +122,7 @@ export function CategoryDonut({
         {/* The total sits in the hole rather than in a label, which is the
             only place on a 360px ring with room for it. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+          <span className="text-muted-foreground text-label font-medium tracking-wide uppercase">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
           <span className="amount max-w-[9rem] truncate text-lg font-semibold tabular-nums">

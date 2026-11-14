@@ -137,6 +137,7 @@ export function OnboardingFlow({
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
                 autoComplete="name"
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- this step has just replaced the one before it, so focus has to land somewhere.
                 autoFocus
                 placeholder="Nimit"
                 onKeyDown={(event) => {
@@ -308,7 +309,7 @@ function CurrencyStep({
         />
       </div>
 
-      <ul
+      <div
         className="bg-card divide-border max-h-[45dvh] divide-y overflow-y-auto overscroll-contain rounded-2xl border"
         role="radiogroup"
         aria-label="Currency"
@@ -317,8 +318,8 @@ function CurrencyStep({
           const active = currency.code === selected.code;
 
           return (
-            <li key={currency.code}>
               <button
+                key={currency.code}
                 type="button"
                 role="radio"
                 aria-checked={active}
@@ -346,16 +347,15 @@ function CurrencyStep({
                   <Check className="text-primary size-5 shrink-0" aria-hidden="true" />
                 ) : null}
               </button>
-            </li>
           );
         })}
 
         {results.length === 0 ? (
-          <li className="text-muted-foreground px-4 py-8 text-center text-sm">
+          <p className="text-muted-foreground px-4 py-8 text-center text-sm">
             No currency matches “{query}”.
-          </li>
+          </p>
         ) : null}
-      </ul>
+      </div>
     </section>
   );
 }

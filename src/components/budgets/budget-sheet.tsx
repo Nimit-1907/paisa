@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { fromMinor } from "@/lib/money";
 import { APPLY_FORWARD_MONTHS } from "@/lib/schemas/budgets";
 
@@ -185,6 +184,7 @@ export function BudgetSheet({
               inputMode="decimal"
               placeholder="10000"
               className="amount text-lg"
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- the sheet has just been opened; this is the field it was opened for.
               autoFocus
             />
           )}
@@ -198,7 +198,7 @@ export function BudgetSheet({
             className="accent-primary mt-0.5 size-5 shrink-0"
           />
           <span className="min-w-0">
-            <Label className="cursor-pointer">Apply to all future months</Label>
+            <span className="text-sm font-medium">Apply to all future months</span>
             <span className="text-muted-foreground mt-0.5 block text-xs">
               Copies this limit into the next {APPLY_FORWARD_MONTHS} months,
               stopping at any month you have already set to something else.

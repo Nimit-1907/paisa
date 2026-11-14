@@ -118,7 +118,7 @@ export function CategoryGrid({
                 >
                   <DynamicIcon name={category.icon} className="size-[18px]" />
                 </span>
-                <span className="w-full truncate text-center text-[11px] font-medium">
+                <span className="w-full truncate text-center text-label font-medium">
                   {category.name}
                 </span>
               </button>

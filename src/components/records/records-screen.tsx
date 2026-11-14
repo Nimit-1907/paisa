@@ -5,7 +5,14 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Plus, Receipt, Repeat, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Plus,
+  Receipt,
+  Repeat,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -334,14 +341,7 @@ export function RecordsScreen({
 
   return (
     <div className="space-y-4">
-      <section
-        aria-label="This month"
-        className="bg-card grid grid-cols-3 divide-x rounded-2xl border"
-      >
-        <Total label="Income" value={summary.income} tone="income" />
-        <Total label="Expense" value={summary.expense} tone="expense" />
-        <Total label="Net" value={summary.net} tone="net" />
-      </section>
+      <MonthSummary summary={summary} />
 
       <UpcomingStrip items={upcoming} today={today} />
 
@@ -466,32 +466,61 @@ export function RecordsScreen({
   );
 }
 
-function Total({
-  label,
-  value,
-  tone,
+/**
+ * The month, in one number.
+ *
+ * This screen exists to answer "what have I spent, and what is left?", and
+ * three bold figures of equal weight answer it three times over — the eye has
+ * nowhere to land. Net is the answer; income and expense are the working, so
+ * they sit underneath at label size.
+ *
+ * The arrows carry the direction as well as the colour, because a red number
+ * and a green one are the same number to anyone who cannot tell them apart.
+ */
+function MonthSummary({
+  summary,
 }: {
-  label: string;
-  value: string;
-  tone: "income" | "expense" | "net";
+  summary: { income: string; expense: string; net: string };
 }) {
   const formatMoney = useFormatMoney();
-  const amount = BigInt(value);
+  const net = BigInt(summary.net);
 
   return (
-    <div className="px-3 py-3 text-center">
-      <p className="text-muted-foreground text-[11px] font-medium">{label}</p>
+    <section
+      aria-label="This month"
+      className="bg-card rounded-2xl border px-4 py-3"
+    >
+      <h2 className="text-muted-foreground text-label font-medium tracking-wide uppercase">
+        {net < 0n ? "Overspent this month" : "Left this month"}
+      </h2>
+
       <p
         className={cn(
-          "amount mt-0.5 truncate text-sm font-semibold sm:text-base",
-          tone === "income" && "text-income",
-          tone === "expense" && "text-expense",
-          tone === "net" && amount < 0n && "text-expense",
+          "amount mt-0.5 truncate text-3xl font-semibold",
+          net < 0n ? "text-expense" : "text-foreground",
         )}
       >
-        {formatMoney(amount, { signDisplay: "never" })}
+        {formatMoney(net < 0n ? -net : net, { signDisplay: "never" })}
       </p>
-    </div>
+
+      <p className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+        <span className="flex items-center gap-1">
+          <ArrowDownLeft className="text-income size-3.5" aria-hidden="true" />
+          <span className="amount text-foreground font-medium">
+            {formatMoney(BigInt(summary.income), { signDisplay: "never" })}
+          </span>
+          in
+        </span>
+
+        <span className="flex items-center gap-1">
+          <ArrowUpRight className="text-expense size-3.5" aria-hidden="true" />
+          <span className="amount text-foreground font-medium">
+            {formatMoney(BigInt(summary.expense), { signDisplay: "never" })}
+          </span>
+          out
+        </span>
+      </p>
+    </section>
   );
 }
 

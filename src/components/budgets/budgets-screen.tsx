@@ -150,22 +150,28 @@ export function BudgetsScreen({
         aria-label="This month's budget"
         className="bg-card rounded-2xl border p-4"
       >
+        {/*
+          The sentence someone opens this screen for is "how much a day have I
+          got left", so it sits directly under the number at a size you can
+          read, not truncated at the end of a muted line. The ring keeps its
+          job — the shape of the month at a glance — at a weight that does not
+          argue with the figure beside it.
+        */}
         <div className="flex items-center gap-4">
-          <BudgetRing percent={percent} tone={tone}>
-            <span className="amount text-xl font-semibold tabular-nums">
+          <BudgetRing percent={percent} tone={tone} size={72}>
+            <span className="amount text-sm font-semibold tabular-nums">
               {Math.round(percent)}%
             </span>
-            <span className="text-muted-foreground text-[11px]">used</span>
           </BudgetRing>
 
           <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            <h2 className="text-muted-foreground text-label font-medium tracking-wide uppercase">
               {remaining >= 0n ? "Left to spend" : "Over budget"}
-            </p>
+            </h2>
             <p
               className={cn(
-                "amount truncate text-2xl font-semibold",
-                remaining >= 0n ? "text-income" : "text-expense",
+                "amount truncate text-3xl font-semibold",
+                remaining >= 0n ? "text-foreground" : "text-expense",
               )}
             >
               {formatMoney(remaining < 0n ? -remaining : remaining, {
@@ -173,20 +179,20 @@ export function BudgetsScreen({
               })}
             </p>
 
-            <p className="text-muted-foreground mt-1 truncate text-xs">
-              {formatMoney(totalSpent, { signDisplay: "never" })} of{" "}
-              {formatMoney(totalBudget, { signDisplay: "never" })}
-            </p>
-
             {data.daysLeft > 0 && remaining > 0n ? (
-              <p className="text-muted-foreground mt-0.5 truncate text-xs">
+              <p className="text-foreground mt-1 text-sm font-medium">
                 {formatMoney(remaining / BigInt(data.daysLeft), {
                   signDisplay: "never",
                 })}
-                /day left for {data.daysLeft}{" "}
-                {data.daysLeft === 1 ? "day" : "days"}
+                /day for {data.daysLeft}{" "}
+                {data.daysLeft === 1 ? "more day" : "more days"}
               </p>
             ) : null}
+
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {formatMoney(totalSpent, { signDisplay: "never" })} of{" "}
+              {formatMoney(totalBudget, { signDisplay: "never" })} budgeted
+            </p>
           </div>
         </div>
 
@@ -285,9 +291,11 @@ function BudgetRow({
         <BudgetBar percent={budgetPercent(spent, budget)} tone={tone} />
 
         <span className="mt-1 flex items-baseline justify-between gap-2">
+          {/* What is left is the answer; the scheduled note is the footnote.
+              Both were shrinking before, which truncated the number. */}
           <span
             className={cn(
-              "truncate text-xs",
+              "shrink-0 text-xs whitespace-nowrap",
               tone === "over" ? "text-expense font-medium" : "text-muted-foreground",
             )}
           >
@@ -297,10 +305,12 @@ function BudgetRow({
           </span>
 
           {scheduled > 0n ? (
-            <span className="text-muted-foreground flex shrink-0 items-center gap-1 text-[11px]">
-              <CalendarClock className="size-3" aria-hidden="true" />
-              includes {formatMoney(scheduled, { signDisplay: "never" })}{" "}
-              scheduled
+            <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-label">
+              <CalendarClock className="size-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">
+                includes {formatMoney(scheduled, { signDisplay: "never" })}{" "}
+                scheduled
+              </span>
             </span>
           ) : null}
         </span>

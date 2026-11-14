@@ -76,7 +76,7 @@ export function SidebarNav() {
           ))}
         </ul>
 
-        <p className="text-muted-foreground mt-6 px-3 text-[11px] font-semibold tracking-wider uppercase">
+        <p className="text-muted-foreground mt-6 px-3 text-label font-semibold tracking-wider uppercase">
           Manage
         </p>
         <ul className="mt-1 space-y-1">

@@ -12,6 +12,14 @@
   --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
+  /*
+   * One step below text-xs, for the labels above a number — "Left to spend",
+   * "Top category". It existed as text-[11px] in seven files, which is how a
+   * type scale stops being a scale.
+   */
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1rem;
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -93,8 +101,15 @@
 
   --destructive: oklch(0.52 0.19 24);
 
+  /*
+   * --border is a hairline between surfaces: decoration, and held light on
+   * purpose. --input is the edge of a control — a text field, the off state
+   * of a switch — which is the only thing telling you the control is there,
+   * so it carries WCAG 1.4.11's 3:1 against both the page and a card
+   * (measured: 3.22 and 3.36).
+   */
   --border: oklch(0.915 0.008 250);
-  --input: oklch(0.915 0.008 250);
+  --input: oklch(0.64 0.012 250);
   --ring: oklch(0.55 0.08 192);
 
   --income: oklch(0.48 0.12 157);
@@ -146,7 +161,8 @@
   --destructive: oklch(0.68 0.17 24);
 
   --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
+  /* 3.31 on the page, 3.33 on a card. See the note in :root. */
+  --input: oklch(1 0 0 / 36%);
   --ring: oklch(0.6 0.08 190);
 
   --income: oklch(0.8 0.15 158);
@@ -224,5 +240,30 @@
   select,
   textarea {
     font-size: max(1rem, 16px);
+  }
+}
+
+/*
+ * Reduced motion, honoured everywhere rather than component by component.
+ *
+ * Tailwind's `motion-safe:` variant covers the few things this app animates on
+ * purpose, but Radix and vaul ship their own keyframes: a dialog that flies in
+ * and a sheet that slides up from the bottom are exactly the motion someone
+ * turned off at the operating system.
+ *
+ * The spinner is exempted on purpose. It is a status, not decoration, and
+ * freezing it mid-turn would leave a saving button looking stuck.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
   }
 }

@@ -107,7 +107,7 @@ function Card({
 }) {
   return (
     <div className="bg-card rounded-xl border p-3">
-      <p className="text-muted-foreground flex items-center gap-1.5 text-[11px] font-medium">
+      <p className="text-muted-foreground flex items-center gap-1.5 text-label font-medium">
         <Icon className="size-3.5" aria-hidden={true} />
         <span className="truncate">{label}</span>
       </p>
@@ -122,7 +122,7 @@ function Card({
         {value}
       </p>
 
-      <p className="text-muted-foreground truncate text-[11px]">{hint}</p>
+      <p className="text-muted-foreground truncate text-label">{hint}</p>
     </div>
   );
 }

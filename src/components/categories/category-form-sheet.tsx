@@ -153,6 +153,7 @@ export function CategoryFormSheet({
                       }
                     }}
                     placeholder={kind === "income" ? "Freelance" : "Groceries"}
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the sheet has just been opened; this is the field it was opened for.
                     autoFocus={!category}
                   />
                 )}

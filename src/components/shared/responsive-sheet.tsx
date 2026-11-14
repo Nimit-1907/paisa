@@ -42,6 +42,7 @@ export function ResponsiveSheet({
   children: React.ReactNode;
 }) {
   const isDesktop = useIsDesktop();
+  useFocusReturn(open);
 
   if (isDesktop) {
     return (
@@ -77,6 +78,39 @@ export function ResponsiveSheet({
       </DrawerContent>
     </Drawer>
   );
+}
+
+/**
+ * Put focus back where it came from when a sheet closes.
+ *
+ * These sheets are opened from a context rather than from a trigger element,
+ * so the dialog has nothing to hand focus back to and drops it on the body —
+ * which sends a keyboard user back to the top of the page every time they
+ * close one. Remembering what was focused is the only thing that can know.
+ */
+function useFocusReturn(open: boolean) {
+  const previous = React.useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      previous.current = document.activeElement as HTMLElement | null;
+      return;
+    }
+
+    const target = previous.current;
+    previous.current = null;
+
+    // Not if it has gone: deleting a record closes the sheet and takes the
+    // row's own buttons with it.
+    if (!target || !target.isConnected) return;
+
+    // After the dialog has finished unmounting and released focus itself.
+    const id = window.setTimeout(
+      () => target.focus({ preventScroll: true }),
+      0,
+    );
+    return () => window.clearTimeout(id);
+  }, [open]);
 }
 
 /**

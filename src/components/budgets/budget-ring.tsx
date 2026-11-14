@@ -64,7 +64,7 @@ export function BudgetRing({
           // reads a dial.
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
           className={cn(
-            "stroke-current transition-[stroke-dashoffset] duration-500",
+            "stroke-current motion-safe:transition-[stroke-dashoffset] motion-safe:duration-200",
             TONE_CLASS[tone],
           )}
         />
@@ -97,7 +97,7 @@ export function BudgetBar({
     >
       <div
         className={cn(
-          "h-full rounded-full transition-[width] duration-500",
+          "h-full rounded-full motion-safe:transition-[width] motion-safe:duration-200",
           tone === "under" && "bg-income",
           tone === "close" && "bg-warning",
           tone === "over" && "bg-expense",
