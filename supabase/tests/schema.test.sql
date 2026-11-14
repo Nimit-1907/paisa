@@ -14,7 +14,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(23);
+select plan(24);
 
 -- ------------------------------------------------------------- fixtures ----
 
@@ -46,6 +46,15 @@ select is(
     where id = 'cccccccc-0000-4000-8000-000000000001'),
   '₹',
   'the profile starts on the rupee'
+);
+
+-- display_name is the "onboarding done" flag, so the trigger must leave it
+-- alone even when the signup form sent a name along.
+select is(
+  (select display_name from public.profiles
+    where id = 'cccccccc-0000-4000-8000-000000000001'),
+  null,
+  'a new profile has no display name until onboarding writes one'
 );
 
 select is(
