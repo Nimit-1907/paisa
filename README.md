@@ -84,12 +84,14 @@ supabase stop --project-id <other-project>
 | --- | --- |
 | `npm run dev` | Next dev server |
 | `npm run build` / `npm start` | Production build / serve (also builds the service worker) |
-| `npm test` | Vitest (money, dates, recurrence, periods, the keypad calculator, routes, icons) |
+| `npm test` | Vitest: money, dates, recurrence, periods, the keypad calculator, the zod schemas, routes, icons |
 | `npm run test:watch` | Vitest in watch mode |
+| `npm run test:e2e` | Playwright, on a 390×844 phone — the whole journey plus the accessibility sweep |
+| `npm run test:e2e:ui` | The same, in Playwright's UI mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run db:start` / `db:stop` / `db:reset` | Local Supabase stack |
-| `npm run db:test` | pgTAP tests for RLS and the schema constraints |
+| `npm run db:test` | pgTAP: RLS, schema constraints, recurrence, budgets, analysis, account deletion |
 | `npm run db:types` | Regenerate `src/types/database.ts` — run after **every** migration |
 
 ## Project layout
@@ -99,8 +101,10 @@ src/
   actions/            Server Actions: auth, profile, accounts,
                       categories, transactions, recurring, budgets
   app/
-    (app)/            records, analysis, budgets, accounts, more,
-                      categories, recurring, settings — share the shell
+    (app)/            records, analysis, budgets, accounts, more, about,
+                      categories, recurring, settings, export — the shell
+    api/export/       csv (streamed) and pdf (@react-pdf/renderer)
+    offline/          what the service worker serves with no network
     (auth)/           login, signup, forgot-password, reset-password
     auth/callback/    exchanges the emailed code for a session
     onboarding/       first-run setup, its own full-screen layout
@@ -115,9 +119,11 @@ src/
     onboarding/       the three-step flow
     analysis/         the period selector and the three charts
     budgets/          the month card, the rows, the budget sheet
+    pwa/              install prompt and the update toast
     records/          the month list, the record sheet, the keypad,
                       the filter sheet, the upcoming strip, the FAB
     recurring/        the rules list, the rule sheet, delete choices
+    settings/         the settings form, password, delete, export
     shared/           sheet, icon picker, colour picker, sortable list
     profile-provider  currency context for Client Components
     ui/               shadcn primitives
@@ -142,6 +148,10 @@ src/
     schemas/          zod schemas shared by forms and actions
     supabase/         server.ts, client.ts, middleware.ts, env.ts
   middleware.ts       refreshes the session and guards the route groups
+e2e/
+  journey.spec.ts     signup → onboarding → records → budget →
+                      recurring → analysis → export, on a phone
+  polish.spec.ts      axe, overflow, tap targets and focus, every screen
 supabase/
   migrations/         SQL migrations (never change the DB by hand)
   seed.sql            demo user + ~3 months of sample records
@@ -450,6 +460,65 @@ tooltip appears under the thumb covering it and then will not go away.
 charts follow light and dark with no theme hook and no re-render. Category
 slices keep their own colour, the one their icon uses everywhere else.
 
+## Settings, export and offline
+
+**Settings** is one form, saved in one go: name, currency, the day a week
+starts on, and the theme. Currency is written as a triple — code, symbol and
+decimal places, all from the one entry picked — because the exponent decides
+what every stored amount *means*, and taking a symbol from one place and an
+exponent from another is how ₹12.50 quietly becomes ₹1,250.
+
+Changing a password asks for the current one first. Supabase does not require
+it, but without that step anyone who picks up an unlocked phone can lock the
+owner out of their own account.
+
+**Deleting an account** removes the `auth.users` row, and the cascades take
+everything with it — profiles, accounts, categories, transactions, budgets,
+rules. The work is `delete_own_account()`, a `SECURITY DEFINER` function that
+takes no arguments and can only ever delete whoever called it. That is on
+purpose: the alternative is a service-role key in the app's environment, and a
+key that can delete anybody is a much bigger thing to protect than a function
+that can delete exactly one person. Typing DELETE is the guard in front of it,
+and `account.test.sql` proves both halves — everything of the caller's goes,
+nothing of anyone else's does.
+
+**Export** is at `/export` and nothing is locked in:
+
+- **CSV** for any range up to three years: date, time, type, category,
+  account, destination, amount and note. Streamed a page at a time from a
+  route handler, because the point of a download is that the browser can start
+  writing to disk while the server is still reading. Fields that begin with
+  `=`, `+`, `-` or `@` are prefixed with an apostrophe — a note reading
+  `=HYPERLINK(...)` is a phishing link the moment the file is opened in Excel.
+- **PDF** for one month: the summary, spending by category against that
+  month's budgets, and the full record list. It reads `month_summary`, the
+  same RPC the app shows on screen, so a printed statement cannot disagree
+  with the app it came from.
+
+Both check the session before they answer, so an expired cookie gets a 401
+rather than an empty file that reads as "you have no records".
+
+**Offline.** The app shell and static assets are precached; a navigation that
+cannot reach the network gets `/offline`, which is static for exactly that
+reason — it cannot read cookies or call Supabase. Records themselves are not
+cached: they are per-user data behind a session, and a stale balance shown
+with no sign that it is stale is worse than an honest "you are offline". Every
+write goes through a Server Action, so an offline queue would mean
+reimplementing the write path against a local store — a feature, not a polish
+item.
+
+A new service worker takes over as soon as it installs, so the page watches
+for `controllerchange` and offers a reload: that is the only way the JavaScript
+running matches the worker serving it. **Install** is offered in More and
+About — Chromium's own prompt where it exists, and the Share → Add to Home
+Screen instruction on iOS, where there is no prompt to offer.
+
+One thing worth knowing about the manifest: Next streams `metadata.manifest`
+into the body, and Chrome only resolves `<link rel="manifest">` from inside
+`<head>`. The link is written into the head in `app/layout.tsx` for that
+reason — without it the manifest is fetchable, the browser never asks for it,
+and the app is quietly not installable.
+
 ## The database
 
 Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
@@ -508,17 +577,87 @@ app already shows.
 After any migration, regenerate the types — `npm run db:types` — and never
 edit `src/types/database.ts` by hand.
 
+## Tests and quality gates
+
+```bash
+npm test          # 163 unit tests (vitest)
+npm run db:test   # 112 pgTAP assertions across six files
+npm run test:e2e  # 6 Playwright tests on a 390×844 phone
+npm run typecheck && npm run lint && npm run build
+```
+
+The unit tests cover the parts where being wrong is silent: money parsing and
+formatting, the timezone arithmetic, the recurrence calendar, the keypad's
+expression parser, the period maths, and every zod schema that stands between
+a Server Action and the database.
+
+The pgTAP files test the database against itself — RLS with two real
+`authenticated` sessions side by side, the constraints, the recurrence
+generator, carrying a budget forward, the chart RPCs against `month_summary`,
+and account deletion.
+
+The Playwright suite runs against a **production build**, not `next dev`: the
+dev server compiles each route on first request, which turns the suite into a
+test of the compiler. `journey.spec.ts` signs up a fresh user, reads the
+confirmation email out of Mailpit, and goes through onboarding, an expense, a
+transfer, a recurring rule, a budget, the charts and a CSV export.
+`polish.spec.ts` is the polish pass as a test: axe with WCAG A and AA on every
+screen in both themes, no horizontal overflow at 360/390/430/768/1280, every
+tap target at least 44px, and a visible focus ring at every stop in the tab
+order.
+
+Lighthouse on mobile, against the production build:
+
+```bash
+npm run build && npm start
+CHROME_PATH=/usr/bin/google-chrome npx lighthouse@11 http://localhost:3000/login \
+  --only-categories=pwa,accessibility --form-factor=mobile --screenEmulation.mobile
+```
+
+```
+accessibility  100
+best-practices 100
+pwa            100
+```
+
+Lighthouse 11 is pinned on purpose: Lighthouse 12 removed the PWA category
+altogether, so it can no longer report the score this project is measured
+against.
+
 ## Status
 
-Phases 1–8 are done: the app shell, the database, auth with onboarding,
+All nine phases are done: the app shell, the database, auth with onboarding,
 managing accounts and categories, the records screen, recurring transactions,
-monthly budgets and the analysis charts. A new account can sign up, confirm by email, pick a
+monthly budgets, the analysis charts, and settings with export and the PWA
+polish. A new account can sign up, confirm by email, pick a
 currency, set an opening balance and land on Records; accounts and categories
 can be created, edited, reordered, archived and deleted; records can be added
 from any tab, edited, deleted with undo, searched and filtered; anything that
 repeats manages itself, catching up whatever was missed and never creating the
 same occurrence twice; and each expense category can carry a monthly limit
-that knows what is still scheduled against it; and Analysis draws the period
-— by category, day by day, and the balance over time.
+that knows what is still scheduled against it; Analysis draws the period — by
+category, day by day, and the balance over time; and Settings covers the
+account, with CSV and PDF exports and an installable, offline-aware shell.
 
-Next: settings and export — the PDF statement.
+### Deploying
+
+Nothing here is tied to a local stack beyond the values in `.env.local`:
+
+1. Create a Supabase project and push the migrations
+   (`supabase link --project-ref <ref>` then `supabase db push`).
+2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+   `NEXT_PUBLIC_SITE_URL` on the host. The site URL is what auth emails link
+   back to — it is read from the environment rather than from the request's
+   Host header, which an attacker controls.
+3. Add that same URL to the project's **Redirect URLs** in Supabase Auth, or
+   confirmation links will be rejected.
+4. `npm run build` and serve with `npm start` (any Node host) — the service
+   worker is written to `public/sw.js` as part of the build.
+5. Optional: schedule the recurring catch-up in Postgres instead of letting
+   the first page load of the day do it (see **Recurring** above). Everything
+   else needs no background worker.
+
+The app never needs a service-role key, so there is none to leak: every write
+goes through RLS as the signed-in user, and the one privileged operation —
+deleting your own account — is a `SECURITY DEFINER` function that can only
+act on the caller.
