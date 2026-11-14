@@ -31,6 +31,14 @@ supabase start          # first run pulls the Postgres/Auth/Storage images
 npm run dev             # http://localhost:3000 → /records
 ```
 
+`supabase db reset` applies every migration in `supabase/migrations` and then
+loads `supabase/seed.sql`, which creates a demo account with about three
+months of data:
+
+```
+demo@example.com / password123
+```
+
 `supabase start` prints the local credentials:
 
 ```
@@ -68,6 +76,7 @@ supabase stop --project-id <other-project>
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run db:start` / `db:stop` / `db:reset` | Local Supabase stack |
+| `npm run db:test` | pgTAP tests for RLS and the schema constraints |
 | `npm run db:types` | Regenerate `src/types/database.ts` — run after **every** migration |
 
 ## Project layout
@@ -90,7 +99,12 @@ src/
     nav.ts            the five tabs, in one place
     supabase/         server.ts, client.ts, middleware.ts, env.ts
   middleware.ts       refreshes the Supabase session on every navigation
-supabase/migrations/  SQL migrations (never change the DB by hand)
+supabase/
+  migrations/         SQL migrations (never change the DB by hand)
+  seed.sql            demo user + ~3 months of sample records
+  tests/              pgTAP: rls.test.sql, schema.test.sql
+scripts/
+  generate-icons.py   regenerates the PWA icon set
 ```
 
 ## Conventions worth knowing
@@ -108,10 +122,55 @@ are respected via the `pt-safe` / `pb-safe` / `pb-nav` utilities in
 `globals.css`; `--income` (green), `--expense` (rose) and `--transfer` (blue)
 carry the money semantics and clear WCAG AA in both themes.
 
+## The database
+
+Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
+with row level security, all with an `updated_at` trigger:
+
+| Table | Holds |
+| --- | --- |
+| `profiles` | currency, decimal places, week start, theme, timezone |
+| `accounts` | cash / bank / card / savings / wallet, opening balance, archive flag |
+| `categories` | income or expense, lucide icon, colour, unique per kind per user |
+| `transactions` | income / expense / transfer in minor units, with note and timestamp |
+| `budgets` | one amount per expense category per month |
+| `recurring_rules` | a transaction template plus a schedule |
+
+Rules the database enforces, so the UI cannot get them wrong:
+
+- A transfer needs a destination account, no category, and two different
+  accounts. An income or expense needs a category and no destination.
+- An income row must carry an income category, an expense row an expense one.
+- A budget's `month` is always the first of the month, and only expense
+  categories can have one.
+- Every account / category / rule a row points at must belong to the same
+  user — checked by trigger, because row level security governs which rows you
+  may touch, not which ids you may write into a column.
+
+Read models and RPCs:
+
+- `account_balances` — a `security_invoker` view: opening balance + income −
+  expense − transfers out + transfers in, per account.
+- `month_summary(p_month date)` — income, expense, net and per-category expense
+  totals for that month, evaluated in the profile's timezone so a late-evening
+  IST purchase on the 31st stays in its own month.
+- `process_due_recurring()` — creates every transaction the caller's active
+  rules owe up to today (catching up whatever was missed while the app was
+  closed), advances `next_run_on`, and switches a rule off once it passes its
+  end date. Calling it twice in a day changes nothing the second time.
+
+`npm run db:test` runs both pgTAP files: `rls.test.sql` puts two real
+`authenticated` sessions side by side and checks that neither can read, write
+or delete the other's rows, and `schema.test.sql` covers the constraints above.
+
+After any migration, regenerate the types — `npm run db:types` — and never
+edit `src/types/database.ts` by hand.
+
 ## Status
 
-Phase 1 (project setup + app shell) is done: every tab renders a placeholder
-with an empty state, the FAB opens the Add Record sheet (bottom sheet on
-mobile, dialog on desktop), and the PWA manifest/icons/service worker are in
-place. Auth, the database schema and real records land in Phase 2 — the
-middleware already refreshes sessions and has the marker for the redirect.
+Phase 1 (setup + app shell) and Phase 2 (database) are done. Every tab renders
+a placeholder with an empty state, the FAB opens the Add Record sheet, the PWA
+manifest/icons/service worker are in place, and the schema above is applied,
+seeded and tested locally.
+
+Next: auth screens, the real Add Record form, and wiring the tabs to the data.
