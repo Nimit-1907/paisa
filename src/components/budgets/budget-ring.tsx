@@ -1,3 +1,6 @@
+"use client";
+
+import { useFirstFill } from "@/lib/motion";
 import type { BudgetTone } from "@/lib/schemas/budgets";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +36,9 @@ export function BudgetRing({
   const stroke = size < 80 ? 6 : 9;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const drawn = Math.min(100, Math.max(0, percent));
+  // Fills once, on the way in. The label in the middle is the real number
+  // from the first frame; only the arc travels.
+  const drawn = useFirstFill(Math.min(100, Math.max(0, percent)));
 
   return (
     <div
@@ -90,6 +95,8 @@ export function BudgetBar({
   percent: number;
   tone: BudgetTone;
 }) {
+  const width = useFirstFill(percent);
+
   return (
     <div
       aria-hidden="true"
@@ -105,7 +112,7 @@ export function BudgetBar({
         // A sliver so an almost-untouched budget still reads as started,
         // but nothing at all when nothing has been spent.
         style={{
-          width: percent === 0 ? "0%" : `${Math.min(100, Math.max(2, percent))}%`,
+          width: width === 0 ? "0%" : `${Math.min(100, Math.max(2, width))}%`,
         }}
       />
     </div>

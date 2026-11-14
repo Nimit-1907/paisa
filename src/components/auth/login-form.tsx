@@ -85,7 +85,7 @@ export function LoginForm({ next }: { next?: string }) {
       <div className="flex justify-end">
         <Link
           href="/forgot-password"
-          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring -my-2 rounded px-1 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+          className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring -my-2 rounded px-1 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
         >
           Forgot password?
         </Link>

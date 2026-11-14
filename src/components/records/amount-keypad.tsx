@@ -6,6 +6,7 @@ import { Delete, Equal } from "lucide-react";
 
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { evaluate, isExpression, pressKey } from "@/lib/calculator";
+import { PRESSABLE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -57,6 +58,9 @@ export function AmountKeypad({
   onChange,
   tone,
   focusOnOpen = false,
+  invalid = false,
+  error,
+  shaking = false,
   onEnter,
 }: {
   /** The raw expression, e.g. "120+45". */
@@ -65,6 +69,12 @@ export function AmountKeypad({
   tone: "expense" | "income" | "transfer";
   /** Put the caret in the amount when the sheet opens. */
   focusOnOpen?: boolean;
+  /** The save was refused because of this field. */
+  invalid?: boolean;
+  /** Why it was refused, in words. Shown in place of the running total. */
+  error?: string;
+  /** One short shake, already filtered for reduced motion by the caller. */
+  shaking?: boolean;
   /** Enter on a physical keyboard: save, the way a form would. */
   onEnter?: () => void;
 }) {
@@ -91,7 +101,13 @@ export function AmountKeypad({
     <div className="space-y-3">
       <label
         htmlFor="amount-field"
-        className="bg-muted/50 block rounded-2xl px-4 py-3 text-right"
+        className={cn(
+          "bg-muted/50 block rounded-2xl px-4 py-3 text-right",
+          // The outline is the message under reduced motion, where the shake
+          // never fires; with motion on, both happen.
+          invalid && "ring-destructive ring-2",
+          shaking && "shake",
+        )}
       >
         <input
           id="amount-field"
@@ -133,14 +149,16 @@ export function AmountKeypad({
           aria-live="polite"
           className={cn(
             "mt-0.5 h-5 text-sm",
-            result.ok ? "text-muted-foreground" : "text-destructive",
+            result.ok && !invalid ? "text-muted-foreground" : "text-destructive",
           )}
         >
-          {!result.ok
-            ? result.error
-            : showsSum
-              ? `= ${formatMoney(result.minor)}`
-              : " "}
+          {error
+            ? error
+            : !result.ok
+              ? result.error
+              : showsSum
+                ? `= ${formatMoney(result.minor)}`
+                : " "}
         </p>
       </label>
 
@@ -152,10 +170,11 @@ export function AmountKeypad({
             onClick={() => press(key)}
             aria-label={key === "backspace" ? "Backspace" : key}
             className={cn(
-              "focus-visible:ring-ring flex h-12 items-center justify-center rounded-xl text-lg font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98]",
+              PRESSABLE,
+              "focus-visible:ring-ring flex h-11 items-center justify-center rounded-xl text-lg font-semibold focus-visible:ring-2 focus-visible:outline-none",
               /[\d.]/.test(key)
-                ? "bg-muted hover:bg-muted/70"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+                ? "bg-muted hoverable:bg-muted/70"
+                : "bg-secondary text-secondary-foreground hoverable:bg-secondary/70",
             )}
           >
             {key === "backspace" ? (
@@ -175,7 +194,7 @@ export function AmountKeypad({
             onChange(resolved(result.minor, currency.decimals));
           }}
           disabled={!result.ok}
-          className="bg-secondary text-secondary-foreground hover:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+          className="bg-secondary text-secondary-foreground hoverable:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
         >
           <Equal className="size-4" aria-hidden="true" />
           Work it out

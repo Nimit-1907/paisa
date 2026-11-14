@@ -128,10 +128,10 @@ export function PeriodSelector({
               aria-checked={active}
               onClick={() => choose(kind)}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 active
                   ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-background/60",
+                  : "text-muted-foreground hoverable:bg-background/60",
               )}
             >
               {PERIOD_LABELS[kind]}

@@ -156,13 +156,13 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
             id="currency"
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 rounded-xl border px-3 text-left transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:outline-none"
+            className="focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 rounded-xl border px-3 text-left transition-colors hoverable:bg-muted/60 focus-visible:ring-2 focus-visible:outline-none"
           >
             <span className="amount text-lg font-semibold">
               {currency?.symbol ?? "?"}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium">
+              <span className="block truncate text-sm font-semibold">
                 {currency?.name ?? currencyCode}
               </span>
               <span className="text-muted-foreground block truncate text-xs">
@@ -186,7 +186,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                 "text-xs",
                 currency.decimals === currentDecimals
                   ? "text-muted-foreground"
-                  : "text-warning font-medium",
+                  : "text-warning font-semibold",
               )}
             >
               {currency.decimals === currentDecimals
@@ -217,10 +217,10 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                   aria-checked={active}
                   onClick={() => setWeekStart(day.value)}
                   className={cn(
-                    "focus-visible:ring-ring h-11 min-w-11 rounded-lg border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    "focus-visible:ring-ring h-11 min-w-11 rounded-lg border px-2.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted",
+                      : "text-muted-foreground hoverable:bg-muted",
                   )}
                 >
                   {day.label}
@@ -252,7 +252,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                     setTheme(option.value);
                   }}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground",
@@ -352,13 +352,13 @@ function CurrencySheet({
                   type="button"
                   aria-pressed={active}
                   onClick={() => onSelect(currency)}
-                  className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-12 w-full items-center gap-3 px-1 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-12 w-full items-center gap-3 px-1 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <span className="amount w-8 shrink-0 text-center text-base font-semibold">
                     {currency.symbol}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">
+                    <span className="block truncate text-sm font-semibold">
                       {currency.name}
                     </span>
                     <span className="text-muted-foreground block text-xs">

@@ -64,7 +64,7 @@ export function DeleteAccountCard({ email }: { email: string }) {
 
   return (
     <section className="border-destructive/30 bg-destructive/5 rounded-2xl border p-4">
-      <h2 className="text-destructive flex items-center gap-1.5 text-sm font-medium">
+      <h2 className="text-destructive flex items-center gap-1.5 text-sm font-semibold">
         <TriangleAlert className="size-4" aria-hidden="true" />
         Delete account
       </h2>
@@ -77,7 +77,7 @@ export function DeleteAccountCard({ email }: { email: string }) {
       <Button
         variant="outline"
         size="touch"
-        className="text-destructive hover:text-destructive mt-3 w-full"
+        className="text-destructive hoverable:text-destructive mt-3 w-full"
         onClick={() => setOpen(true)}
       >
         Delete my account

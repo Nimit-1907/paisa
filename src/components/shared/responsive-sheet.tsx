@@ -62,7 +62,18 @@ export function ResponsiveSheet({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} repositionInputs={false}>
-      <DrawerContent className={className}>
+      {/*
+        Taller than the shadcn default, and starting higher.
+        96px of dimmed backdrop above a sheet is 15% of a 640px phone spent
+        on nothing, and it was the difference between the category row being
+        on screen while the amount is typed and being a scroll away.
+      */}
+      <DrawerContent
+        className={cn(
+          "data-[vaul-drawer-direction=bottom]:mt-16 data-[vaul-drawer-direction=bottom]:max-h-[92dvh]",
+          className,
+        )}
+      >
         <DrawerHeader className="text-left">
           <DrawerTitle>{title}</DrawerTitle>
           {description ? (
@@ -129,7 +140,10 @@ export function SheetBody({
   return (
     <div
       className={cn(
-        "max-h-[65dvh] space-y-5 overflow-y-auto overscroll-contain px-4 pb-2 lg:px-0",
+        // 70dvh rather than 65: on a 640px phone those five percent are the
+        // difference between the category grid being on screen and being a
+        // scroll away, and the header and footer still fit above and below.
+        "max-h-[70dvh] space-y-4 overflow-y-auto overscroll-contain px-4 pb-2 lg:px-0",
         className,
       )}
     >

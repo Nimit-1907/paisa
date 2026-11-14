@@ -122,7 +122,7 @@ export function CategoryDonut({
         {/* The total sits in the hole rather than in a label, which is the
             only place on a 360px ring with room for it. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-muted-foreground text-label font-medium tracking-wide uppercase">
+          <span className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
           <span className="amount max-w-[9rem] truncate text-lg font-semibold tabular-nums">
@@ -139,7 +139,7 @@ export function CategoryDonut({
           <li key={slice.categoryId}>
             <Link
               href={recordsHref(slice.categoryId)}
-              className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+              className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
             >
               <span
                 className="flex size-7 shrink-0 items-center justify-center rounded-full text-white"

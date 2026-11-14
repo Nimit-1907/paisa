@@ -31,11 +31,11 @@ function SidebarLink({
         href={href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
+          "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition-colors",
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-            : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+            : "text-muted-foreground hoverable:bg-sidebar-accent/50 hoverable:text-sidebar-foreground",
         )}
       >
         <Icon className="size-[18px] shrink-0" aria-hidden="true" />

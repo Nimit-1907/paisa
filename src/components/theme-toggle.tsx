@@ -49,7 +49,7 @@ export function ThemeToggle({ className }: { className?: string }) {
               "focus-visible:ring-ring inline-flex size-11 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
               active
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                : "text-muted-foreground hoverable:text-foreground",
             )}
           >
             <Icon className="size-[18px]" aria-hidden="true" />

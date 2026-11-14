@@ -25,7 +25,7 @@ export default async function MorePage() {
           {(profile?.display_name ?? user?.email ?? "?").slice(0, 1).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">
+          <p className="truncate text-sm font-semibold">
             {profile?.display_name ?? "Your account"}
           </p>
           <p className="text-muted-foreground truncate text-xs">
@@ -41,13 +41,13 @@ export default async function MorePage() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="hover:bg-muted/60 focus-visible:ring-ring flex min-h-[60px] items-center gap-3 px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-[60px] items-center gap-3 px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
                   <Icon className="size-[18px]" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium">
+                  <span className="block text-sm font-semibold">
                     {item.label}
                   </span>
                   <span className="text-muted-foreground block truncate text-xs">
@@ -66,7 +66,7 @@ export default async function MorePage() {
 
       <div className="bg-card mt-4 flex items-center justify-between gap-3 rounded-xl border px-4 py-3">
         <div>
-          <p className="text-sm font-medium">Appearance</p>
+          <p className="text-sm font-semibold">Appearance</p>
           <p className="text-muted-foreground text-xs">
             Light, dark or follow your device
           </p>

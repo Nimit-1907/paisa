@@ -180,7 +180,7 @@ export function ChartTable({
 
   return (
     <details className="mt-3 border-t pt-2">
-      <summary className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex min-h-11 cursor-pointer items-center text-xs font-medium focus-visible:ring-2 focus-visible:outline-none">
+      <summary className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring inline-flex min-h-11 cursor-pointer items-center text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none">
         View as table
       </summary>
 
@@ -194,7 +194,7 @@ export function ChartTable({
                   key={column}
                   scope="col"
                   className={cn(
-                    "py-1 font-medium",
+                    "py-1 font-semibold",
                     index === 0 ? "text-left" : "text-right",
                   )}
                 >

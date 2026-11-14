@@ -62,7 +62,7 @@ export default function AboutPage() {
                   <Icon className="size-[18px]" aria-hidden="true" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium">
+                  <span className="block text-sm font-semibold">
                     {point.title}
                   </span>
                   <span className="text-muted-foreground block text-xs">

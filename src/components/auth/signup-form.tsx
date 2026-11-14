@@ -60,7 +60,7 @@ export function SignupForm() {
     return (
       <CheckEmailNotice>
         We sent a confirmation link to{" "}
-        <span className="text-foreground font-medium">{sentTo}</span>. Open it
+        <span className="text-foreground font-semibold">{sentTo}</span>. Open it
         to finish setting up your account.
       </CheckEmailNotice>
     );

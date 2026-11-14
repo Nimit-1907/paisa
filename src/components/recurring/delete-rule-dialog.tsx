@@ -143,10 +143,10 @@ function Choice({
           ? destructive
             ? "border-destructive bg-destructive/5"
             : "border-primary bg-primary/5"
-          : "hover:bg-muted/60",
+          : "hoverable:bg-muted/60",
       )}
     >
-      <span className="block text-sm font-medium">{title}</span>
+      <span className="block text-sm font-semibold">{title}</span>
       <span className="text-muted-foreground block text-xs">{description}</span>
     </button>
   );

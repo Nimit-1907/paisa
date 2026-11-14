@@ -50,7 +50,7 @@ export default function FeaturesPage() {
       <p className="mt-8">
         <Link
           href="/signup"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
         >
           Start tracking — it&rsquo;s free
           <ArrowRight className="size-4" aria-hidden="true" />

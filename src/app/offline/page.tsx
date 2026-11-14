@@ -34,7 +34,7 @@ export default function OfflinePage() {
 
       <Link
         href="/records"
-        className="bg-primary text-primary-foreground focus-visible:ring-ring mt-6 inline-flex h-11 items-center rounded-xl px-5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+        className="bg-primary text-primary-foreground focus-visible:ring-ring mt-6 inline-flex h-11 items-center rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
       >
         Try again
       </Link>

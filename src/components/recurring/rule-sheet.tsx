@@ -282,10 +282,10 @@ export function RuleSheet({
                   aria-checked={active}
                   onClick={() => setFrequency(value)}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    "focus-visible:ring-ring h-11 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted",
+                      : "text-muted-foreground hoverable:bg-muted",
                   )}
                 >
                   {REPEAT_LABELS[value]}

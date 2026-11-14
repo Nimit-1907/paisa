@@ -51,7 +51,7 @@ export function IconPicker({
               "focus-visible:ring-ring flex size-11 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none",
               active
                 ? "text-white shadow-sm"
-                : "text-muted-foreground hover:bg-background hover:text-foreground",
+                : "text-muted-foreground hoverable:bg-background hoverable:text-foreground",
             )}
             style={active ? { backgroundColor: color ?? undefined } : undefined}
           >

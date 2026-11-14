@@ -86,7 +86,7 @@ export function RuleActions({
       <Button
         variant="outline"
         size="touch"
-        className="text-destructive hover:text-destructive"
+        className="text-destructive hoverable:text-destructive"
         onClick={() => setDeleting(true)}
         disabled={pending}
       >

@@ -89,7 +89,7 @@ export default async function RecurringRulePage({
           <Link
             href="/recurring"
             aria-label="Back to recurring"
-            className="hover:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+            className="hoverable:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Link>
@@ -101,7 +101,7 @@ export default async function RecurringRulePage({
           <RuleAvatar rule={rule} size="lg" dimmed={!rule.active} />
 
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {rule.type === "income"
                 ? "Income"
                 : rule.type === "transfer"
@@ -178,7 +178,7 @@ export default async function RecurringRulePage({
               key={on}
               className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm"
             >
-              <span className="font-medium">{dayLabel(on)}</span>
+              <span className="font-semibold">{dayLabel(on)}</span>
               <span className="text-muted-foreground text-xs">
                 {daysAway(on, today)}
               </span>
@@ -211,7 +211,7 @@ export default async function RecurringRulePage({
               className="flex min-h-14 items-center justify-between gap-3 px-3 py-2"
             >
               <span className="min-w-0">
-                <span className="block text-sm font-medium">
+                <span className="block text-sm font-semibold">
                   {recordDate.format(new Date(record.occurredAt))}
                 </span>
                 {record.note ? (
@@ -249,7 +249,7 @@ function Fact({
   return (
     <div className="min-w-0">
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="truncate font-medium">{children}</dd>
+      <dd className="truncate font-semibold">{children}</dd>
     </div>
   );
 }

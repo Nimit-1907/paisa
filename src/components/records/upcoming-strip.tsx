@@ -85,13 +85,13 @@ export function UpcomingStrip({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-12 w-full items-center gap-2 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-12 w-full items-center gap-2 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
       >
         <CalendarClock
           className="text-muted-foreground size-4 shrink-0"
           aria-hidden="true"
         />
-        <span className="flex-1 text-sm font-medium">
+        <span className="flex-1 text-sm font-semibold">
           Upcoming
           <span className="text-muted-foreground font-normal">
             {" · "}
@@ -124,7 +124,7 @@ export function UpcomingStrip({
                 <span className="min-w-0 flex-1">
                   <Link
                     href={`/recurring/${rule.id}`}
-                    className="focus-visible:ring-ring block truncate text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                    className="focus-visible:ring-ring block truncate text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                   >
                     {ruleTitle(rule)}
                   </Link>

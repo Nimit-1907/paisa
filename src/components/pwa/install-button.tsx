@@ -92,8 +92,8 @@ export function InstallButton() {
         <span>
           To install Paisa, tap{" "}
           <Share className="inline size-3.5 align-text-bottom" aria-hidden="true" />{" "}
-          <span className="font-medium">Share</span> and then{" "}
-          <span className="font-medium">Add to Home Screen</span>.
+          <span className="font-semibold">Share</span> and then{" "}
+          <span className="font-semibold">Add to Home Screen</span>.
         </span>
       </p>
     );

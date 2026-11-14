@@ -164,11 +164,11 @@ export function PeriodBars({
       </div>
 
       <p className="text-muted-foreground mt-1 px-1 text-xs">
-        <span className="text-income font-medium">
+        <span className="text-income font-semibold">
           {compact(incomeTotal)} in
         </span>
         {" · "}
-        <span className="text-expense font-medium">
+        <span className="text-expense font-semibold">
           {compact(expenseTotal)} out
         </span>
       </p>

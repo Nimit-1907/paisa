@@ -1,7 +1,10 @@
 "use client";
 
+import { Check } from "lucide-react";
+
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { Label } from "@/components/ui/label";
+import { PRESSABLE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type AccountOption = {
@@ -53,10 +56,11 @@ export function AccountSelect({
               aria-pressed={active}
               onClick={() => onChange(account.id)}
               className={cn(
-                "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                PRESSABLE,
+                "focus-visible:ring-ring relative flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
                 active
-                  ? "border-primary bg-primary/5"
-                  : "text-muted-foreground hover:bg-muted/60",
+                  ? "border-primary ring-primary bg-primary/5 ring-1"
+                  : "text-muted-foreground hoverable:bg-muted/60",
               )}
             >
               <span
@@ -106,19 +110,31 @@ export function CategoryGrid({
                 aria-pressed={active}
                 onClick={() => onChange(category.id)}
                 className={cn(
-                  "focus-visible:ring-ring flex w-full flex-col items-center gap-1 rounded-xl border px-1 py-2 transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                  PRESSABLE,
+                  "focus-visible:ring-ring relative flex w-full flex-col items-center gap-1 rounded-xl border px-1 py-2 focus-visible:ring-2 focus-visible:outline-none",
                   active
-                    ? "border-primary bg-primary/5"
-                    : "border-transparent hover:bg-muted/60",
+                    ? "border-primary ring-primary bg-primary/5 ring-1"
+                    : "border-transparent hoverable:bg-muted/60",
                 )}
               >
                 <span
-                  className="flex size-9 items-center justify-center rounded-full text-white"
+                  className="relative flex size-9 items-center justify-center rounded-full text-white"
                   style={{ backgroundColor: category.color ?? "#64748B" }}
                 >
                   <DynamicIcon name={category.icon} className="size-[18px]" />
+
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full",
+                      "duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
+                      active ? "scale-100" : "scale-0",
+                    )}
+                  >
+                    <Check className="size-3" strokeWidth={3} />
+                  </span>
                 </span>
-                <span className="w-full truncate text-center text-label font-medium">
+                <span className="w-full truncate text-center text-label font-semibold">
                   {category.name}
                 </span>
               </button>
@@ -181,7 +197,7 @@ export function TypeTabs({
             data-active={active}
             onClick={() => onChange(tab.value)}
             className={cn(
-              "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+              "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
               "text-muted-foreground data-[active=true]:bg-background data-[active=true]:shadow-sm",
               tab.className,
             )}

@@ -23,12 +23,15 @@ const REVEAL = 88;
 export function RecordRow({
   record,
   pending = false,
+  highlight = false,
   onOpen,
   onDelete,
 }: {
   record: TransactionRow;
   /** True while the row is still being saved. */
   pending?: boolean;
+  /** Briefly tinted: this is the row that was just saved. */
+  highlight?: boolean;
   onOpen: () => void;
   onDelete: () => void;
 }) {
@@ -112,7 +115,7 @@ export function RecordRow({
           setOffset(0);
           onDelete();
         }}
-        className="bg-destructive/10 text-destructive absolute inset-y-0 right-0 flex w-[88px] flex-col items-center justify-center gap-0.5 text-xs font-medium"
+        className="bg-destructive/10 text-destructive absolute inset-y-0 right-0 flex w-[88px] flex-col items-center justify-center gap-0.5 text-xs font-semibold"
       >
         <Trash2 className="size-5" aria-hidden="true" />
         Delete
@@ -140,7 +143,16 @@ export function RecordRow({
             onOpen();
           }}
           disabled={pending}
-          className="hover:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+          className={cn(
+            "hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2 text-left focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none",
+            // Colour only, no transform: a row that shrinks under the thumb
+            // would drag the whole list with it.
+            "duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] transition-colors motion-reduce:transition-none",
+            "active:bg-muted/70",
+            // Fades out over a second, so the eye is led to the new row
+            // without anything being asked of it.
+            highlight && "bg-primary/10 duration-1000",
+          )}
         >
           <span
             className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
@@ -161,7 +173,7 @@ export function RecordRow({
 
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-medium">{title}</span>
+              <span className="truncate text-sm font-semibold">{title}</span>
               {record.recurringRuleId ? (
                 <Repeat
                   className="text-muted-foreground size-3 shrink-0"

@@ -147,10 +147,10 @@ export function MonthSwitcher({
                     setPickerOpen(false);
                   }}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40",
+                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40",
                     active
                       ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted",
+                      : "hoverable:bg-muted",
                   )}
                 >
                   {label}

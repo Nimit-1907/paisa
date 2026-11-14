@@ -97,12 +97,12 @@ export function CategoriesScreen({
                 setReordering(false);
               }}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 selected
                   ? value === "income"
                     ? "bg-income-soft text-income shadow-sm"
                     : "bg-expense-soft text-expense shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-muted-foreground hoverable:text-foreground",
               )}
             >
               {KIND_LABELS[value]}
@@ -173,7 +173,7 @@ export function CategoriesScreen({
                 >
                   <DragHandle {...handleProps} />
                   <CategoryBadge category={category} />
-                  <span className="truncate text-sm font-medium">
+                  <span className="truncate text-sm font-semibold">
                     {category.name}
                   </span>
                 </div>
@@ -186,10 +186,10 @@ export function CategoriesScreen({
                   <button
                     type="button"
                     onClick={() => openEdit(category)}
-                    className="bg-card hover:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                   >
                     <CategoryBadge category={category} size="lg" />
-                    <span className="w-full truncate text-center text-xs font-medium">
+                    <span className="w-full truncate text-center text-xs font-semibold">
                       {category.name}
                     </span>
                   </button>
@@ -200,10 +200,10 @@ export function CategoriesScreen({
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="border-border/70 text-muted-foreground hover:border-border hover:text-foreground focus-visible:ring-ring flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="border-border/70 text-muted-foreground hoverable:border-border hoverable:text-foreground focus-visible:ring-ring flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <Plus className="size-5" aria-hidden="true" />
-                  <span className="text-xs font-medium">Add</span>
+                  <span className="text-xs font-semibold">Add</span>
                 </button>
               </li>
             </ul>
@@ -217,7 +217,7 @@ export function CategoriesScreen({
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+            className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -239,10 +239,10 @@ export function CategoriesScreen({
                     <button
                       type="button"
                       onClick={() => openEdit(category)}
-                      className="bg-card hover:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                      className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <CategoryBadge category={category} size="lg" />
-                      <span className="w-full truncate text-center text-xs font-medium">
+                      <span className="w-full truncate text-center text-xs font-semibold">
                         {category.name}
                       </span>
                     </button>
