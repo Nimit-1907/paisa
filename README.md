@@ -84,7 +84,7 @@ supabase stop --project-id <other-project>
 | --- | --- |
 | `npm run dev` | Next dev server |
 | `npm run build` / `npm start` | Production build / serve (also builds the service worker) |
-| `npm test` | Vitest (money, dates, the keypad calculator, routes, icons) |
+| `npm test` | Vitest (money, dates, recurrence, the keypad calculator, routes, icons) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -97,10 +97,10 @@ supabase stop --project-id <other-project>
 ```
 src/
   actions/            Server Actions: auth, profile, accounts,
-                      categories, transactions
+                      categories, transactions, recurring
   app/
     (app)/            records, analysis, budgets, accounts, more,
-                      categories, settings  — share the app shell layout
+                      categories, recurring, settings — share the shell
     (auth)/           login, signup, forgot-password, reset-password
     auth/callback/    exchanges the emailed code for a session
     onboarding/       first-run setup, its own full-screen layout
@@ -114,7 +114,8 @@ src/
     layout/           app shell: bottom nav, sidebar, sticky page header
     onboarding/       the three-step flow
     records/          the month list, the record sheet, the keypad,
-                      the filter sheet, the FAB
+                      the filter sheet, the upcoming strip, the FAB
+    recurring/        the rules list, the rule sheet, delete choices
     shared/           sheet, icon picker, colour picker, sortable list
     profile-provider  currency context for Client Components
     ui/               shadcn primitives
@@ -130,6 +131,10 @@ src/
     month-param.ts    reads ?m= and the filters off a URL
     nav.ts            the five tabs, in one place
     profile.ts        cached getProfile() for Server Components
+    recurrence.ts     the schedule calendar, mirroring SQL (+ tests)
+    recurring-check.ts  runs the catch-up once a day
+    recurring-rule.ts   a rule as the screens see it
+    relative-day.ts   "tomorrow", "in 3 days", "Sat 21 Nov"
     routes.ts         which paths are app / auth / neutral
     schemas/          zod schemas shared by forms and actions
     supabase/         server.ts, client.ts, middleware.ts, env.ts
@@ -137,7 +142,7 @@ src/
 supabase/
   migrations/         SQL migrations (never change the DB by hand)
   seed.sql            demo user + ~3 months of sample records
-  tests/              pgTAP: rls.test.sql, schema.test.sql
+  tests/              pgTAP: rls, schema and recurring
 scripts/
   generate-icons.py   regenerates the PWA icon set
 ```
@@ -258,6 +263,103 @@ payload cannot carry a BigInt, and a `number` would quietly lose precision
 above 2^53 paise. `fromDb` / `toDb` in `money.ts` are the only places that
 convert.
 
+## Recurring
+
+Rent, salary, a subscription: anything that repeats is a row in
+`recurring_rules`, a template plus a schedule. `/recurring` lists them, active
+before paused, and each one has its own page with the records it has created
+and the next five dates it is due.
+
+**The anchor is what keeps a schedule honest.** "Monthly on the 31st" has to
+clamp to 28 February and then come back to 31 March. Stepping a cursor forward
+cannot do that — it clamps to the 28th and stays there for good — so every
+occurrence is computed from the start date and the anchor day:
+
+```
+31 Jan → 28 Feb → 31 Mar → 30 Apr → 31 May
+29 Feb 2024 → 28 Feb 2025 → 28 Feb 2026 → 28 Feb 2027 → 29 Feb 2028
+```
+
+That arithmetic exists twice — `recurrence_occurrence()` in SQL writes the
+rows, `src/lib/recurrence.ts` draws the upcoming list before anything is
+written — so both are tested on the same cases
+(`supabase/tests/recurring.test.sql`, `src/lib/recurrence.test.ts`), and the
+two were checked against each other over a thousand random schedules.
+
+**Nothing is ever created twice.** A unique index on
+`(recurring_rule_id, occurrence day)` is the guarantee, not the cursor
+arithmetic: `process_due_recurring()` inserts with `ON CONFLICT DO NOTHING`, so
+two tabs opening at once, a retried request, or a cursor that was rolled back
+all end up colliding there instead of charging the month twice.
+
+**The catch-up runs on page load.** There is no cron in a local Supabase stack,
+so the app shell is the scheduler: the first page of a new day calls the
+generator, which creates every occurrence missed while the app was closed —
+three months away comes back to three months of records — and then stamps
+`profiles.last_recurring_check`. A toast says how many were added, and the
+screen refreshes so they are there to see. Opening the app again the same day
+does nothing at all.
+
+Per rule you can **edit** (future occurrences only — past records never move),
+**pause and resume**, **skip the next occurrence** (remembered in
+`skipped_dates`, so a catch-up months later still passes over it), and
+**delete**, which asks whether to keep the records it created or remove them
+too.
+
+Records has an **Upcoming** strip for the week ahead, computed rather than
+inserted, with **Pay now** on each item. Paying early books the record on its
+own scheduled date — it is the 1 December rent, paid on 28 November — and
+moves the rule past it, so the occurrence cannot come round again. Editing a
+record a rule created asks whether the change is for that record or for the
+rule as well.
+
+### Running the generator in production
+
+Locally the page-load catch-up is the whole story, and nothing below is
+shipped. A deployed instance can let Postgres do the work instead, with
+`pg_cron` and a wrapper — `process_due_recurring()` reads `auth.uid()`, so it
+is per-caller by design and something has to walk the users:
+
+```sql
+create extension if not exists pg_cron;
+
+create function public.process_due_recurring_all()
+returns integer
+language plpgsql
+security definer          -- runs as the owner, so it can act for each user
+set search_path = ''
+as $$
+declare
+  v_user uuid;
+  v_total integer := 0;
+begin
+  for v_user in select id from auth.users loop
+    perform set_config(
+      'request.jwt.claims',
+      json_build_object('sub', v_user)::text,
+      true                -- local to this transaction
+    );
+    v_total := v_total + public.process_due_recurring();
+  end loop;
+
+  return v_total;
+end;
+$$;
+
+revoke execute on function public.process_due_recurring_all()
+  from public, anon, authenticated;
+
+select cron.schedule(
+  'paisa-recurring',
+  '30 0 * * *',           -- 06:00 IST
+  $$ select public.process_due_recurring_all() $$
+);
+```
+
+The app needs no change if you do this, and the two can run side by side: the
+generator is idempotent, so whichever gets there first does the work and the
+other finds nothing to do.
+
 ## The database
 
 Six tables, all with `user_id` (profiles keys on `id = auth.users.id`), all
@@ -270,7 +372,7 @@ with row level security, all with an `updated_at` trigger:
 | `categories` | income or expense, lucide icon, colour, unique per kind per user |
 | `transactions` | income / expense / transfer in minor units, with note and timestamp |
 | `budgets` | one amount per expense category per month |
-| `recurring_rules` | a transaction template plus a schedule |
+| `recurring_rules` | a transaction template plus a schedule, anchor and skips |
 
 Rules the database enforces, so the UI cannot get them wrong:
 
@@ -293,23 +395,31 @@ Read models and RPCs:
 - `process_due_recurring()` — creates every transaction the caller's active
   rules owe up to today (catching up whatever was missed while the app was
   closed), advances `next_run_on`, and switches a rule off once it passes its
-  end date. Calling it twice in a day changes nothing the second time.
+  end date. Returns how many it created. Calling it twice changes nothing the
+  second time — see **Recurring** above.
+- `recurrence_occurrence()` / `recurrence_after()` — the schedule calendar:
+  the nth occurrence of a rule, and the first one on or after a date.
+- `materialise_recurring()` / `skip_recurring_occurrence()` /
+  `delete_recurring_rule()` — pay an occurrence early, skip one, and delete a
+  rule with or without the records it created, each in a single statement.
 
-`npm run db:test` runs both pgTAP files: `rls.test.sql` puts two real
+`npm run db:test` runs three pgTAP files: `rls.test.sql` puts two real
 `authenticated` sessions side by side and checks that neither can read, write
-or delete the other's rows, and `schema.test.sql` covers the constraints above.
+or delete the other's rows, `schema.test.sql` covers the constraints above, and
+`recurring.test.sql` covers the schedule arithmetic and the generator.
 
 After any migration, regenerate the types — `npm run db:types` — and never
 edit `src/types/database.ts` by hand.
 
 ## Status
 
-Phases 1–5 are done: the app shell, the database, auth with onboarding,
-managing accounts and categories, and the records screen. A new account can
-sign up, confirm by email, pick a currency, set an opening balance and land on
-Records; accounts and categories can be created, edited, reordered, archived
-and deleted; and records can be added from any tab, edited, deleted with undo,
-repeated on a schedule, searched and filtered, with balances and month totals
-following along.
+Phases 1–6 are done: the app shell, the database, auth with onboarding,
+managing accounts and categories, the records screen, and recurring
+transactions. A new account can sign up, confirm by email, pick a currency, set
+an opening balance and land on Records; accounts and categories can be created,
+edited, reordered, archived and deleted; records can be added from any tab,
+edited, deleted with undo, searched and filtered; and anything that repeats
+manages itself, catching up whatever was missed and never creating the same
+occurrence twice.
 
 Next: analysis — the charts and the per-category breakdown.
