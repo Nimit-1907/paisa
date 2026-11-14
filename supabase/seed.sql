@@ -99,6 +99,7 @@ declare
   v_category uuid;
   v_month_offset integer;
   v_entry record;
+  v_rule uuid;
 begin
   -- Deterministic jitter: the same reset twice produces the same numbers.
   perform setseed(0.4242);
@@ -389,6 +390,35 @@ begin
     ((date_trunc('month', v_today) - interval '3 months')::date + 2),
     (date_trunc('month', v_today + interval '1 month')::date + 2)
   );
+
+  -- One rule with a history, so the detail page and the Upcoming strip have
+  -- something to show on a fresh reset: a weekly top-up that has run five
+  -- times and is due again in two days.
+  select c.id into v_category
+  from public.categories c
+  where c.user_id = c_user and c.kind = 'expense' and c.name = 'Transport';
+
+  insert into public.recurring_rules (
+    user_id, type, amount, account_id, category_id, note,
+    frequency, interval_count, start_date, next_run_on, last_run_on
+  )
+  values (
+    c_user, 'expense', 25000, v_wallet, v_category, 'Metro card top-up',
+    'weekly', 1, v_today - 33, v_today + 2, v_today - 5
+  )
+  returning id into v_rule;
+
+  -- The occurrences it has already created, on the days the schedule says:
+  -- 33, 26, 19, 12 and 5 days ago.
+  insert into public.transactions (
+    user_id, type, amount, account_id, category_id, note,
+    occurred_at, recurring_rule_id
+  )
+  select
+    c_user, 'expense', 25000, v_wallet, v_category, 'Metro card top-up',
+    ((v_today - offset_days + time '12:00')::timestamp at time zone c_tz),
+    v_rule
+  from unnest(array[33, 26, 19, 12, 5]) as offset_days;
 
   raise notice 'Seeded demo@example.com with % transactions',
     (select count(*) from public.transactions where user_id = c_user);
