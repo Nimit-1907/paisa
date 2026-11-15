@@ -7,9 +7,9 @@ import {
   ArrowUpDown,
   Check,
   ChevronDown,
+  ListPlus,
   Loader2,
   Pencil,
-  Plus,
   Repeat,
   Trash2,
   TriangleAlert,
@@ -655,7 +655,13 @@ export function RecordSheet({
         />
       </SheetHead>
 
-      <SheetBody fill className="space-y-3">
+      {/* A notch tighter where the sheet is fighting for room: at 780px
+          those four pixels a gap are what put the second row of categories
+          on screen instead of three pixels below it. */}
+      <SheetBody
+        fill
+        className="space-y-3 [@media(max-height:780px)]:space-y-2"
+      >
         <div className="relative">
           <Pencil
             className="text-text-secondary pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
@@ -1090,7 +1096,14 @@ export function RecordSheet({
                 onClick={() => void save(true)}
                 disabled={saving}
               >
-                <Plus className="size-5" aria-hidden="true" />
+                {/*
+                  Not a bare plus. The dock's plus means "add a record" and
+                  this sits two thumb-widths from it meaning "save this one
+                  and start the next" — the same glyph for a different verb,
+                  beside the Save button it is not. A plus on a list says it
+                  adds to the run you are already keeping.
+                */}
+                <ListPlus className="size-5" aria-hidden="true" />
               </Button>
               <Button
                 size="touch"

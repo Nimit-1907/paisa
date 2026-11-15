@@ -311,17 +311,47 @@ export function SearchOverlay({
               onRetry={() => void submit(error.term)}
             />
           ) : results ? (
-            <SearchResults
-              results={results}
-              timeZone={timeZone}
-              onOpen={(record) => {
-                // The sheet is the one place a record can be read, changed
-                // and deleted; sending a search result anywhere else would
-                // mean a second copy of all three.
-                onClose();
-                sheet.openEdit(draftOf(record, timeZone));
-              }}
-            />
+            <>
+              {/*
+                Nothing is searched as you type, so typing over a finished
+                search leaves its results sitting there — a list headed
+                “Zomato” under a box that now says "coff", and, worse, a
+                "Nothing matches that" about a word the box no longer
+                holds. Saying which term the list belongs to is most of the
+                fix; the rest is offering the search rather than explaining
+                which key performs it, since that key is labelled Enter on
+                a desktop and Search on a phone.
+              */}
+              {query.trim() && query.trim() !== results.term ? (
+                <p
+                  role="status"
+                  className="text-text-secondary mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm"
+                >
+                  <span className="min-w-0 truncate">
+                    Still showing “{results.term}”.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void submit(query)}
+                    className="text-text min-w-0 max-w-full truncate rounded font-semibold underline underline-offset-2"
+                  >
+                    Search “{query.trim()}”
+                  </button>
+                </p>
+              ) : null}
+
+              <SearchResults
+                results={results}
+                timeZone={timeZone}
+                onOpen={(record) => {
+                  // The sheet is the one place a record can be read,
+                  // changed and deleted; sending a search result anywhere
+                  // else would mean a second copy of all three.
+                  onClose();
+                  sheet.openEdit(draftOf(record, timeZone));
+                }}
+              />
+            </>
           ) : (
             <>
               {recent.length > 0 ? (

@@ -109,6 +109,15 @@ const SHOT = {
   fullPage: true,
   // A pixel or two of antialiasing on a chart edge is not a regression;
   // a card losing its border is.
+  //
+  // An absolute cap as well as a ratio, because these are full-page shots
+  // and a ratio is measured against the whole page: 1% of a records screen
+  // at 360px is about 10,000 pixels, which is more than a list row holds.
+  // A QA pass rewrote every transfer row's title and subtitle and all 64
+  // baselines still passed — the suite could not see a change the eye spots
+  // immediately. The cap is what makes a single row's worth of difference
+  // count as one.
+  maxDiffPixels: 600,
   maxDiffPixelRatio: 0.01,
   animations: "disabled",
 } as const;

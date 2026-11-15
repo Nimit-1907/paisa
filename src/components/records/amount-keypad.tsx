@@ -215,8 +215,8 @@ export function Keypad({
     // Hidden where there is a real keyboard. A 4×4 grid of buttons is the
     // slower way to type a number on a desktop, and it is 210px of a dialog
     // that the category grid needs more.
-    <div className={cn("space-y-1.5 lg:hidden", className)}>
-      <div className="grid grid-cols-4 gap-1.5">
+    <div className={cn("space-y-1 lg:hidden", className)}>
+      <div className="grid grid-cols-4 gap-1">
         {KEYS.flat().map((key) => (
           <button
             key={key}
@@ -226,8 +226,14 @@ export function Keypad({
             // Flat muted keys with no borders: twelve outlined boxes in a
             // grid is a lot of line for something a thumb aims at by
             // position rather than by edge.
+            // h-11, not h-12: the floor for a tap target is 44px and this
+            // grid is the tallest fixed thing in the sheet. The 22px those
+            // four pixels and the tighter gaps give back is the difference
+            // between the second row of categories being cut in half and
+            // being on screen — and the category is the step this flow is
+            // actually about.
             className={cn(
-              "pressable rounded-control bg-surface-muted text-text flex h-12 items-center justify-center text-lg font-semibold",
+              "pressable rounded-control bg-surface-muted text-text flex h-11 items-center justify-center text-lg font-semibold",
               "hoverable:bg-hairline",
             )}
           >

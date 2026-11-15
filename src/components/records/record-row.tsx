@@ -116,7 +116,18 @@ export function RecordRow({
         <>
           {record.note && !transfer ? (
             <>
-              <span className="truncate">{record.note}</span>
+              {/*
+                The note shrinks last. Two truncating siblings share a
+                shortfall in proportion to their width, so at 360px both got
+                cut and "Zomato — team lunch · ICICI Credit Card" came out as
+                "Zomato — tea… · ICICI Credi…" — two half-words where one
+                whole one would do. The note is what identifies the record;
+                the account is context. So the account gives up the room,
+                down to a floor that still reads as a name.
+              */}
+              <span className="max-w-[70%] shrink-0 truncate">
+                {record.note}
+              </span>
               <span aria-hidden="true">·</span>
             </>
           ) : null}

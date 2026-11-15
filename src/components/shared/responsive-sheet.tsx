@@ -72,10 +72,20 @@ export function ResponsiveSheet({
         96px of dimmed backdrop above a sheet is 15% of a 640px phone spent
         on nothing, and it was the difference between the category row being
         on screen while the amount is typed and being a scroll away.
+
+        And higher again on a short phone. 64px of backdrop plus an 8% cap
+        is 115px on a 667px screen — an iPhone SE — which the add sheet does
+        not have to give: measured there, the category grid, which is step
+        three of a four-tap flow, had no row fully on screen at all. A phone
+        tall enough for the grid keeps the roomier framing; one that is not
+        spends its pixels on the thing being chosen rather than on the
+        dimmed page behind it.
       */}
       <DrawerContent
         className={cn(
           "data-[vaul-drawer-direction=bottom]:mt-16 data-[vaul-drawer-direction=bottom]:max-h-[92dvh]",
+          "[@media(max-height:780px)]:data-[vaul-drawer-direction=bottom]:mt-4",
+          "[@media(max-height:780px)]:data-[vaul-drawer-direction=bottom]:max-h-[97dvh]",
           className,
         )}
       >
