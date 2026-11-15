@@ -600,3 +600,37 @@ errors.
 
 **Not done on Categories:** drag-to-reorder already exists, but the spec's
 "live preview tile at the top of the edit sheet" does not. Listed in the gaps.
+
+---
+
+## 22. System screens
+
+**404 and the error boundary did not exist.** A mistyped URL fell through to
+Next's default page, and a thrown route error showed the framework's own
+overlay in development and a blank screen in production. Both are now part of
+the app.
+
+**404** — reached by a mistyped URL, a stale bookmark, or a link to a record
+that has since been deleted, which is the common one. That is why it does not
+say "the page you requested does not exist" in a tone of mild accusation:
+something is gone, here is the way back. One action, the same one every
+system screen offers. A 404 with a nav bar and three suggestions is a maze
+with a signpost in it. Measured: a real HTTP 404, not a 200 with sad text.
+
+**Error boundary** — two things it will not do:
+
+- **Show `error.message`.** A Postgres or PostgREST message names tables,
+  columns and constraints: frightening to read, and occasionally more about
+  the schema than a stranger should learn from a crash.
+- **Blame the person.** Whatever happened, they pressed a button.
+
+Two ways out, because `reset()` only helps when the failure was transient —
+if the route is broken every time, retrying forever is a trap. The digest is
+shown small and last: it is the one string connecting what somebody saw to
+what the server logged, and it identifies the error, not the user.
+
+**Offline page, the update-available toast and the install prompt** were built
+in Phase 9 and carry the same anatomy; the token sweep brought their surfaces
+and text in line with everything else.
+
+**Screenshots.** `system-390-404`.
