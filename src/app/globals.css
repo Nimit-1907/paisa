@@ -168,11 +168,6 @@
   --color-input: var(--hairline);
   --color-ring: var(--ink);
 
-  --color-chart-1: var(--ink);
-  --color-chart-2: var(--bar-muted);
-  --color-chart-3: var(--transfer);
-  --color-chart-4: var(--income);
-  --color-chart-5: var(--expense);
 }
 
 :root {

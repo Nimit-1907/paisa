@@ -20,6 +20,13 @@ import { SegmentedControl } from "@/components/shared/segmented-control";
 import { Card, HeroCard, ListCard } from "@/components/shared/surface";
 import { Tile } from "@/components/shared/tile";
 import { TilePicker } from "@/components/shared/tile-picker";
+import { TintPicker } from "@/components/shared/tint-picker";
+import { DateTile } from "@/components/shared/date-tile";
+import {
+  RangeCalendar,
+  RangePresetPills,
+} from "@/components/shared/range-calendar";
+import { Stepper } from "@/components/shared/stepper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,6 +60,8 @@ function Panel({ theme }: { theme: "light" | "dark" }) {
           <Heroes />
           <Lists />
           <Controls />
+          <Pickers />
+          <Progress />
           <Feedback />
         </div>
       </div>
@@ -226,15 +235,46 @@ function Heroes() {
 
 function Lists() {
   const rows = [
-    { tint: "rose", icon: "UtensilsCrossed", name: "Food", sub: "Lunch with team · HDFC", amount: "−₹450", tone: "text-expense" },
-    { tint: "peach", icon: "ShoppingBasket", name: "Groceries", sub: "Weekly veggies · Cash", amount: "−₹750", tone: "text-expense" },
-    { tint: "mint", icon: "Banknote", name: "Salary", sub: "November · HDFC", amount: "+₹62,000", tone: "text-income" },
-    { tint: "sky", icon: "ArrowLeftRight", name: "Transfer", sub: "HDFC → Cash", amount: "₹2,000", tone: "text-transfer" },
+    {
+      tint: "rose",
+      icon: "UtensilsCrossed",
+      name: "Food",
+      sub: "Lunch with team · HDFC",
+      amount: "−₹450",
+      tone: "text-expense",
+    },
+    {
+      tint: "peach",
+      icon: "ShoppingBasket",
+      name: "Groceries",
+      sub: "Weekly veggies · Cash",
+      amount: "−₹750",
+      tone: "text-expense",
+    },
+    {
+      tint: "mint",
+      icon: "Banknote",
+      name: "Salary",
+      sub: "November · HDFC",
+      amount: "+₹62,000",
+      tone: "text-income",
+    },
+    {
+      tint: "sky",
+      icon: "ArrowLeftRight",
+      name: "Transfer",
+      sub: "HDFC → Cash",
+      amount: "₹2,000",
+      tone: "text-transfer",
+    },
   ];
 
   return (
     <Group title="List">
-      <SectionHeader title="Today" trailing={<span className="text-text-secondary text-xs">−₹1,240</span>} />
+      <SectionHeader
+        title="Today"
+        trailing={<span className="text-text-secondary text-xs">−₹1,240</span>}
+      />
       <ListCard>
         {rows.map((row) => (
           <li key={row.name} className="flex items-center gap-3 px-3.5 py-2.5">
@@ -291,7 +331,12 @@ function Controls() {
         onChange={setPicked}
         options={[
           { id: "food", name: "Food", icon: "UtensilsCrossed", tint: "rose" },
-          { id: "groceries", name: "Groceries", icon: "ShoppingBasket", tint: "peach" },
+          {
+            id: "groceries",
+            name: "Groceries",
+            icon: "ShoppingBasket",
+            tint: "peach",
+          },
           { id: "transport", name: "Transport", icon: "Bus", tint: "sky" },
           { id: "bills", name: "Bills", icon: "ReceiptText", tint: "butter" },
         ]}
@@ -338,6 +383,56 @@ function Controls() {
   );
 }
 
+/** The three pickers Phase 14 added after the first style-guide pass. */
+function Pickers() {
+  const [tint, setTint] = React.useState("peri");
+  const [every, setEvery] = React.useState("2");
+  const [range, setRange] = React.useState({
+    from: "2026-11-03",
+    to: "2026-11-15",
+  });
+
+  return (
+    <Group title="Pickers">
+      <TintPicker value={tint} onChange={setTint} />
+
+      <div className="flex items-center gap-3">
+        <DateTile day="2026-12-03" />
+        <DateTile day={null} />
+        <Stepper label="Every how many" value={every} onChange={setEvery} />
+      </div>
+
+      <div className="bg-surface rounded-card border p-4">
+        <RangePresetPills
+          from={range.from}
+          to={range.to}
+          today="2026-11-15"
+          onSelect={setRange}
+          className="mb-3"
+        />
+        <RangeCalendar
+          from={range.from}
+          to={range.to}
+          max="2026-11-15"
+          today="2026-11-15"
+          onChange={setRange}
+        />
+      </div>
+    </Group>
+  );
+}
+
+/** The budget bar at each of its three thresholds. */
+function Progress() {
+  return (
+    <Group title="Progress">
+      <ProgressBar percent={34} label="Under: ink" />
+      <ProgressBar percent={88} label="Close: butter with an ink border" />
+      <ProgressBar percent={140} label="Over: rose with an ink border" />
+    </Group>
+  );
+}
+
 function Feedback() {
   return (
     <Group title="Feedback">
@@ -348,7 +443,10 @@ function Feedback() {
         <span className="flex-1 text-[13px] font-medium">
           Expense saved · ₹450
         </span>
-        <button type="button" className="text-text text-xs font-semibold underline">
+        <button
+          type="button"
+          className="text-text text-xs font-semibold underline"
+        >
           Undo
         </button>
       </div>

@@ -32,7 +32,7 @@ export function StickyActionBar({
       className={cn(
         "bg-surface pb-safe sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-3",
         variant === "sheet" &&
-          "lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-filter-none",
+          "lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0",
         className,
       )}
       // Lifted by however much of the window the on-screen keyboard is
