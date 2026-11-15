@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/layout/page-header";
-import { MonthRecap } from "@/components/records/month-recap";
 import { RecordsScreen } from "@/components/records/records-screen";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { getMonthContext, parseFilters } from "@/lib/month-param";
@@ -142,17 +140,11 @@ export default async function RecordsPage({
 
   const recap = await recapPromise;
 
+  // The header, the recap and the month card are rendered by the screen
+  // rather than here: the header collapses the card into a one-line summary
+  // once it scrolls away, which means it has to know where the card ends.
   return (
-    <>
-      <PageHeader title="Records" monthNav={month} />
-
-      {recap ? (
-        <div className="mb-4">
-          <MonthRecap recap={recap} monthLabel={monthName(previousStart)} />
-        </div>
-      ) : null}
-
-      <RecordsScreen
+    <RecordsScreen
         year={month.year}
         month={month.month}
         timeZone={timeZone}
@@ -171,7 +163,9 @@ export default async function RecordsPage({
         activeFilterCount={activeFilterCount}
         upcoming={upcoming}
         today={today}
+        monthNav={month}
+        recap={recap}
+        recapMonthLabel={recap ? monthName(previousStart) : null}
       />
-    </>
   );
 }

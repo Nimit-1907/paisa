@@ -216,3 +216,33 @@ export function nextRecurrence(
       return afterMonths(12 * interval);
   }
 }
+
+/**
+ * `yyyy-mm-ddThh:mm` for right now, where the user is.
+ *
+ * The shape a `datetime-local` input wants, and the shape the record sheet
+ * carries a draft's date in. It lived inside the sheet until duplicating a
+ * record needed the same answer — "the same thing again, now".
+ *
+ * `en-CA` because its date order is already `yyyy-mm-dd`, and hour 24 is
+ * rewritten to 00: `hour12: false` reports midnight as 24 in some
+ * environments, which is a valid ISO hour that no input will accept.
+ */
+export function nowLocal(timeZone: string): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+      .formatToParts(new Date())
+      .map((part) => [part.type, part.value]),
+  );
+
+  const hour = parts.hour === "24" ? "00" : parts.hour;
+  return `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}`;
+}

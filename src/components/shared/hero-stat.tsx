@@ -1,3 +1,4 @@
+import { Grain } from "@/components/shared/grain";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,6 +21,7 @@ export function HeroStat({
   caption,
   aside,
   legs,
+  texture = true,
   children,
   className,
 }: {
@@ -33,6 +35,11 @@ export function HeroStat({
   aside?: React.ReactNode;
   /** The two or three smaller figures that sit under the hero. */
   legs?: React.ReactNode;
+  /**
+   * The faint grain. On by default: a hero is the one large flat panel on
+   * its screen, which is exactly what the texture stops reading as a hole.
+   */
+  texture?: boolean;
   /** Anything below: the bars on the month card, a progress track. */
   children?: React.ReactNode;
   className?: string;
@@ -44,7 +51,9 @@ export function HeroStat({
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-3">
+      {texture ? <Grain /> : null}
+
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-ink-2 text-label font-semibold tracking-wide uppercase">
             {label}
@@ -60,10 +69,10 @@ export function HeroStat({
       </div>
 
       {legs ? (
-        <div className="mt-4 flex items-stretch gap-3">{legs}</div>
+        <div className="relative mt-4 flex items-stretch gap-3">{legs}</div>
       ) : null}
 
-      {children}
+      {children ? <div className="relative">{children}</div> : null}
     </section>
   );
 }

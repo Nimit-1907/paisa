@@ -45,6 +45,7 @@ import {
   type TransactionType,
 } from "@/lib/schemas/transactions";
 import { evaluate } from "@/lib/calculator";
+import { nowLocal } from "@/lib/dates";
 import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,15 @@ const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
 /** What the sheet is editing, if anything. */
 export type RecordDraft = {
   id: string;
+  /**
+   * `edit` changes the record `id` points at; `copy` uses it as a starting
+   * point for a new one.
+   *
+   * On the draft rather than as a separate prop because it travels with the
+   * data: a sheet that has the values but not the intent is one `title` away
+   * from offering Delete on a record that does not exist yet.
+   */
+  mode?: "edit" | "copy";
   type: TransactionType;
   /** Minor units as text. */
   amount: string;
@@ -168,7 +178,9 @@ export function RecordSheet({
   const [shaking, shake] = useShake();
   const [moreOpen, setMoreOpen] = React.useState(false);
 
-  const editingId = editing?.id ?? null;
+  // A copy starts from a record but is not one, so it has no id to update.
+  const copying = editing?.mode === "copy";
+  const editingId = editing && !copying ? editing.id : null;
 
   // Reset when the sheet opens, or when it is pointed at a different record.
   // Keyed on the id rather than the object, so a refresh underneath does not
@@ -442,7 +454,7 @@ export function RecordSheet({
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={editing ? "Edit record" : "Add record"}
+      title={editingId ? "Edit record" : "Add record"}
     >
       <SheetBody>
         <TypeTabs
@@ -733,7 +745,7 @@ export function RecordSheet({
           </p>
         ) : null}
 
-        {editing && onDelete ? (
+        {editingId && onDelete ? (
           <div className="border-t pt-4">
             <Button
               variant="destructive"
@@ -745,7 +757,7 @@ export function RecordSheet({
                 // and a dialog on every delete is the kind of friction that
                 // makes people stop tidying their records.
                 onOpenChange(false);
-                void onDelete(editing.id);
+                void onDelete(editingId);
               }}
             >
               <Trash2 className="size-4" aria-hidden="true" />
@@ -829,26 +841,6 @@ export function RecordSheet({
       />
     </ResponsiveSheet>
   );
-}
-
-/** `yyyy-mm-ddThh:mm` for right now, in the user's timezone. */
-function nowLocal(timeZone: string): string {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone,
-      hour12: false,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-      .formatToParts(new Date())
-      .map((part) => [part.type, part.value]),
-  );
-
-  const hour = parts.hour === "24" ? "00" : parts.hour;
-  return `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}`;
 }
 
 /** Minor units back into something the keypad can show and edit. */

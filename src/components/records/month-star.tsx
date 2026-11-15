@@ -2,9 +2,9 @@
 
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
-import { useFormatMoney } from "@/components/profile-provider";
+import { Amount } from "@/components/shared/amount";
+import { HeroStat } from "@/components/shared/hero-stat";
 import { useCountUp } from "@/lib/motion";
-import { Grain } from "@/components/shared/grain";
 import { cn } from "@/lib/utils";
 
 export type DaySpend = {
@@ -37,7 +37,6 @@ export function MonthStar({
   /** Today where the user is, `yyyy-mm-dd`. Empty for a past month. */
   today: string;
 }) {
-  const formatMoney = useFormatMoney();
   const net = BigInt(summary.net);
   const shown = useCountUp(net < 0n ? -net : net);
 
@@ -45,77 +44,67 @@ export function MonthStar({
   const scale = ordinaryPeak(amounts);
 
   return (
-    <section
-      aria-label="This month"
-      className="bg-card text-card-foreground accent-wash border-border relative overflow-hidden rounded-card border px-4 py-3"
-    >
-      <Grain />
-
-      <div className="relative">
-        <h2 className="text-ink-3 text-label font-semibold tracking-[0.08em] uppercase">
-          {net < 0n ? "Overspent this month" : "Left this month"}
-        </h2>
-
-        <p
-          className={cn(
-            "font-display mt-0.5 truncate text-[2.75rem] leading-[1.05]",
-            net < 0n ? "text-expense" : "text-ink",
-          )}
-        >
-          {formatMoney(shown, { signDisplay: "never", whole: true })}
-        </p>
-
-        <p className="text-ink-2 mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs">
+    <HeroStat
+      // The anatomy is `HeroStat`, shared with Budgets and Accounts. What is
+      // the month card's own is in here: the bars, and which way the figure
+      // reads when the month has gone the wrong way.
+      label={net < 0n ? "Overspent this month" : "Left this month"}
+      value={
+        <span className={net < 0n ? "text-expense" : "text-ink"}>
+          <Amount value={shown} signDisplay="never" whole />
+        </span>
+      }
+      legs={
+        <p className="text-ink-2 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs">
           <span className="flex items-center gap-1">
             <ArrowDownLeft className="text-income size-3.5" aria-hidden="true" />
-            <span className="amount text-ink font-semibold">
-              {formatMoney(BigInt(summary.income), { signDisplay: "never" })}
+            <span className="text-ink font-semibold">
+              <Amount value={BigInt(summary.income)} signDisplay="never" />
             </span>
             in
           </span>
 
           <span className="flex items-center gap-1">
             <ArrowUpRight className="text-expense size-3.5" aria-hidden="true" />
-            <span className="amount text-ink font-semibold">
-              {formatMoney(BigInt(summary.expense), { signDisplay: "never" })}
+            <span className="text-ink font-semibold">
+              <Amount value={BigInt(summary.expense)} signDisplay="never" />
             </span>
             out
           </span>
         </p>
-
-        {days.length > 0 ? (
-          /*
-           * Decoration, deliberately.
-           *
-           * Each bar was a link to that day's records, which is a lovely
-           * idea and an inaccessible one: thirty bars across 328px makes
-           * each target about seven pixels wide, against the 24 that WCAG
-           * 2.5.8 asks for and the 44 this app promises. axe called it, and
-           * it was right — there is no spacing trick that fixes a target
-           * that small.
-           *
-           * The behaviour did not go away, it moved: every day heading in
-           * the list below is a link to that day, full width and easy to
-           * hit. The shape stays here, where it is read rather than
-           * touched, and the list underneath is its text alternative.
-           */
-          <div aria-hidden="true" className="mt-3 flex h-12 items-end gap-[3px]">
-            {days.map((day) => (
-              <span
-                key={day.on}
-                className={cn(
-                  "flex-1 rounded-full",
-                  day.on === today ? "bg-primary" : "bg-primary/25",
-                )}
-                style={{
-                  height: `${barHeight(Number(BigInt(day.expense)), scale)}%`,
-                }}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </section>
+      }
+    >
+      {days.length > 0 ? (
+        /*
+         * Decoration, deliberately.
+         *
+         * Each bar was a link to that day's records, which is a lovely idea
+         * and an inaccessible one: thirty bars across 328px makes each
+         * target about seven pixels wide, against the 24 that WCAG 2.5.8
+         * asks for and the 44 this app promises. axe called it, and it was
+         * right — there is no spacing trick that fixes a target that small.
+         *
+         * The behaviour did not go away, it moved: every day heading in the
+         * list below is a link to that day, full width and easy to hit. The
+         * shape stays here, where it is read rather than touched, and the
+         * list underneath is its text alternative.
+         */
+        <div aria-hidden="true" className="mt-3 flex h-12 items-end gap-[3px]">
+          {days.map((day) => (
+            <span
+              key={day.on}
+              className={cn(
+                "flex-1 rounded-full",
+                day.on === today ? "bg-primary" : "bg-primary/25",
+              )}
+              style={{
+                height: `${barHeight(Number(BigInt(day.expense)), scale)}%`,
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+    </HeroStat>
   );
 }
 

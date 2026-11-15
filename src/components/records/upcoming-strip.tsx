@@ -5,7 +5,12 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { CalendarClock, ChevronDown, Loader2 } from "lucide-react";
+import {
+  CalendarClock,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { payOccurrenceNow } from "@/actions/recurring";
@@ -15,6 +20,9 @@ import { Button } from "@/components/ui/button";
 import { ruleTitle, type UpcomingOccurrence } from "@/lib/recurring-rule";
 import { relativeDay } from "@/lib/relative-day";
 import { cn } from "@/lib/utils";
+
+/** How many of the week's scheduled items the strip shows before linking. */
+const MAX_SHOWN = 3;
 
 /**
  * What is due in the next seven days.
@@ -38,6 +46,17 @@ export function UpcomingStrip({
   const [paying, setPaying] = React.useState<string | null>(null);
 
   if (items.length === 0) return null;
+
+  /*
+   * Three, then a link.
+   *
+   * This is a reminder sitting above the month, not a second list. Seven
+   * days of a busy month can be a dozen rules, and a dozen rows pushed the
+   * records themselves off the screen - which is the one thing this strip
+   * must not do. Recurring is where the whole set lives.
+   */
+  const shown = items.slice(0, MAX_SHOWN);
+  const rest = items.length - shown.length;
 
   // Expenses only, the same rule the day totals follow: a transfer moves
   // money between the user's own accounts, so counting it here would
@@ -88,24 +107,24 @@ export function UpcomingStrip({
         className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-12 w-full items-center gap-2 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
       >
         <CalendarClock
-          className="text-muted-foreground size-4 shrink-0"
+          className="text-ink-2 size-4 shrink-0"
           aria-hidden="true"
         />
         <span className="flex-1 text-sm font-semibold">
           Upcoming
-          <span className="text-muted-foreground font-normal">
+          <span className="text-ink-2 font-normal">
             {" · "}
             {items.length} in 7 days
           </span>
         </span>
         {total > 0n ? (
-          <span className="amount text-muted-foreground shrink-0 text-xs font-semibold">
+          <span className="amount text-ink-2 shrink-0 text-xs font-semibold">
             {formatMoney(total, { signDisplay: "never" })}
           </span>
         ) : null}
         <ChevronDown
           className={cn(
-            "text-muted-foreground size-4 shrink-0 transition-transform",
+            "text-ink-2 size-4 shrink-0 transition-transform",
             open && "rotate-180",
           )}
           aria-hidden="true"
@@ -114,7 +133,7 @@ export function UpcomingStrip({
 
       {open ? (
         <ul className="divide-border border-t divide-y">
-          {items.map((item) => {
+          {shown.map((item) => {
             const { rule } = item;
 
             return (
@@ -128,7 +147,7 @@ export function UpcomingStrip({
                   >
                     {ruleTitle(rule)}
                   </Link>
-                  <span className="text-muted-foreground block truncate text-xs">
+                  <span className="text-ink-2 block truncate text-xs">
                     {relativeDay(item.on, today)} ·{" "}
                     {formatMoney(BigInt(rule.amount), {
                       signDisplay: "never",
@@ -151,6 +170,18 @@ export function UpcomingStrip({
               </li>
             );
           })}
+
+          {rest > 0 ? (
+            <li>
+              <Link
+                href="/recurring"
+                className="text-primary hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center justify-center gap-1 text-xs font-semibold focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+              >
+                See all {items.length} scheduled
+                <ChevronRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </section>

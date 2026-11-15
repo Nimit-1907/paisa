@@ -6,7 +6,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import { ChevronRight, Plus, Receipt, SlidersHorizontal } from "lucide-react";
+import {
+  ChevronRight,
+  Plus,
+  Receipt,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -17,9 +23,14 @@ import {
   updateTransaction,
 } from "@/actions/transactions";
 import { EmptyState } from "@/components/shared/empty-state";
-import { useCurrency, useFormatMoney } from "@/components/profile-provider";
+import { useCurrency } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
+import { CollapsingHeader } from "@/components/layout/collapsing-header";
+import { MonthRecap } from "@/components/records/month-recap";
+import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
+import { Amount } from "@/components/shared/amount";
+import { SectionHeader } from "@/components/shared/section-header";
 import { PullToRefresh } from "@/components/records/pull-to-refresh";
 import { UpcomingStrip } from "@/components/records/upcoming-strip";
 import type {
@@ -32,10 +43,11 @@ import { RecordRow } from "@/components/records/record-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { evaluate } from "@/lib/calculator";
-import { instantToLocal, localToInstant } from "@/lib/dates";
+import { instantToLocal, localToInstant, nowLocal } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
+import type { MonthRecap as MonthRecapData } from "@/lib/queries/recap";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
 import { useClearFilters } from "@/components/records/use-clear-filters";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
@@ -65,6 +77,17 @@ export type RecordsScreenProps = {
   upcoming: UpcomingOccurrence[];
   /** Today where the user is, `yyyy-mm-dd`. */
   today: string;
+  /** Bounds for the month stepper in the sticky header. */
+  monthNav: {
+    year: number;
+    month: number;
+    maxYear: number;
+    maxMonth: number;
+  };
+  /** Last month's recap, on the first open of a new month. */
+  recap: MonthRecapData | null;
+  /** "October", for the recap heading. */
+  recapMonthLabel: string | null;
 };
 
 /**
@@ -89,11 +112,13 @@ export function RecordsScreen({
   activeFilterCount,
   upcoming,
   today,
+  monthNav,
+  recap,
+  recapMonthLabel,
 }: RecordsScreenProps) {
   const router = useRouter();
   const currency = useCurrency();
   const clearFilters = useClearFilters();
-  const formatMoney = useFormatMoney();
   const sheet = useRecordSheet();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -404,6 +429,22 @@ export function RecordsScreen({
     [visible, timeZone, today],
   );
 
+  /** A record as the sheet's draft. Shared by Edit and Duplicate. */
+  const draftOf = React.useCallback(
+    (record: TransactionRow) => ({
+      id: record.id,
+      type: record.type,
+      amount: record.amount,
+      accountId: record.accountId,
+      toAccountId: record.toAccountId,
+      categoryId: record.categoryId,
+      note: record.note,
+      occurredAtLocal: instantToLocal(record.occurredAt, timeZone),
+      recurringRuleId: record.recurringRuleId,
+    }),
+    [timeZone],
+  );
+
   /*
    * A refresh that finishes when the refresh finishes.
    *
@@ -469,29 +510,53 @@ export function RecordsScreen({
 
   return (
     <PullToRefresh onRefresh={refresh}>
-      <div className="space-y-4">
-        <MonthStar summary={summary} days={monthDays} today={today} />
+      <CollapsingHeader
+        title="Records"
+        monthNav={monthNav}
+        compact={<MonthStrip summary={summary} />}
+        actions={
+          <Button
+            variant="ghost"
+            size="icon-touch"
+            className="rounded-full"
+            aria-label="Search records"
+            onClick={() => router.push(`/records?m=${monthKey}&search=1`)}
+          >
+            <Search className="size-5" aria-hidden="true" />
+          </Button>
+        }
+      >
+        <div className="space-y-4">
+          {recap && recapMonthLabel ? (
+            <MonthRecap recap={recap} monthLabel={recapMonthLabel} />
+          ) : null}
 
+          <MonthStar summary={summary} days={monthDays} today={today} />
+        </div>
+      </CollapsingHeader>
+
+      <div className="mt-4 space-y-4">
         <UpcomingStrip items={upcoming} today={today} />
 
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
-            {visible.length} {visible.length === 1 ? "record" : "records"}
-            {more ? "+" : ""}
-          </p>
-
-          <Button
-            variant={activeFilterCount > 0 ? "default" : "ghost"}
-            size="touch"
-            className="px-3"
-            onClick={() => setFiltersOpen(true)}
-          >
-            <SlidersHorizontal className="size-4" aria-hidden="true" />
-            {activeFilterCount > 0
-              ? `Filters · ${activeFilterCount}`
-              : "Filter"}
-          </Button>
-        </div>
+        <SectionHeader
+          className="px-1"
+          title={`${visible.length}${more ? "+" : ""} ${
+            visible.length === 1 ? "record" : "records"
+          }`}
+          trailing={
+            <Button
+              variant={activeFilterCount > 0 ? "default" : "ghost"}
+              size="touch"
+              className="-my-2 px-3"
+              onClick={() => setFiltersOpen(true)}
+            >
+              <SlidersHorizontal className="size-4" aria-hidden="true" />
+              {activeFilterCount > 0
+                ? `Filters · ${activeFilterCount}`
+                : "Filter"}
+            </Button>
+          }
+        />
 
         {visible.length === 0 ? (
           <EmptyState
@@ -540,40 +605,47 @@ export function RecordsScreen({
                       <ChevronRight className="size-3.5" aria-hidden="true" />
                     </Link>
                   </h2>
-                  <span
-                    className={cn(
-                      "amount text-xs font-semibold",
-                      day.net > 0n ? "text-income" : "text-muted-foreground",
-                    )}
-                  >
-                    {day.net === 0n
-                      ? ""
-                      : formatMoney(day.net, { signDisplay: "always" })}
-                  </span>
+                  {/* Through `Amount` like every other figure, so the day's
+                      total trims its paise on the same rule the rows below
+                      it do — the two disagreeing is worse than either. */}
+                  {day.net === 0n ? null : (
+                    <span
+                      className={cn(
+                        "text-xs font-semibold",
+                        day.net > 0n ? "text-income" : "text-ink-2",
+                      )}
+                    >
+                      <Amount value={day.net} signDisplay="always" />
+                    </span>
+                  )}
                 </div>
 
-                <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+                <ul className="bg-card divide-border rounded-card divide-y overflow-hidden border">
                   {day.rows.map((record) => (
                     <li key={record.id}>
                       <RecordRow
                         record={record}
                         pending={record.id.startsWith("optimistic-")}
                         highlight={record.id === sheet.lastSavedId}
-                        onOpen={() =>
-                          sheet.openEdit({
-                            id: record.id,
-                            type: record.type,
-                            amount: record.amount,
-                            accountId: record.accountId,
-                            toAccountId: record.toAccountId,
-                            categoryId: record.categoryId,
-                            note: record.note,
-                            occurredAtLocal: instantToLocal(
-                              record.occurredAt,
-                              timeZone,
-                            ),
-                            recurringRuleId: record.recurringRuleId,
+                        onOpen={() => sheet.openEdit(draftOf(record))}
+                        onCopy={() =>
+                          sheet.openCopy({
+                            ...draftOf(record),
+                            // Today, not the original date: a duplicate is
+                            // almost always "the same thing again, now".
+                            occurredAtLocal: nowLocal(timeZone),
+                            // The copy is its own record, not another
+                            // instance of a rule.
+                            recurringRuleId: null,
                           })
+                        }
+                        onShowSimilar={
+                          record.categoryId
+                            ? () =>
+                                router.push(
+                                  `/records?m=${monthKey}&category=${record.categoryId}`,
+                                )
+                            : undefined
                         }
                         onDelete={() => remove(record)}
                       />
@@ -634,8 +706,8 @@ function LoadMore({
     <div ref={ref} aria-live="polite" className="space-y-2">
       {loading ? (
         <>
-          <Skeleton className="h-16 rounded-xl" />
-          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="rounded-card h-16" />
+          <Skeleton className="rounded-card h-16" />
         </>
       ) : (
         <Skeleton className="h-16 rounded-xl opacity-50" />
