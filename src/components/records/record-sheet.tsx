@@ -22,6 +22,7 @@ import type {
 import { useCurrency } from "@/components/profile-provider";
 import { AmountKeypad } from "@/components/records/amount-keypad";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   type AccountOption,
   AccountSelect,
@@ -137,6 +138,7 @@ export function RecordSheet({
   timeZone,
   entryDefaults,
   quickAdds = [],
+  noteHints = [],
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -155,6 +157,8 @@ export function RecordSheet({
   entryDefaults?: EntryDefaults;
   /** One-tap chips for the things this person buys over and over. */
   quickAdds?: QuickAdd[];
+  /** Notes written before, offered as you type. */
+  noteHints?: string[];
 }) {
   const currency = useCurrency();
   const editing = draft ?? null;
@@ -177,6 +181,16 @@ export function RecordSheet({
   const [errorField, setErrorField] = React.useState<string | null>(null);
   const [shaking, shake] = useShake();
   const [moreOpen, setMoreOpen] = React.useState(false);
+  const [discardOpen, setDiscardOpen] = React.useState(false);
+
+  /**
+   * What the sheet was opened with.
+   *
+   * Compared against rather than a `dirty` flag set by every onChange: a
+   * flag set on the first keystroke stays set after the value is typed back
+   * to what it was, and then asks somebody to confirm discarding nothing.
+   */
+  const opened = React.useRef<string>("");
 
   // A copy starts from a record but is not one, so it has no id to update.
   const copying = editing?.mode === "copy";
@@ -219,8 +233,69 @@ export function RecordSheet({
             nowLocal(timeZone).slice(0, 10)),
       ),
     );
+    setDiscardOpen(false);
+
+    // Snapshot taken from the same values that were just set, not from
+    // state — state has not updated yet inside this effect.
+    opened.current = snapshot({
+      type: editing?.type ?? defaultType,
+      amount: editing
+        ? minorToText(editing.amount, currency.decimals)
+        : defaultAmountText,
+      accountId:
+        editing?.accountId ??
+        entryDefaults?.lastAccountId ??
+        accounts[0]?.id ??
+        "",
+      toAccountId: editing?.toAccountId ?? "",
+      categoryId: editing?.categoryId ?? "",
+      note: editing?.note ?? "",
+      occurredAt: editing?.occurredAtLocal ?? nowLocal(timeZone),
+      frequency: "none",
+      interval: "1",
+      endDate: "",
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingId]);
+
+  const changed =
+    opened.current !== "" &&
+    opened.current !==
+      snapshot({
+        type,
+        amount,
+        accountId,
+        toAccountId,
+        categoryId,
+        note,
+        occurredAt,
+        frequency,
+        interval,
+        endDate,
+      });
+
+  /**
+   * Closing, with a question if there is something to lose.
+   *
+   * A sheet is dismissed by swiping it down or tapping the backdrop, both of
+   * which are easy to do by accident on a phone and neither of which looks
+   * like "throw this away". Opening is never intercepted, and nor is closing
+   * an untouched sheet — a confirmation nobody needed is how people learn to
+   * dismiss confirmations without reading them.
+   */
+  function requestClose(next: boolean) {
+    if (next) {
+      onOpenChange(true);
+      return;
+    }
+
+    if (changed && !saving) {
+      setDiscardOpen(true);
+      return;
+    }
+
+    onOpenChange(false);
+  }
 
   // A hidden field cannot be corrected. Every field inside the fold, not
   // only the date: a collapsed section with the error in it is a form that
@@ -453,7 +528,7 @@ export function RecordSheet({
   return (
     <ResponsiveSheet
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={requestClose}
       title={editingId ? "Edit record" : "Add record"}
     >
       <SheetBody>
@@ -648,13 +723,31 @@ export function RecordSheet({
 
           <FormRow id="note" label="Note" hint="Optional">
             {(props) => (
-              <Input
-                {...props}
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                placeholder="Swiggy — team lunch"
-                maxLength={500}
-              />
+              <>
+                <Input
+                  {...props}
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="Swiggy — team lunch"
+                  maxLength={500}
+                  // A native datalist rather than a combobox we built.
+                  // Notes repeat far more than people expect, and retyping
+                  // one on a phone keyboard is most of the effort of
+                  // logging the record. The browser's own suggestion UI
+                  // costs nothing to hydrate, is keyboard-operable
+                  // everywhere, and - unlike a popup of our own - cannot
+                  // cover the Save button on a short screen.
+                  list={noteHints.length ? "note-hints" : undefined}
+                  autoComplete="off"
+                />
+                {noteHints.length ? (
+                  <datalist id="note-hints">
+                    {noteHints.map((hint) => (
+                      <option key={hint} value={hint} />
+                    ))}
+                  </datalist>
+                ) : null}
+              </>
             )}
           </FormRow>
 
@@ -839,8 +932,56 @@ export function RecordSheet({
           void save(false, applyToRule);
         }}
       />
+      <ConfirmDialog
+        open={discardOpen}
+        onOpenChange={setDiscardOpen}
+        title="Discard changes?"
+        description={
+          editingId
+            ? "Your edits to this record will not be saved."
+            : "This record has not been saved yet."
+        }
+        confirmLabel="Discard"
+        onConfirm={() => {
+          setDiscardOpen(false);
+          onOpenChange(false);
+        }}
+      />
     </ResponsiveSheet>
   );
+}
+
+/**
+ * Every field that can be typed, as one comparable string.
+ *
+ * Trimmed, because trailing whitespace in a note is not a change worth
+ * stopping somebody over, and ordered explicitly so the comparison does not
+ * depend on key order.
+ */
+function snapshot(values: {
+  type: string;
+  amount: string;
+  accountId: string;
+  toAccountId: string;
+  categoryId: string;
+  note: string;
+  occurredAt: string;
+  frequency: string;
+  interval: string;
+  endDate: string;
+}): string {
+  return [
+    values.type,
+    values.amount.trim(),
+    values.accountId,
+    values.toAccountId,
+    values.categoryId,
+    values.note.trim(),
+    values.occurredAt,
+    values.frequency,
+    values.interval,
+    values.endDate,
+  ].join("\u0000");
 }
 
 /** Minor units back into something the keypad can show and edit. */

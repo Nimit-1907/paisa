@@ -146,6 +146,40 @@ export function CategoryGrid({
 }
 
 /** The segmented Expense / Income / Transfer control. */
+const TYPE_TABS = [
+  {
+    value: "expense" as const,
+    label: "Expense",
+    pill: "bg-expense-soft",
+    ink: "text-expense",
+  },
+  {
+    value: "income" as const,
+    label: "Income",
+    pill: "bg-income-soft",
+    ink: "text-income",
+  },
+  {
+    value: "transfer" as const,
+    label: "Transfer",
+    pill: "bg-transfer-soft",
+    ink: "text-transfer",
+  },
+];
+
+/**
+ * Expense | Income | Transfer, with the indicator sliding between them.
+ *
+ * One pill that moves, rather than three that fade in and out. The movement
+ * is the point: it says the three are one choice with a position, which is
+ * what a segmented control means — and it carries the eye from where it was
+ * to where it now is, so the change registers without anything flashing.
+ *
+ * The pill takes the colour of whichever type it has arrived at, so the
+ * sheet's accent follows the choice. Both the movement and the colour are
+ * transitions on transform and background, which the global reduced-motion
+ * rule switches off; with it on, the pill simply appears in the new place.
+ */
 export function TypeTabs({
   value,
   onChange,
@@ -153,34 +187,34 @@ export function TypeTabs({
   value: "expense" | "income" | "transfer";
   onChange: (next: "expense" | "income" | "transfer") => void;
 }) {
-  const tabs = [
-    {
-      value: "expense" as const,
-      label: "Expense",
-      className:
-        "data-[active=true]:bg-expense-soft data-[active=true]:text-expense",
-    },
-    {
-      value: "income" as const,
-      label: "Income",
-      className:
-        "data-[active=true]:bg-income-soft data-[active=true]:text-income",
-    },
-    {
-      value: "transfer" as const,
-      label: "Transfer",
-      className:
-        "data-[active=true]:bg-transfer-soft data-[active=true]:text-transfer",
-    },
-  ];
+  const index = Math.max(
+    0,
+    TYPE_TABS.findIndex((tab) => tab.value === value),
+  );
 
   return (
     <div
       role="radiogroup"
       aria-label="Record type"
-      className="bg-muted grid grid-cols-3 gap-1 rounded-xl p-1"
+      className="bg-muted rounded-control relative grid grid-cols-3 gap-1 p-1"
     >
-      {tabs.map((tab) => {
+      {/*
+        One third of the track, less the padding either side, moved by whole
+        multiples of its own width plus the gap. Decorative: the buttons
+        carry the state for anything that is not looking at it.
+      */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute top-1 bottom-1 left-1 rounded-lg shadow-sm",
+          "w-[calc((100%-0.5rem)/3-0.167rem)]",
+          "duration-[200ms] ease-[cubic-bezier(0.2,0,0,1)] transition-[transform,background-color] motion-reduce:transition-none",
+          TYPE_TABS[index].pill,
+        )}
+        style={{ transform: `translateX(calc(${index} * (100% + 0.25rem)))` }}
+      />
+
+      {TYPE_TABS.map((tab) => {
         const active = value === tab.value;
         return (
           <button
@@ -188,12 +222,11 @@ export function TypeTabs({
             type="button"
             role="radio"
             aria-checked={active}
-            data-active={active}
             onClick={() => onChange(tab.value)}
             className={cn(
-              "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
-              "text-muted-foreground data-[active=true]:bg-background data-[active=true]:shadow-sm",
-              tab.className,
+              "focus-visible:ring-ring relative h-11 rounded-lg text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
+              "duration-[200ms] transition-colors motion-reduce:transition-none",
+              active ? tab.ink : "text-ink-2",
             )}
           >
             {tab.label}

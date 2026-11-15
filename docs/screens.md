@@ -381,3 +381,54 @@ smuggled in here; until then the detail is a centred dialog on desktop, which
 shows the same thing.
 
 **Screenshots.** `records-390-detail`.
+
+---
+
+## 10. Add / Edit record sheet
+
+**Purpose.** Log a spend in four taps, and let the unusual case still be
+possible without making the usual case slower.
+
+Most of this screen was built in Phases 6–12: the calculator keypad, the
+quick-add chips, the category grid ordered by what you use at this hour, the
+account and date chips, the "More options" fold, and the save button that
+names what it will do ("Save expense · ₹450"). Phase 13 added four things.
+
+**The segmented control slides.** One pill that moves, rather than three that
+fade in and out. The movement is the point: it says the three are one choice
+with a position, and it carries the eye from where it was to where it now is,
+so the change registers without anything flashing. The pill takes the colour
+of the type it arrives at, so the sheet's accent follows the choice. Measured
+at 390px: the indicator sits at 0, 113 and 226 with a width of 109, and the
+background goes expense-soft → income-soft → transfer-soft.
+
+**The note field suggests notes you have written.** Notes repeat far more than
+people expect — "DMart run", "Metro card top-up" — and retyping one on a phone
+keyboard is most of the effort of logging a record. `note_suggestions()`
+returns the last year's notes, most-used first and then most-recent,
+deduplicated case-insensitively while keeping the spelling of the most recent
+(somebody who switched from "swiggy" to "Swiggy" meant the second). It is a
+**native `<datalist>`**, not a combobox of our own: nothing to hydrate,
+keyboard-operable everywhere, and — unlike a popup we positioned — it cannot
+cover the Save button on a short screen. The limit is clamped server-side, so
+a client asking for a million rows gets fifty.
+
+**Dismissing a sheet with something in it asks first.** A sheet is closed by
+swiping it down or tapping the backdrop, both easy to do by accident on a
+phone and neither of which looks like "throw this away".
+
+The detail that matters: **"changed" is a comparison, not a flag**. A `dirty`
+flag set on the first keystroke stays set after the value is typed back to
+what it was, and then asks somebody to confirm discarding nothing. The sheet
+snapshots every typeable field when it opens and compares. Measured: opening
+and closing asks nothing; typing a 5 and closing asks; pressing backspace
+first and then closing asks nothing again.
+
+**States.** Loading is the save button's own spinner. Empty does not apply.
+Error is inline on the field, which opens "More options" when the field is
+folded away — a collapsed section with the error in it is a form that refuses
+to save and will not say why. Offline: the save fails and says so. Success is
+the Phase 11 ending, with Undo, or Rules where a repeat was created. Partial
+data does not apply.
+
+**Screenshots.** `sheet-390-transfer`, `sheet-390-discard`.

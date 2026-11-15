@@ -18,6 +18,7 @@ import {
 import {
   getActiveAccounts,
   getEntryDefaults,
+  getNoteSuggestions,
   getQuickAdds,
 } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
@@ -53,13 +54,14 @@ export default async function AppLayout({
   // The recurring catch-up rides along here because this layout is the one
   // thing every signed-in page renders through, and it only does any work on
   // the first page of a new day.
-  const [accounts, categories, created, entryDefaults, quickAdds] =
+  const [accounts, categories, created, entryDefaults, quickAdds, noteHints] =
     await Promise.all([
       getActiveAccounts(),
       getActiveCategories(),
       runDueRecurring(),
       getEntryDefaults(),
       getQuickAdds(),
+      getNoteSuggestions(),
     ]);
 
   return (
@@ -74,6 +76,7 @@ export default async function AppLayout({
         categories={toCategoryOptions(categories)}
         entryDefaults={entryDefaults}
         quickAdds={quickAdds}
+        noteHints={noteHints}
         firstRecordSeen={profile?.first_record_seen ?? true}
       >
         <div className="min-h-dvh">

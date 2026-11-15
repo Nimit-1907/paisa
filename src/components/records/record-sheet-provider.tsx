@@ -81,6 +81,7 @@ export function RecordSheetProvider({
   timeZone,
   entryDefaults,
   quickAdds,
+  noteHints,
   firstRecordSeen,
   children,
 }: {
@@ -90,6 +91,8 @@ export function RecordSheetProvider({
   entryDefaults: EntryDefaults;
   /** The things this person buys over and over, as one-tap chips. */
   quickAdds: QuickAdd[];
+  /** Notes written before, offered as you type. */
+  noteHints: string[];
   /** False until the "first record" note has been shown once. */
   firstRecordSeen: boolean;
   children: React.ReactNode;
@@ -330,6 +333,7 @@ export function RecordSheetProvider({
         timeZone={timeZone}
         entryDefaults={entryDefaults}
         quickAdds={quickAdds}
+        noteHints={noteHints}
       />
     </RecordSheetContext.Provider>
   );

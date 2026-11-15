@@ -554,42 +554,42 @@ export type Database = {
         }[]
       }
       assert_bucket: {
-        Args: { p_from: string; p_to: string; p_bucket: string }
+        Args: { p_bucket: string; p_from: string; p_to: string }
         Returns: undefined
       }
       assert_range: {
-        Args: { p_from: string; p_to: string }
+        Args: { p_to: string; p_from: string }
         Returns: undefined
       }
       balance_series: {
         Args: {
-          p_account_id?: string
-          p_bucket: string
           p_to: string
           p_from: string
+          p_bucket: string
+          p_account_id?: string
         }
         Returns: {
-          balance: number
           bucket_start: string
+          balance: number
         }[]
       }
       bucket_starts: {
-        Args: { p_from: string; p_to: string; p_bucket: string }
+        Args: { p_to: string; p_bucket: string; p_from: string }
         Returns: string[]
       }
       budget_hints: {
         Args: { p_month: string }
         Returns: {
-          three_month_average: number
-          last_month: number
           category_id: string
+          last_month: number
+          three_month_average: number
         }[]
       }
       category_totals: {
         Args: {
+          p_kind: Database["public"]["Enums"]["category_kind"]
           p_to: string
           p_from: string
-          p_kind: Database["public"]["Enums"]["category_kind"]
         }
         Returns: {
           icon: string
@@ -604,7 +604,7 @@ export type Database = {
         Returns: number
       }
       check_account_owner: {
-        Args: { p_user_id: string; p_account_id: string }
+        Args: { p_account_id: string; p_user_id: string }
         Returns: undefined
       }
       check_category_owner: {
@@ -646,11 +646,11 @@ export type Database = {
         Returns: Json
       }
       local_day_range: {
-        Args: { p_to: string; p_from: string }
+        Args: { p_from: string; p_to: string }
         Returns: Record<string, unknown>
       }
       materialise_recurring: {
-        Args: { p_on: string; p_rule_id: string }
+        Args: { p_rule_id: string; p_on: string }
         Returns: string
       }
       month_summary: {
@@ -663,12 +663,19 @@ export type Database = {
           month_start: string
         }[]
       }
+      note_suggestions: {
+        Args: { p_limit?: number }
+        Returns: {
+          note: string
+          used: number
+        }[]
+      }
       period_series: {
         Args: { p_from: string; p_to: string; p_bucket: string }
         Returns: {
+          expense: number
           bucket_start: string
           income: number
-          expense: number
         }[]
       }
       process_due_recurring: {
@@ -678,10 +685,10 @@ export type Database = {
       quick_adds: {
         Args: Record<PropertyKey, never>
         Returns: {
+          color: string
           category_id: string
           name: string
           icon: string
-          color: string
           amount: number
           account_id: string
           account_name: string
@@ -690,21 +697,21 @@ export type Database = {
       }
       recurrence_after: {
         Args: {
-          p_from: string
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
           p_interval: number
           p_anchor_day: number
+          p_from: string
         }
         Returns: string
       }
       recurrence_occurrence: {
         Args:
           | {
-              p_n: number
-              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_start: string
               p_interval: number
+              p_n: number
               p_anchor_day: number
             }
           | {
@@ -725,26 +732,26 @@ export type Database = {
       }
       set_budget: {
         Args: {
-          p_apply_forward?: boolean
           p_horizon?: number
           p_category_id: string
           p_month: string
           p_amount: number
+          p_apply_forward?: boolean
         }
         Returns: number
       }
       skip_recurring_occurrence: {
-        Args: { p_on: string; p_rule_id: string }
+        Args: { p_rule_id: string; p_on: string }
         Returns: string
       }
       update_settings: {
         Args: {
-          p_decimals: number
           p_theme: string
           p_code: string
-          p_symbol: string
           p_display_name: string
           p_week_start: number
+          p_symbol: string
+          p_decimals: number
         }
         Returns: number
       }

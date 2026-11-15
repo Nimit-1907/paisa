@@ -327,3 +327,25 @@ export async function getQuickAdds(): Promise<QuickAdd[]> {
     accountName: row.account_name,
   }));
 }
+
+/**
+ * Notes this person has written before, most useful first.
+ *
+ * Feeds the datalist on the note field. A failure here costs a convenience
+ * and nothing else, so it is logged and swallowed rather than taking the
+ * whole sheet down with it — the same shape as `getQuickAdds`.
+ */
+export async function getNoteSuggestions(): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("note_suggestions", {
+    p_limit: 50,
+  });
+
+  if (error) {
+    console.error("[records]", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => row.note);
+}
