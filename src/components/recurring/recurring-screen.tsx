@@ -5,20 +5,22 @@ import * as React from "react";
 import Link from "next/link";
 
 import {
+  CalendarDays,
+  CalendarRange,
   EllipsisVertical,
   type LucideIcon,
   Pause,
   Pencil,
   Play,
+  Plus,
   Repeat,
   SkipForward,
   Trash2,
 } from "lucide-react";
 import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
-import { HeroStat } from "@/components/shared/hero-stat";
+import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
 import { SectionHeader } from "@/components/shared/section-header";
-import { AddRecordButton } from "@/components/records/add-record-button";
 import { DeleteRuleDialog } from "@/components/recurring/delete-rule-dialog";
 import { DateTile } from "@/components/shared/date-tile";
 import { ListCard } from "@/components/shared/surface";
@@ -43,6 +45,7 @@ import {
   scheduleOf,
 } from "@/lib/recurring-rule";
 import { dayDifference } from "@/lib/recurrence";
+import { deductionTotals } from "@/lib/recurring-summary";
 import { cn } from "@/lib/utils";
 
 /**
@@ -66,6 +69,8 @@ export function RecurringScreen({
 }) {
   const { pending, pause, resume, skip, remove } = useRuleActions();
   const [editing, setEditing] = React.useState<RecurringRule | null>(null);
+  // A new rule: the sheet open with no rule in it.
+  const [creating, setCreating] = React.useState(false);
   // Kept while the dialog animates shut, so its text does not flicker back to
   // placeholders on the way out.
   const [deleting, setDeleting] = React.useState<RecurringRule | null>(null);
@@ -74,14 +79,40 @@ export function RecurringScreen({
   const active = rules.filter((rule) => rule.active);
   const paused = rules.filter((rule) => !rule.active);
 
+  const sheet = (
+    <RuleSheet
+      open={editing !== null || creating}
+      onOpenChange={(open) => {
+        if (!open) {
+          setEditing(null);
+          setCreating(false);
+        }
+      }}
+      rule={editing}
+      accounts={accounts}
+      categories={categories}
+      today={today}
+    />
+  );
+
+  const newButton = (
+    <Button size="touch" onClick={() => setCreating(true)}>
+      <Plus className="size-4" aria-hidden="true" />
+      New recurring
+    </Button>
+  );
+
   if (rules.length === 0) {
     return (
-      <EmptyState
-        icon={Repeat}
-        title="No recurring records"
-        description="Rent, salary, a subscription: add the record once with Repeat set, and it will show up here creating itself every month."
-        action={<AddRecordButton label="Add a repeating record" />}
-      />
+      <>
+        <EmptyState
+          icon={Repeat}
+          title="No recurring records"
+          description="Rent, salary, a subscription: set it up once and it is added on every due date, taken from the account you choose."
+          action={newButton}
+        />
+        {sheet}
+      </>
     );
   }
 
@@ -96,39 +127,53 @@ export function RecurringScreen({
   const dueSoonIds = new Set(dueSoon.map((rule) => rule.id));
   const later = active.filter((rule) => !dueSoonIds.has(rule.id));
 
-  /*
-   * What the active rules add up to over this month.
-   *
-   * Expenses only — mixing a salary into "scheduled" would produce a figure
-   * that is neither what goes out nor what is left, and the question people
-   * are asking is the first one. Weekly rules count four times, which is the
-   * number of times they will actually be paid in most months.
-   */
-  const scheduledThisMonth = active.reduce((sum, rule) => {
-    if (rule.type !== "expense") return sum;
-    const times = rule.frequency === "weekly" ? 4n : 1n;
-    return sum + BigInt(rule.amount) * times;
-  }, 0n);
+  // Expenses only, per week, month and year, all cut from one yearly
+  // figure so the three agree. See lib/recurring-summary.ts.
+  const totals = deductionTotals(rules);
 
   return (
     <div className="space-y-6">
       {/*
-        What this month costs you without deciding anything.
+        What repeating expenses take, in the three spans people budget in.
 
-        Rent, a phone bill and three subscriptions are a number people
-        cannot hold in their head, and it is the number that decides whether
-        a month is comfortable. It leads the screen for the same reason the
-        month card leads Records.
+        The month leads, because it is the span the rest of the app is
+        built around; the week and the year sit under it. Expenses only:
+        a salary is not a deduction, and folding it in would make a figure
+        that is neither what goes out nor what is left.
       */}
       <HeroStat
-        label="Scheduled this month"
-        value={<Amount value={scheduledThisMonth} signDisplay="never" whole />}
-        helper={
+        label="Recurring expenses per month"
+        value={<Amount value={totals.monthly} signDisplay="never" whole />}
+        helper={`${totals.count} active ${
+          totals.count === 1 ? "expense" : "expenses"
+        } · ${
           dueSoon.length > 0
             ? `${dueSoon.length} due in the next 7 days`
-            : "Nothing due in the next 7 days"
+            : "nothing due in the next 7 days"
+        }`}
+        split={
+          <>
+            <HeroSplit
+              icon={<CalendarDays className="size-3.5" aria-hidden="true" />}
+              tint="bg-tint-sky"
+              label="Per week"
+              value={
+                <Amount value={totals.weekly} signDisplay="never" whole />
+              }
+            />
+            <HeroSplit
+              icon={<CalendarRange className="size-3.5" aria-hidden="true" />}
+              tint="bg-tint-lilac"
+              label="Per year"
+              value={
+                <Amount value={totals.yearly} signDisplay="never" whole />
+              }
+            />
+          </>
         }
       />
+
+      <div className="flex justify-end">{newButton}</div>
 
       {dueSoon.length > 0 ? (
         <Section title="Due soon" count={dueSoon.length}>
@@ -188,16 +233,7 @@ export function RecurringScreen({
         </Section>
       ) : null}
 
-      <RuleSheet
-        open={editing !== null}
-        onOpenChange={(open) => {
-          if (!open) setEditing(null);
-        }}
-        rule={editing}
-        accounts={accounts}
-        categories={categories}
-        today={today}
-      />
+      {sheet}
 
       <DeleteRuleDialog
         open={deleteOpen}

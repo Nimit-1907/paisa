@@ -16,7 +16,9 @@ import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { currencyOf, getProfile } from "@/lib/profile";
 import { localToday } from "@/lib/recurring-check";
 import {
+  type CreateRecurringRuleInput,
   type UpdateRecurringRuleInput,
+  createRecurringRuleSchema,
   deleteRecurringRuleSchema,
   pauseRecurringRuleSchema,
   payOccurrenceSchema,
@@ -33,6 +35,83 @@ function revalidateRecurring(id?: string) {
   revalidatePath("/analysis");
   revalidatePath("/budgets");
   if (id) revalidatePath(`/recurring/${id}`);
+}
+
+/**
+ * Creates a rule. The only way a rule is made: records never make one.
+ *
+ * The first occurrence is `nextRunOn`. When that is today or already past,
+ * the generator runs straight away so the expense is taken from its account
+ * now, as it would be on its due date, instead of waiting for tomorrow's
+ * daily catch-up. The generator advances the rule's cursor in the same
+ * statement that writes each record, which is what keeps a second run (or
+ * the daily one) from taking it twice.
+ */
+export async function createRecurringRule(
+  input: CreateRecurringRuleInput,
+): Promise<ActionResult<{ id: string; created: number }>> {
+  const parsed = parseInput(createRecurringRuleSchema, input);
+  if (!parsed.ok) return parsed;
+
+  const profile = await getProfile();
+  const currency = currencyOf(profile);
+  const calculated = evaluate(parsed.data.amount, currency.decimals);
+  if (!calculated.ok) return fail(calculated.error, "amount");
+  if (calculated.minor <= 0n) {
+    return fail("An amount has to be more than zero.", "amount");
+  }
+
+  if (parsed.data.endDate && parsed.data.endDate < parsed.data.nextRunOn) {
+    return fail("The end date is before the first one.", "endDate");
+  }
+
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
+  const { data, error } = await supabase
+    .from("recurring_rules")
+    .insert({
+      user_id: user.id,
+      type: parsed.data.type,
+      amount: toDb(calculated.minor),
+      account_id: parsed.data.accountId,
+      to_account_id: parsed.data.toAccountId ?? null,
+      category_id: parsed.data.categoryId ?? null,
+      note: parsed.data.note ?? null,
+      frequency: parsed.data.frequency,
+      interval_count: parsed.data.interval,
+      start_date: parsed.data.nextRunOn,
+      next_run_on: parsed.data.nextRunOn,
+      end_date: parsed.data.endDate ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    // 42501: check_entry_refs() refusing an account or category that is not
+    // the caller's. See updateRecurringRule.
+    if (error.code === "42501") {
+      return fail("That account or category is not available any more.");
+    }
+    return failFromDb(error, "Could not save the rule.");
+  }
+
+  let created = 0;
+  const today = localToday(profile?.timezone ?? DEFAULT_TIME_ZONE);
+
+  if (parsed.data.nextRunOn <= today) {
+    const { data: count, error: runError } = await supabase.rpc(
+      "process_due_recurring",
+    );
+    // Not a failure of the save: the rule exists, and the daily catch-up
+    // will post what is due if this did not.
+    if (runError) console.error("[recurring]", runError.message);
+    else created = Number(count ?? 0);
+  }
+
+  revalidateRecurring(data.id);
+  return ok({ id: data.id, created });
 }
 
 /**

@@ -208,16 +208,6 @@ export function RecordSheetProvider({
           .catch((thrown: unknown) => console.error("[records]", thrown));
       }
 
-      /*
-       * No Undo where a repeat was just set up.
-       *
-       * Undo deletes the record, and the rule created alongside it would
-       * carry on making more — an undo that leaves the thing it undid
-       * running is worse than no undo at all. Recurring is where the rule
-       * can be removed, so that is what the toast offers instead.
-       */
-      const repeating = Boolean(values.repeat);
-
       const undo = {
         label: "Undo",
         onClick: () => {
@@ -253,13 +243,8 @@ export function RecordSheetProvider({
           // Long enough to notice and reach for, short enough that it is
           // gone before the next record is typed.
           duration: 4500,
-          description:
-            [...parts, repeating ? "repeating" : null]
-              .filter(Boolean)
-              .join(" · ") || undefined,
-          action: repeating
-            ? { label: "Rules", onClick: () => router.push("/recurring") }
-            : undo,
+          description: parts.filter(Boolean).join(" · ") || undefined,
+          action: undo,
         },
       );
 

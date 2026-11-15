@@ -12,7 +12,7 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
-import { instantToLocal, localToInstant, nextRecurrence } from "@/lib/dates";
+import { localToInstant } from "@/lib/dates";
 import { evaluate } from "@/lib/calculator";
 import { toDb } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
@@ -106,10 +106,6 @@ async function prepare(
 
 export type SavedTransaction = {
   id: string;
-  /** Present when a repeat was asked for: false means only the record saved. */
-  repeatSaved?: boolean;
-  /** Present when the edit was meant for the rule too. */
-  ruleSaved?: boolean;
 };
 
 export async function createTransaction(
@@ -125,9 +121,8 @@ export async function createTransaction(
   const prepared = await prepare(parsed.data.amount, parsed.data.occurredAt);
   if (!prepared.ok) return fail(prepared.error, prepared.field);
 
-  // The record is written first, and the rule after it. In the other order a
-  // failed transaction leaves a rule nobody asked for, quietly creating
-  // records later for something the user was told had not saved.
+  // One record, never a rule: repeating records are created and managed on
+  // the Recurring screen, and nowhere else.
   const { data, error } = await supabase
     .from("transactions")
     .insert({
@@ -145,62 +140,8 @@ export async function createTransaction(
 
   if (error) return failFromDb(error, "Could not save the record.");
 
-  let repeatSaved: boolean | undefined;
-
-  if (parsed.data.repeat) {
-    const repeat = parsed.data.repeat;
-    const localDay = instantToLocal(
-      prepared.value.occurredAt,
-      prepared.value.timeZone,
-    ).slice(0, 10);
-
-    const { data: rule, error: ruleError } = await supabase
-      .from("recurring_rules")
-      .insert({
-        user_id: user.id,
-        type: parsed.data.type,
-        amount: prepared.value.amount,
-        account_id: parsed.data.accountId,
-        to_account_id: parsed.data.toAccountId ?? null,
-        category_id: parsed.data.categoryId ?? null,
-        note: parsed.data.note ?? null,
-        frequency: repeat.frequency,
-        interval_count: Number(repeat.interval),
-        start_date: localDay,
-        end_date: repeat.endDate ?? null,
-        // The occurrence after this one: the record being saved right now is
-        // the first, and starting the rule today would have
-        // process_due_recurring immediately duplicate it.
-        next_run_on: nextRecurrence(
-          localDay,
-          repeat.frequency,
-          Number(repeat.interval),
-        ),
-      })
-      .select("id")
-      .single();
-
-    if (ruleError) {
-      console.error("[records] repeat not created:", ruleError.message);
-      repeatSaved = false;
-    } else {
-      repeatSaved = true;
-
-      // Only the link is left; if this fails the rule still works, the row
-      // just will not show its repeat marker.
-      const { error: linkError } = await supabase
-        .from("transactions")
-        .update({ recurring_rule_id: rule.id })
-        .eq("id", data.id);
-
-      if (linkError) {
-        console.error("[records] repeat not linked:", linkError.message);
-      }
-    }
-  }
-
   revalidateRecords();
-  return ok({ id: data.id, repeatSaved });
+  return ok({ id: data.id });
 }
 
 export async function updateTransaction(
@@ -229,39 +170,14 @@ export async function updateTransaction(
     })
     .eq("id", parsed.data.id)
     .eq("user_id", user.id)
-    .select("id, recurring_rule_id")
+    .select("id")
     .maybeSingle();
 
   if (error) return failFromDb(error, "Could not save the record.");
   if (!data) return fail("That record no longer exists.");
 
-  let ruleSaved: boolean | undefined;
-
-  if (parsed.data.applyToRule && data.recurring_rule_id) {
-    // The template only. Frequency, anchor and end date stay where the user
-    // put them on the rule's own screen, and nothing already created moves —
-    // that is what makes this "future occurrences only".
-    const { error: ruleError } = await supabase
-      .from("recurring_rules")
-      .update({
-        type: parsed.data.type,
-        amount: prepared.value.amount,
-        account_id: parsed.data.accountId,
-        to_account_id: parsed.data.toAccountId ?? null,
-        category_id: parsed.data.categoryId ?? null,
-        note: parsed.data.note ?? null,
-      })
-      .eq("id", data.recurring_rule_id)
-      .eq("user_id", user.id);
-
-    ruleSaved = !ruleError;
-    if (ruleError)
-      console.error("[records] rule not updated:", ruleError.message);
-    else revalidatePath("/recurring");
-  }
-
   revalidateRecords();
-  return ok({ id: data.id, ruleSaved });
+  return ok({ id: data.id });
 }
 
 export async function deleteTransaction(input: {

@@ -217,27 +217,27 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
   });
 
   await test.step("create a monthly recurring rule", async () => {
-    await page.getByRole("button", { name: "Add record" }).first().click();
+    // Rules are made on the Recurring screen and nowhere else: Add Record
+    // takes one record and has no Repeat option.
+    await page.goto("/recurring");
+    await page.getByRole("button", { name: "New recurring" }).click();
     await expect(sheet(page)).toBeVisible();
 
     await typeAmount(page, "12000");
     await sheet(page).getByRole("radio", { name: "Rent", exact: true }).click();
-
     await sheet(page).getByLabel("Note", { exact: true }).fill(RENT_NOTE);
 
-    // Repeat is the one thing still folded away since Phase 14: it turns a
-    // record into a standing instruction, which is not what the sheet is
-    // tapped for by reflex.
-    await sheet(page).getByRole("button", { name: "More options" }).click();
-    await sheet(page).getByRole("radio", { name: "Monthly" }).click();
-    await saveRecord(page);
+    // Monthly, starting today, are the defaults.
+    await sheet(page).getByRole("button", { name: "Create rule" }).click();
     await expect(sheet(page)).toBeHidden();
 
     await expect(page.getByText(RENT_NOTE).first()).toBeVisible();
-
-    await page.goto("/recurring");
-    await expect(page.getByText(RENT_NOTE).first()).toBeVisible();
     await expect(page.getByText(/Monthly on day \d+/)).toBeVisible();
+
+    // It starts today, so today's occurrence is taken from the account as
+    // the rule is saved rather than at tomorrow's catch-up.
+    await page.goto("/records");
+    await expect(page.getByText(RENT_NOTE).first()).toBeVisible();
   });
 
   await test.step("set a budget", async () => {
@@ -254,7 +254,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await sheet(page).getByRole("button", { name: "Save budget" }).click();
 
     await expect(
-      page.getByRole("heading", { name: /^budgets/i }).first(),
+      page.getByRole("heading", { name: /^by category/i }).first(),
     ).toBeVisible();
     /*
      * ₹4,000 budget against the ₹250 expense.

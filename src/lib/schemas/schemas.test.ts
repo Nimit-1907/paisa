@@ -117,30 +117,16 @@ describe("createTransactionSchema", () => {
     ).toBe(false);
   });
 
-  it("takes a repeat only in the shape the rule table accepts", () => {
-    expect(
-      createTransactionSchema.safeParse({
-        ...base,
-        categoryId: CATEGORY,
-        repeat: { frequency: "monthly", interval: 1, endDate: null },
-      }).success,
-    ).toBe(true);
+  it("never carries a repeat: rules are made on the Recurring screen", () => {
+    const parsed = createTransactionSchema.safeParse({
+      ...base,
+      categoryId: CATEGORY,
+      repeat: { frequency: "monthly", interval: 1, endDate: null },
+    });
 
-    expect(
-      createTransactionSchema.safeParse({
-        ...base,
-        categoryId: CATEGORY,
-        repeat: { frequency: "fortnightly", interval: 1 },
-      }).success,
-    ).toBe(false);
-
-    expect(
-      createTransactionSchema.safeParse({
-        ...base,
-        categoryId: CATEGORY,
-        repeat: { frequency: "monthly", interval: 0 },
-      }).success,
-    ).toBe(false);
+    expect(parsed.success).toBe(true);
+    // Stripped, so createTransaction cannot be asked to make a rule.
+    expect(parsed.success && "repeat" in parsed.data).toBe(false);
   });
 });
 

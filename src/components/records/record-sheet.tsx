@@ -6,11 +6,9 @@ import {
   ArrowRight,
   ArrowUpDown,
   Check,
-  ChevronDown,
   ListPlus,
   Loader2,
   Pencil,
-  Repeat,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
@@ -26,7 +24,6 @@ import type {
 import { useCurrency } from "@/components/profile-provider";
 import { AmountDisplay } from "@/components/records/amount-field";
 import { Amount } from "@/components/shared/amount";
-import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   type AccountOption,
@@ -43,15 +40,8 @@ import {
   SheetHead,
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
-import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  type RecurrenceFrequency,
-  RECURRENCE_FREQUENCIES,
-  REPEAT_LABELS,
-  type TransactionType,
-} from "@/lib/schemas/transactions";
+import type { TransactionType } from "@/lib/schemas/transactions";
 import { evaluate } from "@/lib/calculator";
 import { describeLocal, nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
@@ -61,14 +51,6 @@ import { cn } from "@/lib/utils";
 import { Tile } from "@/components/shared/tile";
 
 export type { AccountOption, CategoryOption };
-
-/**
- * What lives behind "More options", so an error there can open it.
- *
- * Three fields shorter since Phase 14: the note, the account and the date
- * are on the sheet itself now.
- */
-const FOLDED_FIELDS = new Set(["repeat", "frequency", "interval", "endDate"]);
 
 /** How the suggestion row introduces itself. */
 const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
@@ -112,13 +94,6 @@ export type RecordSubmit = (
     categoryId: string | null;
     note: string | null;
     occurredAt: string;
-    repeat: {
-      frequency: RecurrenceFrequency;
-      interval: number;
-      endDate: string | null;
-    } | null;
-    /** Push the same change onto the rule that created this record. */
-    applyToRule?: boolean;
   },
   context: { editingId: string | null },
 ) => Promise<ActionResult<SavedTransaction>>;
@@ -179,23 +154,14 @@ export function RecordSheet({
   const [categoryId, setCategoryId] = React.useState("");
   const [note, setNote] = React.useState("");
   const [occurredAt, setOccurredAt] = React.useState("");
-  const [frequency, setFrequency] = React.useState<
-    RecurrenceFrequency | "none"
-  >("none");
-  const [interval, setInterval] = React.useState("1");
-  const [endDate, setEndDate] = React.useState("");
   const [saving, setSaving] = React.useState(false);
-  const [scopeOpen, setScopeOpen] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
   const [shaking, shake] = useShake();
   // "Saved ✓" on the button, for the run-of-receipts path where the sheet
   // stays open and the cleared amount is otherwise the only acknowledgement.
   const [justSaved, setJustSaved] = React.useState(false);
-  // Shared by the amount and the keypad, which are no longer next to each
-  // other: tapping a key has to put the caret back in the field above.
   const amountRef = React.useRef<HTMLInputElement>(null);
-  const [moreOpen, setMoreOpen] = React.useState(false);
   const [discardOpen, setDiscardOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
@@ -235,14 +201,8 @@ export function RecordSheet({
     setCategoryId(editing?.categoryId ?? "");
     setNote(editing?.note ?? "");
     setOccurredAt(editing?.occurredAtLocal ?? nowLocal(timeZone));
-    setFrequency("none");
-    setInterval("1");
-    setEndDate("");
     setError(null);
     setErrorField(null);
-    setScopeOpen(false);
-    // Nothing but Repeat is folded now, and Repeat is never pre-set.
-    setMoreOpen(false);
     setDiscardOpen(false);
     setDeleteOpen(false);
     setJustSaved(false);
@@ -263,9 +223,6 @@ export function RecordSheet({
       categoryId: editing?.categoryId ?? "",
       note: editing?.note ?? "",
       occurredAt: editing?.occurredAtLocal ?? nowLocal(timeZone),
-      frequency: "none",
-      interval: "1",
-      endDate: "",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingId]);
@@ -281,9 +238,6 @@ export function RecordSheet({
         categoryId,
         note,
         occurredAt,
-        frequency,
-        interval,
-        endDate,
       });
 
   /**
@@ -317,13 +271,6 @@ export function RecordSheet({
     const id = window.setTimeout(() => setJustSaved(false), 1200);
     return () => window.clearTimeout(id);
   }, [justSaved]);
-
-  // A hidden field cannot be corrected. Every field inside the fold, not
-  // only the date: a collapsed section with the error in it is a form that
-  // refuses to save and will not say why.
-  React.useEffect(() => {
-    if (errorField && FOLDED_FIELDS.has(errorField)) setMoreOpen(true);
-  }, [errorField]);
 
   const visibleCategories = categories.filter(
     (category) => category.kind === (type === "income" ? "income" : "expense"),
@@ -458,10 +405,6 @@ export function RecordSheet({
     (errorField === "toAccountId" && type === "transfer") ||
     (errorField === "categoryId" && type !== "transfer");
 
-  /** What is folded away, so the row says whether it is worth opening. */
-  const moreSummary =
-    frequency === "none" ? "" : `Repeats ${REPEAT_LABELS[frequency]}`;
-
   /**
    * What is still missing, in the order the sheet asks for it.
    *
@@ -517,15 +460,10 @@ export function RecordSheet({
       return;
     }
 
-    if (editing?.recurringRuleId) {
-      setScopeOpen(true);
-      return;
-    }
-
     void save(false);
   }
 
-  async function save(andAnother: boolean, applyToRule = false) {
+  async function save(andAnother: boolean) {
     const problem = firstProblem();
 
     if (problem) {
@@ -549,15 +487,6 @@ export function RecordSheet({
           categoryId: type === "transfer" ? null : categoryId || null,
           note: note.trim() ? note.trim() : null,
           occurredAt,
-          repeat:
-            frequency === "none"
-              ? null
-              : {
-                  frequency,
-                  interval: Number(interval) || 1,
-                  endDate: endDate || null,
-                },
-          applyToRule,
         },
         { editingId },
       );
@@ -567,20 +496,6 @@ export function RecordSheet({
         setErrorField(result.field ?? null);
         toast.error(result.error);
         return;
-      }
-
-      if (result.data.repeatSaved === false) {
-        toast.warning(
-          "Saved, but the repeat could not be set up. Try adding it again.",
-        );
-      }
-
-      if (result.data.ruleSaved === false) {
-        toast.warning(
-          "The record was saved, but the recurring rule was not. Edit it from Recurring.",
-        );
-      } else if (result.data.ruleSaved === true) {
-        toast.success("Saved. Future occurrences updated too.");
       }
 
       if (andAnother) {
@@ -891,121 +806,11 @@ export function RecordSheet({
         )}
 
         {/*
-          What is left behind the fold.
-
-          The note, the account and the date came out from under it in
-          Phase 14 — a form that hides three of its five fields is a form
-          people fill in twice. Repeat is all that stays, because it turns
-          one record into a standing instruction and belongs nowhere near
-          the thing you tap by reflex. Nothing is folded while editing, so
-          the row itself goes.
-        */}
-        {editing ? null : (
-          <>
-            <button
-              type="button"
-              aria-expanded={moreOpen}
-              aria-controls="more-options"
-              onClick={() => setMoreOpen((open) => !open)}
-              className={cn(
-                PRESSABLE,
-                "hoverable:bg-surface-muted rounded-control flex min-h-11 w-full items-center gap-2 border px-3 text-sm font-semibold",
-              )}
-            >
-              <span className="flex-1 text-left">More options</span>
-              <span className="text-text-secondary truncate text-xs font-normal">
-                {moreSummary}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "text-text-secondary size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
-                  moreOpen && "rotate-180",
-                )}
-                aria-hidden="true"
-              />
-            </button>
-
-            <div id="more-options" hidden={!moreOpen}>
-              <div className="space-y-2 rounded-control border p-3">
-                <div className="flex items-center gap-2">
-                  <Repeat
-                    className="text-text-secondary size-4 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <Label htmlFor="repeat" className="flex-1">
-                    Repeat
-                  </Label>
-                </div>
-
-                <div
-                  id="repeat"
-                  role="radiogroup"
-                  aria-label="Repeat"
-                  className="flex flex-wrap gap-1"
-                >
-                  {(["none", ...RECURRENCE_FREQUENCIES] as const).map(
-                    (value) => {
-                      const active = frequency === value;
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          role="radio"
-                          aria-checked={active}
-                          onClick={() => setFrequency(value)}
-                          className={cn(
-                            "rounded-segment pressable flex h-11 items-center px-3 text-xs font-semibold transition-[background-color,box-shadow,border-color] duration-[120ms] motion-reduce:transition-none",
-                            active
-                              ? "accent-sm bg-surface text-text"
-                              : "text-text-secondary hoverable:bg-surface-muted border border-transparent",
-                          )}
-                        >
-                          {value === "none" ? "No" : REPEAT_LABELS[value]}
-                        </button>
-                      );
-                    },
-                  )}
-                </div>
-
-                {frequency !== "none" ? (
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <FormRow id="repeat-interval" label="Every" required>
-                      {(props) => (
-                        <Input
-                          {...props}
-                          type="number"
-                          min={1}
-                          max={365}
-                          inputMode="numeric"
-                          value={interval}
-                          onChange={(event) => setInterval(event.target.value)}
-                        />
-                      )}
-                    </FormRow>
-
-                    <FormRow id="repeat-end" label="Until">
-                      {(props) => (
-                        <Input
-                          {...props}
-                          type="date"
-                          value={endDate}
-                          onChange={(event) => setEndDate(event.target.value)}
-                        />
-                      )}
-                    </FormRow>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/*
           The catch-all, for any error with nowhere else to appear.
 
           Which fields have a slot depends on what is on screen: a transfer
-          has no category, an expense has no second account, and the date
-          lives behind "More options". Asking whether this error's field is
+          has no category and an expense has no second account. Asking
+          whether this error's field is
           actually being rendered — rather than whether it is on a list of
           fields that usually are — is what stops a save refusing silently.
         */}
@@ -1117,15 +922,6 @@ export function RecordSheet({
         </div>
       </SheetFooter>
 
-      <EditScopeDialog
-        open={scopeOpen}
-        onOpenChange={setScopeOpen}
-        pending={saving}
-        onChoose={(applyToRule) => {
-          setScopeOpen(false);
-          void save(false, applyToRule);
-        }}
-      />
       <ConfirmDialog
         open={discardOpen}
         onOpenChange={setDiscardOpen}
@@ -1176,9 +972,6 @@ function snapshot(values: {
   categoryId: string;
   note: string;
   occurredAt: string;
-  frequency: string;
-  interval: string;
-  endDate: string;
 }): string {
   return [
     values.type,
@@ -1188,9 +981,6 @@ function snapshot(values: {
     values.categoryId,
     values.note.trim(),
     values.occurredAt,
-    values.frequency,
-    values.interval,
-    values.endDate,
   ].join("\u0000");
 }
 

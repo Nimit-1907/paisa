@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { updateRecurringRule } from "@/actions/recurring";
+import { createRecurringRule, updateRecurringRule } from "@/actions/recurring";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountDisplay } from "@/components/records/amount-field";
 import {
@@ -39,7 +39,11 @@ import {
 } from "@/lib/schemas/transactions";
 
 /**
- * Edit a recurring rule.
+ * Create or edit a recurring rule. The only place a rule is made.
+ *
+ * `rule` null is a new one: it starts today, monthly, on the first
+ * account. A new rule whose first date is today or past posts that
+ * occurrence as it saves.
  *
  * The same template a record has — type, amount, category, account, note —
  * plus the schedule. Nothing here touches the records the rule has already
@@ -88,7 +92,23 @@ export function RuleSheet({
   // Keyed on the id, not the object: a revalidation underneath must not wipe
   // what is half-typed.
   React.useEffect(() => {
-    if (!open || !rule) return;
+    if (!open) return;
+
+    if (!rule) {
+      setType("expense");
+      setAmount("");
+      setAccountId(accounts[0]?.id ?? "");
+      setToAccountId("");
+      setCategoryId("");
+      setNote("");
+      setFrequency("monthly");
+      setInterval("1");
+      setNextRunOn(today);
+      setEndDate("");
+      setError(null);
+      setErrorField(null);
+      return;
+    }
 
     setType(rule.type);
     setAmount(minorToText(rule.amount, currency.decimals));
@@ -139,8 +159,6 @@ export function RuleSheet({
       : "";
 
   async function save() {
-    if (!rule) return;
-
     if (intervalError || intervalNumber === null) {
       setError(intervalError);
       setErrorField("interval");
@@ -152,8 +170,7 @@ export function RuleSheet({
     setErrorField(null);
 
     try {
-      const result = await updateRecurringRule({
-        id: rule.id,
+      const values = {
         type,
         amount,
         accountId,
@@ -164,7 +181,11 @@ export function RuleSheet({
         interval: intervalNumber,
         nextRunOn,
         endDate: endDate || null,
-      });
+      };
+
+      const result = rule
+        ? await updateRecurringRule({ id: rule.id, ...values })
+        : await createRecurringRule(values);
 
       if (!result.ok) {
         setError(result.error);
@@ -173,7 +194,17 @@ export function RuleSheet({
         return;
       }
 
-      toast.success("Rule saved. Future occurrences updated.");
+      if (rule) {
+        toast.success("Rule saved. Future occurrences updated.");
+      } else {
+        const posted =
+          "created" in result.data ? Number(result.data.created) : 0;
+        toast.success(
+          posted > 0
+            ? `Rule created. ${posted} due ${posted === 1 ? "record was" : "records were"} added.`
+            : "Rule created.",
+        );
+      }
       onOpenChange(false);
       router.refresh();
     } catch (thrown) {
@@ -198,8 +229,12 @@ export function RuleSheet({
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Edit recurring"
-      description="Changes apply to future occurrences only."
+      title={rule ? "Edit recurring" : "New recurring"}
+      description={
+        rule
+          ? "Changes apply to future occurrences only."
+          : "Added automatically on each due date."
+      }
     >
       <SheetBody>
         <TypeTabs
@@ -305,7 +340,7 @@ export function RuleSheet({
 
             <DateField
               id="rule-next"
-              label="Next due"
+              label={rule ? "Next due" : "First on"}
               value={nextRunOn}
               onChange={setNextRunOn}
               invalid={errorField === "nextRunOn"}
@@ -363,7 +398,7 @@ export function RuleSheet({
           ) : (
             <Check className="size-4" aria-hidden="true" />
           )}
-          Save rule
+          {rule ? "Save rule" : "Create rule"}
         </Button>
       </SheetFooter>
     </ResponsiveSheet>

@@ -30,21 +30,6 @@ export const REPEAT_LABELS: Record<RecurrenceFrequency | "none", string> = {
   yearly: "Yearly",
 };
 
-export const repeatSchema = z.object({
-  frequency: z.enum(RECURRENCE_FREQUENCIES),
-  interval: z
-    .number()
-    .int()
-    .min(1, "Repeat at least every 1.")
-    .max(365, "That is too far apart."),
-  /** yyyy-mm-dd, or null for "no end". */
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a date like 2026-12-31")
-    .nullable()
-    .optional(),
-});
-
 const transactionFields = {
   type: z.enum(TRANSACTION_TYPES),
   /** What the keypad produced — parsed with the user's decimal places. */
@@ -116,19 +101,13 @@ function checkShape(
 }
 
 export const createTransactionSchema = z
-  .object({ ...transactionFields, repeat: repeatSchema.nullable().optional() })
+  .object(transactionFields)
   .superRefine(checkShape);
 
 export const updateTransactionSchema = z
   .object({
     ...transactionFields,
     id: uuid,
-    /**
-     * Push the same template onto the recurring rule that created this
-     * record, so future occurrences follow. The schedule is untouched, and so
-     * are the records already created — "future occurrences only".
-     */
-     applyToRule: z.boolean().optional(),
   })
   .superRefine(checkShape);
 
@@ -146,7 +125,6 @@ export const restoreTransactionSchema = z
 export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
 export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;
 export type RestoreTransactionInput = z.input<typeof restoreTransactionSchema>;
-export type RepeatInput = z.input<typeof repeatSchema>;
 
 /* ------------------------------------------------------------- filters --- */
 

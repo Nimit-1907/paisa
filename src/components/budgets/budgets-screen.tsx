@@ -180,7 +180,7 @@ export function BudgetsScreen({
       <section>
         <SectionHeader
           className="mb-1.5 min-h-11 items-center px-1"
-          title="Budgets"
+          title="By category"
           count={data.lines.length}
           trailing={
             <Button

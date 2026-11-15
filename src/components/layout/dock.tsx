@@ -25,12 +25,11 @@ const DOCK_ITEMS: NavItem[] = [
   { href: "/records", label: "Records", icon: Receipt },
   { href: "/analysis", label: "Analysis", icon: ChartPie },
   { href: "/budgets", label: "Budgets", icon: Target },
-  {
-    href: "/accounts",
-    label: "Accounts",
-    icon: Wallet,
-    owns: ["/about", "/categories", "/export", "/more", "/recurring", "/settings"],
-  },
+  // No `owns`: Recurring, Categories, Settings and the rest are reached
+  // through the profile avatar and the sidebar, not a dock tab. Lighting
+  // Accounts on them told someone reading their rules that they were on
+  // Accounts; with none lit, the header's title is the only "you are here".
+  { href: "/accounts", label: "Accounts", icon: Wallet },
 ];
 
 export function Dock() {

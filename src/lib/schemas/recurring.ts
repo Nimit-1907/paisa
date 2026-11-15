@@ -104,6 +104,17 @@ export const updateRecurringRuleSchema = z
   .object({ ...ruleFields, id: uuid })
   .superRefine(checkShape);
 
+/**
+ * A new rule, made on the Recurring screen.
+ *
+ * The same fields as an edit without an id. `nextRunOn` is the first date
+ * it runs; a rule starting today or earlier posts that occurrence straight
+ * away rather than at tomorrow's daily catch-up.
+ */
+export const createRecurringRuleSchema = z
+  .object(ruleFields)
+  .superRefine(checkShape);
+
 export const recurringRuleIdSchema = z.object({ id: uuid });
 
 export const pauseRecurringRuleSchema = z.object({
@@ -122,3 +133,4 @@ export const deleteRecurringRuleSchema = z.object({
 });
 
 export type UpdateRecurringRuleInput = z.input<typeof updateRecurringRuleSchema>;
+export type CreateRecurringRuleInput = z.input<typeof createRecurringRuleSchema>;
