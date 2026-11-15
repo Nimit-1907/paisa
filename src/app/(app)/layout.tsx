@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { SkipLink } from "@/components/layout/skip-link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
@@ -65,6 +66,7 @@ export default async function AppLayout({
     <ProfileProvider
       currency={currencyOf(profile)}
       haptics={profile?.haptics ?? true}
+      showPaise={profile?.show_paise ?? false}
     >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
@@ -89,6 +91,7 @@ export default async function AppLayout({
 
           <BottomNav />
           <AddRecordFab />
+          <KeyboardShortcuts />
           <RecurringCreatedToast created={created} />
         </div>
       </RecordSheetProvider>

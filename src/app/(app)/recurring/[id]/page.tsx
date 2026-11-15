@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { ArrowLeft, CalendarClock, History, Repeat } from "lucide-react";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
 import { RuleActions } from "@/components/recurring/rule-actions";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";

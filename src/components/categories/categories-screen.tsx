@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { reorderCategories } from "@/actions/categories";
 import { CategoryFormSheet } from "@/components/categories/category-form-sheet";
 import type { CategoryView } from "@/components/categories/types";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/empty-state";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_KINDS, type CategoryKind } from "@/lib/schemas/categories";

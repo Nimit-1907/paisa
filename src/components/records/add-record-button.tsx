@@ -16,7 +16,7 @@ export function AddRecordButton({ label = "Add record" }: { label?: string }) {
   const sheet = useRecordSheet();
 
   return (
-    <Button size="touch" onClick={sheet.openAdd}>
+    <Button size="touch" onClick={() => sheet.openAdd()}>
       <Plus className="size-4" aria-hidden="true" />
       {label}
     </Button>

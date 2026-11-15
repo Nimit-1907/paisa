@@ -12,7 +12,7 @@ import { CategoryDonut } from "@/components/analysis/category-donut";
 import { PeriodBars } from "@/components/analysis/period-bars";
 import { PeriodSelector } from "@/components/analysis/period-selector";
 import { SummaryCards } from "@/components/analysis/summary-cards";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/empty-state";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { describeInsight } from "@/lib/insight";
 import type { Period } from "@/lib/period";

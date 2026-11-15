@@ -26,6 +26,7 @@ import {
   RecordSheet,
   type RecordSubmit,
 } from "@/components/records/record-sheet";
+import type { TransactionType } from "@/lib/schemas/transactions";
 
 /** What the toast calls each kind of record. */
 const LABELS = {
@@ -35,7 +36,8 @@ const LABELS = {
 } as const;
 
 type RecordSheetContextValue = {
-  openAdd: () => void;
+  /** Opens a blank sheet, optionally on the Income or Transfer tab. */
+  openAdd: (type?: TransactionType) => void;
   openEdit: (draft: RecordDraft) => void;
   /**
    * Lets the screen showing the records take over saving, so the row can
@@ -99,6 +101,8 @@ export function RecordSheetProvider({
   // first record is saved, so the ref stops a second celebration.
   const celebrated = React.useRef(false);
   const [draft, setDraft] = React.useState<RecordDraft | null>(null);
+  /** Which tab a sheet opened from the palette or Transfer starts on. */
+  const [addType, setAddType] = React.useState<TransactionType>("expense");
   const handlerRef = React.useRef<RecordSubmit | null>(null);
   const deleteRef = React.useRef<((id: string) => void) | null>(null);
 
@@ -116,8 +120,9 @@ export function RecordSheetProvider({
 
   const value = React.useMemo<RecordSheetContextValue>(
     () => ({
-      openAdd: () => {
+      openAdd: (type) => {
         setDraft(null);
+        setAddType(type ?? "expense");
         setOpen(true);
       },
       openEdit: (next) => {
@@ -312,6 +317,7 @@ export function RecordSheetProvider({
         accounts={accounts}
         categories={categories}
         draft={draft}
+        defaultType={addType}
         onSubmit={submit}
         onDelete={remove}
         timeZone={timeZone}

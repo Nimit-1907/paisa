@@ -41,6 +41,19 @@ export type FormatMoneyOptions = {
    * rounds towards zero, so a column of these would not sum to the total.
    */
   whole?: boolean;
+  /**
+   * What to do with paise that are exactly zero.
+   *
+   * - `show` (default): always print them — "₹450.00".
+   * - `trim`: print them only when there are some — "₹450", but "₹450.50"
+   *   stays intact.
+   *
+   * `trim` is not the same as {@link FormatMoneyOptions.whole}: it never
+   * changes the value, only whether two zeros are drawn. That is the
+   * difference that lets a list hide the noise without ever rounding an
+   * amount somebody might check against a receipt.
+   */
+  paise?: "show" | "trim";
 };
 
 /** A user's currency, as stored on their profile. */
@@ -239,6 +252,74 @@ function groupDigits(digits: string, grouping: Grouping): string {
 }
 
 /**
+ * An amount broken into the pieces a screen styles separately.
+ *
+ * The sign, the symbol, the major digits and the paise are four different
+ * kinds of thing — one is arithmetic, one is a unit, one is the number you
+ * came for, and one is detail — and Phase 13 asks for the last two to be set
+ * back from the first. Returning parts rather than a string is what lets the
+ * markup say that without any component re-deriving where the decimal point
+ * fell, which is the kind of split that goes wrong on a currency with three
+ * decimal places or none.
+ *
+ * {@link formatMoney} is these parts joined, so the plain string and the
+ * rendered one can never disagree.
+ */
+export type MoneyParts = {
+  /** "", "+" or "-". Never baked into the digits. */
+  sign: string;
+  /** The currency symbol, or "" when one was not asked for. */
+  symbol: string;
+  /** Grouped major units: "1,23,456". */
+  whole: string;
+  /** The decimal separator, or "" when there are no paise to draw. */
+  point: string;
+  /** The minor-unit digits, or "" when there are none to draw. */
+  fraction: string;
+};
+
+export function moneyParts(
+  minor: bigint,
+  options: FormatMoneyOptions = {},
+): MoneyParts {
+  const {
+    symbol = DEFAULT_CURRENCY_SYMBOL,
+    decimals = DEFAULT_DECIMALS,
+    grouping = INDIAN_GROUPING_SYMBOLS.has(symbol) ? "indian" : "western",
+    signDisplay = "auto",
+    whole: wholeOnly = false,
+    paise = "show",
+  } = options;
+
+  assertDecimals(decimals);
+
+  const negative = minor < 0n;
+  const plain = fromMinor(negative ? -minor : minor, decimals);
+  const [whole, frac] = plain.split(".");
+
+  // `trim` only ever drops zeros. A fraction with a digit in it is part of
+  // the amount, and hiding it would make the screen disagree with the
+  // receipt.
+  const keepFraction =
+    Boolean(frac) && !wholeOnly && !(paise === "trim" && /^0+$/.test(frac));
+
+  let sign = "";
+  if (signDisplay === "always") {
+    sign = negative ? "-" : "+";
+  } else if (signDisplay === "auto" && negative) {
+    sign = "-";
+  }
+
+  return {
+    sign,
+    symbol,
+    whole: groupDigits(whole, grouping),
+    point: keepFraction ? "." : "",
+    fraction: keepFraction ? frac : "",
+  };
+}
+
+/**
  * Formats minor units for display.
  *
  * formatMoney(12345678n)                       → "₹1,23,456.78"
@@ -249,33 +330,8 @@ export function formatMoney(
   minor: bigint,
   options: FormatMoneyOptions = {},
 ): string {
-  const {
-    symbol = DEFAULT_CURRENCY_SYMBOL,
-    decimals = DEFAULT_DECIMALS,
-    grouping = INDIAN_GROUPING_SYMBOLS.has(symbol) ? "indian" : "western",
-    signDisplay = "auto",
-    whole: wholeOnly = false,
-  } = options;
-
-  assertDecimals(decimals);
-
-  const negative = minor < 0n;
-  const plain = fromMinor(negative ? -minor : minor, decimals);
-  const [whole, frac] = plain.split(".");
-
-  const body =
-    frac && !wholeOnly
-      ? `${groupDigits(whole, grouping)}.${frac}`
-      : groupDigits(whole, grouping);
-
-  let sign = "";
-  if (signDisplay === "always") {
-    sign = negative ? "-" : "+";
-  } else if (signDisplay === "auto" && negative) {
-    sign = "-";
-  }
-
-  return `${sign}${symbol}${body}`;
+  const { sign, symbol, whole, point, fraction } = moneyParts(minor, options);
+  return `${sign}${symbol}${whole}${point}${fraction}`;
 }
 
 /**
@@ -408,8 +464,7 @@ export function friendlyAmount(minor: bigint, decimals: number): bigint {
   // is the one thing this must never produce.
   const whole = (minor + unit - 1n) / unit;
 
-  const step =
-    whole < 10_000n ? 500n : whole < 100_000n ? 1_000n : 5_000n;
+  const step = whole < 10_000n ? 500n : whole < 100_000n ? 1_000n : 5_000n;
 
   const rounded = ((whole + step - 1n) / step) * step;
   return rounded * unit;

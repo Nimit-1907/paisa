@@ -25,7 +25,7 @@ import {
 } from "@/actions/accounts";
 import { AccountFormSheet } from "@/components/accounts/account-form-sheet";
 import type { AccountView } from "@/components/accounts/types";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useFormatMoney } from "@/components/profile-provider";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";

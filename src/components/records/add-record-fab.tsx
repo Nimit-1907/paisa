@@ -18,7 +18,7 @@ export function AddRecordFab() {
   return (
     <button
       type="button"
-      onClick={sheet.openAdd}
+      onClick={() => sheet.openAdd()}
       aria-label="Add record"
       className="bg-primary text-primary-foreground focus-visible:ring-ring fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 flex size-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-8 lg:bottom-8"
     >

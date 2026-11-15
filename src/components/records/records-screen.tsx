@@ -6,12 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import {
-  ChevronRight,
-  Plus,
-  Receipt,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ChevronRight, Plus, Receipt, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -21,7 +16,7 @@ import {
   restoreTransaction,
   updateTransaction,
 } from "@/actions/transactions";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
@@ -158,7 +153,14 @@ export function RecordsScreen({
   const scopeKey = `${year}-${month}-${JSON.stringify(filters)}`;
   const contentKey = rows
     .map((row) =>
-      [row.id, row.amount, row.occurredAt, row.categoryId, row.accountId, row.note].join(":"),
+      [
+        row.id,
+        row.amount,
+        row.occurredAt,
+        row.categoryId,
+        row.accountId,
+        row.note,
+      ].join(":"),
     )
     .join("|");
 
@@ -256,7 +258,14 @@ export function RecordsScreen({
           }
         });
       }),
-    [accounts, categories, timeZone, currency.decimals, applyOptimistic, router],
+    [
+      accounts,
+      categories,
+      timeZone,
+      currency.decimals,
+      applyOptimistic,
+      router,
+    ],
   );
 
   React.useEffect(() => sheet.setSubmitHandler(submit), [sheet, submit]);
@@ -306,7 +315,9 @@ export function RecordsScreen({
               startTransition(async () => {
                 deleted.current.delete(record.id);
                 applyOptimistic({ kind: "add", row: record });
-                setLoaded((current) => mergeRows([record], current, deleted.current));
+                setLoaded((current) =>
+                  mergeRows([record], current, deleted.current),
+                );
 
                 try {
                   const undone = await restoreTransaction({
@@ -374,7 +385,9 @@ export function RecordsScreen({
         return;
       }
 
-      setLoaded((current) => mergeRows(current, result.data.rows, deleted.current));
+      setLoaded((current) =>
+        mergeRows(current, result.data.rows, deleted.current),
+      );
       setMore(result.data.hasMore);
     } catch (thrown) {
       console.error("[records]", thrown);
@@ -457,134 +470,132 @@ export function RecordsScreen({
   return (
     <PullToRefresh onRefresh={refresh}>
       <div className="space-y-4">
-      <MonthStar summary={summary} days={monthDays} today={today} />
+        <MonthStar summary={summary} days={monthDays} today={today} />
 
-      <UpcomingStrip items={upcoming} today={today} />
+        <UpcomingStrip items={upcoming} today={today} />
 
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
-          {visible.length} {visible.length === 1 ? "record" : "records"}
-          {more ? "+" : ""}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
+            {visible.length} {visible.length === 1 ? "record" : "records"}
+            {more ? "+" : ""}
+          </p>
 
-        <Button
-          variant={activeFilterCount > 0 ? "default" : "ghost"}
-          size="touch"
-          className="px-3"
-          onClick={() => setFiltersOpen(true)}
-        >
-          <SlidersHorizontal className="size-4" aria-hidden="true" />
-          {activeFilterCount > 0 ? `Filters · ${activeFilterCount}` : "Filter"}
-        </Button>
-      </div>
+          <Button
+            variant={activeFilterCount > 0 ? "default" : "ghost"}
+            size="touch"
+            className="px-3"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            {activeFilterCount > 0
+              ? `Filters · ${activeFilterCount}`
+              : "Filter"}
+          </Button>
+        </div>
 
-      {visible.length === 0 ? (
-        <EmptyState
-          art="records"
-          icon={Receipt}
-          title={
-            activeFilterCount > 0
-              ? "Nothing matches those filters"
-              : "No records this month"
-          }
-          description={
-            activeFilterCount > 0
-              ? "Try widening the search, or clear the filters to see everything again."
-              : "Expenses, income and transfers you log will be listed here, newest first."
-          }
-          action={
-            activeFilterCount > 0 ? (
-              <Button
-                variant="outline"
-                size="touch"
-                onClick={clearFilters}
-              >
-                Clear filters
-              </Button>
-            ) : (
-              <Button size="touch" onClick={sheet.openAdd}>
-                <Plus className="size-4" aria-hidden="true" />
-                Add record
-              </Button>
-            )
-          }
-        />
-      ) : (
-        <div className="space-y-4">
-          {days.map((day) => (
-            <section key={day.key} aria-label={day.label}>
-              <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
-                <h2 className="min-w-0">
-                  {/*
+        {visible.length === 0 ? (
+          <EmptyState
+            art="records"
+            icon={Receipt}
+            title={
+              activeFilterCount > 0
+                ? "Nothing matches those filters"
+                : "No records this month"
+            }
+            description={
+              activeFilterCount > 0
+                ? "Try widening the search, or clear the filters to see everything again."
+                : "Expenses, income and transfers you log will be listed here, newest first."
+            }
+            action={
+              activeFilterCount > 0 ? (
+                <Button variant="outline" size="touch" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              ) : (
+                <Button size="touch" onClick={() => sheet.openAdd()}>
+                  <Plus className="size-4" aria-hidden="true" />
+                  Add record
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <div className="space-y-4">
+            {days.map((day) => (
+              <section key={day.key} aria-label={day.label}>
+                <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
+                  <h2 className="min-w-0">
+                    {/*
                     The day heading is the way into a single day. It used to
                     be the bars on the card above, which were seven pixels
                     wide; this is the same destination with a target you can
                     actually hit.
                   */}
-                  <Link
-                    href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
-                    className="text-ink-2 hoverable:text-ink focus-visible:ring-ring inline-flex min-h-11 items-center gap-1 rounded text-xs font-semibold tracking-[0.08em] uppercase focus-visible:ring-2 focus-visible:outline-none"
+                    <Link
+                      href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
+                      className="text-ink-2 hoverable:text-ink focus-visible:ring-ring inline-flex min-h-11 items-center gap-1 rounded text-xs font-semibold tracking-[0.08em] uppercase focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      {day.label}
+                      <ChevronRight className="size-3.5" aria-hidden="true" />
+                    </Link>
+                  </h2>
+                  <span
+                    className={cn(
+                      "amount text-xs font-semibold",
+                      day.net > 0n ? "text-income" : "text-muted-foreground",
+                    )}
                   >
-                    {day.label}
-                    <ChevronRight className="size-3.5" aria-hidden="true" />
-                  </Link>
-                </h2>
-                <span
-                  className={cn(
-                    "amount text-xs font-semibold",
-                    day.net > 0n ? "text-income" : "text-muted-foreground",
-                  )}
-                >
-                  {day.net === 0n
-                    ? ""
-                    : formatMoney(day.net, { signDisplay: "always" })}
-                </span>
-              </div>
+                    {day.net === 0n
+                      ? ""
+                      : formatMoney(day.net, { signDisplay: "always" })}
+                  </span>
+                </div>
 
-              <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
-                {day.rows.map((record) => (
-                  <li key={record.id}>
-                    <RecordRow
-                      record={record}
-                      pending={record.id.startsWith("optimistic-")}
-                      highlight={record.id === sheet.lastSavedId}
-                      onOpen={() =>
-                        sheet.openEdit({
-                          id: record.id,
-                          type: record.type,
-                          amount: record.amount,
-                          accountId: record.accountId,
-                          toAccountId: record.toAccountId,
-                          categoryId: record.categoryId,
-                          note: record.note,
-                          occurredAtLocal: instantToLocal(
-                            record.occurredAt,
-                            timeZone,
-                          ),
-                          recurringRuleId: record.recurringRuleId,
-                        })
-                      }
-                      onDelete={() => remove(record)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+                  {day.rows.map((record) => (
+                    <li key={record.id}>
+                      <RecordRow
+                        record={record}
+                        pending={record.id.startsWith("optimistic-")}
+                        highlight={record.id === sheet.lastSavedId}
+                        onOpen={() =>
+                          sheet.openEdit({
+                            id: record.id,
+                            type: record.type,
+                            amount: record.amount,
+                            accountId: record.accountId,
+                            toAccountId: record.toAccountId,
+                            categoryId: record.categoryId,
+                            note: record.note,
+                            occurredAtLocal: instantToLocal(
+                              record.occurredAt,
+                              timeZone,
+                            ),
+                            recurringRuleId: record.recurringRuleId,
+                          })
+                        }
+                        onDelete={() => remove(record)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
 
-          {more ? (
-            <LoadMore onVisible={loadMore} loading={loadingMore} />
-          ) : null}
-        </div>
-      )}
+            {more ? (
+              <LoadMore onVisible={loadMore} loading={loadingMore} />
+            ) : null}
+          </div>
+        )}
 
-      <FiltersSheet
-        open={filtersOpen}
-        onOpenChange={setFiltersOpen}
-        accounts={accounts}
-        categories={categories}
-        filters={filters}
-      />
+        <FiltersSheet
+          open={filtersOpen}
+          onOpenChange={setFiltersOpen}
+          accounts={accounts}
+          categories={categories}
+          filters={filters}
+        />
       </div>
     </PullToRefresh>
   );

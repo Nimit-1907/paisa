@@ -4,6 +4,7 @@ import {
   MoneyParseError,
   formatMoney,
   friendlyAmount,
+  moneyParts,
   fromDb,
   fromMinor,
   toDb,
@@ -179,7 +180,9 @@ describe("formatMoney", () => {
 
   it("groups other currencies Western-style", () => {
     expect(formatMoney(12345678n, { symbol: "$" })).toBe("$123,456.78");
-    expect(formatMoney(123456789012n, { symbol: "€" })).toBe("€1,234,567,890.12");
+    expect(formatMoney(123456789012n, { symbol: "€" })).toBe(
+      "€1,234,567,890.12",
+    );
     expect(formatMoney(12345678n, { symbol: "" })).toBe("123,456.78");
   });
 
@@ -253,5 +256,89 @@ describe("friendlyAmount", () => {
 
   it("works for a currency with no minor unit", () => {
     expect(friendlyAmount(7_842n, 0)).toBe(8_000n);
+  });
+});
+
+describe("moneyParts", () => {
+  it("splits an amount into the pieces a screen styles separately", () => {
+    expect(moneyParts(12345678n)).toEqual({
+      sign: "",
+      symbol: "₹",
+      whole: "1,23,456",
+      point: ".",
+      fraction: "78",
+    });
+  });
+
+  it("keeps the sign out of the digits", () => {
+    expect(moneyParts(-50000n)).toMatchObject({ sign: "-", whole: "500" });
+    expect(moneyParts(50000n, { signDisplay: "always" })).toMatchObject({
+      sign: "+",
+    });
+    expect(moneyParts(-50000n, { signDisplay: "never" })).toMatchObject({
+      sign: "",
+      whole: "500",
+    });
+  });
+
+  it("trims paise only when they are all zeros", () => {
+    expect(moneyParts(45000n, { paise: "trim" })).toMatchObject({
+      whole: "450",
+      point: "",
+      fraction: "",
+    });
+    // The 50 is part of the amount; hiding it would contradict the receipt.
+    expect(moneyParts(45050n, { paise: "trim" })).toMatchObject({
+      whole: "450",
+      point: ".",
+      fraction: "50",
+    });
+    expect(moneyParts(5n, { paise: "trim" })).toMatchObject({
+      whole: "0",
+      fraction: "05",
+    });
+  });
+
+  it("shows paise by default", () => {
+    expect(moneyParts(45000n)).toMatchObject({ point: ".", fraction: "00" });
+  });
+
+  it("has nothing to trim for a currency with no minor unit", () => {
+    expect(moneyParts(4998n, { decimals: 0, paise: "trim" })).toMatchObject({
+      whole: "4,998",
+      point: "",
+      fraction: "",
+    });
+  });
+
+  it("joins back into exactly what formatMoney returns", () => {
+    const cases: [bigint, Parameters<typeof formatMoney>[1]][] = [
+      [12345678n, {}],
+      [-50000n, { signDisplay: "always" }],
+      [45000n, { paise: "trim" }],
+      [45050n, { paise: "trim" }],
+      [123456789012n, { symbol: "$" }],
+      [4998n, { decimals: 0 }],
+      [4998100n, { whole: true }],
+      [0n, { signDisplay: "always" }],
+    ];
+
+    for (const [minor, options] of cases) {
+      const { sign, symbol, whole, point, fraction } = moneyParts(
+        minor,
+        options,
+      );
+      expect(`${sign}${symbol}${whole}${point}${fraction}`).toBe(
+        formatMoney(minor, options),
+      );
+    }
+  });
+});
+
+describe("formatMoney with trimmed paise", () => {
+  it("drops a zero fraction without changing the value", () => {
+    expect(formatMoney(45000n, { paise: "trim" })).toBe("₹450");
+    expect(formatMoney(45050n, { paise: "trim" })).toBe("₹450.50");
+    expect(formatMoney(-45000n, { paise: "trim" })).toBe("-₹450");
   });
 });

@@ -196,6 +196,15 @@
 
   --radius: 0.75rem;
 
+  /*
+   * The raised layer. In light mode a card is already white, so the lift has
+   * to come from a shadow; the border stays the hairline.
+   */
+  --raised: oklch(1 0 0);
+  --raised-border: var(--border);
+  --raised-shadow:
+    0 1px 2px oklch(0.21 0.02 255 / 6%), 0 12px 32px oklch(0.21 0.02 255 / 10%);
+
   --sidebar: oklch(0.975 0.005 247);
   --sidebar-foreground: oklch(0.21 0.02 255);
   --sidebar-primary: oklch(0.47 0.09 192);
@@ -251,6 +260,18 @@
   --chart-3: oklch(0.77 0.09 255);
   --chart-4: oklch(0.82 0.095 75);
   --chart-5: oklch(0.75 0.1 300);
+
+  /*
+   * In dark mode a shadow is invisible against a near-black page, so the
+   * lift is a lighter surface plus a brighter border. Both are decoration,
+   * like --border: measured 1.21:1 for the surface step and 1.92:1 for the
+   * edge, which is what a hairline should be. Nothing here is a control
+   * boundary, so 1.4.11's 3:1 is not the bar - what identifies a sheet is
+   * its content, and --input still carries the edges that do.
+   */
+  --raised: oklch(0.255 0.019 258);
+  --raised-border: oklch(1 0 0 / 20%);
+  --raised-shadow: 0 16px 40px oklch(0 0 0 / 40%);
 
   --sidebar: oklch(0.195 0.016 258);
   --sidebar-foreground: oklch(0.96 0.005 250);
@@ -355,6 +376,59 @@
     background-color: Canvas;
     backdrop-filter: none;
   }
+}
+
+/*
+ * The two set-back pieces of an amount.
+ *
+ * The currency symbol is a unit and the paise are detail: neither is the
+ * number you came for, so both step down a size and lose the digits' weight.
+ * The step is size and weight rather than colour because opacity over the
+ * money palette measures 3.0-3.6:1 in light mode, against the 4.5 that small
+ * text needs - a dimmer decimal would have been the one thing in the app
+ * failing AA. Component code sets `text-ink-2` on the paise only where the
+ * figure is neutral; see src/components/shared/amount.tsx.
+ */
+@utility amount-unit {
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+@utility amount-minor {
+  font-size: 0.78em;
+  font-weight: 500;
+}
+
+/*
+ * The third surface.
+ *
+ * App background -> card -> raised. "Raised" is what floats above the page
+ * with its own edge: a sheet, a menu, a popover, the command palette. In
+ * light mode it is the card colour with a shadow; in dark mode shadows are
+ * invisible, so the lift is carried by a lighter surface and a brighter
+ * border instead. One utility so a menu and a sheet can never disagree.
+ */
+@utility raised {
+  background-color: var(--raised);
+  border-color: var(--raised-border);
+
+  @media not (forced-colors: active) {
+    box-shadow: var(--raised-shadow);
+  }
+}
+
+/*
+ * A bento cell.
+ *
+ * The card anatomy every summary screen shares - Analysis, Budgets,
+ * Accounts - so a stat tile and a chart card have the same edge, the same
+ * radius and the same padding without each screen restating them.
+ */
+@utility bento {
+  border-radius: var(--radius-card);
+  border-width: 1px;
+  border-color: var(--border);
+  background-color: var(--card);
 }
 
 /*

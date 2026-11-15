@@ -11,7 +11,8 @@
  * All of them are decorative: the heading beside them says what the screen
  * is, so there is nothing here for a screen reader to gain.
  */
-export type EmptyArt = "records" | "budgets" | "accounts" | "recurring" | "analysis";
+export type EmptyArt =
+  "records" | "budgets" | "accounts" | "recurring" | "analysis";
 
 export function EmptyIllustration({ art }: { art: EmptyArt }) {
   return (

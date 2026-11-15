@@ -177,6 +177,7 @@ export type Database = {
           password_attempt_window: string | null
           password_attempts: number
           recap_seen_for: string | null
+          show_paise: boolean
           theme: string
           timezone: string
           updated_at: string
@@ -195,6 +196,7 @@ export type Database = {
           password_attempt_window?: string | null
           password_attempts?: number
           recap_seen_for?: string | null
+          show_paise?: boolean
           theme?: string
           timezone?: string
           updated_at?: string
@@ -213,6 +215,7 @@ export type Database = {
           password_attempt_window?: string | null
           password_attempts?: number
           recap_seen_for?: string | null
+          show_paise?: boolean
           theme?: string
           timezone?: string
           updated_at?: string

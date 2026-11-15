@@ -17,6 +17,9 @@ const CurrencyContext = React.createContext<CurrencySettings>(
 /** Whether this person wants the phone to buzz when something is saved. */
 const HapticsContext = React.createContext(true);
 
+/** Whether lists should draw ".00". Off by default; see the migration. */
+const ShowPaiseContext = React.createContext(false);
+
 /**
  * Carries the signed-in user's currency down to Client Components.
  *
@@ -29,16 +32,20 @@ const HapticsContext = React.createContext(true);
 export function ProfileProvider({
   currency,
   haptics,
+  showPaise,
   children,
 }: {
   currency: CurrencySettings;
   haptics: boolean;
+  showPaise: boolean;
   children: React.ReactNode;
 }) {
   return (
     <CurrencyContext.Provider value={currency}>
       <HapticsContext.Provider value={haptics}>
-        {children}
+        <ShowPaiseContext.Provider value={showPaise}>
+          {children}
+        </ShowPaiseContext.Provider>
       </HapticsContext.Provider>
     </CurrencyContext.Provider>
   );
@@ -62,6 +69,16 @@ export function useHaptic() {
 
 export function useCurrency(): CurrencySettings {
   return React.useContext(CurrencyContext);
+}
+
+/**
+ * Whether this person asked to see ".00".
+ *
+ * Read by `Amount`, which is the only thing that should be consulting it —
+ * a screen that checks this itself is a screen that will forget to.
+ */
+export function useShowPaise(): boolean {
+  return React.useContext(ShowPaiseContext);
 }
 
 /**

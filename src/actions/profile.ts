@@ -277,9 +277,9 @@ export async function changePassword(
  * that can delete anybody is a much bigger thing to protect than a function
  * that can delete exactly one person.
  */
-export async function deleteAccount(
-  input: { confirm: string },
-): Promise<ActionResult<{ next: string }>> {
+export async function deleteAccount(input: {
+  confirm: string;
+}): Promise<ActionResult<{ next: string }>> {
   const parsed = parseInput(deleteAccountSchema, input);
   if (!parsed.ok) return parsed;
 
@@ -316,6 +316,7 @@ async function setPreference(
     haptics: boolean;
     recap_seen_for: string;
     first_record_seen: boolean;
+    show_paise: boolean;
   }>,
   message: string,
 ): Promise<ActionResult<undefined>> {
@@ -361,6 +362,24 @@ export async function setHaptics(
 
   // The only one of the three the shell renders: it hands this value to
   // every client component that can buzz.
+  if (saved.ok) revalidatePath("/", "layout");
+
+  return saved;
+}
+
+/** The Settings toggle: should lists draw ".00"? */
+export async function setShowPaise(
+  enabled: boolean,
+): Promise<ActionResult<undefined>> {
+  if (typeof enabled !== "boolean") return fail("Could not save that.");
+
+  const saved = await setPreference(
+    { show_paise: enabled },
+    "Could not save that setting.",
+  );
+
+  // Every amount on every screen reads this, so the whole shell has to be
+  // rebuilt rather than just the Settings page.
   if (saved.ok) revalidatePath("/", "layout");
 
   return saved;

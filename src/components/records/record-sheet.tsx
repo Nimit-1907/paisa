@@ -2,7 +2,14 @@
 
 import * as React from "react";
 
-import { Check, ChevronDown, Loader2, Plus, Repeat, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Loader2,
+  Plus,
+  Repeat,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import type { SavedTransaction } from "@/actions/transactions";
@@ -113,6 +120,7 @@ export function RecordSheet({
   accounts,
   categories,
   draft,
+  defaultType = "expense",
   defaultAmountText = "",
   onSubmit,
   onDelete,
@@ -126,6 +134,8 @@ export function RecordSheet({
   categories: CategoryOption[];
   /** Omitted when adding. */
   draft?: RecordDraft | null;
+  /** Which tab a new record starts on. Ignored while editing. */
+  defaultType?: TransactionType;
   defaultAmountText?: string;
   onSubmit: RecordSubmit;
   /** Only offered while editing. Undo lives in the toast it raises. */
@@ -146,9 +156,9 @@ export function RecordSheet({
   const [categoryId, setCategoryId] = React.useState("");
   const [note, setNote] = React.useState("");
   const [occurredAt, setOccurredAt] = React.useState("");
-  const [frequency, setFrequency] = React.useState<RecurrenceFrequency | "none">(
-    "none",
-  );
+  const [frequency, setFrequency] = React.useState<
+    RecurrenceFrequency | "none"
+  >("none");
   const [interval, setInterval] = React.useState("1");
   const [endDate, setEndDate] = React.useState("");
   const [saving, setSaving] = React.useState(false);
@@ -166,9 +176,11 @@ export function RecordSheet({
   React.useEffect(() => {
     if (!open) return;
 
-    setType(editing?.type ?? "expense");
+    setType(editing?.type ?? defaultType);
     setAmount(
-      editing ? minorToText(editing.amount, currency.decimals) : defaultAmountText,
+      editing
+        ? minorToText(editing.amount, currency.decimals)
+        : defaultAmountText,
     );
     setAccountId(
       editing?.accountId ??
@@ -189,10 +201,10 @@ export function RecordSheet({
     setMoreOpen(
       Boolean(
         editing &&
-          (editing.note ||
-            editing.recurringRuleId ||
-            editing.occurredAtLocal.slice(0, 10) !==
-              nowLocal(timeZone).slice(0, 10)),
+        (editing.note ||
+          editing.recurringRuleId ||
+          editing.occurredAtLocal.slice(0, 10) !==
+            nowLocal(timeZone).slice(0, 10)),
       ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -290,9 +302,7 @@ export function RecordSheet({
    * which is a dead end: a button that does nothing never says why. It is
    * live now, and pressing it points at the first thing that is not ready.
    */
-  function firstProblem():
-    | { field: string; message: string }
-    | null {
+  function firstProblem(): { field: string; message: string } | null {
     const sum = evaluate(amount || "0", currency.decimals);
 
     if (amount.trim() === "" || (sum.ok && sum.minor <= 0n)) {
@@ -304,7 +314,10 @@ export function RecordSheet({
     if (!accountId) {
       return {
         field: "accountId",
-        message: type === "transfer" ? "Choose where it came from." : "Choose an account.",
+        message:
+          type === "transfer"
+            ? "Choose where it came from."
+            : "Choose an account.",
       };
     }
 
@@ -365,8 +378,8 @@ export function RecordSheet({
           type,
           amount,
           accountId,
-          toAccountId: type === "transfer" ? (toAccountId || null) : null,
-          categoryId: type === "transfer" ? null : (categoryId || null),
+          toAccountId: type === "transfer" ? toAccountId || null : null,
+          categoryId: type === "transfer" ? null : categoryId || null,
           note: note.trim() ? note.trim() : null,
           occurredAt,
           repeat:
@@ -424,7 +437,6 @@ export function RecordSheet({
       setSaving(false);
     }
   }
-
 
   return (
     <ResponsiveSheet
@@ -516,7 +528,9 @@ export function RecordSheet({
               accounts={accounts.filter((account) => account.id !== accountId)}
               value={toAccountId}
               onChange={setToAccountId}
-              error={errorField === "toAccountId" ? (error ?? undefined) : undefined}
+              error={
+                errorField === "toAccountId" ? (error ?? undefined) : undefined
+              }
             />
           </>
         ) : (
@@ -561,7 +575,9 @@ export function RecordSheet({
               categories={visibleCategories}
               value={categoryId}
               onChange={setCategoryId}
-              error={errorField === "categoryId" ? (error ?? undefined) : undefined}
+              error={
+                errorField === "categoryId" ? (error ?? undefined) : undefined
+              }
             />
 
             <AccountSelect
@@ -601,103 +617,105 @@ export function RecordSheet({
         </button>
 
         <div id="more-options" hidden={!moreOpen} className="space-y-4">
-        <FormRow
-          id="occurred-at"
-          label="When"
-          error={errorField === "occurredAt" ? (error ?? undefined) : undefined}
-        >
-          {(props) => (
-            <Input
-              {...props}
-              type="datetime-local"
-              value={occurredAt}
-              onChange={(event) => setOccurredAt(event.target.value)}
-            />
-          )}
-        </FormRow>
-
-        <FormRow id="note" label="Note" hint="Optional">
-          {(props) => (
-            <Input
-              {...props}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Swiggy — team lunch"
-              maxLength={500}
-            />
-          )}
-        </FormRow>
-
-        {editing ? null : (
-          <div className="space-y-2 rounded-xl border p-3">
-            <div className="flex items-center gap-2">
-              <Repeat
-                className="text-muted-foreground size-4 shrink-0"
-                aria-hidden="true"
+          <FormRow
+            id="occurred-at"
+            label="When"
+            error={
+              errorField === "occurredAt" ? (error ?? undefined) : undefined
+            }
+          >
+            {(props) => (
+              <Input
+                {...props}
+                type="datetime-local"
+                value={occurredAt}
+                onChange={(event) => setOccurredAt(event.target.value)}
               />
-              <Label htmlFor="repeat" className="flex-1">
-                Repeat
-              </Label>
-            </div>
+            )}
+          </FormRow>
 
-            <div
-              id="repeat"
-              role="radiogroup"
-              aria-label="Repeat"
-              className="flex flex-wrap gap-1"
-            >
-              {(["none", ...RECURRENCE_FREQUENCIES] as const).map((value) => {
-                const active = frequency === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setFrequency(value)}
-                    className={cn(
-                      "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
-                      active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "text-muted-foreground hoverable:bg-muted",
-                    )}
-                  >
-                    {value === "none" ? "No" : REPEAT_LABELS[value]}
-                  </button>
-                );
-              })}
-            </div>
+          <FormRow id="note" label="Note" hint="Optional">
+            {(props) => (
+              <Input
+                {...props}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Swiggy — team lunch"
+                maxLength={500}
+              />
+            )}
+          </FormRow>
 
-            {frequency !== "none" ? (
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <FormRow id="repeat-interval" label="Every">
-                  {(props) => (
-                    <Input
-                      {...props}
-                      type="number"
-                      min={1}
-                      max={365}
-                      inputMode="numeric"
-                      value={interval}
-                      onChange={(event) => setInterval(event.target.value)}
-                    />
-                  )}
-                </FormRow>
-
-                <FormRow id="repeat-end" label="Until" hint="Optional">
-                  {(props) => (
-                    <Input
-                      {...props}
-                      type="date"
-                      value={endDate}
-                      onChange={(event) => setEndDate(event.target.value)}
-                    />
-                  )}
-                </FormRow>
+          {editing ? null : (
+            <div className="space-y-2 rounded-xl border p-3">
+              <div className="flex items-center gap-2">
+                <Repeat
+                  className="text-muted-foreground size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <Label htmlFor="repeat" className="flex-1">
+                  Repeat
+                </Label>
               </div>
-            ) : null}
-          </div>
-        )}
+
+              <div
+                id="repeat"
+                role="radiogroup"
+                aria-label="Repeat"
+                className="flex flex-wrap gap-1"
+              >
+                {(["none", ...RECURRENCE_FREQUENCIES] as const).map((value) => {
+                  const active = frequency === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => setFrequency(value)}
+                      className={cn(
+                        "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "text-muted-foreground hoverable:bg-muted",
+                      )}
+                    >
+                      {value === "none" ? "No" : REPEAT_LABELS[value]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {frequency !== "none" ? (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <FormRow id="repeat-interval" label="Every">
+                    {(props) => (
+                      <Input
+                        {...props}
+                        type="number"
+                        min={1}
+                        max={365}
+                        inputMode="numeric"
+                        value={interval}
+                        onChange={(event) => setInterval(event.target.value)}
+                      />
+                    )}
+                  </FormRow>
+
+                  <FormRow id="repeat-end" label="Until" hint="Optional">
+                    {(props) => (
+                      <Input
+                        {...props}
+                        type="date"
+                        value={endDate}
+                        onChange={(event) => setEndDate(event.target.value)}
+                      />
+                    )}
+                  </FormRow>
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/*

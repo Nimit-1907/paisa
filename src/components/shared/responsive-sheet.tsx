@@ -16,6 +16,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -152,6 +153,13 @@ export function SheetBody({
   );
 }
 
+/**
+ * The save area of a sheet.
+ *
+ * A thin naming layer over {@link StickyActionBar} — the keyboard handling
+ * and the glass live there now, so the sheet and the page can never drift
+ * apart.
+ */
 export function SheetFooter({
   className,
   children,
@@ -159,55 +167,9 @@ export function SheetFooter({
   className?: string;
   children: React.ReactNode;
 }) {
-  const keyboard = useKeyboardInset();
-
   return (
-    <div
-      className={cn(
-        "glass pb-safe sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-3 lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-filter-none",
-        className,
-      )}
-      // Lifted by however much of the sheet the on-screen keyboard is
-      // covering, so Save is never the thing underneath it.
-      style={keyboard > 0 ? { transform: `translateY(-${keyboard}px)` } : undefined}
-    >
+    <StickyActionBar variant="sheet" className={className}>
       {children}
-    </div>
+    </StickyActionBar>
   );
-}
-
-/**
- * How much of the window the on-screen keyboard is covering.
- *
- * `visualViewport` is the only thing that knows: the layout viewport does not
- * shrink when a keyboard opens on iOS, so a sticky footer sits politely
- * behind it. Zero everywhere there is no keyboard, which includes every
- * desktop browser and every browser without the API.
- */
-function useKeyboardInset(): number {
-  const [inset, setInset] = React.useState(0);
-
-  React.useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const update = () => {
-      const covered =
-        window.innerHeight - viewport.height - viewport.offsetTop;
-
-      // A few pixels of rounding is not a keyboard.
-      setInset(covered > 24 ? Math.round(covered) : 0);
-    };
-
-    update();
-    viewport.addEventListener("resize", update);
-    viewport.addEventListener("scroll", update);
-
-    return () => {
-      viewport.removeEventListener("resize", update);
-      viewport.removeEventListener("scroll", update);
-    };
-  }, []);
-
-  return inset;
 }

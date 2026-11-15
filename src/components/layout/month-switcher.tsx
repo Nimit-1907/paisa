@@ -2,8 +2,6 @@
 
 import * as React from "react";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +10,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { type MonthBounds, useMonthNav } from "@/hooks/use-month-nav";
+import { isOverlayOpen, isPlainKey, isTypingTarget } from "@/lib/keyboard";
 import { cn } from "@/lib/utils";
 
 const MONTHS = [
@@ -36,47 +36,42 @@ const MONTHS = [
  * Budgets all read the same one, a refresh keeps it, and the back button
  * steps through months the way a user expects it to.
  */
-export function MonthSwitcher({
-  year,
-  month,
-  /** The latest month worth offering — "today" in the user's timezone. */
-  maxYear,
-  maxMonth,
-}: {
-  year: number;
-  month: number;
-  maxYear: number;
-  maxMonth: number;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
+export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
   const [pickerOpen, setPickerOpen] = React.useState(false);
+  const { go, step, isCurrent } = useMonthNav({
+    year,
+    month,
+    maxYear,
+    maxMonth,
+  });
 
-  const isCurrent = year === maxYear && month === maxMonth;
+  /**
+   * Left and right arrows step the month.
+   *
+   * Registered here rather than in a global shortcut handler because this is
+   * the control they drive: on a screen with no month to change, the arrow
+   * keys should go on meaning what the browser means by them. The guards are
+   * the usual two — not while typing, not while a sheet is open, where the
+   * arrows belong to whatever is on top.
+   */
+  React.useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (!isPlainKey(event) || event.shiftKey) return;
+      if (isTypingTarget(event.target) || isOverlayOpen()) return;
 
-  function go(nextYear: number, nextMonth: number) {
-    // Clamped here rather than relying on a disabled button: a double tap
-    // before the route re-renders would otherwise step into a future month,
-    // which has nothing to show.
-    const requested = nextYear * 12 + (nextMonth - 1);
-    const latest = maxYear * 12 + (maxMonth - 1);
-    const target = Math.min(requested, latest);
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        step(-1);
+      } else if (event.key === "ArrowRight") {
+        if (isCurrent) return;
+        event.preventDefault();
+        step(1);
+      }
+    }
 
-    const year2 = Math.floor(target / 12);
-    const month2 = (target % 12) + 1;
-
-    const next = new URLSearchParams(params.toString());
-    next.set("m", `${year2}-${String(month2).padStart(2, "0")}`);
-    // replace, not push: stepping through months should not fill the back
-    // stack with every month visited on the way.
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-  }
-
-  function step(delta: number) {
-    const index = Math.max(0, year * 12 + (month - 1) + delta);
-    go(Math.floor(index / 12), (index % 12) + 1);
-  }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isCurrent, step]);
 
   return (
     <div className="flex items-center gap-0.5">
@@ -134,7 +129,8 @@ export function MonthSwitcher({
           <div className="grid grid-cols-3 gap-1">
             {MONTHS.map((label, index) => {
               const value = index + 1;
-              const future = year > maxYear || (year === maxYear && value > maxMonth);
+              const future =
+                year > maxYear || (year === maxYear && value > maxMonth);
               const active = value === month;
 
               return (
