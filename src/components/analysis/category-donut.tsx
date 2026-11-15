@@ -139,7 +139,7 @@ export function CategoryDonut({
           <span className="text-text-secondary text-xs">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
-          <span className="font-display amount-hero max-w-[9rem] truncate text-xl tracking-[-0.02em] tabular-nums">
+          <span className="font-display max-w-[9rem] truncate text-xl tracking-[-0.02em] tabular-nums">
             {formatCompact(totalMinor, {
               symbol: currency.symbol,
               decimals: currency.decimals,

@@ -54,7 +54,7 @@ export default function MarketingLayout({
               <li>
                 <Link
                   href="/login"
-                  className="bg-ink text-on-ink hoverable:bg-ink/90 pressable ml-1 flex min-h-11 items-center rounded-full px-4 text-sm font-semibold"
+                  className="bg-ink text-on-ink hoverable:bg-ink/90 pressable ml-1 flex min-h-11 items-center rounded-control px-4 text-sm font-semibold"
                 >
                   Log in
                 </Link>

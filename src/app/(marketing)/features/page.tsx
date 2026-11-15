@@ -59,7 +59,7 @@ export default function FeaturesPage() {
       <p className="mt-8">
         <Link
           href="/signup"
-          className="bg-ink text-on-ink hoverable:bg-ink/90 pressable inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-semibold"
+          className="bg-ink text-on-ink hoverable:bg-ink/90 pressable inline-flex min-h-12 items-center gap-2 rounded-control px-5 text-sm font-semibold"
         >
           Start tracking for free
           <ArrowRight className="size-4" aria-hidden="true" />

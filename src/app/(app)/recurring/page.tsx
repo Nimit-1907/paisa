@@ -27,7 +27,7 @@ export default async function RecurringPage() {
     <PageShell>
       <PageHeader
         title="Recurring"
-        description="Rent, salary, subscriptions: anything that repeats."
+        description="Bills and income that repeat"
       />
 
       <RecurringScreen

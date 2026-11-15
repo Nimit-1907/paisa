@@ -766,7 +766,6 @@ export function RecordSheet({
                 type="button"
                 variant="outline"
                 size="icon-touch"
-                className="rounded-full"
                 aria-label="Swap the two accounts"
                 disabled={!accountId || !toAccountId}
                 onClick={() => {

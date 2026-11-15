@@ -184,7 +184,6 @@ export default async function RecordsPage({
         }}
         monthDays={monthDays}
         previousExpense={previousSummary.expense.toString()}
-        displayName={profile?.display_name ?? ""}
         insight={insight}
         monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}

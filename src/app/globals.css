@@ -454,26 +454,21 @@
  * 6.5px, which is not a glyph, it is a smudge. Body amounts step down
  * gently and the hero opts into the bigger reduction.
  */
+/*
+ * The currency symbol, one rule everywhere.
+ *
+ * It used to be grey and a size down, and half-size on hero figures. Grey
+ * meant a green income or a red expense carried a grey ₹ in front of it,
+ * and the half-size hero symbol sat on the baseline like a footnote to the
+ * first digit. Now it takes the figure's own colour and weight at 0.8 of
+ * its size, so its top lines up with the digits and every amount in the
+ * app, from a list row to a hero, is set the same way.
+ */
 @utility amount-unit {
-  font-size: 0.82em;
-  font-weight: 600;
-  color: var(--text-secondary);
-  /*
-   * A hair of air before the digits. Set solid, the symbol's own side
-   * bearing is all that separates two different sizes of type, and at hero
-   * scale — where the symbol is half the height of the figure — the ₹ reads
-   * as a mark on the first digit rather than as a word before it.
-   */
-  margin-inline-end: 0.12em;
-}
-
-@utility amount-hero {
-  & .amount-unit {
-    font-size: 0.5em;
-    font-weight: 700;
-    /* 0.12em of a half-size symbol is half the gap; keep it even. */
-    margin-inline-end: 0.24em;
-  }
+  font-size: 0.8em;
+  font-weight: inherit;
+  color: inherit;
+  margin-inline-end: 0.08em;
 }
 
 /* The paise, one step down from the digits but not from the unit. */

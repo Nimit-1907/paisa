@@ -113,7 +113,6 @@ export function AnalysisScreen({
 
       {nothing ? (
         <EmptyState
-          art="analysis"
           icon={ChartPie}
           title="Nothing in this period"
           description="The charts fill in from the same rows Records lists, so they need a record or two first."

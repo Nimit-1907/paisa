@@ -41,7 +41,7 @@ export default async function CategoriesPage() {
     <PageShell>
       <PageHeader
         title="Categories"
-        description="Group your spending the way you think about it"
+        description="How spending is grouped"
       />
       <CategoriesScreen categories={view} />
     </PageShell>

@@ -19,6 +19,7 @@ const HapticsContext = React.createContext(true);
 
 /** Whether lists should draw ".00". Off by default; see the migration. */
 const ShowPaiseContext = React.createContext(false);
+const DisplayNameContext = React.createContext("");
 
 /**
  * Carries the signed-in user's currency down to Client Components.
@@ -33,22 +34,32 @@ export function ProfileProvider({
   currency,
   haptics,
   showPaise,
+  displayName,
   children,
 }: {
   currency: CurrencySettings;
   haptics: boolean;
   showPaise: boolean;
+  /** For the header's profile avatar, which is on every screen. */
+  displayName: string;
   children: React.ReactNode;
 }) {
   return (
     <CurrencyContext.Provider value={currency}>
       <HapticsContext.Provider value={haptics}>
         <ShowPaiseContext.Provider value={showPaise}>
-          {children}
+          <DisplayNameContext.Provider value={displayName}>
+            {children}
+          </DisplayNameContext.Provider>
         </ShowPaiseContext.Provider>
       </HapticsContext.Provider>
     </CurrencyContext.Provider>
   );
+}
+
+/** The signed-in user's display name, or "" if they have not set one. */
+export function useDisplayName(): string {
+  return React.useContext(DisplayNameContext);
 }
 
 /**

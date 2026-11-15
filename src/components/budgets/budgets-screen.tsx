@@ -133,7 +133,6 @@ export function BudgetsScreen({
     return (
       <div className="space-y-4">
         <EmptyState
-          art="budgets"
           icon={Target}
           title="No budgets this month"
           description="Set a monthly limit per category and watch what is left, day by day."

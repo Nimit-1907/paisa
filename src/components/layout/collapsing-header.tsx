@@ -22,18 +22,18 @@ import { PageHeader } from "@/components/layout/page-header";
  */
 export function CollapsingHeader({
   title,
-  greeting,
   description,
   actions,
+  onSearch,
   monthNav,
   back,
   compact,
   children,
 }: {
   title: string;
-  greeting?: string;
-  description?: string;
+  description: string;
   actions?: React.ReactNode;
+  onSearch?: () => void;
   monthNav?: React.ComponentProps<typeof PageHeader>["monthNav"];
   back?: { href: string; label: string };
   /** The one-line version, shown once the hero is gone. */
@@ -68,9 +68,9 @@ export function CollapsingHeader({
     <>
       <PageHeader
         title={title}
-        greeting={greeting}
         description={description}
         actions={actions}
+        onSearch={onSearch}
         monthNav={monthNav}
         back={back}
         compact={compact}

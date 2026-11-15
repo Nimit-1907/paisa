@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Plus,
   Receipt,
-  Search,
   SlidersHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,7 +25,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { useCurrency } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
 import { CollapsingHeader } from "@/components/layout/collapsing-header";
-import { HeaderAvatar } from "@/components/layout/page-header";
 import { InsightStrip } from "@/components/shared/insight-strip";
 import { ListCard } from "@/components/shared/surface";
 import { MonthRecap } from "@/components/records/month-recap";
@@ -79,8 +77,6 @@ export type RecordsScreenProps = {
   monthDays: DaySpend[];
   /** Last month's expense total, minor units as text, for the trend pill. */
   previousExpense: string;
-  /** The signed-in person's name, for the greeting and the avatar. */
-  displayName: string;
   /** One plain sentence about the month, or null. */
   insight: string | null;
   /** `yyyy-mm`, for the link behind each bar. */
@@ -122,7 +118,6 @@ export function RecordsScreen({
   summary,
   monthDays,
   previousExpense,
-  displayName,
   insight,
   monthKey,
   accounts,
@@ -516,28 +511,6 @@ export function RecordsScreen({
    * disagree with the bars above it — and on a past month `today` is not in
    * it, which is exactly when the per-day line should not appear.
    */
-  /*
-   * "Good evening, Aarav".
-   *
-   * Computed on the client from the device clock rather than passed down
-   * from the server: a page rendered at 5pm and read at 9pm would otherwise
-   * greet somebody with the wrong part of their day, and this is the one
-   * string on the screen where that is obvious.
-   */
-  const [greeting, setGreeting] = React.useState("Welcome back");
-
-  React.useEffect(() => {
-    const hour = new Date().getHours();
-    const part =
-      hour < 12
-        ? "Good morning"
-        : hour < 17
-          ? "Good afternoon"
-          : "Good evening";
-    const name = displayName.split(/\s+/)[0];
-    setGreeting(name ? `${part}, ${name}` : part);
-  }, [displayName]);
-
   /** "Oct" — the month the trend pill compares against. */
   const previousLabel = React.useMemo(
     () =>
@@ -669,22 +642,10 @@ export function RecordsScreen({
     <PullToRefresh onRefresh={refresh}>
       <CollapsingHeader
         title="Records"
-        greeting={greeting}
+        description="Income, expenses, transfers"
         monthNav={monthNav}
         compact={<MonthStrip summary={summary} />}
-        actions={
-          <>
-            <Button
-              variant="ghost"
-              size="icon-touch"
-              aria-label="Search records"
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search className="size-5" aria-hidden="true" />
-            </Button>
-            <HeaderAvatar name={displayName} />
-          </>
-        }
+        onSearch={() => setSearchOpen(true)}
       >
         <div className="space-y-4">
           {recap && recapMonthLabel ? (
@@ -738,7 +699,6 @@ export function RecordsScreen({
 
         {visible.length === 0 ? (
           <EmptyState
-            art="records"
             icon={Receipt}
             title={
               activeFilterCount > 0

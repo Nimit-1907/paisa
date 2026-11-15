@@ -4,7 +4,7 @@ import { AnalysisScreen } from "@/components/analysis/analysis-screen";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
-import { parsePeriod, periodLabel } from "@/lib/period";
+import { parsePeriod } from "@/lib/period";
 import { getProfile } from "@/lib/profile";
 import { getAnalysis, getBalanceAccounts } from "@/lib/queries/analysis";
 import { isUuid } from "@/lib/queries/recurring";
@@ -43,7 +43,7 @@ export default async function AnalysisPage({
 
   return (
     <PageShell width="wide">
-      <PageHeader title="Analysis" description={periodLabel(period)} />
+      <PageHeader title="Analysis" description="Where your money goes" />
 
       <AnalysisScreen
         period={period}

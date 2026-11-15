@@ -25,7 +25,7 @@ export default async function SettingsPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Settings" description={user.email ?? undefined} />
+      <PageHeader title="Settings" description="Profile and preferences" />
 
       <SettingsScreen
         profile={{

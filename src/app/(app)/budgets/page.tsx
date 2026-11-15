@@ -62,7 +62,11 @@ export default async function BudgetsPage({
 
   return (
     <PageShell width="wide">
-      <PageHeader title="Budgets" monthNav={month} />
+      <PageHeader
+        title="Budgets"
+        description="Monthly spending limits"
+        monthNav={month}
+      />
 
       <BudgetsScreen
         month={key}

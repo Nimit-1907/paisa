@@ -133,7 +133,6 @@ export function PeriodSelector({
         <Button
           variant="ghost"
           size="icon-touch"
-          className="rounded-full"
           aria-label="Previous period"
           onClick={() => step(-1)}
         >
@@ -151,7 +150,6 @@ export function PeriodSelector({
         <Button
           variant="ghost"
           size="icon-touch"
-          className="rounded-full"
           aria-label="Next period"
           disabled={atLatest}
           onClick={() => step(1)}

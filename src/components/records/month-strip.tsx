@@ -50,7 +50,7 @@ export function MonthStrip({
       <p className="text-text-secondary shrink-0 text-xs">
         {net < 0n ? "Over by" : "Left"}
       </p>
-      <p className="font-display amount-hero text-xl leading-none">
+      <p className="font-display text-xl leading-none">
         <Amount value={net < 0n ? -net : net} whole compact={compact} />
       </p>
 

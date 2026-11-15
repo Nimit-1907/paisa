@@ -158,7 +158,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
 
       {active.length === 0 ? (
         <EmptyState
-          art="accounts"
           icon={Wallet}
           title="No accounts yet"
           description="Add Cash, a bank account or a UPI wallet, then every record can move money between them."

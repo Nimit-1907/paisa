@@ -107,7 +107,7 @@ export function MonthRecap({
         {monthLabel} in summary
       </h2>
 
-      <p className="font-display amount-hero mt-0.5 truncate pr-10 text-[42px] leading-[1.05] tracking-[-0.03em]">
+      <p className="font-display mt-0.5 truncate pr-10 text-[42px] leading-[1.05] tracking-[-0.03em]">
         {spent}
       </p>
 

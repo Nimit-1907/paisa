@@ -54,7 +54,7 @@ export default async function MorePage() {
 
   return (
     <PageShell>
-      <PageHeader title="More" />
+      <PageHeader title="More" description="Tools and settings" />
 
       {/* The one bold card: who is signed in. Everything below it is a
           place to go, and a list of destinations has no hero in it. */}

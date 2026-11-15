@@ -144,7 +144,7 @@ export function AmountDisplay({
       <p
         aria-hidden="true"
         className={cn(
-          "font-display amount-hero text-text truncate text-[48px] leading-none tracking-[-0.03em] tabular-nums",
+          "font-display text-text truncate text-[48px] leading-none tracking-[-0.03em] tabular-nums",
           // A caret, because this is a text field with no box around it
           // and nothing else would say so. Steady rather than blinking: a
           // blink is an animation, and this one would run for as long as

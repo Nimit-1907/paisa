@@ -240,7 +240,6 @@ export function SearchOverlay({
           <Button
             variant="ghost"
             size="icon-touch"
-            className="rounded-full"
             aria-label="Close search"
             onClick={onClose}
           >
@@ -284,7 +283,6 @@ export function SearchOverlay({
             <Button
               variant="ghost"
               size="icon-touch"
-              className="rounded-full"
               aria-label="Clear"
               onClick={clear}
             >
@@ -343,6 +341,7 @@ export function SearchOverlay({
               <SearchResults
                 results={results}
                 timeZone={timeZone}
+                onClear={clear}
                 onOpen={(record) => {
                   // The sheet is the one place a record can be read,
                   // changed and deleted; sending a search result anywhere
@@ -441,10 +440,12 @@ function SearchResults({
   results,
   timeZone,
   onOpen,
+  onClear,
 }: {
   results: Results;
   timeZone: string;
   onOpen: (record: TransactionRow) => void;
+  onClear: () => void;
 }) {
   const months = React.useMemo(
     () => groupByMonth(results.rows, timeZone),
@@ -457,6 +458,11 @@ function SearchResults({
         icon={Search}
         title="Nothing matches that"
         description={`No record's note contains “${results.term}”. Try a shorter word, or part of one.`}
+        action={
+          <Button variant="outline" size="touch" onClick={onClear}>
+            Clear search
+          </Button>
+        }
       />
     );
   }

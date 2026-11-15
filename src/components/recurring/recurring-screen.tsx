@@ -77,7 +77,6 @@ export function RecurringScreen({
   if (rules.length === 0) {
     return (
       <EmptyState
-        art="recurring"
         icon={Repeat}
         title="No recurring records"
         description="Rent, salary, a subscription: add the record once with Repeat set, and it will show up here creating itself every month."
@@ -307,7 +306,7 @@ function RuleItem({
           <Button
             variant="ghost"
             size="icon-touch"
-            className="my-auto shrink-0 rounded-full"
+            className="my-auto shrink-0"
             aria-label={`Actions for ${title}`}
             disabled={pending}
           >

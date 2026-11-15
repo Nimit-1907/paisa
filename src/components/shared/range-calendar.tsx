@@ -130,7 +130,6 @@ export function RangeCalendar({
           type="button"
           variant="ghost"
           size="icon-touch"
-          className="rounded-full"
           aria-label="Previous month"
           onClick={() => setMonth(shiftMonth(month, -1))}
         >
@@ -145,7 +144,6 @@ export function RangeCalendar({
           type="button"
           variant="ghost"
           size="icon-touch"
-          className="rounded-full"
           aria-label="Next month"
           disabled={month >= monthStart(max)}
           onClick={() => setMonth(shiftMonth(month, 1))}

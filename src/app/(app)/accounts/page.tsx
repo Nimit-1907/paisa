@@ -32,7 +32,7 @@ export default async function AccountsPage() {
     <PageShell width="wide">
       <PageHeader
         title="Accounts"
-        description="Cash, bank and wallet balances"
+        description="Your balances"
         actions={
           <TransferButton
             accountCount={view.filter((account) => !account.archived).length}

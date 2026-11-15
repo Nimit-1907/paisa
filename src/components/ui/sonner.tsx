@@ -60,7 +60,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           // it is an ink pill rather than a link — the same shape as the
           // primary button everywhere else.
           actionButton:
-            "bg-ink! text-on-ink! rounded-full! h-8! px-3! text-xs! font-semibold!",
+            "bg-ink! text-on-ink! rounded-control! h-8! px-3! text-xs! font-semibold!",
           cancelButton:
             "bg-surface-muted! text-text! rounded-full! h-8! px-3! text-xs! font-semibold!",
         },

@@ -1,7 +1,12 @@
 import Link from "next/link";
 
-import { ChevronLeft, User } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
+import {
+  HeaderLogo,
+  HeaderProfile,
+  HeaderSearch,
+} from "@/components/layout/header-chrome";
 import { MonthSwipe } from "@/components/layout/month-swipe";
 import { MonthSwitcher } from "@/components/layout/month-switcher";
 import { OfflinePill } from "@/components/shared/offline-pill";
@@ -9,12 +14,16 @@ import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
   title: string;
-  /** The line above the title. Records only — "Good evening, Aarav". */
-  greeting?: string;
-  /** Short line under the title, for sub-pages with no month switcher. */
-  description?: string;
-  /** Ghost icon buttons and the avatar, on the right of the title row. */
+  /** The line under the title. Every screen has one. */
+  description: string;
+  /**
+   * Anything that belongs to this screen alone, placed before search and
+   * the profile. Keep it to one control: on a 360px phone the title needs
+   * the rest of the row.
+   */
   actions?: React.ReactNode;
+  /** Search in place (Records). Without it, search links to Records. */
+  onSearch?: () => void;
   /** Show the month stepper (Records, Analysis, Budgets). */
   monthNav?: {
     year: number;
@@ -31,22 +40,23 @@ type PageHeaderProps = {
 };
 
 /**
- * The top of every screen.
+ * The top of every screen, the same on all of them.
  *
- * Phase 14 drops the frosted glass: the header is the page background with
- * a hairline underneath, and the hairline only appears once something has
- * scrolled under it. Glass was doing two jobs at once — separating the
- * header and suggesting depth — and in a flat language the second one is
- * noise. A line is enough, and it costs no `backdrop-filter`.
+ * Left to right: the mark (or a back link on a detail screen), the title
+ * with its subtitle beneath, then this screen's own action if it has one,
+ * search, and the profile. Every screen used to assemble its own: Records
+ * had a greeting, search and an avatar; Analysis had neither; Budgets had
+ * no subtitle; detail screens had a back link and nothing else. The parts
+ * now come from here, so a screen supplies its words and nothing more.
  *
- * The title is Bricolage 800 at 28px, which with the hero number is the
- * only place that face appears.
+ * Phase 14 dropped the frosted glass: the header is the page background
+ * with a hairline underneath once something has scrolled under it.
  */
 export function PageHeader({
   title,
-  greeting,
   description,
   actions,
+  onSearch,
   monthNav,
   back,
   compact,
@@ -55,8 +65,10 @@ export function PageHeader({
 }: PageHeaderProps) {
   const inner = (
     <div className="pt-safe">
-      <div className="flex min-h-14 items-start justify-between gap-2 py-2">
-        <div className="flex min-w-0 items-center gap-1">
+      <div className="flex min-h-16 items-center justify-between gap-2 py-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {/* A detail screen needs its way back more than it needs the
+              mark, and both do not fit beside a title at 360px. */}
           {back ? (
             <Link
               href={back.href}
@@ -65,28 +77,30 @@ export function PageHeader({
             >
               <ChevronLeft className="size-5" aria-hidden="true" />
             </Link>
-          ) : null}
+          ) : (
+            <HeaderLogo />
+          )}
 
           <div className="min-w-0">
-            {greeting && !back ? (
-              <p className="text-text-secondary truncate text-xs">{greeting}</p>
-            ) : null}
-            <h1 className="font-display truncate text-[28px] leading-tight tracking-[-0.03em]">
+            <h1 className="font-display truncate text-2xl leading-tight tracking-[-0.03em] sm:text-[28px]">
               {title}
             </h1>
+            <p className="text-text-secondary truncate text-xs sm:text-sm">
+              {description}
+            </p>
           </div>
 
           <OfflinePill className="ml-1" />
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 pt-1">{actions}</div>
+        <div className="flex shrink-0 items-center gap-1">
+          {actions}
+          <HeaderSearch onSearch={onSearch} />
+          <HeaderProfile />
+        </div>
       </div>
 
       {monthNav ? <MonthSwitcher {...monthNav} /> : null}
-
-      {description && !monthNav ? (
-        <p className="text-text-secondary -mt-1 pb-3 text-sm">{description}</p>
-      ) : null}
 
       {compact ? (
         <div
@@ -118,46 +132,5 @@ export function PageHeader({
       {/* A month-scoped header is swipeable; the rest have nothing to step. */}
       {monthNav ? <MonthSwipe {...monthNav}>{inner}</MonthSwipe> : inner}
     </header>
-  );
-}
-
-/**
- * The avatar that opens More.
- *
- * Lilac tint with a 1.5px ink border — one of the few places outside a hero
- * that carries an ink edge, because it is the only control in the header
- * that is a destination rather than an action.
- */
-export function HeaderAvatar({ name }: { name: string }) {
-  // Two letters at most. Somebody who has not set a name gets the icon
-  // rather than a word — "You" is three characters in a 36px circle at
-  // 12px, which clips, and initials are not what it would be saying.
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-
-  return (
-    <Link
-      href="/more"
-      // The initials are in the name as well as on the circle. They are
-      // marked decorative, but WCAG 2.5.3 is about what is *drawn*: a label
-      // that does not contain the visible text is one somebody using voice
-      // control cannot say out loud.
-      aria-label={
-        initials
-          ? `${initials}. Your profile and settings`
-          : "Your profile and settings"
-      }
-      className="bg-tint-lilac text-text border-ink pressable flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] text-xs font-bold"
-    >
-      {initials ? (
-        <span aria-hidden="true">{initials}</span>
-      ) : (
-        <User className="size-4" aria-hidden="true" />
-      )}
-    </Link>
   );
 }

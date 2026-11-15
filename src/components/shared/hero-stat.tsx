@@ -71,9 +71,7 @@ export function HeroStat({
           {trend}
         </div>
 
-        {/* `amount-hero` drops the ₹ to half-size; at body sizes the same
-            ratio would make it a smudge. See globals.css. */}
-        <p className="font-display amount-hero mt-0.5 text-[42px] leading-[1.05] tracking-[-0.03em]">
+        <p className="font-display mt-0.5 text-[42px] leading-[1.05] tracking-[-0.03em]">
           {value}
         </p>
 

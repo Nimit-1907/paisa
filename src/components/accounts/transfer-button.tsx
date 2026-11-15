@@ -21,14 +21,18 @@ export function TransferButton({ accountCount }: { accountCount: number }) {
   if (accountCount < 2) return null;
 
   return (
+    // An icon on a phone, where the header row also carries the title,
+    // search and the profile; the word comes back once there is room. The
+    // accessible name is the same either way.
     <Button
-      variant="outline"
+      variant="ghost"
       size="touch"
-      className="px-3"
+      className="w-11 px-0 sm:w-auto sm:px-3"
+      aria-label="Transfer"
       onClick={() => sheet.openAdd("transfer")}
     >
-      <ArrowLeftRight className="size-4" aria-hidden="true" />
-      Transfer
+      <ArrowLeftRight className="size-5 sm:size-4" aria-hidden="true" />
+      <span className="hidden sm:inline">Transfer</span>
     </Button>
   );
 }

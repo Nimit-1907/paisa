@@ -22,15 +22,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         /*
-         * The primary action: an ink pill that names its result.
+         * The primary action: an ink fill that names its result.
          *
-         * Full-radius rather than the 12px everything else uses. On a screen
-         * of squared-off hairline cards the one pill is unmistakably the
-         * thing to press, which is worth more than consistency of radius.
+         * Same shape as every other button. It used to be a full pill, on
+         * the theory that one round thing among square ones is
+         * unmistakable; in practice a pill beside a squared Cancel read as
+         * two different kinds of control rather than a pair. Ink against a
+         * surface is emphasis enough, and the shape now says only "button".
          */
-        default: "bg-ink text-on-ink rounded-full",
+        default: "bg-ink text-on-ink rounded-control hoverable:opacity-90",
         /** The bold variant of primary, for a dock or a tile. */
-        accent: "bg-accent text-text accent-sm rounded-[15px]",
+        accent: "bg-accent text-text accent-sm rounded-control",
         secondary:
           "bg-surface text-text rounded-control border hoverable:bg-surface-muted",
         outline:
@@ -45,16 +47,16 @@ const buttonVariants = cva(
          */
         destructive:
           "bg-surface text-expense rounded-control border hoverable:bg-tint-rose",
-        link: "text-text underline underline-offset-4",
+        link: "text-text rounded-control underline underline-offset-4",
       },
       size: {
         default: "h-9 gap-1.5 px-3",
-        xs: "h-6 gap-1 rounded-[9px] px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-8 gap-1 rounded-[9px] px-2.5 text-[13px] [&_svg:not([class*='size-'])]:size-3.5",
+        xs: "h-6 gap-1 px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-8 gap-1 px-2.5 text-[13px] [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-10 gap-2 px-4",
         icon: "size-9",
-        "icon-xs": "size-6 rounded-[9px] [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-8 rounded-[9px]",
+        "icon-xs": "size-6 [&_svg:not([class*='size-'])]:size-3",
+        "icon-sm": "size-8",
         "icon-lg": "size-10",
         /*
          * Paisa: mobile tap targets must be >= 44x44px (CLAUDE.md), which
