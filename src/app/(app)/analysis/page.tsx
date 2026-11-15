@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AnalysisScreen } from "@/components/analysis/analysis-screen";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { parsePeriod, periodLabel } from "@/lib/period";
 import { getProfile } from "@/lib/profile";
@@ -41,7 +42,7 @@ export default async function AnalysisPage({
   ]);
 
   return (
-    <>
+    <PageShell width="wide">
       <PageHeader title="Analysis" description={periodLabel(period)} />
 
       <AnalysisScreen
@@ -53,6 +54,6 @@ export default async function AnalysisPage({
         today={today}
         weekStart={weekStart}
       />
-    </>
+    </PageShell>
   );
 }

@@ -1,3 +1,4 @@
+import { PageShell } from "@/components/layout/page-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -11,7 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export default function AppLoading() {
   return (
-    <div className="space-y-4 pt-4" aria-hidden="true">
+    <PageShell>
+      <div className="space-y-4 pt-4" aria-hidden="true">
       <div className="flex items-center justify-between gap-2">
         <Skeleton className="h-8 w-32" />
         <Skeleton className="h-11 w-36 rounded-lg" />
@@ -47,5 +49,6 @@ export default function AppLoading() {
         </div>
       ))}
     </div>
+    </PageShell>
   );
 }

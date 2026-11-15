@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { PageShell } from "@/components/layout/page-shell";
 import { RecordsScreen } from "@/components/records/records-screen";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { getMonthContext, parseFilters } from "@/lib/month-param";
@@ -144,7 +145,8 @@ export default async function RecordsPage({
   // rather than here: the header collapses the card into a one-line summary
   // once it scrolls away, which means it has to know where the card ends.
   return (
-    <RecordsScreen
+    <PageShell>
+      <RecordsScreen
         year={month.year}
         month={month.month}
         timeZone={timeZone}
@@ -167,5 +169,6 @@ export default async function RecordsPage({
         recap={recap}
         recapMonthLabel={recap ? monthName(previousStart) : null}
       />
+    </PageShell>
   );
 }

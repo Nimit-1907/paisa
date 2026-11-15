@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Database, Lock, Smartphone } from "lucide-react";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { InstallButton } from "@/components/pwa/install-button";
 
 export const metadata: Metadata = { title: "About" };
@@ -29,7 +30,7 @@ const POINTS = [
 
 export default function AboutPage() {
   return (
-    <>
+    <PageShell>
       <PageHeader title="About" description="Paisa — expense tracker" />
 
       <div className="space-y-4">
@@ -76,6 +77,6 @@ export default function AboutPage() {
 
         <InstallButton />
       </div>
-    </>
+    </PageShell>
   );
 }

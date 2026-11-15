@@ -7,6 +7,7 @@ import { ArrowLeft, CalendarClock, History, Repeat } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { RuleActions } from "@/components/recurring/rule-actions";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";
 import { formatWith } from "@/lib/money";
@@ -79,7 +80,7 @@ export default async function RecurringRulePage({
   });
 
   return (
-    <>
+    <PageShell>
       <PageHeader
         title={title}
         description={`${describeSchedule(scheduleOf(rule))}${
@@ -235,7 +236,7 @@ export default async function RecurringRulePage({
           ))}
         </ul>
       )}
-    </>
+    </PageShell>
   );
 }
 

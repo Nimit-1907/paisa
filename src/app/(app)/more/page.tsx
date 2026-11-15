@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { InstallButton } from "@/components/pwa/install-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MORE_ITEMS } from "@/lib/nav";
@@ -17,7 +18,7 @@ export default async function MorePage() {
   const [profile, user] = await Promise.all([getProfile(), getSessionUser()]);
 
   return (
-    <>
+    <PageShell>
       <PageHeader title="More" />
 
       <div className="bg-card mb-4 flex items-center gap-3 rounded-xl border px-4 py-3">
@@ -78,6 +79,6 @@ export default async function MorePage() {
         <InstallButton />
         <SignOutButton className="w-full" />
       </div>
-    </>
+    </PageShell>
   );
 }

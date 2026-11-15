@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { RecurringScreen } from "@/components/recurring/recurring-screen";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
@@ -23,7 +24,7 @@ export default async function RecurringPage() {
   ]);
 
   return (
-    <>
+    <PageShell>
       <PageHeader
         title="Recurring"
         description="Rent, salary, subscriptions — anything that repeats."
@@ -35,6 +36,6 @@ export default async function RecurringPage() {
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
       />
-    </>
+    </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportScreen } from "@/components/settings/export-screen";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { periodContaining } from "@/lib/period";
@@ -40,7 +41,7 @@ export default async function ExportPage() {
   const thisMonth = periodContaining("month", today);
 
   return (
-    <>
+    <PageShell>
       <PageHeader
         title="Export"
         description="Take your records with you — nothing here is locked in."
@@ -52,6 +53,6 @@ export default async function ExportPage() {
         defaultMonth={today.slice(0, 7)}
         monthOptions={recentMonths(today)}
       />
-    </>
+    </PageShell>
   );
 }

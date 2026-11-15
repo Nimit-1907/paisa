@@ -84,10 +84,12 @@ export default async function AppLayout({
           <SidebarNav />
 
           <div className="lg:pl-64">
-            <main
-              id="main"
-              className="pb-nav mx-auto w-full max-w-3xl px-4 lg:px-6 lg:pb-16"
-            >
+            {/*
+              No width or gutter here any more: each page says how wide it
+              should be through `PageShell`, because a screen you read down
+              and a screen you scan across want different answers.
+            */}
+            <main id="main" className="pb-nav w-full lg:pb-16">
               {children}
             </main>
           </div>

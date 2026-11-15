@@ -8,6 +8,7 @@ import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Receipt } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { currentMonthRange } from "@/lib/dates";
 import { formatWith } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
@@ -67,7 +68,7 @@ export default async function AccountDetailPage({
   });
 
   return (
-    <>
+    <PageShell>
       <PageHeader
         title={account.name}
         description={`${ACCOUNT_TYPE_LABELS[account.type]}${
@@ -188,6 +189,6 @@ export default async function AccountDetailPage({
           ))}
         </ul>
       )}
-    </>
+    </PageShell>
   );
 }

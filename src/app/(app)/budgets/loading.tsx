@@ -1,9 +1,11 @@
+import { PageShell } from "@/components/layout/page-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** The Budgets layout: ring and figures, then one row per budget. */
 export default function BudgetsLoading() {
   return (
-    <div className="space-y-6 pt-4" aria-hidden="true">
+    <PageShell width="wide">
+      <div className="space-y-6 pt-4" aria-hidden="true">
       <div className="flex items-center justify-between gap-2">
         <Skeleton className="h-8 w-28" />
         <Skeleton className="h-11 w-36 rounded-lg" />
@@ -40,5 +42,6 @@ export default function BudgetsLoading() {
         </div>
       </div>
     </div>
+    </PageShell>
   );
 }

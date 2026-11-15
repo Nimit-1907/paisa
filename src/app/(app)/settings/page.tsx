@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { HapticsCard } from "@/components/settings/haptics-card";
 import { SettingsScreen } from "@/components/settings/settings-screen";
 import { getProfile, getSessionUser } from "@/lib/profile";
@@ -23,7 +24,7 @@ export default async function SettingsPage() {
       : "system";
 
   return (
-    <>
+    <PageShell>
       <PageHeader title="Settings" description={user.email ?? undefined} />
 
       <SettingsScreen
@@ -42,6 +43,6 @@ export default async function SettingsPage() {
       </div>
 
       <SignOutButton className="mt-4 w-full" />
-    </>
+    </PageShell>
   );
 }

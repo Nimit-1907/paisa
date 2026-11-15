@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AccountsScreen } from "@/components/accounts/accounts-screen";
 import type { AccountView } from "@/components/accounts/types";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { getAccountsOverview } from "@/lib/queries/accounts";
 
 export const metadata: Metadata = { title: "Accounts" };
@@ -26,12 +27,12 @@ export default async function AccountsPage() {
   }));
 
   return (
-    <>
+    <PageShell width="wide">
       <PageHeader
         title="Accounts"
         description="Cash, bank and wallet balances"
       />
       <AccountsScreen accounts={view} />
-    </>
+    </PageShell>
   );
 }

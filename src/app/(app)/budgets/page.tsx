@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { PageShell } from "@/components/layout/page-shell";
 import { BudgetsScreen } from "@/components/budgets/budgets-screen";
 import { getMonthContext } from "@/lib/month-param";
 import {
@@ -60,7 +61,7 @@ export default async function BudgetsPage({
   const previous = new Date(Date.UTC(month.year, month.month - 2, 1));
 
   return (
-    <>
+    <PageShell width="wide">
       <PageHeader title="Budgets" monthNav={month} />
 
       <BudgetsScreen
@@ -72,6 +73,6 @@ export default async function BudgetsPage({
         hints={hints}
         isPastMonth={isPastMonth}
       />
-    </>
+    </PageShell>
   );
 }

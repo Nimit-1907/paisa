@@ -1,9 +1,11 @@
+import { PageShell } from "@/components/layout/page-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /** The Analysis layout: period, kind, the sentence, then the charts. */
 export default function AnalysisLoading() {
   return (
-    <div className="space-y-4 pt-4" aria-hidden="true">
+    <PageShell width="wide">
+      <div className="space-y-4 pt-4" aria-hidden="true">
       <Skeleton className="h-8 w-28" />
       <Skeleton className="h-11 w-full rounded-xl" />
       <Skeleton className="h-11 w-full rounded-xl" />
@@ -22,5 +24,6 @@ export default function AnalysisLoading() {
         </div>
       ))}
     </div>
+    </PageShell>
   );
 }
