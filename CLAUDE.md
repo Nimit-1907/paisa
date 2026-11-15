@@ -16,11 +16,13 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - next-themes (light/dark/system)
 - Typography: two families via next/font, and no more.
   Inter is the body face — every list, form and amount, with tabular figures.
-  Instrument Serif is the anchor, used in exactly three places: the figure on
-  the month card, page titles, and the landing headline. Chosen in Phase 12
-  against Space Grotesk and against no anchor at all; see
-  docs/visual-identity.md. `font-sans` and `font-display` are the only two
-  font utilities any component should use.
+  Instrument Serif is the anchor, and it marks the thing you came for: the
+  hero figure on a screen (one per screen), page titles, and the landing
+  headline. Phase 12 chose it against Space Grotesk and against no anchor at
+  all; Phase 13 widened "the month card's figure" to "the hero figure on any
+  screen", which is the same rule stated better. See docs/visual-identity.md
+  and docs/screens.md. `font-sans` and `font-display` are the only two font
+  utilities any component should use.
 - @serwist/next (PWA service worker), sonner (toasts)
 - @react-pdf/renderer (PDF export)
 
@@ -64,4 +66,24 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   (`ColorDot`). Text uses the three emphasis steps — `text-ink`, `text-ink-2`,
   `text-ink-3` — all of which clear AA in both themes.
 - Radii come from the family: `rounded-card` (20px) for cards,
-  `rounded-control` (12px) for controls, `rounded-full` for chips.
+  `rounded-control` (12px) for controls, `rounded-full` for chips. There is no
+  third size — `rounded-xl` is 16.8px and belongs to neither.
+- Surfaces are three layers: page background, `bg-card`, and `raised` for what
+  floats above both (sheets, menus, the command palette). In dark mode the
+  lift is a lighter surface and a brighter border, because a shadow on a
+  near-black page is invisible.
+- Amounts render through `<Amount>`, never `formatMoney` called inline. It
+  sets the currency symbol and the paise a size down from the digits, honours
+  the user's "Show paise in lists" preference, and always leaves the exact
+  figure in the accessibility tree. `formatMoney` stays correct for strings —
+  toasts, aria-labels, chart tooltips.
+- Screens are built from the shared components, not from fresh markup:
+  `PageHeader`, `PageShell`, `HeroStat`, `SectionHeader`, `ListRow`,
+  `StickyActionBar`, `EmptyState`, `ErrorState`, `ColorDot`. If a screen needs
+  something one of these nearly does, change the shared one.
+- How wide a screen is belongs to the screen: `<PageShell>` is 768px for
+  anything you read down and `width="wide"` (1200px) for the bento grids on
+  Analysis, Budgets and Accounts. The app shell sets no width.
+- Every action on a row is reachable three ways — swipe, long-press or
+  right-click menu, and a visible control. Nothing lives only behind a
+  gesture.

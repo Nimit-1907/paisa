@@ -634,3 +634,114 @@ in Phase 9 and carry the same anatomy; the token sweep brought their surfaces
 and text in line with everything else.
 
 **Screenshots.** `system-390-404`.
+
+---
+
+## 20. Settings (`/settings`)
+
+**Purpose.** Change the few things that change, and get out.
+
+Grouped sections, the live currency preview and the theme choices were built
+in Phase 7. Phase 13 added the preferences that save themselves — see the
+`PreferenceToggle` notes under "Show paise in lists" below — and brought the
+surfaces onto the shared tokens.
+
+**"Show paise in lists."** The setting Part A introduced needed a home. It
+sits beside haptics because they are the same kind of thing: switches you
+judge by the result rather than by reading. A Save button between the switch
+and the effect turns a one-second decision into a three-step errand.
+
+Two consequences of saving instantly, both deliberate:
+
+- **A failed save puts the switch back.** A toggle left where the server
+  refused it is a screen claiming something untrue, which is worse than the
+  failure itself.
+- **It says "Saved".** Without that, an instant-save control is
+  indistinguishable from one that does nothing, and the only way to find out
+  is to leave and come back. Announced politely, so it lands after the switch
+  rather than over it, and it occupies no space when absent — a reserved slot
+  would shift the row on every toggle.
+
+**Measured** end to end: the switch flips, "Saved" appears, and the records
+list behind it goes from ₹2,000 to ₹2,000.00 and back.
+
+---
+
+## Part C — responsive and consistency
+
+### The baselines, and why they used to drift
+
+Two things on Records vary with what has already happened today rather than
+with the design, and both change the page height by hundreds of pixels: the
+**month recap** card, which shows until it is dismissed and whose dismissal is
+remembered on the server, and the **recurring catch-up**, which creates any
+due records on the first page load of a new day.
+
+Whichever suite loads a page first absorbs both — so the snapshots depended on
+the order the suites ran in. Generated on their own after a reset they were
+one height; run after the a11y and journey suites they were another, and a
+full run failed eight tests with a 248px difference that was entirely data.
+
+`settleDemoAccount()` now dismisses the recap and absorbs the catch-up at the
+start of every visual test, which makes the capture independent of what came
+before it. Verified three ways: baselines generated standalone, then a full
+suite run (28 passed), then a second full run with no reset in between
+(28 passed).
+
+### Breakpoints
+
+`e2e/polish.spec.ts` loads every signed-in screen at **320, 360, 390, 430,
+768, 1024, 1280 and 1536** and asserts no horizontal scroll at any of them.
+320 is below anything this app targets, which is exactly why it is worth
+testing — it is WCAG 1.4.10's reflow floor. 768 is tablet portrait, where the
+bottom tab bar is still right, and 1024 is where the sidebar takes over, so
+both sides of that line are covered.
+
+Content widths are chosen per screen by `PageShell` rather than by the app
+shell: `reading` (768px) for Records, forms, settings and detail pages;
+`wide` (1200px) for the bento grids on Analysis, Budgets and Accounts.
+Measured with the sidebar showing: reading screens are 768px at both 1280 and
+1536; the dashboards are 1009px at 1280 and 1200px at 1536.
+
+### The shared components
+
+| Component | Replaces |
+| --- | --- |
+| `PageHeader` | Per-screen headers; now also carries back links, the offline pill and the collapsed hero |
+| `PageShell` | A single width baked into the app shell |
+| `HeroStat` / `HeroLeg` | Four hand-built hero cards (Records, Budgets, Accounts, Recurring) |
+| `SectionHeader` | Seven hand-written uppercase `<h2>`s |
+| `ListRow` | Row anatomy rebuilt per feature; now carries both swipes, the long-press menu and hover actions |
+| `StickyActionBar` | Three copies of the keyboard-inset glass footer |
+| `EmptyState` / `ErrorState` | Ad-hoc empty blocks; error states that did not exist |
+| `Amount` | `formatMoney` called directly in list rows |
+| `ColorDot` (Phase 12) | Six hand-built coloured circles |
+| `skeletons` | Loading shapes written per screen |
+
+### Microcopy
+
+The glossary at the top of this document is the list; every label, button,
+toast, empty state and heading uses it. Sentence case throughout, second
+person, and a verb that names its object — "Save expense · ₹450", "Move
+₹2,000 to HDFC", "Set budget" — never a bare "Save", "Submit" or "OK".
+
+---
+
+## What is not done
+
+Listed here rather than quietly left out.
+
+| Item | Why |
+| --- | --- |
+| **Usability test with three first-time users** (step 25) | I cannot put this app in front of three people on a real phone. It is still owed — and it is the only item here that would have found things nothing else in this phase could. |
+| **Two-pane desktop layout on Records** (step 9) | The detail is a centred dialog on desktop, which shows the same thing. `PageShell` now makes the split possible; the work is the list/detail state and the deep links into it. |
+| **Per-category detail screen** (step 13) | Needs a six-month-per-category trend query that does not exist. The donut legend already links to that category's records. |
+| **Budget detail screen** (step 14) | Day-by-day spend against an ideal pace line. |
+| **Account card grid and 30-day sparkline** (step 15) | The grid would cost drag-to-reorder, which is a working feature; the sparkline needs a per-account daily balance series. |
+| **Live preview tile in the category edit sheet** (step 17) | The icon and colour pickers show their own state already. |
+| **Rule detail timeline** (step 18) | The next five dates and the history list. Pause, Resume, Skip, Edit and Delete all exist. |
+| **Import** (step 21) | Phase 9 built Export; Import was never built, so there is no stepper to style. |
+
+Carried forward from earlier phases and still true: the landing page's LCP is
+2.75s against a 2.5s target, and the app icon does not carry the bar motif
+because it is a PNG and the commit review blocks new binaries.

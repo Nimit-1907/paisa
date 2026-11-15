@@ -16,7 +16,15 @@ import { signIn } from "./sign-in";
  */
 
 /** The widths CLAUDE.md names, plus the two the layout changes at. */
-const WIDTHS = [320, 360, 390, 430, 768, 1280];
+/*
+ * Every width Phase 13 names, plus 320 — the reflow floor WCAG 1.4.10 asks
+ * for, which is narrower than any phone this app targets and is exactly why
+ * it is the one worth testing.
+ *
+ * 768 is tablet portrait, where the bottom tab bar is still correct; 1024 is
+ * where the sidebar takes over, so both sides of that line are covered.
+ */
+const WIDTHS = [320, 360, 390, 430, 768, 1024, 1280, 1536];
 
 const SCREENS = [
   { path: "/records", ready: "Records" },

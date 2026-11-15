@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { signIn } from "./sign-in";
 
@@ -58,6 +58,39 @@ const WIDTHS = [
 /** Long enough for a chart to finish and the catch-up toast to clear. */
 const SETTLE = 1200;
 
+/**
+ * Put the demo account into the state these baselines were taken in.
+ *
+ * Two things on Records vary with what has already happened today rather
+ * than with the design, and both change the page's height by hundreds of
+ * pixels:
+ *
+ *  - the **month recap** card, which shows until it is dismissed and whose
+ *    dismissal is remembered on the server;
+ *  - the **recurring catch-up**, which creates any due records on the first
+ *    page load of a new day.
+ *
+ * Whichever suite loads a page first absorbs both. That made these snapshots
+ * depend on the order the suites ran in: generated on their own straight
+ * after a reset they are one height, and run after the a11y and journey
+ * suites they are another. Doing it here, every time, makes the capture
+ * independent of what came before it.
+ */
+async function settleDemoAccount(page: Page) {
+  await page.goto("/records");
+
+  const dismiss = page.getByRole("button", { name: /dismiss the .* summary/i });
+  if (await dismiss.isVisible().catch(() => false)) {
+    await dismiss.click();
+    await expect(dismiss).toBeHidden();
+  }
+
+  // The catch-up runs server-side during that first render; this is the
+  // round trip that shows its result.
+  await page.reload();
+  await page.waitForTimeout(SETTLE);
+}
+
 /** The same capture settings everywhere, so one screen cannot be laxer. */
 const SHOT = {
   fullPage: true,
@@ -77,6 +110,7 @@ for (const size of WIDTHS) {
         // is the finished one rather than one mid-transition.
         await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
         await signIn(page);
+        await settleDemoAccount(page);
 
         for (const screen of SCREENS) {
           await page.goto(screen.path);
@@ -118,6 +152,7 @@ for (const size of WIDTHS) {
       test(`the states in ${theme} mode`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
         await signIn(page);
+        await settleDemoAccount(page);
 
         // Empty: a search that matches nothing.
         await page.goto("/records?q=zzzznothingmatchesthis");
