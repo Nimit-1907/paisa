@@ -187,3 +187,77 @@ apply.
 **Screenshots.** `login-*`, `signup-*`, `forgot-*` at both widths and themes,
 plus `signup-360-checklist` and `forgot-360-sent` for the two states a static
 visit cannot show.
+
+---
+
+## 8. Onboarding (`/onboarding`)
+
+**Purpose.** Three questions, then the first expense. Nothing is asked twice,
+and nothing is asked that Settings could not change later.
+
+**Layout decisions**
+
+- Three steps — **You → Currency → Account** — with a thin progress bar, step
+  labels, and Back from step two onward. A fourth screen ends it.
+- The currency list already had the five the spec asks for at the top
+  (₹, $, €, £, AED) and a search over code, name and symbol. Rows are 56px.
+- **Continue moved into a sticky bottom bar** (`StickyActionBar`, the one the
+  sheets use). That needed the page to change shape: it was a vertically
+  centred block, and a bar can only stick to the bottom of something that
+  reaches the bottom. The page is now a full-height column with the step
+  centred in the space left over. Measured at 390×844: the bar's bottom edge
+  is at 844.
+- **Auto-focus, with one exception.** Step one focuses the name — the only
+  field on screen. Step three focuses the opening balance, since the account
+  name above it is already filled in. **Step two does not**: it is a list to
+  pick from with a sensible answer already selected, and opening the keyboard
+  would cover the list in order to offer a search nobody asked for.
+- Errors are scoped to the field that caused them. They had all been rendered
+  under the opening balance, which is the wrong place for a message about the
+  second account's name. Scoping them introduced a second problem, which
+  review caught: everything is submitted from the last step, so a complaint
+  about the name or the currency pointed at a field two steps back and was
+  therefore shown nowhere. A field→step map sends the user to the step that
+  owns it. Measured: a 120-character name submitted from step three lands back
+  on step one with "That name is a bit long." under the field.
+
+**The second account**
+
+The spec asks for an "Add bank account" option. It is a disclosure on step
+three rather than a fourth step — most people finish with one account, and a
+step that exists to be skipped makes setup feel longer than it is. Opening it
+focuses the name field, since the panel appeared in answer to a tap.
+
+Two things review caught here, both real, both about writes that have to
+survive being run twice:
+
+1. **The insert was not idempotent**, while the Cash account beside it already
+   had the update-or-insert shape. Setup is not finished until the profile
+   write lands, so anything failing after the account write leaves the user on
+   this screen to try again — and a plain insert hands them a second HDFC each
+   time. It is matched on name now.
+2. **Naming the second account "Cash"** would have found the *first* account
+   and overwritten its opening balance with the bank's, finishing setup with
+   the balance lost and no second account made. The rule lives in
+   `onboardingSchema` as a cross-field refine, so the form and the action
+   cannot disagree about it, with the lookup excluding the first account's id
+   as a second line of defence.
+
+Verified against the database rather than assumed:
+
+| run | what was done | accounts afterwards |
+| --- | --- | --- |
+| first | setup with HDFC at ₹25,000 | `Cash/cash/0/sort 0`, `HDFC/bank/2500000/sort 1` |
+| retry | `display_name` set back to null, same name, ₹31,000 | still two; HDFC now `3100000` — corrected, not duplicated |
+| clash | second account named "Cash" | refused, "Give the second account a different name." under `bankName`, nothing written |
+
+**States.** Loading is the Start-tracking button's own spinner. Empty does not
+apply — every step has a default. Error is inline under the field that caused
+it plus a toast, and a dropped connection is caught explicitly so the button
+cannot sit on "Setting up…" for ever. Offline: the save fails and says so.
+Success is the welcome screen, whose one button is "Add your first expense"
+and which goes through `startTracking()` so the shell is rebuilt and the
+navigation happens in one step. Partial data does not apply.
+
+**Screenshots.** `onboarding-360-step1/2/3`, `onboarding-360-done`,
+`onboarding-360-nameclash`, `signup-360-sent`.

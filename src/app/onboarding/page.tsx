@@ -37,8 +37,12 @@ export default async function OnboardingPage() {
   const suggestedName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ?? "";
 
+  // A full-height column rather than a centred block: the Continue button
+  // lives in a sticky bottom bar, and a bar can only stick to the bottom of
+  // something that reaches it. The step itself is still centred in the space
+  // left over.
   return (
-    <main className="pt-safe flex min-h-dvh flex-col items-center justify-center px-4 py-10">
+    <main className="pt-safe flex min-h-dvh flex-col items-center px-4 pt-10">
       <OnboardingFlow
         initialName={suggestedName}
         initialAccountName={account?.name ?? "Cash"}

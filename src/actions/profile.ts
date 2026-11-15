@@ -14,7 +14,7 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
-import { DEFAULT_COLOR } from "@/lib/colors";
+import { DEFAULT_COLOR, colorForName } from "@/lib/colors";
 import { findCurrency } from "@/lib/currencies";
 import { toDb, tryToMinor } from "@/lib/money";
 import { HOME_PATH, LOGIN_PATH } from "@/lib/routes";
@@ -43,8 +43,14 @@ export async function completeOnboarding(
   const parsed = parseInput(onboardingSchema, input);
   if (!parsed.ok) return parsed;
 
-  const { displayName, currencyCode, accountName, openingBalance } =
-    parsed.data;
+  const {
+    displayName,
+    currencyCode,
+    accountName,
+    openingBalance,
+    bankName,
+    bankBalance,
+  } = parsed.data;
 
   const currency = findCurrency(currencyCode);
   if (!currency) {
@@ -59,6 +65,23 @@ export async function completeOnboarding(
   if (minor === null) {
     return fail("That opening balance is not a number.", "openingBalance");
   }
+
+  // Parsed before anything is written, so a typo in the second box does not
+  // leave the first account updated and setup half done.
+  const bankMinor = bankName
+    ? bankBalance
+      ? tryToMinor(bankBalance, currency.decimals)
+      : 0n
+    : null;
+
+  if (bankName && bankMinor === null) {
+    return fail("That bank balance is not a number.", "bankBalance");
+  }
+
+  // Two accounts sharing one name is refused by `onboardingSchema`, which is
+  // where that rule lives so the form and this action cannot disagree about
+  // it. Without it, the lookup below would find the first account and
+  // overwrite its opening balance with the bank's.
 
   const supabase = await createClient();
 
@@ -105,6 +128,48 @@ export async function completeOnboarding(
       initial_balance: toDb(minor),
       sort_order: 0,
     });
+
+    if (error) return fail(error.message);
+  }
+
+  // The optional second account, after the first one and still before
+  // display_name: the same ordering argument - nothing marks setup finished
+  // until every account write has landed.
+  //
+  // Matched on name first, because this whole action has to survive being
+  // run twice. Setup is not finished until the profile write below lands, so
+  // anything that fails after this point - a dropped connection, a double
+  // tap on Start tracking - leaves the user on this screen to try again. A
+  // plain insert would hand them a second HDFC each time.
+  if (bankName && bankMinor !== null) {
+    let lookup = supabase
+      .from("accounts")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("name", bankName);
+
+    // Belt and braces over the name check above: whatever the names are,
+    // this must never find the account the first step just wrote.
+    if (account) lookup = lookup.neq("id", account.id);
+
+    const { data: existing, error: lookupError } = await lookup.maybeSingle();
+
+    if (lookupError) return fail(lookupError.message);
+
+    const { error } = existing
+      ? await supabase
+          .from("accounts")
+          .update({ initial_balance: toDb(bankMinor) })
+          .eq("id", existing.id)
+      : await supabase.from("accounts").insert({
+          user_id: user.id,
+          name: bankName,
+          type: "bank",
+          icon: "Landmark",
+          color: colorForName(bankName),
+          initial_balance: toDb(bankMinor),
+          sort_order: 1,
+        });
 
     if (error) return fail(error.message);
   }

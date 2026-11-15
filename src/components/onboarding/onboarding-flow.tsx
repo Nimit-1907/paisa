@@ -2,10 +2,19 @@
 
 import * as React from "react";
 
-import { ArrowLeft, Check, Loader2, Search, Wallet } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Landmark,
+  Loader2,
+  Plus,
+  Search,
+  Wallet,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { completeOnboarding, startTracking } from "@/actions/profile";
+import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
@@ -29,6 +38,23 @@ const STEPS = ["You", "Currency", "Account"] as const;
  */
 type Step = 0 | 1 | 2 | 3;
 
+/**
+ * Which step each field belongs to.
+ *
+ * The whole form is submitted from the last step, so the server can reject
+ * something filled in two steps ago — a name past 80 characters, which
+ * nothing checks client-side. Without this the message would be attached to
+ * a field that is not on screen, and so shown nowhere at all.
+ */
+const STEP_OF_FIELD: Record<string, Step> = {
+  displayName: 0,
+  currencyCode: 1,
+  accountName: 2,
+  openingBalance: 2,
+  bankName: 2,
+  bankBalance: 2,
+};
+
 export function OnboardingFlow({
   initialName,
   initialAccountName,
@@ -42,7 +68,12 @@ export function OnboardingFlow({
   const [currency, setCurrency] = React.useState<Currency>(DEFAULT_CURRENCY);
   const [accountName, setAccountName] = React.useState(initialAccountName);
   const [openingBalance, setOpeningBalance] = React.useState("");
+  const [wantsBank, setWantsBank] = React.useState(false);
+  const [bankName, setBankName] = React.useState("");
+  const [bankBalance, setBankBalance] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+  /** Which field the error belongs under, so it is never shown on another. */
+  const [errorField, setErrorField] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
 
   const openingMinor = openingBalance
@@ -52,20 +83,24 @@ export function OnboardingFlow({
   function next() {
     if (step === 0 && displayName.trim().length === 0) {
       setError("Tell us what to call you.");
+      setErrorField("displayName");
       return;
     }
     setError(null);
+    setErrorField(null);
     setStep((current) => Math.min(current + 1, 2) as Step);
   }
 
   function back() {
     setError(null);
+    setErrorField(null);
     setStep((current) => Math.max(current - 1, 0) as Step);
   }
 
   async function finish() {
     if (openingMinor === null) {
       setError("That opening balance is not a number.");
+      setErrorField("openingBalance");
       return;
     }
 
@@ -77,10 +112,20 @@ export function OnboardingFlow({
         currencyCode: currency.code,
         accountName,
         openingBalance,
+        // Only when the panel is open: a name typed and then collapsed is
+        // a change of mind, not an account.
+        bankName: wantsBank ? bankName : undefined,
+        bankBalance: wantsBank ? bankBalance : undefined,
       });
 
       if (!result.ok) {
         setError(result.error);
+        setErrorField(result.field ?? "openingBalance");
+        // Everything is submitted from the last step, so a complaint about
+        // the name or the currency would otherwise point at a field two
+        // steps back and be rendered nowhere at all. Go to the step that
+        // owns it, where the message and the field are together.
+        setStep(STEP_OF_FIELD[result.field ?? ""] ?? 2);
         toast.error(result.error);
         return;
       }
@@ -95,6 +140,7 @@ export function OnboardingFlow({
       console.error("[onboarding]", thrown);
       const message = "Could not save your setup. Check your connection and try again.";
       setError(message);
+      setErrorField("openingBalance");
       toast.error(message);
     } finally {
       setSaving(false);
@@ -102,7 +148,7 @@ export function OnboardingFlow({
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="flex w-full max-w-md flex-1 flex-col">
       <ol
         className={cn("mb-8 flex items-center gap-2", step === 3 && "hidden")}
         aria-label="Setup progress"
@@ -118,7 +164,7 @@ export function OnboardingFlow({
             <span
               className={cn(
                 "mt-2 block text-xs font-semibold",
-                index === step ? "text-foreground" : "text-muted-foreground",
+                index === step ? "text-foreground" : "text-ink-2",
               )}
               aria-current={index === step ? "step" : undefined}
             >
@@ -128,18 +174,23 @@ export function OnboardingFlow({
         ))}
       </ol>
 
+      <div className="flex flex-1 flex-col justify-center pb-6">
       {step === 0 ? (
         <section className="space-y-6">
           <header>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-display text-3xl tracking-tight">
               First, your name
             </h1>
-            <p className="text-muted-foreground mt-1.5 text-sm">
+            <p className="text-ink-2 mt-1.5 text-sm">
               Only used to greet you — nobody else sees it.
             </p>
           </header>
 
-          <FormRow id="displayName" label="Your name" error={error ?? undefined}>
+          <FormRow
+            id="displayName"
+            label="Your name"
+            error={errorField === "displayName" ? (error ?? undefined) : undefined}
+          >
             {(field) => (
               <Input
                 {...field}
@@ -168,23 +219,23 @@ export function OnboardingFlow({
       {step === 2 ? (
         <section className="space-y-6">
           <header>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="font-display text-3xl tracking-tight">
               Your first account
             </h1>
-            <p className="text-muted-foreground mt-1.5 text-sm">
+            <p className="text-ink-2 mt-1.5 text-sm">
               Every record is booked against an account. You can add banks,
               cards and wallets later.
             </p>
           </header>
 
-          <div className="bg-card space-y-4 rounded-2xl border p-4">
+          <div className="bg-card space-y-4 rounded-card border p-4">
             <div className="flex items-center gap-3">
-              <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
+              <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-control">
                 <Wallet className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Created for you at signup</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-ink-2 text-xs">
                   Rename it or set what is in it right now.
                 </p>
               </div>
@@ -204,7 +255,9 @@ export function OnboardingFlow({
             <FormRow
               id="openingBalance"
               label="Opening balance"
-              error={error ?? undefined}
+              error={
+                errorField === "openingBalance" ? (error ?? undefined) : undefined
+              }
               hint={
                 openingMinor !== null
                   ? `Starts at ${formatWith(
@@ -220,7 +273,7 @@ export function OnboardingFlow({
             >
               {(field) => (
                 <div className="relative">
-                  <span className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+                  <span className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
                     {currency.symbol}
                   </span>
                   <Input
@@ -228,6 +281,8 @@ export function OnboardingFlow({
                     value={openingBalance}
                     onChange={(event) => setOpeningBalance(event.target.value)}
                     inputMode="decimal"
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the account name above is already filled in, so this is the one empty field on a step that has just replaced the one before it.
+                    autoFocus
                     placeholder="0"
                     className="amount pl-9"
                   />
@@ -235,22 +290,110 @@ export function OnboardingFlow({
               )}
             </FormRow>
           </div>
+
+          {/*
+            A second account, offered rather than asked for.
+
+            Most people finish setup with one, so this is a disclosure and
+            not a fourth step - a step that exists to be skipped is a step
+            that makes setup feel longer than it is.
+          */}
+          {wantsBank ? (
+            <div className="bg-card rounded-card space-y-4 border p-4">
+              <div className="flex items-center gap-3">
+                <span className="bg-primary/10 text-primary rounded-control flex size-10 items-center justify-center">
+                  <Landmark className="size-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Bank account</p>
+                  <p className="text-ink-2 text-xs">
+                    Transfers between this and your cash are not spending.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setWantsBank(false)}
+                >
+                  Remove
+                </Button>
+              </div>
+
+              <FormRow
+                id="bankName"
+                label="Account name"
+                error={errorField === "bankName" ? (error ?? undefined) : undefined}
+              >
+                {(field) => (
+                  <Input
+                    {...field}
+                    value={bankName}
+                    onChange={(event) => setBankName(event.target.value)}
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the field has just appeared in response to a tap, so focus belongs in it.
+                    autoFocus
+                    placeholder="HDFC"
+                  />
+                )}
+              </FormRow>
+
+              <FormRow
+                id="bankBalance"
+                label="Balance right now"
+                error={
+                  errorField === "bankBalance" ? (error ?? undefined) : undefined
+                }
+              >
+                {(field) => (
+                  <div className="relative">
+                    <span className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+                      {currency.symbol}
+                    </span>
+                    <Input
+                      {...field}
+                      value={bankBalance}
+                      onChange={(event) => setBankBalance(event.target.value)}
+                      inputMode="decimal"
+                      placeholder="0"
+                      className="amount pl-9"
+                    />
+                  </div>
+                )}
+              </FormRow>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="touch"
+              className="w-full"
+              onClick={() => setWantsBank(true)}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Add a bank account
+            </Button>
+          )}
         </section>
       ) : null}
 
       {step === 3 ? (
         <section className="text-center">
-          <span className="bg-income-soft text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl">
+          <span className="bg-income-soft text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-card">
             <Check className="size-7" aria-hidden="true" />
           </span>
 
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="font-display text-3xl tracking-tight">
             You are set up, {displayName.trim()}.
           </h2>
 
-          <p className="text-muted-foreground mt-2 text-sm">
+          <p className="text-ink-2 mt-2 text-sm">
             Tracking in {currency.name} ({currency.symbol}), starting with{" "}
-            {accountName.trim() || "your first account"}.
+            {/* Both accounts named when there are two: a summary that leaves
+                one out invites a second trip to Accounts to check. */}
+            {wantsBank && bankName.trim()
+              ? `${accountName.trim() || "your first account"} and ${bankName.trim()}`
+              : accountName.trim() || "your first account"}
+            .
           </p>
 
           <div className="pb-safe mt-8">
@@ -270,8 +413,10 @@ export function OnboardingFlow({
         </section>
       ) : null}
 
+      </div>
+
       {step === 3 ? null : (
-      <div className="pb-safe mt-8 flex gap-2">
+      <StickyActionBar className="-mx-4 px-4">
         {step > 0 ? (
           <Button
             type="button"
@@ -310,7 +455,7 @@ export function OnboardingFlow({
             )}
           </Button>
         )}
-      </div>
+      </StickyActionBar>
       )}
     </div>
   );
@@ -329,18 +474,26 @@ function CurrencyStep({
   return (
     <section className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-3xl tracking-tight">
           Which currency?
         </h1>
-        <p className="text-muted-foreground mt-1.5 text-sm">
+        <p className="text-ink-2 mt-1.5 text-sm">
           Sets the symbol and the decimal places every amount is shown with.
           Changeable later in Settings.
         </p>
       </header>
 
+      {/*
+        No autofocus here, unlike the other two steps.
+
+        This step is a list to pick from with a sensible answer already
+        selected, and opening the keyboard would cover the list with it -
+        hiding the thing the step is for in order to offer a search nobody
+        asked for yet.
+      */}
       <div className="relative">
         <Search
-          className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+          className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
           aria-hidden="true"
         />
         <Input
@@ -353,7 +506,7 @@ function CurrencyStep({
       </div>
 
       <div
-        className="bg-card divide-border max-h-[45dvh] divide-y overflow-y-auto overscroll-contain rounded-2xl border"
+        className="bg-card divide-border max-h-[45dvh] divide-y overflow-y-auto overscroll-contain rounded-card border"
         role="radiogroup"
         aria-label="Currency"
       >
@@ -372,14 +525,14 @@ function CurrencyStep({
                   active && "bg-primary/5",
                 )}
               >
-                <span className="amount text-muted-foreground w-9 shrink-0 text-base">
+                <span className="amount text-ink-2 w-9 shrink-0 text-base">
                   {currency.symbol}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">
                     {currency.name}
                   </span>
-                  <span className="text-muted-foreground block text-xs">
+                  <span className="text-ink-2 block text-xs">
                     {currency.code} ·{" "}
                     {currency.decimals === 0
                       ? "no decimals"
@@ -394,7 +547,7 @@ function CurrencyStep({
         })}
 
         {results.length === 0 ? (
-          <p className="text-muted-foreground px-4 py-8 text-center text-sm">
+          <p className="text-ink-2 px-4 py-8 text-center text-sm">
             No currency matches “{query}”.
           </p>
         ) : null}

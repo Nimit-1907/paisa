@@ -9,6 +9,7 @@ import {
 import {
   changePasswordSchema,
   deleteAccountSchema,
+  onboardingSchema,
   updateProfileSchema,
 } from "@/lib/schemas/profile";
 import { updateRecurringRuleSchema } from "@/lib/schemas/recurring";
@@ -410,5 +411,73 @@ describe("rangeToInstants", () => {
 
     expect(range?.startsAt).toBe("2026-02-28T00:00:00.000Z");
     expect(range?.endsAt).toBe("2026-03-01T00:00:00.000Z");
+  });
+});
+
+describe("onboardingSchema", () => {
+  const base = {
+    displayName: "Asha",
+    currencyCode: "INR",
+    accountName: "Cash",
+    openingBalance: "0",
+  };
+
+  it("accepts setup without a second account", () => {
+    const parsed = onboardingSchema.safeParse(base);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.bankName).toBeUndefined();
+  });
+
+  it("treats an empty bank name as no second account", () => {
+    const parsed = onboardingSchema.safeParse({ ...base, bankName: "   " });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.bankName).toBeUndefined();
+  });
+
+  it("accepts a second account with its own name", () => {
+    const parsed = onboardingSchema.safeParse({
+      ...base,
+      bankName: "HDFC",
+      bankBalance: "25000",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("refuses a bank balance with no bank name", () => {
+    // An empty name means "no second account", so the balance would
+    // otherwise be dropped on the floor and setup would finish as though
+    // nothing had been asked for.
+    const parsed = onboardingSchema.safeParse({
+      ...base,
+      bankName: "  ",
+      bankBalance: "25000",
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      expect(issue.path).toEqual(["bankName"]);
+      expect(issue.message).toMatch(/name the second account/i);
+    }
+  });
+
+  it("still accepts no second account at all", () => {
+    expect(
+      onboardingSchema.safeParse({ ...base, bankName: "", bankBalance: "" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("refuses two accounts with the same name", () => {
+    // Matching on the name later would find the first account and overwrite
+    // its opening balance with the bank's, losing both.
+    for (const name of ["Cash", "cash", "  CASH  "]) {
+      const parsed = onboardingSchema.safeParse({ ...base, bankName: name });
+      expect(parsed.success, name).toBe(false);
+      if (!parsed.success) {
+        const issue = parsed.error.issues[0];
+        expect(issue.path).toEqual(["bankName"]);
+        expect(issue.message).toMatch(/different name/i);
+      }
+    }
   });
 });
