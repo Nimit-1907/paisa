@@ -19,11 +19,6 @@ const MONTH_LABEL = new Intl.DateTimeFormat("en-IN", {
   year: "numeric",
 });
 
-const SHORT_MONTH = new Intl.DateTimeFormat("en-IN", {
-  timeZone: "UTC",
-  month: "short",
-});
-
 export default async function BudgetsPage({
   searchParams,
 }: {
@@ -49,7 +44,6 @@ export default async function BudgetsPage({
     getBudgetMonth({
       year: month.year,
       month: month.month,
-      timeZone,
       today: localToday(timeZone),
       isCurrentMonth,
     }),
@@ -58,7 +52,6 @@ export default async function BudgetsPage({
   ]);
 
   const key = `${month.year}-${String(month.month).padStart(2, "0")}`;
-  const previous = new Date(Date.UTC(month.year, month.month - 2, 1));
 
   return (
     <PageShell width="wide">
@@ -71,7 +64,6 @@ export default async function BudgetsPage({
       <BudgetsScreen
         month={key}
         monthLabel={MONTH_LABEL.format(new Date(`${key}-01T00:00:00Z`))}
-        previousLabel={SHORT_MONTH.format(previous)}
         data={data}
         categories={categories}
         hints={hints}

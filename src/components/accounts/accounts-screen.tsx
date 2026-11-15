@@ -25,11 +25,7 @@ import { HeroStat } from "@/components/shared/hero-stat";
 import { SectionHeader } from "@/components/shared/section-header";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
-import {
-  ACCOUNT_TYPES,
-  ACCOUNT_TYPE_LABELS,
-  type AccountType,
-} from "@/lib/schemas/accounts";
+import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
 import { Tile } from "@/components/shared/tile";
 
@@ -65,10 +61,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
     .filter((account) => account.includeInTotal)
     .reduce((sum, account) => sum + BigInt(account.balance), 0n);
 
-  const groups = ACCOUNT_TYPES.map((type) => ({
-    type,
-    accounts: active.filter((account) => account.type === type),
-  })).filter((group) => group.accounts.length > 0);
 
   function openAdd() {
     setEditing(undefined);
@@ -80,29 +72,18 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
     setFormOpen(true);
   }
 
-  /** Rebuilds the global order with one group replaced. */
-  async function reorderGroup(type: AccountType, ids: string[]) {
-    const next: string[] = [];
-
-    for (const group of groups) {
-      if (group.type === type) {
-        next.push(...ids);
-      } else {
-        next.push(...group.accounts.map((account) => account.id));
-      }
-    }
-
-    // Archived accounts keep their slots at the end.
-    next.push(...archived.map((account) => account.id));
-
-    const result = await reorderAccounts({ ids: next });
+  /** Saves a new order for the active accounts; archived keep the end. */
+  async function reorder(ids: string[]) {
+    const result = await reorderAccounts({
+      ids: [...ids, ...archived.map((account) => account.id)],
+    });
 
     // Thrown rather than toasted here: SortableList reports it through
     // onReorderError, so both failure paths end in one place.
     if (!result.ok) throw new Error(result.error);
 
-    // Without this the props keep the old order, and a drag in another group
-    // would then send that stale sequence and undo this one.
+    // Without this the props keep the old order, and the next drag would
+    // send that stale sequence and undo this one.
     router.refresh();
   }
 
@@ -170,72 +151,84 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         />
       ) : null}
 
-      {active.length > 1 ? (
-        <div className="flex justify-end">
-          <Button
-            variant={reordering ? "default" : "ghost"}
-            size="touch"
-            className="-my-1 px-3"
-            onClick={() => setReordering((on) => !on)}
-          >
-            {reordering ? (
-              <>
-                <Check className="size-4" aria-hidden="true" />
-                Done
-              </>
-            ) : (
-              <>
-                <GripVertical className="size-4" aria-hidden="true" />
-                Reorder
-              </>
-            )}
-          </Button>
-        </div>
-      ) : null}
+      {/*
+        One list, not one card per account type.
 
-      {groups.map((group) => (
-        <section key={group.type} aria-label={ACCOUNT_TYPE_LABELS[group.type]}>
-          <SectionHeader
-            className="mb-1.5 px-1"
-            title={ACCOUNT_TYPE_LABELS[group.type]}
-          />
-
-          <SortableList
-            items={group.accounts}
-            getId={(account) => account.id}
-            onReorder={(ids) => reorderGroup(group.type, ids)}
-            onReorderError={(error) => {
-              toast.error(
-                error instanceof Error
-                  ? error.message
-                  : "Could not save the new order.",
-              );
-              router.refresh();
-            }}
-            className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border"
-            disabled={!reordering}
-            renderItem={(account, { handleProps, isDragging }) => (
-              <AccountRow
-                account={account}
-                isDragging={isDragging}
-                handleProps={reordering ? handleProps : undefined}
-                onEdit={() => openEdit(account)}
-              />
-            )}
-          />
-        </section>
-      ))}
-
+        Grouping by type gave four headings over four cards of one row
+        each, which is more structure than four accounts have. The type
+        now sits under each name, the list keeps the order you chose, and
+        Reorder lives on the list's own heading instead of floating above
+        it.
+      */}
       {active.length > 0 ? (
-        <Button
-          variant="outline"
-          size="touch"
-          className="w-full"
-          onClick={openAdd}
-        >
-          <Plus className="size-4" aria-hidden="true" />
-          Add account
-        </Button>
+        <section aria-label="Your accounts" className="space-y-2">
+          <SectionHeader
+            title="Your accounts"
+            count={active.length}
+            className="min-h-11 items-center px-1"
+            trailing={
+              active.length > 1 ? (
+                <Button
+                  variant={reordering ? "default" : "ghost"}
+                  size="touch"
+                  className="px-3"
+                  onClick={() => setReordering((on) => !on)}
+                >
+                  {reordering ? (
+                    <>
+                      <Check className="size-4" aria-hidden="true" />
+                      Done
+                    </>
+                  ) : (
+                    <>
+                      <GripVertical className="size-4" aria-hidden="true" />
+                      Reorder
+                    </>
+                  )}
+                </Button>
+              ) : null
+            }
+          />
+
+          <div className="bg-surface rounded-card overflow-hidden border">
+            <SortableList
+              items={active}
+              getId={(account) => account.id}
+              onReorder={(ids) => reorder(ids)}
+              onReorderError={(error) => {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Could not save the new order.",
+                );
+                router.refresh();
+              }}
+              className="divide-hairline divide-y"
+              disabled={!reordering}
+              renderItem={(account, { handleProps, isDragging }) => (
+                <AccountRow
+                  account={account}
+                  isDragging={isDragging}
+                  handleProps={reordering ? handleProps : undefined}
+                  onEdit={() => openEdit(account)}
+                />
+              )}
+            />
+
+            {/* The list's own last row, so adding sits where the accounts
+                are rather than as a separate slab under them. */}
+            <button
+              type="button"
+              onClick={openAdd}
+              className="text-text hoverable:bg-surface-muted border-hairline flex min-h-12 w-full items-center gap-3 border-t px-4 text-sm font-semibold"
+            >
+              <span className="bg-surface-muted rounded-control flex size-9 items-center justify-center">
+                <Plus className="size-4" aria-hidden="true" />
+              </span>
+              Add account
+            </button>
+          </div>
+        </section>
       ) : null}
 
       {archived.length > 0 ? (
@@ -244,7 +237,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-text-secondary hoverable:text-text flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold  "
+            className="text-text-secondary hoverable:text-text rounded-control flex min-h-11 w-full items-center gap-1.5 px-1 text-sm font-semibold"
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -255,7 +248,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
           </button>
 
           {showArchived ? (
-            <ul className="bg-surface divide-hairline mt-1.5 divide-y overflow-hidden rounded-card border opacity-80">
+            <ul className="bg-surface divide-hairline rounded-card mt-1.5 divide-y overflow-hidden border">
               {archived.map((account) => (
                 <li key={account.id}>
                   <AccountRow
@@ -292,39 +285,47 @@ function AccountRow({
 }) {
   const balance = BigInt(account.balance);
 
+  // The type, and anything unusual about the account, on one quiet line.
+  const subtitle = [
+    ACCOUNT_TYPE_LABELS[account.type],
+    account.archived ? "Archived" : null,
+    !account.archived && !account.includeInTotal ? "Not in total" : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <div
       className={cn(
-        "bg-surface flex items-center gap-1 pr-1 pl-1",
+        "bg-surface flex items-center pr-1",
         isDragging && "bg-surface-muted",
+        account.archived && "text-text-secondary",
       )}
     >
-      {handleProps ? <DragHandle {...handleProps} /> : <span className="w-1" />}
+      {handleProps ? <DragHandle {...handleProps} /> : null}
 
       <Link
         href={`/accounts/${account.id}`}
-        className="hoverable:bg-surface-muted rounded-control flex min-h-14 min-w-0 flex-1 items-center gap-3 px-2 transition-colors"
+        className={cn(
+          "hoverable:bg-surface-muted flex min-h-16 min-w-0 flex-1 items-center gap-3 py-2 transition-colors",
+          handleProps ? "pl-1" : "pl-4",
+        )}
       >
-        <Tile tint={account.tint} icon={account.icon} size="lg" />
+        <Tile tint={account.tint} icon={account.icon} size="md" />
 
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold">
+          <span className="text-text block truncate text-sm font-semibold">
             {account.name}
           </span>
-          {/* Only what the group heading above does not already say. The
-              row sits under "Bank"; repeating "Bank" on it is a word that
-              costs a line and says nothing. */}
-          {account.archived || !account.includeInTotal ? (
-            <span className="text-text-secondary block truncate text-xs">
-              {account.archived ? "Archived" : "Not in total"}
-            </span>
-          ) : null}
+          <span className="text-text-secondary block truncate text-xs">
+            {subtitle}
+          </span>
         </span>
 
         <span
           className={cn(
-            "amount shrink-0 text-sm font-semibold",
-            balance < 0n && "text-expense",
+            "amount shrink-0 pl-2 text-sm font-semibold",
+            balance < 0n ? "text-expense" : "text-text",
           )}
         >
           <Amount value={balance} />

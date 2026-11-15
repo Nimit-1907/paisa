@@ -29,8 +29,6 @@ export const deleteBudgetSchema = z.object({
   month: budgetMonthSchema,
 });
 
-export const copyBudgetsSchema = z.object({ month: budgetMonthSchema });
-
 /**
  * A validated `yyyy-mm` as the first of that month, which is how the column
  * stores it. Only ever called on a month `budgetMonthSchema` has accepted.

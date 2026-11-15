@@ -14,7 +14,6 @@ import { toDb, tryToMinor } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
 import {
   APPLY_FORWARD_MONTHS,
-  copyBudgetsSchema,
   deleteBudgetSchema,
   monthStartOf,
   type SetBudgetInput,
@@ -107,33 +106,4 @@ export async function deleteBudget(
 
   revalidateBudgets();
   return ok(undefined);
-}
-
-/**
- * Starts a month from the one before it.
- *
- * Only categories with no budget this month are copied, so pressing it twice
- * changes nothing the second time, and an archived category is left behind
- * rather than given a limit nobody can spend against.
- */
-export async function copyPreviousMonthBudgets(
-  input: { month: string },
-): Promise<ActionResult<{ copied: number }>> {
-  const parsed = parseInput(copyBudgetsSchema, input);
-  if (!parsed.ok) return parsed;
-
-  const start = monthStartOf(parsed.data.month);
-  const supabase = await createClient();
-  const user = await requireUser(supabase);
-  if (!user.ok) return user;
-
-  const { data, error } = await supabase.rpc(
-    "copy_budgets_from_previous_month",
-    { p_month: start },
-  );
-
-  if (error) return failFromDb(error, "Could not copy last month's budgets.");
-
-  revalidateBudgets();
-  return ok({ copied: Number(data ?? 0) });
 }

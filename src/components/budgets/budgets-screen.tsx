@@ -2,12 +2,8 @@
 
 import * as React from "react";
 
-import { useRouter } from "next/navigation";
+import { Check, Plus, Target } from "lucide-react";
 
-import { CalendarClock, Check, CopyPlus, Plus, Target } from "lucide-react";
-import { toast } from "sonner";
-
-import { copyPreviousMonthBudgets } from "@/actions/budgets";
 import {
   type BudgetCategoryOption,
   type BudgetDraft,
@@ -38,7 +34,6 @@ import { Tile } from "@/components/shared/tile";
 export function BudgetsScreen({
   month,
   monthLabel,
-  previousLabel,
   data,
   categories,
   hints,
@@ -47,8 +42,6 @@ export function BudgetsScreen({
   /** `yyyy-mm`. */
   month: string;
   monthLabel: string;
-  /** The month before this one, short: "Oct". */
-  previousLabel: string;
   data: BudgetMonth;
   categories: BudgetCategoryOption[];
   /** What each category has cost, for the suggestions in the sheet. */
@@ -56,11 +49,9 @@ export function BudgetsScreen({
   /** True only for a month that has ended, which is when it can be judged. */
   isPastMonth: boolean;
 }) {
-  const router = useRouter();
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<BudgetDraft | null>(null);
-  const [copying, setCopying] = React.useState(false);
 
   /*
    * How the month finished, said once and quietly.
@@ -90,33 +81,6 @@ export function BudgetsScreen({
     setSheetOpen(true);
   }
 
-  async function copyPrevious() {
-    setCopying(true);
-
-    try {
-      const result = await copyPreviousMonthBudgets({ month });
-
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success(
-        result.data.copied === 0
-          ? "Nothing left to copy"
-          : `Copied ${result.data.copied} ${
-              result.data.copied === 1 ? "budget" : "budgets"
-            }`,
-      );
-      router.refresh();
-    } catch (thrown) {
-      console.error("[budgets]", thrown);
-      toast.error("Could not copy those. Check your connection.");
-    } finally {
-      setCopying(false);
-    }
-  }
-
   const sheet = (
     <BudgetSheet
       open={sheetOpen}
@@ -137,30 +101,12 @@ export function BudgetsScreen({
           title="No budgets this month"
           description="Set a monthly limit per category and watch what is left, day by day."
           action={
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button size="touch" onClick={openNew}>
-                <Plus className="size-4" aria-hidden="true" />
-                Set a budget
-              </Button>
-
-              {data.previousCount > 0 ? (
-                <Button
-                  variant="outline"
-                  size="touch"
-                  disabled={copying}
-                  onClick={() => void copyPrevious()}
-                >
-                  <CopyPlus className="size-4" aria-hidden="true" />
-                  Copy {previousLabel}&rsquo;s {data.previousCount}
-                </Button>
-              ) : null}
-            </div>
+            <Button size="touch" onClick={openNew}>
+              <Plus className="size-4" aria-hidden="true" />
+              Set a budget
+            </Button>
           }
         />
-
-        {data.unbudgeted.length > 0 ? (
-          <Unbudgeted lines={data.unbudgeted} onSet={openFor} />
-        ) : null}
 
         {sheet}
       </div>
@@ -176,6 +122,12 @@ export function BudgetsScreen({
         month at a glance — as the hero's aside, at a weight that does not
         argue with the number beside it.
       */}
+      {/*
+        One figure, one bar, one line. The hero used to carry a per-day
+        sentence in small paise, a second "of budgeted" line and two
+        buttons; the screen read as a dashboard. Adding a budget now lives
+        on the list it adds to.
+      */}
       <HeroStat
         label={remaining >= 0n ? "Left to spend" : "Over budget"}
         value={
@@ -187,23 +139,7 @@ export function BudgetsScreen({
             />
           </span>
         }
-        helper={
-          data.daysLeft > 0 && remaining > 0n ? (
-            <span className="text-text font-semibold">
-              <Amount
-                value={remaining / BigInt(data.daysLeft)}
-                signDisplay="never"
-              />
-              /day for {data.daysLeft}{" "}
-              {data.daysLeft === 1 ? "more day" : "more days"}
-            </span>
-          ) : null
-        }
         trend={
-          // The ring is gone. It was a second shape competing with the
-          // figure beside it for the same fact, and the bar underneath says
-          // the same thing in the width it already has — which is also the
-          // shape every row below uses, so the screen reads as one idea.
           <Pill tone={tone === "over" ? "expense" : "quiet"}>
             {Math.round(percent)}% used
           </Pill>
@@ -216,34 +152,21 @@ export function BudgetsScreen({
         />
 
         <p className="text-text-secondary mt-2 text-xs">
-          <Amount value={totalSpent} signDisplay="never" /> of{" "}
-          <Amount value={totalBudget} signDisplay="never" /> budgeted
-        </p>
-
-        <div className="mt-4 flex gap-2">
-          <Button
-            variant="outline"
-            size="touch"
-            className="flex-1"
-            onClick={openNew}
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Add budget
-          </Button>
-
-          {data.previousCount > 0 ? (
-            <Button
-              variant="outline"
-              size="touch"
-              className="flex-1"
-              disabled={copying}
-              onClick={() => void copyPrevious()}
-            >
-              <CopyPlus className="size-4" aria-hidden="true" />
-              Copy {previousLabel}
-            </Button>
+          <Amount value={totalSpent} signDisplay="never" whole /> of{" "}
+          <Amount value={totalBudget} signDisplay="never" whole /> spent
+          {data.daysLeft > 0 && remaining > 0n ? (
+            <>
+              {" · "}
+              <Amount
+                value={remaining / BigInt(data.daysLeft)}
+                signDisplay="never"
+                whole
+              />{" "}
+              a day for {data.daysLeft}{" "}
+              {data.daysLeft === 1 ? "day" : "days"}
+            </>
           ) : null}
-        </div>
+        </p>
       </HeroStat>
 
       {isPastMonth && kept > 0 ? (
@@ -256,9 +179,20 @@ export function BudgetsScreen({
 
       <section>
         <SectionHeader
-          className="mb-1.5 px-1"
-          title="Budgeted"
+          className="mb-1.5 min-h-11 items-center px-1"
+          title="Budgets"
           count={data.lines.length}
+          trailing={
+            <Button
+              variant="ghost"
+              size="touch"
+              className="px-3"
+              onClick={openNew}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Add
+            </Button>
+          }
         />
 
         <ListCard>
@@ -272,10 +206,6 @@ export function BudgetsScreen({
           ))}
         </ListCard>
       </section>
-
-      {data.unbudgeted.length > 0 ? (
-        <Unbudgeted lines={data.unbudgeted} onSet={openFor} />
-      ) : null}
 
       {sheet}
     </div>
@@ -291,7 +221,6 @@ function BudgetRow({
 }) {
   const budget = BigInt(line.budget);
   const spent = BigInt(line.spent);
-  const scheduled = BigInt(line.scheduled);
   const tone = budgetTone(spent, budget);
   const over = spent - budget;
 
@@ -299,18 +228,18 @@ function BudgetRow({
     <button
       type="button"
       onClick={onOpen}
-      className="hoverable:bg-surface-muted flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors   "
+      className="hoverable:bg-surface-muted flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors"
     >
-      <Tile tint={line.tint} icon={line.icon} size="lg" />
+      <Tile tint={line.tint} icon={line.icon} size="md" />
 
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
           <span className="truncate text-sm font-semibold">{line.name}</span>
           <span className="amount shrink-0 text-xs font-semibold tabular-nums">
-            <Amount value={spent} signDisplay="never" />
+            <Amount value={spent} signDisplay="never" whole />
             <span className="text-text-secondary font-normal">
-              {" / "}
-              <Amount value={budget} signDisplay="never" />
+              {" of "}
+              <Amount value={budget} signDisplay="never" whole />
             </span>
           </span>
         </span>
@@ -321,92 +250,25 @@ function BudgetRow({
           className="mt-1.5 h-1.5"
         />
 
-        <span className="mt-1 flex items-baseline justify-between gap-2">
-          {/* What is left is the answer; the scheduled note is the footnote.
-              Both were shrinking before, which truncated the number. */}
-          <span
-            className={cn(
-              "shrink-0 text-xs whitespace-nowrap",
-              tone === "over"
-                ? "text-expense font-semibold"
-                : "text-text-secondary",
-            )}
-          >
-            {tone === "over" ? (
-              <>
-                Over by <Amount value={over} signDisplay="never" />
-              </>
-            ) : (
-              <>
-                <Amount value={budget - spent} signDisplay="never" /> left
-              </>
-            )}
-          </span>
-
-          {scheduled > 0n ? (
-            <span className="text-text-secondary flex min-w-0 items-center gap-1 text-xs">
-              <CalendarClock className="size-3 shrink-0" aria-hidden="true" />
-              <span className="truncate">
-                includes <Amount value={scheduled} signDisplay="never" />{" "}
-                scheduled
-              </span>
-            </span>
-          ) : null}
+        <span
+          className={cn(
+            "mt-1 block text-xs",
+            tone === "over"
+              ? "text-expense font-semibold"
+              : "text-text-secondary",
+          )}
+        >
+          {tone === "over" ? (
+            <>
+              Over by <Amount value={over} signDisplay="never" whole />
+            </>
+          ) : (
+            <>
+              <Amount value={budget - spent} signDisplay="never" whole /> left
+            </>
+          )}
         </span>
       </span>
     </button>
-  );
-}
-
-/**
- * Expense categories with spending but no limit.
- *
- * This is where a budget usually comes from: someone sees ₹4,200 against Food
- * with nothing holding it, and sets one on the spot.
- */
-function Unbudgeted({
-  lines,
-  onSet,
-}: {
-  lines: BudgetMonth["unbudgeted"];
-  onSet: (categoryId: string) => void;
-}) {
-  return (
-    <section>
-      <SectionHeader
-        className="mb-1.5 px-1"
-        title="Not budgeted"
-        count={lines.length}
-      />
-
-      <ListCard>
-        {lines.map((line) => (
-          <li
-            key={line.categoryId}
-            className="flex items-center gap-3 py-2 pl-3"
-          >
-            <Tile tint={line.tint} icon={line.icon} />
-
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">
-                {line.name}
-              </span>
-              <span className="amount text-text-secondary block text-xs">
-                <Amount value={BigInt(line.spent)} signDisplay="never" /> spent
-              </span>
-            </span>
-
-            <Button
-              variant="secondary"
-              size="touch"
-              className="mr-3 shrink-0 px-3"
-              onClick={() => onSet(line.categoryId)}
-            >
-              Set budget
-            </Button>
-          </li>
-        ))}
-      </ListCard>
-    </section>
   );
 }

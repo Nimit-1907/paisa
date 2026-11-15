@@ -243,25 +243,18 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
   await test.step("set a budget", async () => {
     await page.goto("/budgets");
 
-    // Food has spending and no limit, so it is in "Not budgeted" — named
-    // explicitly because that list is ordered by how much was spent, and Rent
-    // is the bigger number.
-    await page
-      .getByRole("listitem")
-      .filter({ hasText: "Food" })
-      .getByRole("button", { name: "Set budget" })
-      .click();
+    // A new account has no budgets, so the empty state's action is the way
+    // in, and the category is chosen in the sheet. (The "Not budgeted" list
+    // that used to offer Food directly is gone.)
+    await page.getByRole("button", { name: "Set a budget" }).click();
     await expect(sheet(page)).toBeVisible();
+    await sheet(page).getByRole("radio", { name: "Food" }).click();
 
-    // The budget amount takes the same keypad the record sheet does, so
-    // the figure is tapped out rather than typed into a labelled field.
     await typeAmount(page, "4000");
     await sheet(page).getByRole("button", { name: "Save budget" }).click();
 
-    // Since Phase 14 the section heading is "Budgeted" with the count
-    // beside it rather than "Budgeted · 1" in one string.
     await expect(
-      page.getByRole("heading", { name: /^budgeted/i }).first(),
+      page.getByRole("heading", { name: /^budgets/i }).first(),
     ).toBeVisible();
     /*
      * ₹4,000 budget against the ₹250 expense.
