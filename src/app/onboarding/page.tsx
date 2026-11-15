@@ -42,7 +42,7 @@ export default async function OnboardingPage() {
   // something that reaches it. The step itself is still centred in the space
   // left over.
   return (
-    <main className="pt-safe flex min-h-dvh flex-col items-center px-4 pt-10">
+    <main className="flex min-h-dvh flex-col items-center px-4 pt-[max(2.5rem,env(safe-area-inset-top))]">
       <OnboardingFlow
         initialName={suggestedName}
         initialAccountName={account?.name ?? "Cash"}

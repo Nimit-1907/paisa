@@ -236,7 +236,7 @@ export function SearchOverlay({
       className="bg-background fixed inset-0 z-50 flex flex-col lg:items-center lg:justify-start lg:bg-black/40 lg:pt-20"
     >
       <div className="bg-surface lg:rounded-card flex min-h-0 w-full flex-1 flex-col lg:max-h-[80dvh] lg:max-w-xl lg:flex-none lg:border">
-        <div className="pt-safe flex items-center gap-2 border-b px-2 py-2">
+        <div className="flex items-center gap-2 border-b px-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2">
           <Button
             variant="ghost"
             size="icon-touch"
@@ -246,7 +246,14 @@ export function SearchOverlay({
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
 
-          <div className="relative flex-1">
+          {/*
+            One field, the same at rest and in focus: a muted box with the
+            search icon at the left and Clear inside it at the right. It
+            used to be borderless until focused and then gain a thick box,
+            and Clear arrived beside it, so the field changed width the
+            moment you started typing.
+          */}
+          <div className="relative min-w-0 flex-1">
             <Search
               className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
               aria-hidden="true"
@@ -265,11 +272,11 @@ export function SearchOverlay({
               type="search"
               enterKeyHint="search"
               aria-label="Search notes"
-              placeholder="swiggy, petrol, rent…"
+              placeholder="Search notes"
               // Chrome draws its own clear "×" inside a search input; ours
-              // is the one beside it, at 44px, and two of them side by side
-              // is a question about which one does what.
-              className="border-0 bg-transparent pl-9 shadow-none focus-visible:ring-0 [&::-webkit-search-cancel-button]:appearance-none"
+              // is the 44px one, and two side by side is a question about
+              // which one does what.
+              className="bg-surface-muted h-11 w-full border-transparent pr-11 pl-9 [&::-webkit-search-cancel-button]:appearance-none"
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
@@ -277,18 +284,18 @@ export function SearchOverlay({
                 }
               }}
             />
-          </div>
 
-          {query ? (
-            <Button
-              variant="ghost"
-              size="icon-touch"
-              aria-label="Clear"
-              onClick={clear}
-            >
-              <X className="size-5" aria-hidden="true" />
-            </Button>
-          ) : null}
+            {query ? (
+              <button
+                type="button"
+                aria-label="Clear"
+                onClick={clear}
+                className="text-text-secondary hoverable:text-text rounded-control absolute inset-y-0 right-0 flex size-11 items-center justify-center"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">

@@ -30,7 +30,7 @@ export function StickyActionBar({
   return (
     <div
       className={cn(
-        "bg-surface pb-safe sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-3",
+        "bg-surface sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         variant === "sheet" &&
           "lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0",
         className,

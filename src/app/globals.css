@@ -274,7 +274,16 @@
   --tint-neutral: #262626;
 }
 
-/* iPhone notch / home bar. Used by the dock and by sheets. */
+/*
+ * iPhone notch / home bar. Used by the dock and by sheets.
+ *
+ * On their own only. These set the whole padding on that side, so beside
+ * a `py-*` or `pt-*` one silently wins and the other is lost: on a phone
+ * without a notch the inset is 0, and the search bar, the auth pages and
+ * onboarding all ended up flush against the top edge. Where a side needs
+ * both, write the larger of the two:
+ * `pt-[max(0.5rem,env(safe-area-inset-top))]`.
+ */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
 }
