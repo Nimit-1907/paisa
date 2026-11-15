@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
-import { HapticsCard } from "@/components/settings/haptics-card";
+import { PreferencesCard } from "@/components/settings/preferences-card";
 import { SettingsScreen } from "@/components/settings/settings-screen";
 import { getProfile, getSessionUser } from "@/lib/profile";
 import { LOGIN_PATH } from "@/lib/routes";
@@ -39,7 +39,10 @@ export default async function SettingsPage() {
       />
 
       <div className="mt-4">
-        <HapticsCard enabled={profile?.haptics ?? true} />
+        <PreferencesCard
+          haptics={profile?.haptics ?? true}
+          showPaise={profile?.show_paise ?? false}
+        />
       </div>
 
       <SignOutButton className="mt-4 w-full" />
