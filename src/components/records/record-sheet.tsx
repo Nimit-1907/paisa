@@ -197,6 +197,7 @@ export function RecordSheet({
   const amountRef = React.useRef<HTMLInputElement>(null);
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [discardOpen, setDiscardOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   /**
    * What the sheet was opened with.
@@ -242,6 +243,7 @@ export function RecordSheet({
     // Nothing but Repeat is folded now, and Repeat is never pre-set.
     setMoreOpen(false);
     setDiscardOpen(false);
+    setDeleteOpen(false);
     setJustSaved(false);
 
     // Snapshot taken from the same values that were just set, not from
@@ -1014,13 +1016,15 @@ export function RecordSheet({
               size="touch"
               className="w-full"
               disabled={saving}
-              onClick={() => {
-                // No confirmation: the undo in the toast is the safety net,
-                // and a dialog on every delete is the kind of friction that
-                // makes people stop tidying their records.
-                onOpenChange(false);
-                void onDelete(editingId);
-              }}
+              // Confirmed, unlike the swipe and the row menu.
+              //
+              // Those two are one gesture away from the list you were
+              // already reading, and the toast's Undo is the right net for
+              // them. This one is at the bottom of a form somebody opened
+              // to *change* a record: a tap here while scrolling is a
+              // different mistake, and it costs a sheet-worth of typing as
+              // well as the record.
+              onClick={() => setDeleteOpen(true)}
             >
               <Trash2 className="size-4" aria-hidden="true" />
               Delete record
@@ -1132,6 +1136,22 @@ export function RecordSheet({
         onConfirm={() => {
           setDiscardOpen(false);
           onOpenChange(false);
+        }}
+      />
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete this record?"
+        description={
+          amountLabel
+            ? `${amountLabel} will be removed from your records. You can undo this straight away.`
+            : "It will be removed from your records. You can undo this straight away."
+        }
+        confirmLabel="Delete"
+        onConfirm={() => {
+          setDeleteOpen(false);
+          onOpenChange(false);
+          if (editingId && onDelete) void onDelete(editingId);
         }}
       />
     </ResponsiveSheet>

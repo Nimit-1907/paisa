@@ -12,17 +12,14 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
-import {
-  instantToLocal,
-  localToInstant,
-  nextRecurrence,
-} from "@/lib/dates";
+import { instantToLocal, localToInstant, nextRecurrence } from "@/lib/dates";
 import { evaluate } from "@/lib/calculator";
 import { toDb } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
 import {
   type TransactionPage,
   getMonthTransactions,
+  searchTransactions,
 } from "@/lib/queries/transactions";
 import {
   type CreateTransactionInput,
@@ -36,6 +33,10 @@ import {
   updateTransactionSchema,
 } from "@/lib/schemas/transactions";
 import { createClient } from "@/lib/supabase/server";
+
+const searchSchema = z.object({
+  term: z.string().trim().min(1, "Type something to search for.").max(100),
+});
 
 const loadMoreSchema = z.object({
   year: z.number().int().min(1970).max(9999),
@@ -254,7 +255,8 @@ export async function updateTransaction(
       .eq("user_id", user.id);
 
     ruleSaved = !ruleError;
-    if (ruleError) console.error("[records] rule not updated:", ruleError.message);
+    if (ruleError)
+      console.error("[records] rule not updated:", ruleError.message);
     else revalidatePath("/recurring");
   }
 
@@ -262,9 +264,9 @@ export async function updateTransaction(
   return ok({ id: data.id, ruleSaved });
 }
 
-export async function deleteTransaction(
-  input: { id: string },
-): Promise<ActionResult<undefined>> {
+export async function deleteTransaction(input: {
+  id: string;
+}): Promise<ActionResult<undefined>> {
   const parsed = parseInput(transactionIdSchema, input);
   if (!parsed.ok) return parsed;
 
@@ -367,5 +369,48 @@ export async function loadMoreTransactions(input: {
   } catch (thrown) {
     console.error("[records]", thrown);
     return fail("Could not load more records.");
+  }
+}
+
+/** What a search returns, with the amounts as strings for the client. */
+export type SearchPayload = {
+  rows: Awaited<ReturnType<typeof searchTransactions>>["rows"];
+  /** How many match in all, which can be more than `rows.length`. */
+  matchCount: number;
+  hasMore: boolean;
+  /** Minor units as text — a BigInt cannot cross this boundary. */
+  income: string;
+  expense: string;
+};
+
+/**
+ * Search every month at once, for the full-screen search.
+ *
+ * A Server Action rather than a route handler: the search overlay is the
+ * only caller, and a second public URL would need its own guard for no gain.
+ */
+export async function searchRecords(input: {
+  term: string;
+}): Promise<ActionResult<SearchPayload>> {
+  const parsed = parseInput(searchSchema, input);
+  if (!parsed.ok) return parsed;
+
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
+  try {
+    const result = await searchTransactions(parsed.data.term);
+
+    return ok({
+      rows: result.rows,
+      matchCount: result.matchCount,
+      hasMore: result.hasMore,
+      income: result.income.toString(),
+      expense: result.expense.toString(),
+    });
+  } catch (thrown) {
+    console.error("[records]", thrown);
+    return fail("Could not search your records. Check your connection.");
   }
 }

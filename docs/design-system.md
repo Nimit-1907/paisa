@@ -143,6 +143,15 @@ caret at that size so it still reads as something you can type into.
 Undo is an ink pill — the same shape as the primary button — because it is
 the only safety net behind a delete.
 
+**Search spans every month; the rest of the app does not.** The month is how
+this app is *read* — the switcher, the card, the totals — but it is not how
+anybody searches. Results are capped at a hundred rather than paged: a search
+returning more than that is a term that is not narrow enough, and saying so
+is more useful than an infinite scroll through three years of groceries.
+
+**The filters' type is one choice, not a set.** With three types, ticking two
+is the same as excluding the third.
+
 **Field cards hold a native control at zero opacity.** Account, When, From
 and To draw their value the way this app draws values (an icon, "Today, 1:30
 pm"), which no native control can be made to do, while the thing a tap, a
@@ -188,7 +197,6 @@ prints Copy and Delete through the row for a second and a half.
 
 ## 6. Still to come
 
-Batches (b) to (f) — Records' sub-screens, Analysis, Budgets, Accounts,
-Categories, Recurring, More, Settings, the public pages, auth, onboarding and
-the system screens. Each one lands with its screenshots and its ticks in
-`docs/screens.md`.
+Batches (c) to (f) — Analysis, Budgets, Accounts, Categories, Recurring,
+More, Settings, the public pages, auth, onboarding and the system screens.
+Each one lands with its screenshots and its ticks in `docs/screens.md`.

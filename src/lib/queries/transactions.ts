@@ -25,6 +25,12 @@ export type TransactionRow = {
   categoryTint: string | null;
   /** Set when a recurring rule created this row. */
   recurringRuleId: string | null;
+  /**
+   * How often that rule runs, so the detail can say "Repeats monthly"
+   * rather than "Repeats".
+   */
+  recurringFrequency:
+    Database["public"]["Enums"]["recurrence_frequency"] | null;
 };
 
 export type TransactionPage = {
@@ -42,6 +48,7 @@ const SELECT = `
   id, type, amount, note, occurred_at, recurring_rule_id,
   account_id, to_account_id, category_id,
   category:categories(name, icon, color, tint),
+  rule:recurring_rules(frequency),
   account:accounts!transactions_account_id_fkey(name),
   to_account:accounts!transactions_to_account_id_fkey(name)
 `;
@@ -64,6 +71,9 @@ type JoinedRow = {
   } | null;
   account: { name: string } | null;
   to_account: { name: string } | null;
+  rule: {
+    frequency: Database["public"]["Enums"]["recurrence_frequency"];
+  } | null;
 };
 
 function toRow(row: JoinedRow): TransactionRow {
@@ -83,6 +93,7 @@ function toRow(row: JoinedRow): TransactionRow {
     categoryColor: row.category?.color ?? null,
     categoryTint: row.category?.tint ?? null,
     recurringRuleId: row.recurring_rule_id,
+    recurringFrequency: row.rule?.frequency ?? null,
   };
 }
 
@@ -200,6 +211,78 @@ export async function getMonthTransactions({
     rows: rows.slice(0, limit).map(toRow),
     hasMore,
     nextOffset: offset + limit,
+  };
+}
+
+/** How many results one search returns before it asks for a narrower term. */
+export const SEARCH_LIMIT = 100;
+
+export type SearchResult = {
+  rows: TransactionRow[];
+  /** How many records match, which can be more than `rows.length`. */
+  matchCount: number;
+  /** True when the limit was hit and there is more behind it. */
+  hasMore: boolean;
+  /** Totals over **every** match, not only the rows that came back. */
+  income: bigint;
+  expense: bigint;
+};
+
+/**
+ * Every record whose note matches, newest first, across every month.
+ *
+ * Deliberately not month-scoped, unlike {@link getMonthTransactions}. The
+ * month is how this app is *read* — the switcher, the card, the totals — but
+ * it is not how anybody searches: "rent" within November alone is a question
+ * with an obvious answer, and the one worth asking is when the rent went up.
+ *
+ * Capped rather than paged. A search that returns more than a hundred rows
+ * is a search term that is not narrow enough, and saying so is more useful
+ * than an infinite scroll through three years of groceries.
+ */
+export async function searchTransactions(term: string): Promise<SearchResult> {
+  const trimmed = term.trim();
+  if (!trimmed) {
+    return { rows: [], matchCount: 0, hasMore: false, income: 0n, expense: 0n };
+  }
+
+  const supabase = await createClient();
+
+  // Escape the wildcards a user can type, so they search literally. Done
+  // once, here, and handed to the totals function as well — two copies of
+  // this would be two opinions about what a literal `%` means. The pg_trgm
+  // GIN index on note is what keeps both halves fast.
+  const pattern = trimmed.replace(/[%_\\]/g, (match) => `\\${match}`);
+
+  // The rows are capped; the totals are not. Summing the hundred rows that
+  // came back and calling it the total is wrong by whatever is behind the
+  // cap, and wrong in the direction that reassures.
+  const [page, totals] = await Promise.all([
+    supabase
+      .from("transactions")
+      .select(SELECT)
+      .ilike("note", `%${pattern}%`)
+      .order("occurred_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(0, SEARCH_LIMIT),
+    supabase.rpc("search_totals", { p_pattern: pattern }).maybeSingle(),
+  ]);
+
+  if (page.error) throw new Error(page.error.message);
+  if (totals.error) throw new Error(totals.error.message);
+
+  const joined = page.data as unknown as JoinedRow[];
+  const hasMore = joined.length > SEARCH_LIMIT;
+
+  return {
+    rows: joined.slice(0, SEARCH_LIMIT).map(toRow),
+    matchCount: totals.data?.match_count ?? joined.length,
+    hasMore,
+    // A transfer counts for neither: it moves money between the user's own
+    // accounts, and counting it would make a search for "transfer" look
+    // like income.
+    income: fromDb(totals.data?.income ?? 0),
+    expense: fromDb(totals.data?.expense ?? 0),
   };
 }
 

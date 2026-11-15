@@ -786,11 +786,47 @@ swallowing the global focus ring on every `Button`; the header avatar and
 the month trigger were 36px; and the avatar's accessible name did not
 contain the initials drawn on it (WCAG 2.5.3).
 
+### Records' own screens (batch b)
+
+| # | Screen | Done |
+| --- | --- | --- |
+| 41 | Edit record sheet | ✅ |
+| 42 | Record detail | ✅ |
+| 43 | Search | ✅ |
+| 44 | Filters sheet | ✅ |
+
+- **41** is the add sheet with the values in it, and Delete is confirmed now.
+  The swipe and the row menu keep the toast's Undo as their net — they are
+  one gesture from the list you were reading. The button at the bottom of a
+  form somebody opened to *change* a record is a different mistake, and it
+  costs a sheet-worth of typing as well as the record.
+- **42** is the amount as the hero, with the category's tile beside its name,
+  the facts as field cards, a periwinkle "Repeats monthly" pill that links to
+  the rule, and Edit / Duplicate / Delete. The frequency is new on
+  `TransactionRow`; the pill used to say "See the rule" from inside a table.
+- **43** answers in place instead of handing the term back to the month.
+  Searching inside one month is a question with an obvious answer; the ones
+  worth asking need every month at once. `searchRecords` returns up to a
+  hundred matches across all time, the overlay shows the total above them and
+  groups them by month, and tapping one opens it in the sheet. Recent
+  searches are pills rather than rows. **Escape closes it** — it is a
+  hand-rolled dialog and had never had the key bound, which on a desktop is a
+  modal with no way out but the mouse.
+- **44** is a segmented control for the type, the shared tile grids for
+  accounts and categories, and the date presets as pills. The type stopped
+  being a multi-select: with three options, ticking two is the same as
+  excluding the third, and "expense and income but not transfers" is not a
+  sentence anybody arrived here to say.
+
+Two fixes that came out of this batch rather than being part of it: `Input`
+carried three dead classes (a `ring-3` with no ring colour, a stray `/50`
+from a split opacity modifier, and `dark:bg-foreground/5`, a tint that is not
+one of the eight), and the search overlay had no Escape key.
+
 ### Still to come
 
 | # | Screens | Batch |
 | --- | --- | --- |
-| 41–44 | Edit sheet, record detail, search, filters | b |
 | 45–50 | Analysis, Budgets | c |
 | 51–59 | Accounts, Categories, Recurring | d |
 | 60–65 | More, Settings | e |

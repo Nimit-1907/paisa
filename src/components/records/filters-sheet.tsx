@@ -7,7 +7,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
-import { Tile } from "@/components/shared/tile";
+import { SegmentedControl } from "@/components/shared/segmented-control";
+import { TilePicker } from "@/components/shared/tile-picker";
 import type {
   AccountOption,
   CategoryOption,
@@ -134,7 +135,11 @@ export function FiltersSheet({
     if (!open) return;
 
     setSearch(filters.search ?? "");
-    setTypes(filters.types ?? []);
+    // At most one: the control below is a segmented control, and an older
+    // link carrying `?type=expense,income` would show the first as selected
+    // while both were still being applied. Normalised on open, so what is
+    // shown is what Apply will write.
+    setTypes((filters.types ?? []).slice(0, 1));
     setAccountIds(filters.accountIds ?? []);
     setCategoryIds(filters.categoryIds ?? []);
     setMinAmount(filters.minAmount ?? "");
@@ -208,58 +213,66 @@ export function FiltersSheet({
           )}
         </FormRow>
 
+        {/*
+          One type or all of them, not a set.
+
+          Phase 13 let you tick two of the three, which with three options
+          is the same as excluding the third — and "expense and income but
+          not transfers" is not a sentence anybody arrived here to say. The
+          segmented control makes the common case one tap and the rare one
+          impossible, which is the right trade at three options.
+        */}
         <div className="space-y-1.5">
           <Label>Type</Label>
-          <div className="flex flex-wrap gap-1.5">
-            {TRANSACTION_TYPES.map((value) => (
-              <Chip
-                key={value}
-                active={types.includes(value)}
-                onClick={() => setTypes(toggle(types, value))}
-              >
-                {TYPE_LABELS[value]}
-              </Chip>
-            ))}
-          </div>
+          <SegmentedControl
+            label="Type"
+            value={types[0] ?? "all"}
+            onChange={(next) =>
+              setTypes(next === "all" ? [] : [next as TransactionType])
+            }
+            options={[
+              { value: "all", label: "All" },
+              ...TRANSACTION_TYPES.map((value) => ({
+                value,
+                label: TYPE_LABELS[value],
+              })),
+            ]}
+          />
         </div>
 
         <div className="space-y-1.5">
           <Label>Accounts</Label>
-          <div className="flex flex-wrap gap-1.5">
-            {accounts.map((account) => (
-              <Chip
-                key={account.id}
-                active={accountIds.includes(account.id)}
-                onClick={() => setAccountIds(toggle(accountIds, account.id))}
-              >
-                {account.name}
-              </Chip>
-            ))}
-          </div>
+          <TilePicker
+            label="Accounts"
+            multiple
+            value={accountIds}
+            onChange={(id) => setAccountIds(toggle(accountIds, id))}
+            options={accounts.map((account) => ({
+              id: account.id,
+              name: account.name,
+              icon: account.icon,
+              tint: account.tint,
+            }))}
+          />
         </div>
 
         <div className="space-y-1.5">
           <Label>Categories</Label>
-          <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
-            {categories.map((category) => (
-              <Chip
-                key={category.id}
-                active={categoryIds.includes(category.id)}
-                onClick={() => setCategoryIds(toggle(categoryIds, category.id))}
-              >
-                {/* The same dot the rows use. A list of forty category names
-                    is a wall of text; the colour is how people actually find
-                    the one they want. */}
-                <Tile
-                  size="sm"
-                  tint={category.tint}
-                  icon={category.icon}
-                  className="-ml-1.5"
-                />
-                {category.name}
-              </Chip>
-            ))}
-          </div>
+          {/* The same grid the add sheet uses. Forty category names in a
+              wrapping row is a wall of text; the tiles are how people
+              actually find the one they want. */}
+          <TilePicker
+            label="Categories"
+            multiple
+            value={categoryIds}
+            onChange={(id) => setCategoryIds(toggle(categoryIds, id))}
+            options={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              icon: category.icon,
+              tint: category.tint,
+            }))}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -371,10 +384,11 @@ function Chip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        " flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-colors  ",
+        "pressable flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold",
+        "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
         active
-          ? "border-ink bg-tint-peri text-text"
-          : "text-text-secondary hoverable:bg-surface-muted",
+          ? "accent-sm bg-surface text-text"
+          : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
       )}
     >
       {children}

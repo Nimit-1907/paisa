@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {
   ArrowRight,
+  CalendarClock,
   Copy,
   Pencil,
   Repeat,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
+import { FieldCard } from "@/components/shared/field-card";
+import { HeroStat } from "@/components/shared/hero-stat";
 import { Tile } from "@/components/shared/tile";
 import {
   ResponsiveSheet,
@@ -20,8 +23,8 @@ import {
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
+import { REPEAT_LABELS } from "@/lib/schemas/transactions";
 import type { TransactionRow } from "@/lib/queries/transactions";
-import { cn } from "@/lib/utils";
 
 /**
  * One record, read rather than edited.
@@ -39,6 +42,11 @@ import { cn } from "@/lib/utils";
  * Deliberately not a form. Everything here is a fact about the record and a
  * place to go next; the moment it starts holding a value it has to worry
  * about saving, and there is already a sheet that does that properly.
+ *
+ * Phase 14 makes the amount the hero — the thing you opened this to check —
+ * with the category's tile beside its name, and turns the table of rows into
+ * the same field cards the add sheet uses. The facts are the same; they are
+ * no longer a spreadsheet.
  */
 export function RecordDetail({
   record,
@@ -69,130 +77,166 @@ export function RecordDetail({
     >
       {record ? (
         <>
-          <SheetBody>
-            <div className="text-center">
-              <p
-                className={cn(
-                  "font-display text-[2.5rem] leading-none",
-                  record.type === "income"
-                    ? "text-income"
-                    : transfer
-                      ? "text-transfer"
-                      : "text-text",
-                )}
-              >
-                {record.type === "income"
-                  ? "+"
-                  : record.type === "expense"
-                    ? "−"
-                    : ""}
-                {/* Always exact here. A list can trim ".00"; the screen you
-                    opened to check an amount cannot. */}
-                <Amount
-                  value={BigInt(record.amount)}
-                  signDisplay="never"
-                  paise="show"
-                />
-              </p>
-            </div>
+          <SheetBody className="space-y-3">
+            <HeroStat
+              label={
+                <span className="flex min-w-0 items-center gap-2">
+                  <Tile
+                    size="sm"
+                    tint={transfer ? "sky" : record.categoryTint}
+                    icon={transfer ? "ArrowLeftRight" : record.categoryIcon}
+                  />
+                  <span className="text-text truncate font-semibold">
+                    {transfer
+                      ? "Transfer"
+                      : (record.categoryName ?? "Uncategorised")}
+                  </span>
+                </span>
+              }
+              trend={
+                record.recurringRuleId ? (
+                  // A pill that goes somewhere. The rule is the thing that
+                  // will make this record happen again, and "see the rule"
+                  // buried in a table row was never found.
+                  <Link
+                    href={`/recurring/${record.recurringRuleId}`}
+                    className="bg-tint-peri text-text rounded-full px-2 py-[3px] text-[11px] font-semibold"
+                  >
+                    <Repeat
+                      className="mr-1 inline size-3 align-[-1px]"
+                      aria-hidden="true"
+                    />
+                    Repeats {repeatWord(record.recurringFrequency)}
+                  </Link>
+                ) : null
+              }
+              value={
+                <span
+                  className={
+                    record.type === "income"
+                      ? "text-income"
+                      : transfer
+                        ? "text-transfer"
+                        : "text-text"
+                  }
+                >
+                  {record.type === "income"
+                    ? "+"
+                    : record.type === "expense"
+                      ? "−"
+                      : ""}
+                  {/* Always exact here. A list can trim ".00"; the screen
+                      you opened to check an amount cannot. */}
+                  <Amount
+                    value={BigInt(record.amount)}
+                    signDisplay="never"
+                    paise="show"
+                  />
+                </span>
+              }
+            />
 
-            <dl className="divide-hairline bg-surface rounded-card divide-y border">
+            <div className="grid grid-cols-2 gap-2">
               {transfer ? (
-                <Row label="Moved">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="truncate">{record.accountName}</span>
-                    <ArrowRight
+                <>
+                  <FieldCard
+                    label="From"
+                    icon={
+                      <Wallet
+                        className="text-text-secondary size-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
+                    }
+                    value={record.accountName}
+                  />
+                  <FieldCard
+                    label="To"
+                    icon={
+                      <ArrowRight
+                        className="text-text-secondary size-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
+                    }
+                    value={record.toAccountName ?? "—"}
+                  />
+                </>
+              ) : (
+                <FieldCard
+                  label="Account"
+                  icon={
+                    <Wallet
                       className="text-text-secondary size-3.5 shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="truncate">{record.toAccountName}</span>
-                  </span>
-                </Row>
-              ) : (
-                <>
-                  <Row label="Category">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Tile
-                        size="sm"
-                        tint={record.categoryTint}
-                        icon={record.categoryIcon}
-                      />
-                      <span className="truncate">
-                        {record.categoryName ?? "Uncategorised"}
-                      </span>
-                    </span>
-                  </Row>
-
-                  <Row label="Account">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Wallet
-                        className="text-text-secondary size-4 shrink-0"
-                        aria-hidden="true"
-                      />
-                      <span className="truncate">{record.accountName}</span>
-                    </span>
-                  </Row>
-                </>
+                  }
+                  value={record.accountName}
+                />
               )}
 
-              <Row label="When">{fullWhen(record.occurredAt, timeZone)}</Row>
+              <FieldCard
+                label="When"
+                className={transfer ? "col-span-2" : undefined}
+                icon={
+                  <CalendarClock
+                    className="text-text-secondary size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                }
+                value={fullWhen(record.occurredAt, timeZone)}
+              />
 
               {record.note ? (
-                <Row label="Note">
-                  <span className="break-words">{record.note}</span>
-                </Row>
+                <FieldCard
+                  label="Note"
+                  className="col-span-2"
+                  value={
+                    // The one field that is allowed to wrap: a note is a
+                    // sentence somebody wrote, and truncating it to one
+                    // line is how the detail screen fails at its only job.
+                    <span className="block break-words whitespace-normal">
+                      {record.note}
+                    </span>
+                  }
+                />
               ) : null}
-
-              {record.recurringRuleId ? (
-                <Row label="Repeats">
-                  <Link
-                    href={`/recurring/${record.recurringRuleId}`}
-                    className="text-text inline-flex items-center gap-1.5 rounded font-semibold  "
-                  >
-                    <Repeat className="size-3.5" aria-hidden="true" />
-                    See the rule
-                  </Link>
-                </Row>
-              ) : null}
-            </dl>
+            </div>
 
             {/* Duplicate takes the width on its own when there is no
                 category to be similar to. A disabled button explaining why
                 the other one is missing is noise where a gap would do. */}
-            <div
-              className={cn(
-                "grid gap-2",
-                onShowSimilar ? "grid-cols-2" : "grid-cols-1",
-              )}
-            >
-              <Button variant="outline" size="touch" onClick={onCopy}>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="secondary" size="touch" onClick={onCopy}>
                 <Copy className="size-4" aria-hidden="true" />
                 Duplicate
               </Button>
 
               {onShowSimilar ? (
-                <Button variant="outline" size="touch" onClick={onShowSimilar}>
+                <Button
+                  variant="secondary"
+                  size="touch"
+                  onClick={onShowSimilar}
+                >
                   <Search className="size-4" aria-hidden="true" />
                   Show similar
                 </Button>
               ) : null}
-            </div>
 
-            <Button
-              variant="ghost"
-              size="touch"
-              className="text-expense hoverable:bg-tint-rose w-full"
-              onClick={onDelete}
-            >
-              <Trash2 className="size-4" aria-hidden="true" />
-              Delete record
-            </Button>
+              <Button
+                variant="destructive"
+                size="touch"
+                className={onShowSimilar ? "col-span-2" : undefined}
+                onClick={onDelete}
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+                Delete record
+              </Button>
+            </div>
           </SheetBody>
 
           <SheetFooter>
             <Button size="touch" className="flex-1" onClick={onEdit}>
-              <Pencil className="size-4" aria-hidden="true" />
               Edit record
+              <Pencil className="size-4" aria-hidden="true" />
             </Button>
           </SheetFooter>
         </>
@@ -201,19 +245,9 @@ export function RecordDetail({
   );
 }
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex min-h-12 items-center justify-between gap-3 px-3 py-2">
-      <dt className="text-text-secondary shrink-0 text-xs font-semibold">{label}</dt>
-      <dd className="min-w-0 text-right text-sm font-medium">{children}</dd>
-    </div>
-  );
+/** "monthly", "weekly" — the pill reads "Repeats monthly". */
+function repeatWord(frequency: TransactionRow["recurringFrequency"]): string {
+  return frequency ? REPEAT_LABELS[frequency].toLowerCase() : "on a schedule";
 }
 
 /** "Mon, 9 Nov 2026 at 4:30 pm", where the user is. */

@@ -1,22 +1,35 @@
-import * as React from "react"
-import { cn } from "cn"
+import * as React from "react";
+import { cn } from "cn";
 
+/**
+ * A text field, in the Phase 14 language.
+ *
+ * Surface fill, hairline border, 12px radius; on focus the border becomes
+ * ink, on top of the app-wide 2px focus outline from globals.css. Errors are
+ * not drawn here — they are expense-coloured text under the field, which is
+ * what `FormRow` renders — so nothing in this file needs a red ring.
+ *
+ * What this replaced had three dead classes in it: a `ring-3` with no ring
+ * colour, a stray `/50` left over from a split opacity modifier, and
+ * `dark:bg-foreground/5`, a tint that is not one of the eight.
+ */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
       type={type}
       data-slot="input"
       className={cn(
-        // Paisa: 44px tall on phones (CLAUDE.md tap targets), compact from md up.
-        // The fill is expressed against --foreground, not --input: --input is
-        // the 3:1 edge of a control, and reusing it as a tint ties the two
-        // together so raising one washes out the other.
-        "h-11 w-full min-w-0 rounded-lg border border-hairline bg-transparent px-3 py-1 text-base md:h-9 transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-semibold file:text-text placeholder:text-text-secondary focus-visible:border-ink focus-visible:ring-3 /50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-foreground/5 dark:disabled:bg-surface-muted dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-        className
+        // 44px tall on phones (CLAUDE.md tap targets), compact from md up.
+        "bg-surface rounded-control h-11 w-full min-w-0 border px-3 py-1 text-base md:h-9 md:text-sm",
+        "placeholder:text-text-secondary transition-colors focus-visible:border-ink",
+        "file:text-text file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-semibold",
+        "disabled:bg-surface-muted disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+        "aria-invalid:border-expense",
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Input }
+export { Input };

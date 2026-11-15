@@ -57,6 +57,7 @@ import {
   useRemoveFilter,
 } from "@/components/records/use-clear-filters";
 import { ActiveFilters } from "@/components/records/active-filters";
+import { draftOf as toDraft } from "@/lib/record-draft";
 import { RecordDetail } from "@/components/records/record-detail";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
@@ -528,7 +529,11 @@ export function RecordsScreen({
   React.useEffect(() => {
     const hour = new Date().getHours();
     const part =
-      hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+      hour < 12
+        ? "Good morning"
+        : hour < 17
+          ? "Good afternoon"
+          : "Good evening";
     const name = displayName.split(/\s+/)[0];
     setGreeting(name ? `${part}, ${name}` : part);
   }, [displayName]);
@@ -579,17 +584,7 @@ export function RecordsScreen({
 
   /** A record as the sheet's draft. Shared by Edit and Duplicate. */
   const draftOf = React.useCallback(
-    (record: TransactionRow) => ({
-      id: record.id,
-      type: record.type,
-      amount: record.amount,
-      accountId: record.accountId,
-      toAccountId: record.toAccountId,
-      categoryId: record.categoryId,
-      note: record.note,
-      occurredAtLocal: instantToLocal(record.occurredAt, timeZone),
-      recurringRuleId: record.recurringRuleId,
-    }),
+    (record: TransactionRow) => toDraft(record, timeZone),
     [timeZone],
   );
 
@@ -847,16 +842,8 @@ export function RecordsScreen({
           initialQuery={filters.search ?? ""}
           categories={categories}
           monthKey={monthKey}
+          timeZone={timeZone}
           onClose={() => setSearchOpen(false)}
-          onSearch={(term) => {
-            const query = new URLSearchParams(params.toString());
-            query.delete("search");
-            if (term) query.set("q", term);
-            else query.delete("q");
-            router.replace(`${pathname}?${query.toString()}`, {
-              scroll: false,
-            });
-          }}
           onFilter={(extra) => {
             const query = new URLSearchParams(params.toString());
             query.delete("search");
@@ -1070,7 +1057,11 @@ function toOptimisticRow(
     categoryIcon: category?.icon ?? null,
     categoryColor: category?.color ?? null,
     categoryTint: category?.tint ?? null,
+    // Neither is known until the server has written the row: a repeat set
+    // up in the sheet creates its rule on the server, and this placeholder
+    // is gone before that answer comes back.
     recurringRuleId: null,
+    recurringFrequency: null,
   };
 }
 

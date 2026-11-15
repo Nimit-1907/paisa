@@ -28,8 +28,14 @@ export function HeroStat({
   children,
   className,
 }: {
-  /** "Left to spend", "Total balance". Sentence case — no. */
-  label: string;
+  /**
+   * "Left to spend", "Total balance". Sentence case — no.
+   *
+   * A node rather than a string because the record detail puts the
+   * category's tile beside its name here, and that is the same line doing
+   * the same job.
+   */
+  label: React.ReactNode;
   /** Top-right pill: "12% less than Oct". */
   trend?: React.ReactNode;
   /** The figure, already formatted — usually an `<Amount>`. */
@@ -59,9 +65,9 @@ export function HeroStat({
     >
       <div className="px-4 pt-3.5 pb-3">
         <div className="flex items-start justify-between gap-3">
-          <p id={labelId} className="text-text-secondary text-[13px]">
+          <div id={labelId} className="text-text-secondary min-w-0 text-[13px]">
             {label}
-          </p>
+          </div>
           {trend}
         </div>
 
