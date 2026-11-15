@@ -13,9 +13,10 @@ import {
   FALLBACK_SLICE_COLORS,
   useTooltipTrigger,
 } from "@/components/analysis/chart-shell";
-import { useCurrency, useFormatMoney } from "@/components/profile-provider";
+import { useCurrency } from "@/components/profile-provider";
 import { formatCompact } from "@/lib/money";
 import type { CategorySlice } from "@/lib/queries/analysis";
+import { Amount } from "@/components/shared/amount";
 import { ColorDot } from "@/components/shared/color-dot";
 
 /**
@@ -33,6 +34,7 @@ export function CategoryDonut({
   total,
   kind,
   recordsHref,
+  className,
 }: {
   slices: CategorySlice[];
   /** Minor units as text. */
@@ -40,9 +42,10 @@ export function CategoryDonut({
   kind: "income" | "expense";
   /** Builds the Records link for one category. */
   recordsHref: (categoryId: string) => string;
+  /** Where the bento grid puts this card. */
+  className?: string;
 }) {
   const currency = useCurrency();
-  const formatMoney = useFormatMoney();
   const trigger = useTooltipTrigger();
 
   const totalMinor = BigInt(total);
@@ -68,6 +71,7 @@ export function CategoryDonut({
     <ChartCard
       title={kind === "income" ? "Income by category" : "Spending by category"}
       subtitle={`${slices.length} ${slices.length === 1 ? "category" : "categories"}`}
+      className={className}
     >
       <div className="relative">
         <ResponsiveContainer width="100%" height={200}>
@@ -121,8 +125,8 @@ export function CategoryDonut({
 
         {/* The total sits in the hole rather than in a label, which is the
             only place on a 360px ring with room for it. */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+          <span className="text-ink-2 text-label font-semibold tracking-wide uppercase">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
           <span className="amount max-w-[9rem] truncate text-lg font-semibold tabular-nums">
@@ -147,16 +151,16 @@ export function CategoryDonut({
                 {slice.name}
               </span>
 
-              <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+              <span className="text-ink-2 shrink-0 text-xs tabular-nums">
                 {share(BigInt(slice.total)).toFixed(0)}%
               </span>
 
-              <span className="amount shrink-0 text-sm font-semibold tabular-nums">
-                {formatMoney(BigInt(slice.total), { signDisplay: "never" })}
+              <span className="shrink-0 text-sm font-semibold">
+                <Amount value={BigInt(slice.total)} signDisplay="never" />
               </span>
 
               <ChevronRight
-                className="text-muted-foreground size-4 shrink-0"
+                className="text-ink-3 size-4 shrink-0"
                 aria-hidden="true"
               />
             </Link>

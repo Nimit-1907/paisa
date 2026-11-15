@@ -3,6 +3,7 @@
 import { CalendarDays, Tag, TrendingDown, TrendingUp } from "lucide-react";
 
 import { useFormatMoney } from "@/components/profile-provider";
+import { Amount } from "@/components/shared/amount";
 import { bucketTitle } from "@/lib/period";
 import type { AnalysisData } from "@/lib/queries/analysis";
 import { cn } from "@/lib/utils";
@@ -40,12 +41,16 @@ export function SummaryCards({
   const goodDirection =
     change === null ? null : kind === "expense" ? change <= 0 : change >= 0;
 
+  // A fragment, not a grid of its own: these four are cells in the screen's
+  // bento, so the page decides where they sit. Nesting a grid here would
+  // make them one cell wearing four hats, and they would not line up with
+  // the cards beside them.
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <>
       <Card
         icon={CalendarDays}
         label="Average per day"
-        value={formatMoney(perDay, { signDisplay: "never" })}
+        value={<Amount value={perDay} signDisplay="never" />}
         hint={`over ${over} ${over === 1 ? "day" : "days"}${
           data.daysElapsed < data.days ? " so far" : ""
         }`}
@@ -55,9 +60,11 @@ export function SummaryCards({
         icon={kind === "income" ? TrendingUp : TrendingDown}
         label={data.bucket === "day" ? "Biggest day" : "Biggest month"}
         value={
-          data.peak
-            ? formatMoney(BigInt(data.peak.amount), { signDisplay: "never" })
-            : "—"
+          data.peak ? (
+            <Amount value={BigInt(data.peak.amount)} signDisplay="never" />
+          ) : (
+            "—"
+          )
         }
         hint={data.peak ? bucketTitle(data.peak.on, data.bucket) : "nothing yet"}
       />
@@ -68,7 +75,10 @@ export function SummaryCards({
         value={top ? top.name : "—"}
         hint={
           top
-            ? formatMoney(BigInt(top.total), { signDisplay: "never" })
+            ? formatMoney(BigInt(top.total), {
+                signDisplay: "never",
+                paise: "trim",
+              })
             : "nothing yet"
         }
       />
@@ -83,12 +93,12 @@ export function SummaryCards({
         }
         hint={
           previous > 0n
-            ? `was ${formatMoney(previous, { signDisplay: "never" })}`
+            ? `was ${formatMoney(previous, { signDisplay: "never", paise: "trim" })}`
             : "nothing to compare"
         }
         tone={goodDirection === null ? undefined : goodDirection ? "good" : "bad"}
       />
-    </div>
+    </>
   );
 }
 
@@ -101,13 +111,16 @@ function Card({
 }: {
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   label: string;
-  value: string;
+  value: React.ReactNode;
   hint: string;
   tone?: "good" | "bad";
 }) {
   return (
-    <div className="bg-card rounded-xl border p-3">
-      <p className="text-muted-foreground flex items-center gap-1.5 text-label font-semibold">
+    // `justify-center` because these sit beside a tall donut in the bento and
+    // stretch to its height. Content pinned to the top of a 300px card reads
+    // as a mistake; centred, the empty space is margin.
+    <div className="bento flex flex-col justify-center p-3">
+      <p className="text-ink-2 text-label flex items-center gap-1.5 font-semibold">
         <Icon className="size-3.5" aria-hidden={true} />
         <span className="truncate">{label}</span>
       </p>

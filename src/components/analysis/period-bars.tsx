@@ -46,12 +46,15 @@ export function PeriodBars({
   bucket,
   incomeTotal,
   expenseTotal,
+  className,
 }: {
   period: Period;
   series: SeriesPoint[];
   bucket: "day" | "month";
   incomeTotal: string;
   expenseTotal: string;
+  /** Where the bento grid puts this card. */
+  className?: string;
 }) {
   const compact = useCompactMoney();
   const trigger = useTooltipTrigger();
@@ -75,6 +78,7 @@ export function PeriodBars({
   return (
     <ChartCard
       title={bucket === "day" ? "Day by day" : "Month by month"}
+      className={className}
       subtitle={
         <span className="flex items-center gap-3">
           <Swatch color={CHART_COLORS.income} label="Income" />

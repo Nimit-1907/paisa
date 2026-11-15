@@ -98,7 +98,7 @@ export function AnalysisScreen({
       <div
         role="radiogroup"
         aria-label="Income or expense"
-        className="bg-muted grid grid-cols-2 gap-1 rounded-xl p-1"
+        className="bg-muted rounded-control grid grid-cols-2 gap-1 p-1"
       >
         {(["expense", "income"] as const).map((value) => {
           const active = kind === value;
@@ -111,7 +111,7 @@ export function AnalysisScreen({
               onClick={() => chooseKind(value)}
               className={cn(
                 "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
-                "text-muted-foreground",
+                "text-ink-2",
                 active && value === "expense" && "bg-expense-soft text-expense",
                 active && value === "income" && "bg-income-soft text-income",
                 active && "shadow-sm",
@@ -133,37 +133,56 @@ export function AnalysisScreen({
         />
       ) : (
         <>
-          {insight ? (
-            <p className="bg-card rounded-2xl border px-4 py-3 text-sm font-semibold">
-              {insight}
-            </p>
-          ) : null}
+          {/*
+            A bento grid: two columns on a phone, six from `lg`.
 
-          <SummaryCards data={data} kind={kind} />
+            Six because the one card worth more room is the donut — it is
+            the answer to "where did it go", and at a third of the width its
+            labels collide. The four stat tiles sit two-by-two beside it,
+            and the two time charts take half the width each: they are read
+            left to right, so they want length more than height.
 
-          {data.categories.length > 0 ? (
-            <CategoryDonut
-              slices={data.categories}
-              total={data.total}
-              kind={kind}
-              recordsHref={recordsHref}
-            />
-          ) : null}
+            On a phone it is a stack, in the order the questions come: the
+            sentence, then how much a day, then where, then when.
+          */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2 grid grid-cols-2 gap-3 lg:grid-cols-6">
+              {insight ? (
+                <p className="bento col-span-2 px-4 py-3 text-sm font-semibold lg:col-span-6">
+                  {insight}
+                </p>
+              ) : null}
 
-          <PeriodBars
-            period={period}
-            series={data.series}
-            bucket={data.bucket}
-            incomeTotal={data.incomeTotal}
-            expenseTotal={data.expenseTotal}
-          />
+              {data.categories.length > 0 ? (
+                <CategoryDonut
+                  slices={data.categories}
+                  total={data.total}
+                  kind={kind}
+                  recordsHref={recordsHref}
+                  className="col-span-2 lg:col-span-4 lg:row-span-2"
+                />
+              ) : null}
 
-          <BalanceLine
-            points={data.balances}
-            bucket={data.bucket}
-            accounts={accounts}
-            accountId={accountId}
-          />
+              <SummaryCards data={data} kind={kind} />
+
+              <PeriodBars
+                period={period}
+                series={data.series}
+                bucket={data.bucket}
+                incomeTotal={data.incomeTotal}
+                expenseTotal={data.expenseTotal}
+                className="col-span-2 lg:col-span-3"
+              />
+
+              <BalanceLine
+                points={data.balances}
+                bucket={data.bucket}
+                accounts={accounts}
+                accountId={accountId}
+                className="col-span-2 lg:col-span-3"
+              />
+            </div>
+          </div>
         </>
       )}
     </div>

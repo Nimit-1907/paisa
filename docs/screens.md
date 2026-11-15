@@ -432,3 +432,54 @@ the Phase 11 ending, with Undo, or Rules where a repeat was created. Partial
 data does not apply.
 
 **Screenshots.** `sheet-390-transfer`, `sheet-390-discard`.
+
+---
+
+## 13. Analysis (`/analysis`)
+
+**Purpose.** Answer three questions in order: how much a day, where it went,
+and when.
+
+**Layout decisions**
+
+- The period control (Week | Month | Year | Range with arrows) and the
+  plain-sentence insight were built in Phases 8 and 10 and are unchanged.
+- **A bento grid**: two columns on a phone, six from `lg`. Six because the one
+  card worth more room is the donut — it is the answer to "where did it go",
+  and at a third of the width its labels collide. The four stat tiles sit
+  two-by-two beside it; the two time charts take half the width each, since
+  they are read left to right and want length more than height.
+- `SummaryCards` returns a **fragment**, not a grid of its own. These four are
+  cells in the screen's bento, so the page places them; a nested grid would
+  make them one cell wearing four hats and they would not line up with the
+  cards beside them.
+- The tiles stretch to the donut's height, so their content is vertically
+  centred. Content pinned to the top of a 317px card reads as a mistake;
+  centred, the empty space is margin.
+- Every card is the shared `bento` anatomy, and every figure goes through
+  `Amount` — the donut's legend was printing `₹22,000.00` beside rows that
+  were not.
+- "View as table" was already on each chart, and the chart colours were
+  already the app's own tokens rather than hex strings, so a fill resolves
+  against the element's computed style and follows light and dark without a
+  theme hook.
+
+**Measured** at 390 / 768 / 1280 / 1536: the grid is 2 columns up to 768 and
+6 from 1280; the donut is 637×646 at 1280 and 764×646 at 1536; the four tiles
+are 150px and 182px wide; the two time charts are exactly half the row each;
+no horizontal overflow at any width.
+
+**States.** Loading is `analysis/loading.tsx`, in the shape the charts arrive
+in. Empty is "Nothing in this period" with an Add record button. Error and
+offline belong to the shell. Success does not apply — nothing here writes.
+Partial data: the "average per day" divides by the days that have *happened*,
+not the days on the calendar, and says "so far"; "vs previous" says "nothing
+to compare" rather than printing a percentage against zero.
+
+**Not done: the per-category detail screen.** The spec asks for a tap on a
+category to open a six-month trend with its records and its budget. The donut's
+legend already links to that category's records, which is the part that
+exists; the six-month trend needs a query that does not exist yet. It is
+listed in the gaps at the end of this document rather than half-built.
+
+**Screenshots.** `analysis-390-light`, `analysis-1280-light`.

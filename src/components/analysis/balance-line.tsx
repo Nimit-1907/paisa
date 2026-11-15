@@ -57,12 +57,15 @@ export function BalanceLine({
   bucket,
   accounts,
   accountId,
+  className,
 }: {
   points: BalancePoint[];
   bucket: "day" | "month";
   accounts: BalanceAccount[];
   /** Null means every account counted in the total. */
   accountId: string | null;
+  /** Where the bento grid puts this card. */
+  className?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -96,6 +99,7 @@ export function BalanceLine({
   return (
     <ChartCard
       title="Balance"
+      className={className}
       subtitle={selected ? selected.name : "All accounts in your total"}
       actions={
         <DropdownMenu>

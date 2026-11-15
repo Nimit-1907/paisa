@@ -81,12 +81,12 @@ export function ChartCard({
   className?: string;
 }) {
   return (
-    <section className={cn("bg-card rounded-2xl border p-3 sm:p-4", className)}>
+    <section className={cn("bento p-3 sm:p-4", className)}>
       <div className="mb-2 flex items-start justify-between gap-2 px-1">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">{title}</h2>
           {subtitle ? (
-            <p className="text-muted-foreground truncate text-xs">{subtitle}</p>
+            <p className="text-ink-2 truncate text-xs">{subtitle}</p>
           ) : null}
         </div>
         {actions}
