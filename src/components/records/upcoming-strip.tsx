@@ -98,7 +98,7 @@ export function UpcomingStrip({
   return (
     <section
       aria-label="Upcoming"
-      className="bg-card overflow-hidden rounded-2xl border"
+      className="bg-card overflow-hidden rounded-card border"
     >
       <button
         type="button"

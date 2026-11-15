@@ -31,7 +31,7 @@ export function IconPicker({
       role="radiogroup"
       aria-label={label}
       className={cn(
-        "bg-muted/40 grid max-h-44 grid-cols-6 gap-1 overflow-y-auto overscroll-contain rounded-xl p-2 sm:grid-cols-8",
+        "bg-muted/40 grid max-h-44 grid-cols-6 gap-1 overflow-y-auto overscroll-contain rounded-control p-2 sm:grid-cols-8",
         className,
       )}
     >
@@ -51,7 +51,7 @@ export function IconPicker({
               "focus-visible:ring-ring flex size-11 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none",
               active
                 ? "text-white shadow-sm"
-                : "text-muted-foreground hoverable:bg-background hoverable:text-foreground",
+                : "text-ink-2 hoverable:bg-background hoverable:text-foreground",
             )}
             style={active ? { backgroundColor: color ?? undefined } : undefined}
           >

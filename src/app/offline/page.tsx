@@ -21,20 +21,20 @@ export const metadata: Metadata = { title: "Offline" };
 export default function OfflinePage() {
   return (
     <main className="pt-safe pb-safe flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <span className="bg-muted text-muted-foreground mb-5 flex size-14 items-center justify-center rounded-2xl">
+      <span className="bg-muted text-ink-2 mb-5 flex size-14 items-center justify-center rounded-card">
         <CloudOff className="size-7" aria-hidden="true" />
       </span>
 
       <h1 className="text-xl font-semibold tracking-tight">You are offline</h1>
 
-      <p className="text-muted-foreground mt-2 max-w-[42ch] text-sm">
+      <p className="text-ink-2 mt-2 max-w-[42ch] text-sm">
         Paisa needs a connection to load your records. Pages you have already
         opened will still work — this one could not be reached.
       </p>
 
       <Link
         href="/records"
-        className="bg-primary text-primary-foreground focus-visible:ring-ring mt-6 inline-flex h-11 items-center rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+        className="bg-primary text-primary-foreground focus-visible:ring-ring mt-6 inline-flex h-11 items-center rounded-control px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
       >
         Try again
       </Link>

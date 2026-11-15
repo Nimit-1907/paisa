@@ -823,7 +823,7 @@ function LoadMore({
           <Skeleton className="rounded-card h-16" />
         </>
       ) : (
-        <Skeleton className="h-16 rounded-xl opacity-50" />
+        <Skeleton className="h-16 rounded-control opacity-50" />
       )}
       <span className="sr-only">Loading more records</span>
     </div>

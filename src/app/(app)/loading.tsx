@@ -20,7 +20,7 @@ export default function AppLoading() {
       </div>
 
       {/* The summary card: label, the month's number, the two figures. */}
-      <div className="bg-card space-y-2 rounded-2xl border px-4 py-3">
+      <div className="bg-card space-y-2 rounded-card border px-4 py-3">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-3 w-48" />
@@ -34,7 +34,7 @@ export default function AppLoading() {
       {[0, 1].map((group) => (
         <div key={group} className="space-y-1.5">
           <Skeleton className="ml-1 h-3 w-28" />
-          <div className="bg-card divide-border divide-y rounded-xl border">
+          <div className="bg-card divide-border divide-y rounded-card border">
             {[0, 1, 2].map((row) => (
               <div key={row} className="flex min-h-16 items-center gap-3 px-3 py-2">
                 <Skeleton className="size-10 shrink-0 rounded-full" />

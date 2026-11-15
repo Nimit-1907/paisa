@@ -762,10 +762,10 @@ export function RecordSheet({
                         aria-pressed={active}
                         onClick={() => setCategoryId(category.id)}
                         className={cn(
-                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-control border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                           active
                             ? "border-primary bg-primary/5"
-                            : "text-muted-foreground hoverable:bg-muted/60",
+                            : "text-ink-2 hoverable:bg-muted/60",
                         )}
                       >
                         <ColorDot
@@ -810,16 +810,16 @@ export function RecordSheet({
           onClick={() => setMoreOpen((open) => !open)}
           className={cn(
             PRESSABLE,
-            "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 rounded-xl border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
+            "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 rounded-control border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
           )}
         >
           <span className="flex-1 text-left">More options</span>
-          <span className="text-muted-foreground truncate text-xs font-normal">
+          <span className="text-ink-2 truncate text-xs font-normal">
             {moreSummary}
           </span>
           <ChevronDown
             className={cn(
-              "text-muted-foreground size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
+              "text-ink-2 size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
               moreOpen && "rotate-180",
             )}
             aria-hidden="true"
@@ -875,10 +875,10 @@ export function RecordSheet({
           </FormRow>
 
           {editing ? null : (
-            <div className="space-y-2 rounded-xl border p-3">
+            <div className="space-y-2 rounded-control border p-3">
               <div className="flex items-center gap-2">
                 <Repeat
-                  className="text-muted-foreground size-4 shrink-0"
+                  className="text-ink-2 size-4 shrink-0"
                   aria-hidden="true"
                 />
                 <Label htmlFor="repeat" className="flex-1">
@@ -905,7 +905,7 @@ export function RecordSheet({
                         "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                         active
                           ? "border-primary bg-primary/10 text-primary"
-                          : "text-muted-foreground hoverable:bg-muted",
+                          : "text-ink-2 hoverable:bg-muted",
                       )}
                     >
                       {value === "none" ? "No" : REPEAT_LABELS[value]}

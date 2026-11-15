@@ -247,7 +247,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
               );
               router.refresh();
             }}
-            className="bg-card divide-border divide-y overflow-hidden rounded-xl border"
+            className="bg-card divide-border divide-y overflow-hidden rounded-card border"
             renderItem={(account, { handleProps, isDragging }) => (
               <AccountRow
                 account={account}
@@ -295,7 +295,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
           </button>
 
           {showArchived ? (
-            <ul className="bg-card divide-border mt-1.5 divide-y overflow-hidden rounded-xl border opacity-80">
+            <ul className="bg-card divide-border mt-1.5 divide-y overflow-hidden rounded-card border opacity-80">
               {archived.map((account) => (
                 <li key={account.id}>
                   <AccountRow

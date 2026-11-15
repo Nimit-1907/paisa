@@ -263,7 +263,7 @@ export function BudgetSheet({
           )}
         </FormRow>
 
-        <label className="hoverable:bg-muted/60 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors">
+        <label className="hoverable:bg-muted/60 flex min-h-11 cursor-pointer items-start gap-3 rounded-control border p-3 transition-colors">
           <input
             type="checkbox"
             checked={applyForward}
@@ -272,7 +272,7 @@ export function BudgetSheet({
           />
           <span className="min-w-0">
             <span className="text-sm font-semibold">Apply to all future months</span>
-            <span className="text-muted-foreground mt-0.5 block text-xs">
+            <span className="text-ink-2 mt-0.5 block text-xs">
               Copies this limit into the next {APPLY_FORWARD_MONTHS} months,
               stopping at any month you have already set to something else.
             </span>

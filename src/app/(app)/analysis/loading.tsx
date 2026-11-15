@@ -7,20 +7,20 @@ export default function AnalysisLoading() {
     <PageShell width="wide">
       <div className="space-y-4 pt-4" aria-hidden="true">
       <Skeleton className="h-8 w-28" />
-      <Skeleton className="h-11 w-full rounded-xl" />
-      <Skeleton className="h-11 w-full rounded-xl" />
-      <Skeleton className="h-14 w-full rounded-2xl" />
+      <Skeleton className="h-11 w-full rounded-control" />
+      <Skeleton className="h-11 w-full rounded-control" />
+      <Skeleton className="h-14 w-full rounded-card" />
 
       <div className="grid grid-cols-2 gap-2">
         {[0, 1, 2, 3].map((card) => (
-          <Skeleton key={card} className="h-20 rounded-2xl" />
+          <Skeleton key={card} className="h-20 rounded-card" />
         ))}
       </div>
 
       {[0, 1].map((chart) => (
-        <div key={chart} className="bg-card space-y-3 rounded-2xl border p-3">
+        <div key={chart} className="bg-card space-y-3 rounded-card border p-3">
           <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-[200px] w-full rounded-xl" />
+          <Skeleton className="h-[200px] w-full rounded-control" />
         </div>
       ))}
     </div>

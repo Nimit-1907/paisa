@@ -222,7 +222,7 @@ export function CategoryFormSheet({
               </Button>
 
               {!canDelete ? (
-                <p className="text-muted-foreground text-center text-xs">
+                <p className="text-ink-2 text-center text-xs">
                   {category.transactionCount > 0
                     ? `Used by ${category.transactionCount} ${
                         category.transactionCount === 1 ? "record" : "records"

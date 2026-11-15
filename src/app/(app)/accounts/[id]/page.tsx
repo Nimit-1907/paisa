@@ -85,11 +85,11 @@ export default async function AccountDetailPage({
         }
       />
 
-      <section className="bg-card rounded-2xl border p-4">
+      <section className="bg-card rounded-card border p-4">
         <div className="flex items-center gap-3">
           <ColorDot color={account.color} icon={account.icon} size="lg" />
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            <p className="text-ink-2 text-xs font-semibold tracking-wide uppercase">
               Balance
             </p>
             <p
@@ -104,7 +104,7 @@ export default async function AccountDetailPage({
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-income-soft rounded-xl p-3">
+          <div className="bg-income-soft rounded-control p-3">
             <p className="text-income flex items-center gap-1 text-xs font-semibold">
               <ArrowDownLeft className="size-3.5" aria-hidden="true" />
               In this month
@@ -114,7 +114,7 @@ export default async function AccountDetailPage({
             </p>
           </div>
 
-          <div className="bg-expense-soft rounded-xl p-3">
+          <div className="bg-expense-soft rounded-control p-3">
             <p className="text-expense flex items-center gap-1 text-xs font-semibold">
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
               Out this month
@@ -126,7 +126,7 @@ export default async function AccountDetailPage({
         </div>
       </section>
 
-      <h2 className="text-muted-foreground mt-5 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-ink-2 mt-5 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
         Records
       </h2>
 
@@ -138,7 +138,7 @@ export default async function AccountDetailPage({
           action={<AddRecordButton />}
         />
       ) : (
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+        <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
           {transactions.map((transaction) => (
             <li
               key={transaction.id}
@@ -163,7 +163,7 @@ export default async function AccountDetailPage({
                     transaction.categoryName ??
                     (transaction.type === "transfer" ? "Transfer" : "Record")}
                 </span>
-                <span className="text-muted-foreground block truncate text-xs">
+                <span className="text-ink-2 block truncate text-xs">
                   {dateFormatter.format(new Date(transaction.occurredAt))}
                   {transaction.counterparty
                     ? ` · ${transaction.signedAmount > 0n ? "from" : "to"} ${transaction.counterparty}`

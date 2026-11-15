@@ -67,11 +67,11 @@ export function ChangePasswordCard() {
     errorField === field ? (error ?? undefined) : undefined;
 
   return (
-    <section className="bg-card rounded-2xl border p-4">
+    <section className="bg-card rounded-card border p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">Password</h2>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-ink-2 text-xs">
             Change the password you sign in with.
           </p>
         </div>

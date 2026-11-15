@@ -11,7 +11,7 @@ export default function BudgetsLoading() {
         <Skeleton className="h-11 w-36 rounded-lg" />
       </div>
 
-      <div className="bg-card rounded-2xl border p-4">
+      <div className="bg-card rounded-card border p-4">
         <div className="flex items-center gap-4">
           <Skeleton className="size-[72px] shrink-0 rounded-full" />
           <div className="flex-1 space-y-2">
@@ -28,7 +28,7 @@ export default function BudgetsLoading() {
 
       <div className="space-y-1.5">
         <Skeleton className="ml-1 h-3 w-24" />
-        <div className="bg-card divide-border divide-y rounded-xl border">
+        <div className="bg-card divide-border divide-y rounded-card border">
           {[0, 1, 2, 3].map((row) => (
             <div key={row} className="flex items-center gap-3 px-3 py-3">
               <Skeleton className="size-10 shrink-0 rounded-full" />

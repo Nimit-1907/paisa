@@ -35,7 +35,7 @@ export function BottomNav() {
                   "focus-visible:ring-ring rounded-lg focus-visible:ring-2 focus-visible:outline-none",
                   active
                     ? "text-primary"
-                    : "text-muted-foreground active:text-foreground",
+                    : "text-ink-2 active:text-foreground",
                 )}
               >
                 <span

@@ -127,7 +127,7 @@ export function PullToRefresh({
       >
         <span
           className={cn(
-            "text-muted-foreground flex items-center gap-2 text-xs font-semibold",
+            "text-ink-2 flex items-center gap-2 text-xs font-semibold",
             ready && !refreshing && "text-primary",
           )}
         >

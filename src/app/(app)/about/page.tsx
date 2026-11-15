@@ -34,14 +34,14 @@ export default function AboutPage() {
       <PageHeader title="About" description="Paisa — expense tracker" />
 
       <div className="space-y-4">
-        <section className="bg-card rounded-2xl border p-4">
+        <section className="bg-card rounded-card border p-4">
           <p className="text-sm">
             Paisa keeps track of what you spend, earn and move between your own
             accounts: records by the day, limits by the month, and charts that
             add up to the same numbers the list shows.
           </p>
 
-          <p className="text-muted-foreground mt-3 text-xs">
+          <p className="text-ink-2 mt-3 text-xs">
             Nothing here is locked in — the{" "}
             <Link href="/export" className="text-primary underline">
               Export
@@ -57,16 +57,16 @@ export default function AboutPage() {
             return (
               <li
                 key={point.title}
-                className="bg-card flex gap-3 rounded-xl border p-3"
+                className="bg-card flex gap-3 rounded-card border p-3"
               >
-                <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <span className="bg-muted text-ink-2 flex size-9 shrink-0 items-center justify-center rounded-lg">
                   <Icon className="size-[18px]" aria-hidden="true" />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold">
                     {point.title}
                   </span>
-                  <span className="text-muted-foreground block text-xs">
+                  <span className="text-ink-2 block text-xs">
                     {point.body}
                   </span>
                 </span>

@@ -168,18 +168,18 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="text-muted-foreground mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-ink-2 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
         {title} · {count}
       </h2>
 
       {count === 0 ? (
         empty ? (
-          <p className="text-muted-foreground bg-card rounded-xl border border-dashed px-4 py-6 text-center text-sm">
+          <p className="text-ink-2 bg-card rounded-card border border-dashed px-4 py-6 text-center text-sm">
             {empty}
           </p>
         ) : null
       ) : (
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+        <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
           {children}
         </ul>
       )}
@@ -219,13 +219,13 @@ function RuleItem({
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{title}</span>
-          <span className="text-muted-foreground block truncate text-xs">
+          <span className="text-ink-2 block truncate text-xs">
             {describeSchedule(scheduleOf(rule))} · {rule.accountName}
           </span>
           <span
             className={cn(
               "block truncate text-xs",
-              rule.active ? "text-primary" : "text-muted-foreground",
+              rule.active ? "text-primary" : "text-ink-2",
             )}
           >
             {rule.active
@@ -241,7 +241,7 @@ function RuleItem({
             "amount shrink-0 text-right text-sm font-semibold",
             rule.type === "income" && "text-income",
             rule.type === "transfer" && "text-transfer",
-            !rule.active && "text-muted-foreground",
+            !rule.active && "text-ink-2",
           )}
         >
           {rule.type === "income" ? "+" : rule.type === "expense" ? "−" : ""}

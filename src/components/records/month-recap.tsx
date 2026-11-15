@@ -88,7 +88,7 @@ export function MonthRecap({
   return (
     <section
       aria-label={`${monthLabel} in summary`}
-      className="bg-card relative rounded-2xl border p-4"
+      className="bg-card relative rounded-card border p-4"
     >
       <button
         type="button"
@@ -96,13 +96,13 @@ export function MonthRecap({
         aria-label={`Dismiss the ${monthLabel} summary`}
         className={cn(
           PRESSABLE,
-          "text-muted-foreground hoverable:bg-muted hoverable:text-foreground focus-visible:ring-ring absolute top-2 right-2 flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none",
+          "text-ink-2 hoverable:bg-muted hoverable:text-foreground focus-visible:ring-ring absolute top-2 right-2 flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none",
         )}
       >
         <X className="size-4" aria-hidden="true" />
       </button>
 
-      <h2 className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
+      <h2 className="text-ink-2 text-label font-semibold tracking-wide uppercase">
         {monthLabel} in summary
       </h2>
 
@@ -110,7 +110,7 @@ export function MonthRecap({
         {spent} spent
       </p>
 
-      <ul className="text-muted-foreground mt-2 space-y-0.5 text-sm">
+      <ul className="text-ink-2 mt-2 space-y-0.5 text-sm">
         {facts.map((fact) => (
           <li key={fact}>{fact}</li>
         ))}

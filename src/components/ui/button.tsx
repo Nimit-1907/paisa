@@ -47,8 +47,8 @@ const buttonVariants = cva(
          * hits on a phone: primary actions, nav affordances, icon buttons.
          */
         touch:
-          "h-11 gap-2 rounded-xl px-4 text-sm has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        "icon-touch": "size-11 rounded-xl",
+          "h-11 gap-2 rounded-control px-4 text-sm has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        "icon-touch": "size-11 rounded-control",
       },
     },
     defaultVariants: {

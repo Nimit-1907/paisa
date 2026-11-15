@@ -82,7 +82,7 @@ export function CategoriesScreen({
       <div
         role="tablist"
         aria-label="Category kind"
-        className="bg-muted grid grid-cols-2 gap-1 rounded-xl p-1"
+        className="bg-muted grid grid-cols-2 gap-1 rounded-control p-1"
       >
         {CATEGORY_KINDS.map((value) => {
           const selected = value === kind;
@@ -102,7 +102,7 @@ export function CategoriesScreen({
                   ? value === "income"
                     ? "bg-income-soft text-income shadow-sm"
                     : "bg-expense-soft text-expense shadow-sm"
-                  : "text-muted-foreground hoverable:text-foreground",
+                  : "text-ink-2 hoverable:text-foreground",
               )}
             >
               {KIND_LABELS[value]}
@@ -126,7 +126,7 @@ export function CategoriesScreen({
       ) : (
         <>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-muted-foreground px-1 text-xs font-semibold tracking-wider uppercase">
+            <p className="text-ink-2 px-1 text-xs font-semibold tracking-wider uppercase">
               {active.length} {active.length === 1 ? "category" : "categories"}
             </p>
 
@@ -163,7 +163,7 @@ export function CategoriesScreen({
                 );
                 router.refresh();
               }}
-              className="bg-card divide-border divide-y overflow-hidden rounded-xl border"
+              className="bg-card divide-border divide-y overflow-hidden rounded-card border"
               renderItem={(category, { handleProps, isDragging }) => (
                 <div
                   className={cn(
@@ -186,7 +186,7 @@ export function CategoriesScreen({
                   <button
                     type="button"
                     onClick={() => openEdit(category)}
-                    className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-card border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                   >
                     <CategoryBadge category={category} size="lg" />
                     <span className="w-full truncate text-center text-xs font-semibold">
@@ -200,7 +200,7 @@ export function CategoriesScreen({
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="border-border/70 text-muted-foreground hoverable:border-border hoverable:text-foreground focus-visible:ring-ring flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="border-border/70 text-ink-2 hoverable:border-border hoverable:text-foreground focus-visible:ring-ring flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-control border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <Plus className="size-5" aria-hidden="true" />
                   <span className="text-xs font-semibold">Add</span>
@@ -217,7 +217,7 @@ export function CategoriesScreen({
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -229,7 +229,7 @@ export function CategoriesScreen({
 
           {showArchived ? (
             <>
-              <p className="text-muted-foreground mb-2 px-1 text-xs">
+              <p className="text-ink-2 mb-2 px-1 text-xs">
                 Still shown on the records that use them, but not offered when
                 you add something new.
               </p>
@@ -239,7 +239,7 @@ export function CategoriesScreen({
                     <button
                       type="button"
                       onClick={() => openEdit(category)}
-                      className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-xl border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                      className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-card border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <CategoryBadge category={category} size="lg" />
                       <span className="w-full truncate text-center text-xs font-semibold">

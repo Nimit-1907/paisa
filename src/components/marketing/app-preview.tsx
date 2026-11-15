@@ -27,12 +27,12 @@ export function AppPreview() {
             <span className="text-[13px] font-semibold tracking-tight">
               Records
             </span>
-            <span className="text-muted-foreground text-[11px]">Nov 2026</span>
+            <span className="text-ink-2 text-[11px]">Nov 2026</span>
           </div>
 
           <div className="space-y-2.5 p-3">
             {/* The month card, the same shape it has inside the app. */}
-            <div className="bg-card accent-wash relative overflow-hidden rounded-xl border px-3 py-2">
+            <div className="bg-card accent-wash relative overflow-hidden rounded-card border px-3 py-2">
               <p className="text-ink-3 text-[9px] font-semibold tracking-[0.08em] uppercase">
                 Left this month
               </p>
@@ -73,11 +73,11 @@ export function AppPreview() {
               </div>
             </div>
 
-            <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">
+            <p className="text-ink-2 text-[9px] font-semibold tracking-wider uppercase">
               Today
             </p>
 
-            <div className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+            <div className="bg-card divide-border divide-y overflow-hidden rounded-card border">
               {ROWS.map((row) => (
                 <div key={row.name} className="flex items-center gap-2 px-2.5 py-2">
                   <span
@@ -88,7 +88,7 @@ export function AppPreview() {
                     <span className="block truncate text-[11px] font-semibold">
                       {row.name}
                     </span>
-                    <span className="text-muted-foreground block truncate text-[9px]">
+                    <span className="text-ink-2 block truncate text-[9px]">
                       {row.account}
                     </span>
                   </span>
@@ -111,7 +111,7 @@ export function AppPreview() {
                     className={
                       index === 0
                         ? "text-primary text-[8px] font-semibold"
-                        : "text-muted-foreground text-[8px]"
+                        : "text-ink-2 text-[8px]"
                     }
                   >
                     {tab}

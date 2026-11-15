@@ -264,7 +264,7 @@ export function RuleSheet({
           )}
         </FormRow>
 
-        <div className="space-y-2 rounded-xl border p-3">
+        <div className="space-y-2 rounded-control border p-3">
           <Label id="rule-frequency-label">Repeats</Label>
 
           <div
@@ -285,7 +285,7 @@ export function RuleSheet({
                     "focus-visible:ring-ring h-11 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hoverable:bg-muted",
+                      : "text-ink-2 hoverable:bg-muted",
                   )}
                 >
                   {REPEAT_LABELS[value]}
@@ -354,7 +354,7 @@ export function RuleSheet({
           </FormRow>
 
           {preview ? (
-            <p className="text-muted-foreground text-xs" aria-live="polite">
+            <p className="text-ink-2 text-xs" aria-live="polite">
               {preview}, starting {nextRunOn}
             </p>
           ) : null}

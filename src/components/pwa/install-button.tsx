@@ -87,7 +87,7 @@ export function InstallButton() {
 
   if (isIos) {
     return (
-      <p className="text-muted-foreground bg-card flex items-start gap-2 rounded-xl border p-3 text-xs">
+      <p className="text-ink-2 bg-card flex items-start gap-2 rounded-card border p-3 text-xs">
         <SquarePlus className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>
           To install Paisa, tap{" "}

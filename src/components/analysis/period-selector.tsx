@@ -116,7 +116,7 @@ export function PeriodSelector({
       <div
         role="radiogroup"
         aria-label="Period"
-        className="bg-muted grid grid-cols-4 gap-1 rounded-xl p-1"
+        className="bg-muted grid grid-cols-4 gap-1 rounded-control p-1"
       >
         {PERIOD_KINDS.map((kind) => {
           const active = period.kind === kind;
@@ -131,7 +131,7 @@ export function PeriodSelector({
                 "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 active
                   ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hoverable:bg-background/60",
+                  : "text-ink-2 hoverable:bg-background/60",
               )}
             >
               {PERIOD_LABELS[kind]}

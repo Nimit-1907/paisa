@@ -49,7 +49,7 @@ export default function FaqPage() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Questions
       </h1>
-      <p className="text-muted-foreground mt-3 max-w-[56ch]">
+      <p className="text-ink-2 mt-3 max-w-[56ch]">
         If something here is not answered, the{" "}
         <Link href="/privacy" className="text-primary underline">
           privacy page
@@ -59,9 +59,9 @@ export default function FaqPage() {
 
       <dl className="mt-8 space-y-3">
         {FAQS.map((faq) => (
-          <div key={faq.question} className="bg-card rounded-2xl border p-4">
+          <div key={faq.question} className="bg-card rounded-card border p-4">
             <dt className="font-semibold">{faq.question}</dt>
-            <dd className="text-muted-foreground mt-1.5 text-sm">
+            <dd className="text-ink-2 mt-1.5 text-sm">
               {faq.answer}
             </dd>
           </div>

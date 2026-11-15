@@ -122,7 +122,7 @@ export function ChartTooltip({
   const currency = useCurrency();
 
   return (
-    <div className="bg-popover text-popover-foreground rounded-xl border px-3 py-2 text-xs shadow-md">
+    <div className="bg-popover text-popover-foreground rounded-control border px-3 py-2 text-xs shadow-md">
       <p className="font-semibold">{title}</p>
 
       <ul className="mt-1 space-y-0.5">
@@ -135,7 +135,7 @@ export function ChartTooltip({
                 style={{ backgroundColor: row.color }}
               />
             ) : null}
-            <span className="text-muted-foreground">{row.label}</span>
+            <span className="text-ink-2">{row.label}</span>
             <span className="amount ml-auto font-semibold tabular-nums">
               {formatWith(currency, BigInt(row.value), {
                 signDisplay: "never",
@@ -145,7 +145,7 @@ export function ChartTooltip({
         ))}
       </ul>
 
-      {hint ? <p className="text-muted-foreground mt-1">{hint}</p> : null}
+      {hint ? <p className="text-ink-2 mt-1">{hint}</p> : null}
     </div>
   );
 }
@@ -180,14 +180,14 @@ export function ChartTable({
 
   return (
     <details className="mt-3 border-t pt-2">
-      <summary className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring inline-flex min-h-11 cursor-pointer items-center text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none">
+      <summary className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring inline-flex min-h-11 cursor-pointer items-center text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none">
         View as table
       </summary>
 
       <div className="mt-1 max-h-64 overflow-y-auto">
         <table className="w-full text-xs">
           <caption className="sr-only">{caption}</caption>
-          <thead className="text-muted-foreground sticky top-0 bg-card">
+          <thead className="text-ink-2 sticky top-0 bg-card">
             <tr>
               {columns.map((column, index) => (
                 <th

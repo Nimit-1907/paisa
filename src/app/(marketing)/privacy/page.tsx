@@ -29,14 +29,14 @@ export default function PrivacyPage() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Privacy
       </h1>
-      <p className="text-muted-foreground mt-3">
+      <p className="text-ink-2 mt-3">
         Short version: {SITE.name} holds the records you type and the email
         address you signed up with. Nothing else, and nobody else.
       </p>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold tracking-tight">What is stored</h2>
-        <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm">
+        <ul className="text-ink-2 mt-2 list-disc space-y-1.5 pl-5 text-sm">
           <li>
             Your email address and a hashed password, so you can sign back in.
             A display name, if you set one.
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold tracking-tight">
           Who can read it
         </h2>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="text-ink-2 mt-2 text-sm">
           You. Every table carries the id of the account that owns the row, and
           Postgres row level security refuses any query that asks for someone
           else&rsquo;s. That is a rule the database enforces on every read and
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold tracking-tight">
           What is never collected
         </h2>
-        <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm">
+        <ul className="text-ink-2 mt-2 list-disc space-y-1.5 pl-5 text-sm">
           <li>
             No bank credentials. {SITE.name} has no connection to any bank and
             never asks you to sign in to one.
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold tracking-tight">Email</h2>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="text-ink-2 mt-2 text-sm">
           Your address is used for exactly three messages: confirming the
           account, resetting a password, and confirming an address change.
           There is no newsletter to unsubscribe from.
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold tracking-tight">
           Taking it with you, or deleting it
         </h2>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="text-ink-2 mt-2 text-sm">
           The Export screen hands you every record as a CSV for any date range,
           or a month as a PDF. Deleting your account from Settings removes the
           login and every row that belongs to it in the same transaction — the
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold tracking-tight">Cookies</h2>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="text-ink-2 mt-2 text-sm">
           Two, both needed to keep you signed in, both set by this site. There
           is no consent banner because there is nothing here to consent to.
         </p>

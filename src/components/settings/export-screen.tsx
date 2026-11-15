@@ -97,16 +97,16 @@ export function ExportScreen({
 
   return (
     <div className="space-y-4">
-      <section className="bg-card space-y-4 rounded-2xl border p-4">
+      <section className="bg-card space-y-4 rounded-card border p-4">
         <div>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
             <FileSpreadsheet
-              className="text-muted-foreground size-4"
+              className="text-ink-2 size-4"
               aria-hidden="true"
             />
             Records as CSV
           </h2>
-          <p className="text-muted-foreground mt-1 text-xs">
+          <p className="text-ink-2 mt-1 text-xs">
             Every record between two dates: date, type, category, account,
             amount and note. Opens in Excel, Numbers or Sheets.
           </p>
@@ -157,16 +157,16 @@ export function ExportScreen({
         </Button>
       </section>
 
-      <section className="bg-card space-y-4 rounded-2xl border p-4">
+      <section className="bg-card space-y-4 rounded-card border p-4">
         <div>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
             <FileText
-              className="text-muted-foreground size-4"
+              className="text-ink-2 size-4"
               aria-hidden="true"
             />
             Monthly statement
           </h2>
-          <p className="text-muted-foreground mt-1 text-xs">
+          <p className="text-ink-2 mt-1 text-xs">
             A printable PDF for one month: the summary, spending by category
             against your budgets, and the full list of records.
           </p>
@@ -178,7 +178,7 @@ export function ExportScreen({
             id="export-month"
             value={month}
             onChange={(event) => setMonth(event.target.value)}
-            className="border-input bg-background focus-visible:ring-ring h-11 w-full rounded-xl border px-3 text-base focus-visible:ring-2 focus-visible:outline-none"
+            className="border-input bg-background focus-visible:ring-ring h-11 w-full rounded-card border px-3 text-base focus-visible:ring-2 focus-visible:outline-none"
           >
             {monthOptions.map((option) => (
               <option key={option.value} value={option.value}>

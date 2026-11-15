@@ -133,7 +133,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
 
   return (
     <div className="space-y-4">
-      <section className="bg-card space-y-4 rounded-2xl border p-4">
+      <section className="bg-card space-y-4 rounded-card border p-4">
         <FormRow
           id="display-name"
           label="Your name"
@@ -156,7 +156,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
             id="currency"
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 rounded-xl border px-3 text-left transition-colors hoverable:bg-muted/60 focus-visible:ring-2 focus-visible:outline-none"
+            className="focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 rounded-control border px-3 text-left transition-colors hoverable:bg-muted/60 focus-visible:ring-2 focus-visible:outline-none"
           >
             <span className="amount text-lg font-semibold">
               {currency?.symbol ?? "?"}
@@ -165,7 +165,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               <span className="block truncate text-sm font-semibold">
                 {currency?.name ?? currencyCode}
               </span>
-              <span className="text-muted-foreground block truncate text-xs">
+              <span className="text-ink-2 block truncate text-xs">
                 {currency
                   ? formatMoney(123456n, {
                       symbol: currency.symbol,
@@ -175,7 +175,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               </span>
             </span>
             <ChevronRight
-              className="text-muted-foreground size-4 shrink-0"
+              className="text-ink-2 size-4 shrink-0"
               aria-hidden="true"
             />
           </button>
@@ -185,7 +185,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               className={cn(
                 "text-xs",
                 currency.decimals === currentDecimals
-                  ? "text-muted-foreground"
+                  ? "text-ink-2"
                   : "text-warning font-semibold",
               )}
             >
@@ -220,7 +220,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                     "focus-visible:ring-ring h-11 min-w-11 rounded-lg border px-2.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "border-primary bg-primary/10 text-primary"
-                      : "text-muted-foreground hoverable:bg-muted",
+                      : "text-ink-2 hoverable:bg-muted",
                   )}
                 >
                   {day.label}
@@ -235,7 +235,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
           <div
             role="radiogroup"
             aria-labelledby="theme-label"
-            className="bg-muted grid grid-cols-3 gap-1 rounded-xl p-1"
+            className="bg-muted grid grid-cols-3 gap-1 rounded-control p-1"
           >
             {THEMES.map((option) => {
               const active = theme === option.value;
@@ -255,7 +255,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                     "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground",
+                      : "text-ink-2",
                   )}
                 >
                   {option.label}
@@ -331,7 +331,7 @@ function CurrencySheet({
       <SheetBody>
         <div className="relative">
           <Search
-            className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+            className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
             aria-hidden="true"
           />
           <Input
@@ -361,7 +361,7 @@ function CurrencySheet({
                     <span className="block truncate text-sm font-semibold">
                       {currency.name}
                     </span>
-                    <span className="text-muted-foreground block text-xs">
+                    <span className="text-ink-2 block text-xs">
                       {currency.code} ·{" "}
                       {formatMoney(123456n, {
                         symbol: currency.symbol,
@@ -378,7 +378,7 @@ function CurrencySheet({
           })}
 
           {results.length === 0 ? (
-            <li className="text-muted-foreground py-6 text-center text-sm">
+            <li className="text-ink-2 py-6 text-center text-sm">
               No currency matches “{query}”.
             </li>
           ) : null}

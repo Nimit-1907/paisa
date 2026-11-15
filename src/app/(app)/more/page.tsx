@@ -21,7 +21,7 @@ export default async function MorePage() {
     <PageShell>
       <PageHeader title="More" />
 
-      <div className="bg-card mb-4 flex items-center gap-3 rounded-xl border px-4 py-3">
+      <div className="bg-card mb-4 flex items-center gap-3 rounded-card border px-4 py-3">
         <span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
           {(profile?.display_name ?? user?.email ?? "?").slice(0, 1).toUpperCase()}
         </span>
@@ -29,13 +29,13 @@ export default async function MorePage() {
           <p className="truncate text-sm font-semibold">
             {profile?.display_name ?? "Your account"}
           </p>
-          <p className="text-muted-foreground truncate text-xs">
+          <p className="text-ink-2 truncate text-xs">
             {user?.email}
           </p>
         </div>
       </div>
 
-      <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+      <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
         {MORE_ITEMS.map((item) => {
           const Icon = item.icon;
           return (
@@ -44,19 +44,19 @@ export default async function MorePage() {
                 href={item.href}
                 className="hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-[60px] items-center gap-3 px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
-                <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <span className="bg-muted text-ink-2 flex size-9 shrink-0 items-center justify-center rounded-lg">
                   <Icon className="size-[18px]" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold">
                     {item.label}
                   </span>
-                  <span className="text-muted-foreground block truncate text-xs">
+                  <span className="text-ink-2 block truncate text-xs">
                     {item.description}
                   </span>
                 </span>
                 <ChevronRight
-                  className="text-muted-foreground size-4 shrink-0"
+                  className="text-ink-2 size-4 shrink-0"
                   aria-hidden="true"
                 />
               </Link>
@@ -65,10 +65,10 @@ export default async function MorePage() {
         })}
       </ul>
 
-      <div className="bg-card mt-4 flex items-center justify-between gap-3 rounded-xl border px-4 py-3">
+      <div className="bg-card mt-4 flex items-center justify-between gap-3 rounded-card border px-4 py-3">
         <div>
           <p className="text-sm font-semibold">Appearance</p>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-ink-2 text-xs">
             Light, dark or follow your device
           </p>
         </div>

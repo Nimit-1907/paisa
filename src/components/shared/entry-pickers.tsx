@@ -65,10 +65,10 @@ export function AccountSelect({
               onClick={() => onChange(account.id)}
               className={cn(
                 PRESSABLE,
-                "focus-visible:ring-ring relative flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
+                "focus-visible:ring-ring relative flex h-11 items-center gap-2 rounded-control border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
                 active
                   ? "border-primary ring-primary bg-primary/5 ring-1"
-                  : "text-muted-foreground hoverable:bg-muted/60",
+                  : "text-ink-2 hoverable:bg-muted/60",
               )}
             >
               <ColorDot color={account.color} icon={account.icon} size="sm" />
@@ -114,7 +114,7 @@ export function CategoryGrid({
                 onClick={() => onChange(category.id)}
                 className={cn(
                   PRESSABLE,
-                  "focus-visible:ring-ring relative flex w-full flex-col items-center gap-1 rounded-xl border px-1 py-2 focus-visible:ring-2 focus-visible:outline-none",
+                  "focus-visible:ring-ring relative flex w-full flex-col items-center gap-1 rounded-control border px-1 py-2 focus-visible:ring-2 focus-visible:outline-none",
                   active
                     ? "border-primary ring-primary bg-primary/5 ring-1"
                     : "border-transparent hoverable:bg-muted/60",

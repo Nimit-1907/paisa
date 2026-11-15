@@ -102,7 +102,7 @@ export function AmountKeypad({
       <label
         htmlFor="amount-field"
         className={cn(
-          "bg-muted/50 block rounded-2xl px-4 py-3 text-right",
+          "bg-muted/50 block rounded-card px-4 py-3 text-right",
           // The outline is the message under reduced motion, where the shake
           // never fires; with motion on, both happen.
           invalid && "ring-destructive ring-2",
@@ -139,7 +139,7 @@ export function AmountKeypad({
           aria-hidden="true"
           className={cn(
             "amount truncate text-3xl font-semibold tabular-nums",
-            value ? toneClass : "text-muted-foreground",
+            value ? toneClass : "text-ink-2",
           )}
         >
           {value ? `${currency.symbol}${value}` : `${currency.symbol}0`}
@@ -149,7 +149,7 @@ export function AmountKeypad({
           aria-live="polite"
           className={cn(
             "mt-0.5 h-5 text-sm",
-            result.ok && !invalid ? "text-muted-foreground" : "text-destructive",
+            result.ok && !invalid ? "text-ink-2" : "text-destructive",
           )}
         >
           {error
@@ -171,7 +171,7 @@ export function AmountKeypad({
             aria-label={key === "backspace" ? "Backspace" : key}
             className={cn(
               PRESSABLE,
-              "focus-visible:ring-ring flex h-11 items-center justify-center rounded-xl text-lg font-semibold focus-visible:ring-2 focus-visible:outline-none",
+              "focus-visible:ring-ring flex h-11 items-center justify-center rounded-control text-lg font-semibold focus-visible:ring-2 focus-visible:outline-none",
               /[\d.]/.test(key)
                 ? "bg-muted hoverable:bg-muted/70"
                 : "bg-secondary text-secondary-foreground hoverable:bg-secondary/70",
@@ -194,7 +194,7 @@ export function AmountKeypad({
             onChange(resolved(result.minor, currency.decimals));
           }}
           disabled={!result.ok}
-          className="bg-secondary text-secondary-foreground hoverable:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+          className="bg-secondary text-secondary-foreground hoverable:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-control text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
         >
           <Equal className="size-4" aria-hidden="true" />
           Work it out

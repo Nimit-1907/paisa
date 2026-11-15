@@ -135,7 +135,7 @@ function Card({
         {value}
       </p>
 
-      <p className="text-muted-foreground truncate text-label">{hint}</p>
+      <p className="text-ink-2 truncate text-label">{hint}</p>
     </div>
   );
 }

@@ -138,7 +138,7 @@ function Choice({
       aria-checked={active}
       onClick={onClick}
       className={cn(
-        "focus-visible:ring-ring w-full rounded-xl border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none",
+        "focus-visible:ring-ring w-full rounded-control border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none",
         active
           ? destructive
             ? "border-destructive bg-destructive/5"
@@ -147,7 +147,7 @@ function Choice({
       )}
     >
       <span className="block text-sm font-semibold">{title}</span>
-      <span className="text-muted-foreground block text-xs">{description}</span>
+      <span className="text-ink-2 block text-xs">{description}</span>
     </button>
   );
 }

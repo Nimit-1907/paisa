@@ -165,7 +165,7 @@ export function AccountFormSheet({
             id="account-type"
             role="radiogroup"
             aria-label="Account type"
-            className="bg-muted grid grid-cols-3 gap-1 rounded-xl p-1"
+            className="bg-muted grid grid-cols-3 gap-1 rounded-control p-1"
           >
             {ACCOUNT_TYPES.map((value) => {
               const active = value === type;
@@ -187,7 +187,7 @@ export function AccountFormSheet({
                     "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
                     active
                       ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hoverable:text-foreground",
+                      : "text-ink-2 hoverable:text-foreground",
                   )}
                 >
                   {ACCOUNT_TYPE_LABELS[value]}
@@ -223,7 +223,7 @@ export function AccountFormSheet({
         >
           {(props) => (
             <div className="relative">
-              <span className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+              <span className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
                 {currency.symbol}
               </span>
               <Input
@@ -238,10 +238,10 @@ export function AccountFormSheet({
           )}
         </FormRow>
 
-        <div className="flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-control border px-3 py-2.5">
           <div className="min-w-0">
             <Label htmlFor="include-in-total">Include in total</Label>
-            <p className="text-muted-foreground mt-0.5 text-xs">
+            <p className="text-ink-2 mt-0.5 text-xs">
               Off for accounts you track but do not count as yours.
             </p>
           </div>
