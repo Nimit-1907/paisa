@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AccountsScreen } from "@/components/accounts/accounts-screen";
 import type { AccountView } from "@/components/accounts/types";
+import { TransferButton } from "@/components/accounts/transfer-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { getAccountsOverview } from "@/lib/queries/accounts";
@@ -31,6 +32,11 @@ export default async function AccountsPage() {
       <PageHeader
         title="Accounts"
         description="Cash, bank and wallet balances"
+        actions={
+          <TransferButton
+            accountCount={view.filter((account) => !account.archived).length}
+          />
+        }
       />
       <AccountsScreen accounts={view} />
     </PageShell>

@@ -483,3 +483,69 @@ exists; the six-month trend needs a query that does not exist yet. It is
 listed in the gaps at the end of this document rather than half-built.
 
 **Screenshots.** `analysis-390-light`, `analysis-1280-light`.
+
+---
+
+## 14. Budgets (`/budgets`)
+
+**Purpose.** "How much have I got left, and how much is that a day?"
+
+- The hero is now the shared `HeroStat`. The sentence people open this screen
+  for — "₹1,624/day for 16 more days" — is the **caption directly under the
+  figure**, not the tail of a muted line. The ring keeps its job, the shape of
+  the month at a glance, as the hero's `aside` at a weight that does not argue
+  with the number beside it.
+- Every figure on the screen goes through `Amount`: the hero, the per-row
+  "₹2,300 left" / "Over by ₹400", the scheduled-recurring note and the
+  unbudgeted list. They had been a mix of trimmed and untrimmed.
+- Rows already sorted over-budget first and already carried the bar motif and
+  the "includes ₹X scheduled" note from Phase 8; group headings are now
+  `SectionHeader`.
+
+**Measured** at 390px: "LEFT TO SPEND / ₹25,981 / ₹1,623.81/day for 16 more
+days / 33% / ₹13,019 of ₹39,000 budgeted".
+
+**States.** Loading is `budgets/loading.tsx`. Empty is "No budgets this month"
+with Set a budget and, when last month had any, Copy October's. Error and
+offline belong to the shell and the sheet. Success is the sheet's toast.
+Partial data: a past month gets "You stayed under budget in N of M".
+
+**Not done: the budget detail screen** — day-by-day spending against an ideal
+pace line, with that category's records under it. Listed in the gaps.
+
+---
+
+## 15. Accounts (`/accounts`)
+
+**Purpose.** What you have, and where it is.
+
+- **Two figures, one at a time.** "Total balance" is the spendable money — the
+  accounts ticked into the total. "Net worth" is every account, including the
+  ones left out, which is usually a savings pot somebody deliberately did not
+  want counted against this month. Showing both at once invites the question
+  of which is the real one; the toggle makes it a choice and the caption says
+  which is on screen. The toggle is **hidden when nothing is excluded**, since
+  the two numbers would be identical.
+- **A Transfer button in the header.** Moving money between your own accounts
+  is the thing you come to this screen to do, and it was four taps away
+  through the FAB and the Transfer tab. Hidden below two accounts: a transfer
+  needs somewhere to go, and a button that can only fail is worse than none.
+- Hero on `HeroStat`, headings on `SectionHeader`, figures through `Amount`.
+
+**Measured** at 390px with one account excluded: "TOTAL BALANCE / ₹3,02,996 /
+Across 3 of 4 accounts" toggles to "NET WORTH / ₹3,06,612 / Every account,
+including the 1 left out of your total", `aria-pressed` flipping with it.
+
+**Not done, and why:**
+
+- **The card grid** (2 columns on tablet, 3 on desktop). The accounts list is
+  drag-reorderable, and that ordering is what the bottom of every account
+  picker uses. A grid would have to give that up or reimplement it in two
+  dimensions, and reordering is a feature people use where a grid is a
+  preference. Listed in the gaps.
+- **The 30-day trend line per account.** It needs a per-account daily balance
+  series, which is a query that does not exist. Listed in the gaps.
+
+**States.** Loading is the shell's. Empty is "No accounts yet" with Add
+account. Error and offline belong to the sheet. Success is its toast. Partial
+data does not apply.

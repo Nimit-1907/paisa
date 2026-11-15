@@ -25,7 +25,10 @@ import {
 } from "@/actions/accounts";
 import { AccountFormSheet } from "@/components/accounts/account-form-sheet";
 import type { AccountView } from "@/components/accounts/types";
+import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
+import { HeroStat } from "@/components/shared/hero-stat";
+import { SectionHeader } from "@/components/shared/section-header";
 import { useFormatMoney } from "@/components/profile-provider";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
@@ -63,6 +66,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
   // Kept so the dialog does not flash "Delete undefined?" while it closes.
   const lastDeleteName = React.useRef("");
   const [deleting, setDeleting] = React.useState(false);
+  const [showNetWorth, setShowNetWorth] = React.useState(false);
   const [showArchived, setShowArchived] = React.useState(false);
 
   const active = accounts.filter((account) => !account.archived);
@@ -160,28 +164,54 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
     }
   }
 
+  const included = active.filter((account) => account.includeInTotal).length;
+  const excluded = active.length - included;
+  // Balance crosses the RSC boundary as text, like every amount does.
+  const netWorth = active.reduce(
+    (sum, account) => sum + BigInt(account.balance),
+    0n,
+  );
+  const shown = showNetWorth ? netWorth : total;
+
   return (
     <div className="space-y-4">
-      <section
-        aria-label="Total balance"
-        className="bg-card rounded-2xl border p-4"
-      >
-        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          Total balance
-        </p>
-        <p
-          className={cn(
-            "amount mt-1 text-3xl font-semibold",
-            total < 0n && "text-expense",
-          )}
-        >
-          {formatMoney(total)}
-        </p>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Across {active.filter((a) => a.includeInTotal).length} of{" "}
-          {active.length} {active.length === 1 ? "account" : "accounts"}
-        </p>
-      </section>
+      {/*
+        Two figures, one at a time.
+
+        "Total balance" is the spendable money — the accounts someone ticked
+        into their total. "Net worth" is every account including the ones
+        they left out, which is usually a long-term savings pot they did not
+        want counted against this month's spending. Showing both at once
+        invites the question of which is the real one; the toggle makes it a
+        choice, and the caption says which is on screen.
+      */}
+      <HeroStat
+        label={showNetWorth ? "Net worth" : "Total balance"}
+        value={
+          <span className={shown < 0n ? "text-expense" : undefined}>
+            <Amount value={shown} whole />
+          </span>
+        }
+        caption={
+          showNetWorth
+            ? `Every account, including the ${excluded} left out of your total`
+            : `Across ${included} of ${active.length} ${
+                active.length === 1 ? "account" : "accounts"
+              }`
+        }
+        aside={
+          excluded > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              aria-pressed={showNetWorth}
+              onClick={() => setShowNetWorth((on) => !on)}
+            >
+              {showNetWorth ? "Spendable" : "Net worth"}
+            </Button>
+          ) : null
+        }
+      />
 
       {active.length === 0 ? (
         <EmptyState
@@ -200,9 +230,10 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
 
       {groups.map((group) => (
         <section key={group.type} aria-label={ACCOUNT_TYPE_LABELS[group.type]}>
-          <h2 className="text-muted-foreground mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
-            {ACCOUNT_TYPE_LABELS[group.type]}
-          </h2>
+          <SectionHeader
+            className="mb-1.5 px-1"
+            title={ACCOUNT_TYPE_LABELS[group.type]}
+          />
 
           <SortableList
             items={group.accounts}
@@ -253,7 +284,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -342,7 +373,7 @@ function AccountRow({
             {account.name}
           </span>
           {!account.includeInTotal || account.archived ? (
-            <span className="text-muted-foreground block text-xs">
+            <span className="text-ink-2 block text-xs">
               {account.archived ? "Archived" : "Not in total"}
             </span>
           ) : null}

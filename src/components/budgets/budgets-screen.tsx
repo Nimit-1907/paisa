@@ -14,8 +14,11 @@ import {
   BudgetSheet,
 } from "@/components/budgets/budget-sheet";
 import { BudgetBar, BudgetRing } from "@/components/budgets/budget-ring";
+import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
-import { useFormatMoney } from "@/components/profile-provider";
+import { HeroStat } from "@/components/shared/hero-stat";
+import { SectionHeader } from "@/components/shared/section-header";
+
 import { Button } from "@/components/ui/button";
 import type { BudgetHint, BudgetMonth } from "@/lib/queries/budgets";
 import { budgetPercent, budgetTone } from "@/lib/schemas/budgets";
@@ -52,7 +55,6 @@ export function BudgetsScreen({
   isPastMonth: boolean;
 }) {
   const router = useRouter();
-  const formatMoney = useFormatMoney();
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<BudgetDraft | null>(null);
@@ -166,55 +168,48 @@ export function BudgetsScreen({
 
   return (
     <div className="space-y-6">
-      <section
-        aria-label="This month's budget"
-        className="bg-card rounded-2xl border p-4"
-      >
-        {/*
-          The sentence someone opens this screen for is "how much a day have I
-          got left", so it sits directly under the number at a size you can
-          read, not truncated at the end of a muted line. The ring keeps its
-          job — the shape of the month at a glance — at a weight that does not
-          argue with the figure beside it.
-        */}
-        <div className="flex items-center gap-4">
+      {/*
+        The sentence someone opens this screen for is "how much a day have I
+        got left", so it is the caption directly under the figure rather than
+        the tail of a muted line. The ring keeps its job — the shape of the
+        month at a glance — as the hero's aside, at a weight that does not
+        argue with the number beside it.
+      */}
+      <HeroStat
+        label={remaining >= 0n ? "Left to spend" : "Over budget"}
+        value={
+          <span className={remaining >= 0n ? "text-ink" : "text-expense"}>
+            <Amount
+              value={remaining < 0n ? -remaining : remaining}
+              signDisplay="never"
+              whole
+            />
+          </span>
+        }
+        caption={
+          data.daysLeft > 0 && remaining > 0n ? (
+            <span className="text-ink font-semibold">
+              <Amount
+                value={remaining / BigInt(data.daysLeft)}
+                signDisplay="never"
+              />
+              /day for {data.daysLeft}{" "}
+              {data.daysLeft === 1 ? "more day" : "more days"}
+            </span>
+          ) : null
+        }
+        aside={
           <BudgetRing percent={percent} tone={tone} size={72}>
             <span className="amount text-sm font-semibold tabular-nums">
               {Math.round(percent)}%
             </span>
           </BudgetRing>
-
-          <div className="min-w-0 flex-1">
-            <h2 className="text-muted-foreground text-label font-semibold tracking-wide uppercase">
-              {remaining >= 0n ? "Left to spend" : "Over budget"}
-            </h2>
-            <p
-              className={cn(
-                "amount truncate text-3xl font-semibold",
-                remaining >= 0n ? "text-foreground" : "text-expense",
-              )}
-            >
-              {formatMoney(remaining < 0n ? -remaining : remaining, {
-                signDisplay: "never",
-              })}
-            </p>
-
-            {data.daysLeft > 0 && remaining > 0n ? (
-              <p className="text-foreground mt-1 text-sm font-semibold">
-                {formatMoney(remaining / BigInt(data.daysLeft), {
-                  signDisplay: "never",
-                })}
-                /day for {data.daysLeft}{" "}
-                {data.daysLeft === 1 ? "more day" : "more days"}
-              </p>
-            ) : null}
-
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              {formatMoney(totalSpent, { signDisplay: "never" })} of{" "}
-              {formatMoney(totalBudget, { signDisplay: "never" })} budgeted
-            </p>
-          </div>
-        </div>
+        }
+      >
+        <p className="text-ink-2 mt-1 text-xs">
+          <Amount value={totalSpent} signDisplay="never" /> of{" "}
+          <Amount value={totalBudget} signDisplay="never" /> budgeted
+        </p>
 
         <div className="mt-4 flex gap-2">
           <Button
@@ -240,7 +235,7 @@ export function BudgetsScreen({
             </Button>
           ) : null}
         </div>
-      </section>
+      </HeroStat>
 
       {isPastMonth && kept > 0 ? (
         <p className="text-income flex items-center gap-2 px-1 text-sm font-semibold">
@@ -251,11 +246,12 @@ export function BudgetsScreen({
       ) : null}
 
       <section>
-        <h2 className="text-muted-foreground mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
-          Budgeted · {data.lines.length}
-        </h2>
+        <SectionHeader
+          className="mb-1.5 px-1"
+          title={`Budgeted · ${data.lines.length}`}
+        />
 
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+        <ul className="bg-card divide-border rounded-card divide-y overflow-hidden border">
           {data.lines.map((line) => (
             <li key={line.categoryId}>
               <BudgetRow
@@ -283,7 +279,6 @@ function BudgetRow({
   line: BudgetMonth["lines"][number];
   onOpen: () => void;
 }) {
-  const formatMoney = useFormatMoney();
 
   const budget = BigInt(line.budget);
   const spent = BigInt(line.spent);
@@ -303,10 +298,10 @@ function BudgetRow({
         <span className="flex items-baseline justify-between gap-2">
           <span className="truncate text-sm font-semibold">{line.name}</span>
           <span className="amount shrink-0 text-xs font-semibold tabular-nums">
-            {formatMoney(spent, { signDisplay: "never" })}
-            <span className="text-muted-foreground font-normal">
+            <Amount value={spent} signDisplay="never" />
+            <span className="text-ink-2 font-normal">
               {" / "}
-              {formatMoney(budget, { signDisplay: "never" })}
+              <Amount value={budget} signDisplay="never" />
             </span>
           </span>
         </span>
@@ -319,19 +314,19 @@ function BudgetRow({
           <span
             className={cn(
               "shrink-0 text-xs whitespace-nowrap",
-              tone === "over" ? "text-expense font-semibold" : "text-muted-foreground",
+              tone === "over" ? "text-expense font-semibold" : "text-ink-2",
             )}
           >
             {tone === "over"
-              ? `Over by ${formatMoney(over, { signDisplay: "never" })}`
-              : `${formatMoney(budget - spent, { signDisplay: "never" })} left`}
+              ? <>Over by <Amount value={over} signDisplay="never" /></>
+              : <><Amount value={budget - spent} signDisplay="never" /> left</>}
           </span>
 
           {scheduled > 0n ? (
-            <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-label">
+            <span className="text-ink-2 flex min-w-0 items-center gap-1 text-label">
               <CalendarClock className="size-3 shrink-0" aria-hidden="true" />
               <span className="truncate">
-                includes {formatMoney(scheduled, { signDisplay: "never" })}{" "}
+                includes <Amount value={scheduled} signDisplay="never" />{" "}
                 scheduled
               </span>
             </span>
@@ -355,15 +350,14 @@ function Unbudgeted({
   lines: BudgetMonth["unbudgeted"];
   onSet: (categoryId: string) => void;
 }) {
-  const formatMoney = useFormatMoney();
 
   return (
     <section>
-      <h2 className="text-muted-foreground mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-ink-2 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
         Not budgeted · {lines.length}
       </h2>
 
-      <ul className="bg-card divide-border divide-y overflow-hidden rounded-xl border">
+      <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
         {lines.map((line) => (
           <li key={line.categoryId} className="flex items-center gap-3 py-2 pl-3">
             <ColorDot color={line.color} icon={line.icon} />
@@ -372,8 +366,8 @@ function Unbudgeted({
               <span className="block truncate text-sm font-semibold">
                 {line.name}
               </span>
-              <span className="amount text-muted-foreground block text-xs">
-                {formatMoney(BigInt(line.spent), { signDisplay: "never" })} spent
+              <span className="amount text-ink-2 block text-xs">
+                <Amount value={BigInt(line.spent)} signDisplay="never" /> spent
               </span>
             </span>
 
