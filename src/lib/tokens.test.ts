@@ -69,7 +69,7 @@ describe("ink on the bold surfaces", () => {
   }
 });
 
-describe("the eight tints", () => {
+describe("the sixteen tints", () => {
   for (const theme of THEMES) {
     for (const tint of TINT_KEYS) {
       it(`${theme}: ink on ${tint} clears AA`, () => {
@@ -145,14 +145,14 @@ describe("lines and bars", () => {
 });
 
 describe("the tint keys", () => {
-  it("has eight, with no duplicates", () => {
-    expect(TINT_KEYS).toHaveLength(8);
-    expect(new Set(TINT_KEYS).size).toBe(8);
+  it("has sixteen, with no duplicates", () => {
+    expect(TINT_KEYS).toHaveLength(16);
+    expect(new Set(TINT_KEYS).size).toBe(16);
   });
 
   it("recognises its own keys and nothing else", () => {
     for (const key of TINT_KEYS) expect(isTint(key)).toBe(true);
-    for (const bad of ["", "teal", "ROSE", "neutral ", "#fce4e1"]) {
+    for (const bad of ["", "mauve", "ROSE", "neutral ", "#fce4e1"]) {
       expect(isTint(bad), bad).toBe(false);
     }
   });

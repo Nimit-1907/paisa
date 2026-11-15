@@ -1,4 +1,4 @@
-import { type TintKey } from "@/lib/tokens";
+import { TINT_BG, type TintKey } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,18 +43,6 @@ export function Pill({
   );
 }
 
-/** A pill carrying one of the eight tints directly, for a category tag. */
-const TINT_PILL: Record<TintKey, string> = {
-  rose: "bg-tint-rose",
-  peach: "bg-tint-peach",
-  sky: "bg-tint-sky",
-  butter: "bg-tint-butter",
-  mint: "bg-tint-mint",
-  lilac: "bg-tint-lilac",
-  peri: "bg-tint-peri",
-  neutral: "bg-tint-neutral",
-};
-
 export function TintPill({
   tint,
   className,
@@ -68,7 +56,7 @@ export function TintPill({
     <span
       className={cn(
         "text-text inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-[3px] text-[11px] font-semibold",
-        TINT_PILL[tint],
+        TINT_BG[tint],
         className,
       )}
     >

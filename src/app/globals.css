@@ -100,12 +100,20 @@
    * in both themes, so a tint never has to be checked again.
    */
   --color-tint-rose: var(--tint-rose);
+  --color-tint-coral: var(--tint-coral);
   --color-tint-peach: var(--tint-peach);
-  --color-tint-sky: var(--tint-sky);
+  --color-tint-amber: var(--tint-amber);
   --color-tint-butter: var(--tint-butter);
+  --color-tint-sand: var(--tint-sand);
+  --color-tint-sage: var(--tint-sage);
   --color-tint-mint: var(--tint-mint);
-  --color-tint-lilac: var(--tint-lilac);
+  --color-tint-teal: var(--tint-teal);
+  --color-tint-ice: var(--tint-ice);
+  --color-tint-sky: var(--tint-sky);
   --color-tint-peri: var(--tint-peri);
+  --color-tint-lilac: var(--tint-lilac);
+  --color-tint-plum: var(--tint-plum);
+  --color-tint-slate: var(--tint-slate);
   --color-tint-neutral: var(--tint-neutral);
 
   /* Fixed to one theme each; see the note beside their values. */
@@ -191,14 +199,22 @@
 
   --accent: #c7ceff;
 
-  --tint-rose: #fce4e1;
-  --tint-peach: #fce9d9;
-  --tint-sky: #e1edf8;
-  --tint-butter: #faf0cf;
-  --tint-mint: #e2f1e5;
-  --tint-lilac: #ece6fa;
-  --tint-peri: #e5e8fe;
-  --tint-neutral: #efeeea;
+  --tint-rose: #f6d2d7;
+  --tint-coral: #fce3df;
+  --tint-peach: #fedcc7;
+  --tint-amber: #f2f2d2;
+  --tint-butter: #eeecba;
+  --tint-sand: #e6e0d7;
+  --tint-sage: #dff4c6;
+  --tint-mint: #d8f6d9;
+  --tint-teal: #c9eee9;
+  --tint-ice: #c3f2ff;
+  --tint-sky: #d9ecfd;
+  --tint-peri: #d0d8f6;
+  --tint-lilac: #ebe0fd;
+  --tint-plum: #ecd4e8;
+  --tint-slate: #dae0e7;
+  --tint-neutral: #e9ede7;
 
   --radius: 12px;
 
@@ -240,14 +256,22 @@
 
   --accent: #4a5293;
 
-  --tint-rose: #3a2624;
-  --tint-peach: #3a2c20;
-  --tint-sky: #1f2b37;
-  --tint-butter: #36301b;
-  --tint-mint: #1f3125;
-  --tint-lilac: #2c2539;
-  --tint-peri: #262a45;
-  --tint-neutral: #242424;
+  --tint-rose: #3c2126;
+  --tint-coral: #452c1d;
+  --tint-peach: #342b16;
+  --tint-amber: #423914;
+  --tint-butter: #383a21;
+  --tint-sand: #322c28;
+  --tint-sage: #27371f;
+  --tint-mint: #1c3a29;
+  --tint-teal: #163c35;
+  --tint-ice: #0e2e39;
+  --tint-sky: #1d2b3e;
+  --tint-peri: #22284d;
+  --tint-lilac: #2f2140;
+  --tint-plum: #3c2039;
+  --tint-slate: #272e35;
+  --tint-neutral: #262626;
 }
 
 /* iPhone notch / home bar. Used by the dock and by sheets. */

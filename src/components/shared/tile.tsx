@@ -1,25 +1,6 @@
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
-import { type TintKey, isTint } from "@/lib/tokens";
+import { TINT_BG, type TintKey, isTint } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
-
-/**
- * Every tint, as a static class.
- *
- * Tailwind reads class names out of the source, so `bg-tint-${key}` would
- * compile to nothing. A lookup is the price of that, and it also means an
- * unknown key from the database lands on a real tint rather than on a
- * transparent tile.
- */
-const TINT_BG: Record<TintKey, string> = {
-  rose: "bg-tint-rose",
-  peach: "bg-tint-peach",
-  sky: "bg-tint-sky",
-  butter: "bg-tint-butter",
-  mint: "bg-tint-mint",
-  lilac: "bg-tint-lilac",
-  peri: "bg-tint-peri",
-  neutral: "bg-tint-neutral",
-};
 
 export function tintBackground(tint: string | null | undefined): string {
   return TINT_BG[isTint(tint ?? "") ? (tint as TintKey) : "neutral"];

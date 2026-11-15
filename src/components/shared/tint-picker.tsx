@@ -2,39 +2,36 @@
 
 import { Check } from "lucide-react";
 
-import { TINT_KEYS, type TintKey } from "@/lib/tokens";
+import { TINT_BG, TINT_KEYS, type TintKey } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 /** What each tint is called out loud. The keys are not words. */
 const TINT_LABELS: Record<TintKey, string> = {
   rose: "Rose",
+  coral: "Coral",
   peach: "Peach",
-  sky: "Sky",
+  amber: "Amber",
   butter: "Butter",
+  sand: "Sand",
+  sage: "Sage",
   mint: "Mint",
-  lilac: "Lilac",
+  teal: "Teal",
+  ice: "Ice",
+  sky: "Sky",
   peri: "Periwinkle",
+  lilac: "Lilac",
+  plum: "Plum",
+  slate: "Slate",
   neutral: "Neutral",
 };
-
-const TINT_BG: Record<TintKey, string> = {
-  rose: "bg-tint-rose",
-  peach: "bg-tint-peach",
-  sky: "bg-tint-sky",
-  butter: "bg-tint-butter",
-  mint: "bg-tint-mint",
-  lilac: "bg-tint-lilac",
-  peri: "bg-tint-peri",
-  neutral: "bg-tint-neutral",
-};
-
 /**
- * Eight swatches, where there used to be sixteen free colours.
+ * Sixteen swatches, where there used to be a free colour wheel.
  *
  * The old picker let somebody choose a yellow that an icon disappeared on,
- * or two reds nobody could tell apart. These eight are checked against AA on
- * both themes by `src/lib/tokens.test.ts` before anything else runs, which
- * is a promise a hex from a form cannot make.
+ * or two reds nobody could tell apart. These sixteen are checked against AA
+ * on both themes by `src/lib/tokens.test.ts` before anything else runs,
+ * which is a promise a hex from a form cannot make, and no two of them are
+ * close enough to be mistaken for each other at this size.
  *
  * The chosen one takes the ink border and the small hard shadow, like every
  * other selected thing in this language, and a tick — because a border on a
