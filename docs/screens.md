@@ -105,3 +105,85 @@ only dynamic state is the header's scroll position.
 
 **Screenshots.** `landing-360-light`, `landing-360-dark`, `landing-1280-light`,
 `landing-1280-dark`. No horizontal scroll at 360 (measured: 0px).
+
+---
+
+## 7. Auth (`/login`, `/signup`, `/forgot-password`, `/reset-password`)
+
+**Purpose.** Get one person through one gate, with nothing else on screen.
+
+**Layout decisions**
+
+- One centred card on a phone. From `lg` it **splits**: the app preview on
+  the left, the form on the right. A form 384px wide floating in the middle of
+  a 1,280px window reads as an error page, and the left half is the only place
+  a signed-out visitor sees what they are signing in to.
+- The grain sits over the whole frame rather than over the card, because these
+  screens are mostly empty surface and that is what the texture is for. It is
+  the same `Grain` the month card uses — moved to `components/shared/` now
+  that two places want it.
+- **"Forgot password?" moved up beside the Password label.** Under the field
+  it sat between the password and the submit button, so the thing you tab to
+  after typing your password was the way out of the form. `FormRow` grew an
+  `action` slot for this.
+- **The last email used is filled in.** Per-device, in `localStorage`, wrapped
+  in try/catch — a private window makes those accessors throw, and a sign-in
+  page that crashes because it could not remember an address is worse than one
+  that does not remember. Set in an effect rather than as a default value, or
+  the first client render would not match the server's. Focus then goes to the
+  password, which is the field that person was going to fill in anyway. Only
+  the address: the password belongs to the browser's password manager, which
+  the `autoComplete` attributes already hand it to.
+
+**The password checklist (signup)**
+
+A checklist, not a bar. A bar answers "how good is this?" with a number
+nobody can act on, and the usual implementations rate `P@ssw0rd!` well and
+`correct horse battery staple` badly.
+
+The honest difficulty: the schema enforces **one** rule — eight characters.
+A checklist of four rules that look mandatory and are not teaches people that
+this app's messages can be ignored. So it shows one **required** line and
+three **"Stronger if it also:"** lines, visually and textually separated.
+
+`passwordAdvice()` is tested against `signUpSchema` directly, so the
+checklist and the gate cannot disagree and say "done" to something the submit
+will bounce. Length is counted in code points, so eight emoji are eight
+characters to the person typing them. Measured in the browser:
+
+| typed | required | 12+ | number/symbol | not common |
+| --- | --- | --- | --- | --- |
+| *(nothing)* | not yet | *hidden until typing starts* | | |
+| `pass` | not yet | not yet | not yet | done |
+| `password` | **done** | not yet | not yet | **not yet** |
+| `kitchen table 99!` | done | done | done | done |
+
+**Check your email**
+
+- Names the address it sent to. "Check your email" is useless if you have
+  three, and this is the last moment a typo is catchable — seeing `nimt@…` on
+  screen turns a dead end into a correction.
+- **Resend after 30 seconds**, with the countdown shown. Offering it
+  immediately mostly spends someone's rate limit on a second copy of an email
+  already in flight. Measured: disabled on arrival, "You can ask for another
+  in 30 seconds."
+- The timer keeps ticking past the threshold rather than clearing itself —
+  clearing it meant a second send, which resets the count, had nothing left to
+  tick it back up, and the button stayed disabled for as long as the screen
+  was open. Found and fixed before it shipped.
+- `resendConfirmation` answers the same way whatever happens, like
+  `requestPasswordReset` already did: a different answer for "no such account"
+  would let an anonymous caller test addresses one at a time. Rate limiting is
+  the one failure worth saying out loud, because waiting is something a person
+  can actually do.
+
+**States.** Loading is the submit button's own spinner — there is no data to
+fetch, so no skeleton. Empty does not apply. Error is inline on the field plus
+a toast, in our words, never the auth server's. Offline: the submit fails and
+the toast says to check the connection. Success for sign-in is the app;
+for signup and reset it is the Check-your-email panel. Partial data does not
+apply.
+
+**Screenshots.** `login-*`, `signup-*`, `forgot-*` at both widths and themes,
+plus `signup-360-checklist` and `forgot-360-sent` for the two states a static
+visit cannot show.

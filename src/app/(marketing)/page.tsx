@@ -4,13 +4,13 @@ import Link from "next/link";
 
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
 
-import { AppPreview } from "@/app/(marketing)/_app-preview";
+import { AppPreview } from "@/components/marketing/app-preview";
 import { FAQS, FEATURES, feature } from "@/app/(marketing)/_content";
 import {
   BudgetCrop,
   RecurringCrop,
   TrackCrop,
-} from "@/app/(marketing)/_crops";
+} from "@/components/marketing/crops";
 import { SITE, siteOrigin } from "@/lib/site";
 
 export const metadata: Metadata = {

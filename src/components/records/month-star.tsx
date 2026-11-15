@@ -4,6 +4,7 @@ import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { useFormatMoney } from "@/components/profile-provider";
 import { useCountUp } from "@/lib/motion";
+import { Grain } from "@/components/shared/grain";
 import { cn } from "@/lib/utils";
 
 export type DaySpend = {
@@ -118,35 +119,6 @@ export function MonthStar({
   );
 }
 
-/**
- * A faint, fixed grain over the card.
- *
- * Only here and on the landing hero. It is what stops a large flat panel
- * reading as a hole in the page, and at this opacity it registers as texture
- * rather than as noise. Inline, so it costs no request; `feTurbulence` with a
- * fixed seed, so it is the same grain every render.
- */
-export function Grain({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-0 size-full opacity-[0.035] dark:opacity-[0.05]",
-        className,
-      )}
-    >
-      <filter id="paisa-grain">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.8"
-          numOctaves="3"
-          seed="7"
-        />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#paisa-grain)" />
-    </svg>
-  );
-}
 
 /**
  * The busiest ordinary day: the 85th percentile of the days with spending.

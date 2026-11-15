@@ -9,8 +9,9 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { signUp } from "@/actions/auth";
+import { resendConfirmation, signUp } from "@/actions/auth";
 import { CheckEmailNotice } from "@/components/auth/check-email-notice";
+import { PasswordHints } from "@/components/auth/password-hints";
 import { Button } from "@/components/ui/button";
 import { FormRow, PasswordInput } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
@@ -24,11 +25,14 @@ export function SignupForm() {
     register,
     handleSubmit,
     setError,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { displayName: "", email: "", password: "" },
   });
+
+  const password = watch("password") ?? "";
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await signUp(values);
@@ -58,10 +62,11 @@ export function SignupForm() {
 
   if (sentTo) {
     return (
-      <CheckEmailNotice>
-        We sent a confirmation link to{" "}
-        <span className="text-foreground font-semibold">{sentTo}</span>. Open it
-        to finish setting up your account.
+      <CheckEmailNotice
+        email={sentTo}
+        onResend={() => resendConfirmation({ email: sentTo })}
+      >
+        Open the confirmation link to finish setting up your account.
       </CheckEmailNotice>
     );
   }
@@ -107,21 +112,26 @@ export function SignupForm() {
         )}
       </FormRow>
 
-      <FormRow
-        id="password"
-        label="Password"
-        error={errors.password?.message}
-        hint="At least 8 characters."
-      >
-        {(field) => (
-          <PasswordInput
-            {...field}
-            {...register("password")}
-            autoComplete="new-password"
-            placeholder="••••••••"
-          />
-        )}
-      </FormRow>
+      <div>
+        <FormRow
+          id="password"
+          label="Password"
+          error={errors.password?.message}
+        >
+          {(field) => (
+            <PasswordInput
+              {...field}
+              {...register("password")}
+              autoComplete="new-password"
+              placeholder="••••••••"
+            />
+          )}
+        </FormRow>
+
+        {/* The checklist replaces the old static "At least 8 characters"
+            hint: same rule, but it ticks itself off as you type. */}
+        <PasswordHints value={password} />
+      </div>
 
       <Button
         type="submit"

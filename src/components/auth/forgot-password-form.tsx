@@ -18,7 +18,7 @@ import {
 } from "@/lib/schemas/auth";
 
 export function ForgotPasswordForm() {
-  const [sent, setSent] = React.useState(false);
+  const [sentTo, setSentTo] = React.useState<string | null>(null);
 
   const {
     register,
@@ -41,12 +41,15 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setSent(true);
+    setSentTo(values.email);
   });
 
-  if (sent) {
+  if (sentTo) {
     return (
-      <CheckEmailNotice>
+      <CheckEmailNotice
+        email={sentTo}
+        onResend={() => requestPasswordReset({ email: sentTo })}
+      >
         If that address is registered, a reset link is on its way. The link
         works once and expires in an hour.
       </CheckEmailNotice>

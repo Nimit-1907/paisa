@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 export function FormRow({
   id,
   label,
+  action,
   error,
   hint,
   className,
@@ -25,6 +26,14 @@ export function FormRow({
 }: {
   id: string;
   label: string;
+  /**
+   * A link or button on the same line as the label.
+   *
+   * "Forgot password?" belongs here rather than under the field. Under it,
+   * it sits between the password and the submit button — so the thing you
+   * tab to after typing your password is the way out of the form.
+   */
+  action?: React.ReactNode;
   error?: string;
   hint?: string;
   className?: string;
@@ -38,7 +47,14 @@ export function FormRow({
 
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label htmlFor={id}>{label}</Label>
+      {action ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <Label htmlFor={id}>{label}</Label>
+          {action}
+        </div>
+      ) : (
+        <Label htmlFor={id}>{label}</Label>
+      )}
 
       {children({
         id,
@@ -51,7 +67,7 @@ export function FormRow({
           {error}
         </p>
       ) : hint ? (
-        <p id={messageId} className="text-muted-foreground text-sm">
+        <p id={messageId} className="text-ink-2 text-sm">
           {hint}
         </p>
       ) : null}
@@ -84,7 +100,7 @@ export function PasswordInput({
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
-        className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        className="text-ink-2 hoverable:text-ink focus-visible:ring-ring absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
         {visible ? (
           <EyeOff className="size-[18px]" aria-hidden="true" />

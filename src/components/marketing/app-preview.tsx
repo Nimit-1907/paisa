@@ -1,4 +1,4 @@
-import { Rupee } from "@/app/(marketing)/_crops";
+import { Rupee } from "@/components/marketing/crops";
 import { colorNamed } from "@/lib/colors";
 
 /**

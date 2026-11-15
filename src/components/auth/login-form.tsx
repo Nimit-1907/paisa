@@ -11,6 +11,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { signIn } from "@/actions/auth";
+import {
+  rememberEmail,
+  rememberedEmail,
+} from "@/components/auth/remembered-email";
 import { FormRow, PasswordInput } from "@/components/ui/form-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +27,32 @@ export function LoginForm({ next }: { next?: string }) {
     register,
     handleSubmit,
     setError,
+    setValue,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "", next },
   });
+
+  /**
+   * Fill in the address this browser used last.
+   *
+   * In an effect rather than as a default value: `localStorage` does not
+   * exist while this renders on the server, and seeding the form from it
+   * during the first client render would be a hydration mismatch. The cost
+   * is one frame with an empty field, which nobody can act on anyway.
+   *
+   * Focus goes to the password when there is an email to come back to,
+   * which is the field that person was going to fill in either way.
+   */
+  React.useEffect(() => {
+    const remembered = rememberedEmail();
+    if (!remembered) return;
+
+    setValue("email", remembered);
+    setFocus("password");
+  }, [setFocus, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     const result = await signIn({ ...values, next });
@@ -39,6 +64,8 @@ export function LoginForm({ next }: { next?: string }) {
       toast.error(result.error);
       return;
     }
+
+    rememberEmail(values.email);
 
     // router.refresh() so the layouts above re-read the new session cookie
     // before the records page renders against it.
@@ -71,7 +98,19 @@ export function LoginForm({ next }: { next?: string }) {
         )}
       </FormRow>
 
-      <FormRow id="password" label="Password" error={errors.password?.message}>
+      <FormRow
+        id="password"
+        label="Password"
+        error={errors.password?.message}
+        action={
+          <Link
+            href="/forgot-password"
+            className="text-ink-2 hoverable:text-ink focus-visible:ring-ring -my-2 rounded px-1 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+          >
+            Forgot password?
+          </Link>
+        }
+      >
         {(field) => (
           <PasswordInput
             {...field}
@@ -81,15 +120,6 @@ export function LoginForm({ next }: { next?: string }) {
           />
         )}
       </FormRow>
-
-      <div className="flex justify-end">
-        <Link
-          href="/forgot-password"
-          className="text-muted-foreground hoverable:text-foreground focus-visible:ring-ring -my-2 rounded px-1 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-        >
-          Forgot password?
-        </Link>
-      </div>
 
       <Button
         type="submit"

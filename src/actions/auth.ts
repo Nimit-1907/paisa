@@ -116,6 +116,45 @@ export async function requestPasswordReset(
   return ok(undefined);
 }
 
+/**
+ * Send the confirmation email again.
+ *
+ * Answers the same way whatever happens, for the same reason
+ * {@link requestPasswordReset} does: a different answer for "no such
+ * account" or "already confirmed" would let an anonymous caller test
+ * addresses one at a time. The rate limit is the one thing worth saying out
+ * loud, because it is the one a person can do something about — wait.
+ */
+export async function resendConfirmation(
+  input: ResetRequestInput,
+): Promise<ActionResult<undefined>> {
+  const parsed = parseInput(resetRequestSchema, input);
+  if (!parsed.ok) return parsed;
+
+  const supabase = await createClient();
+  const origin = siteOrigin();
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: parsed.data.email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+    },
+  });
+
+  if (error) {
+    if (/rate limit|too many/i.test(error.message)) {
+      return fail("Too many emails just now. Try again in a minute.");
+    }
+
+    // Logged rather than shown, so a broken SMTP config does not look
+    // exactly like a delivered email.
+    console.error("[auth] resend failed:", error.message);
+  }
+
+  return ok(undefined);
+}
+
 export async function updatePassword(
   input: UpdatePasswordInput,
 ): Promise<ActionResult<{ next: string }>> {
