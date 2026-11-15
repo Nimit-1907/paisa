@@ -1,3 +1,7 @@
+"use client";
+
+import * as React from "react";
+
 import { Grain } from "@/components/shared/grain";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +48,19 @@ export function HeroStat({
   children?: React.ReactNode;
   className?: string;
 }) {
+  /*
+   * A <section> is only a landmark if it has a name.
+   *
+   * Without one it is a generic box, and a screen reader user tabbing by
+   * region never finds the figure the whole screen is built around. The
+   * label above the number is already that name, so it is pointed at rather
+   * than duplicated into an aria-label that could drift from it.
+   */
+  const labelId = React.useId();
+
   return (
     <section
+      aria-labelledby={labelId}
       className={cn(
         "bento accent-wash relative overflow-hidden p-4",
         className,
@@ -55,7 +70,10 @@ export function HeroStat({
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-ink-2 text-label font-semibold tracking-wide uppercase">
+          <p
+            id={labelId}
+            className="text-ink-2 text-label font-semibold tracking-wide uppercase"
+          >
             {label}
           </p>
           <p className="font-display mt-1 text-[2.5rem] leading-[1.05] tracking-tight">

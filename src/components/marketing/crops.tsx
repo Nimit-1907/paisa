@@ -148,7 +148,10 @@ export function RecurringCrop() {
               <span className="text-[10px] font-semibold tabular-nums">
                 {row.day}
               </span>
-              <span className="text-ink-3 text-[7px] font-semibold uppercase">
+              {/* ink-2, not ink-3: ink-3 measures 4.17:1 on a muted
+                  surface, which is under the 4.5 this text needs, and axe
+                  says so. */}
+              <span className="text-ink-2 text-[7px] font-semibold uppercase">
                 {row.month}
               </span>
             </span>

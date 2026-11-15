@@ -3,8 +3,7 @@ import { expect, test } from "@playwright/test";
 import { signIn } from "./sign-in";
 
 /**
- * Visual snapshots: five screens and the landing page, both themes, two
- * widths.
+ * Visual snapshots: every screen, and the states a screen can be in.
  *
  * This is the guard the other suites cannot be. axe checks semantics, the
  * polish suite checks sizes and overflow, and neither would notice a card
@@ -20,7 +19,8 @@ import { signIn } from "./sign-in";
  *
  * Motion is switched off, so two runs of the same build produce the same
  * pixels — *given the same data*. These read the shared demo account, which
- * the other suites write to, so regenerate the baselines from a known state:
+ * the other suites write to, and which the recurring catch-up adds to on the
+ * first page load of a new day. Regenerate from a known state:
  *
  *   npm run db:reset && npm run test:e2e -- e2e/visual.spec.ts
  *
@@ -28,12 +28,25 @@ import { signIn } from "./sign-in";
  * moved rather than the design.
  */
 
+/** Every signed-in screen, by the heading that proves it has arrived. */
 const SCREENS = [
   { path: "/records", heading: "Records" },
   { path: "/analysis", heading: "Analysis" },
   { path: "/budgets", heading: "Budgets" },
   { path: "/accounts", heading: "Accounts" },
+  { path: "/categories", heading: "Categories" },
+  { path: "/recurring", heading: "Recurring" },
+  { path: "/more", heading: "More" },
   { path: "/settings", heading: "Settings" },
+  { path: "/export", heading: "Export" },
+];
+
+/** The signed-out screens, which need no account. */
+const PUBLIC_SCREENS = [
+  { path: "/", name: "landing" },
+  { path: "/login", name: "login" },
+  { path: "/signup", name: "signup" },
+  { path: "/forgot-password", name: "forgot" },
 ];
 
 /** A phone, and the width the layout becomes a sidebar at. */
@@ -41,6 +54,18 @@ const WIDTHS = [
   { label: "360", width: 360, height: 780 },
   { label: "1280", width: 1280, height: 900 },
 ];
+
+/** Long enough for a chart to finish and the catch-up toast to clear. */
+const SETTLE = 1200;
+
+/** The same capture settings everywhere, so one screen cannot be laxer. */
+const SHOT = {
+  fullPage: true,
+  // A pixel or two of antialiasing on a chart edge is not a regression;
+  // a card losing its border is.
+  maxDiffPixelRatio: 0.01,
+  animations: "disabled",
+} as const;
 
 for (const size of WIDTHS) {
   test.describe(`at ${size.label}px`, () => {
@@ -50,10 +75,7 @@ for (const size of WIDTHS) {
       test(`the signed-in screens in ${theme} mode`, async ({ page }) => {
         // Charts and count-ups settle instantly, so the frame being captured
         // is the finished one rather than one mid-transition.
-        await page.emulateMedia({
-          colorScheme: theme,
-          reducedMotion: "reduce",
-        });
+        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
         await signIn(page);
 
         for (const screen of SCREENS) {
@@ -61,37 +83,69 @@ for (const size of WIDTHS) {
           await expect(
             page.getByRole("heading", { name: screen.heading, exact: true }),
           ).toBeVisible();
-
-          // The recurring catch-up toast can land mid-capture on the first
-          // page of a new day; it is not part of the screen.
-          await page.waitForTimeout(1200);
+          await page.waitForTimeout(SETTLE);
 
           await expect(page).toHaveScreenshot(
             `${screen.path.slice(1)}-${theme}-${size.label}.png`,
-            {
-              fullPage: true,
-              // A pixel or two of antialiasing on a chart edge is not a
-              // regression; a card losing its border is.
-              maxDiffPixelRatio: 0.01,
-              animations: "disabled",
-            },
+            SHOT,
           );
         }
       });
 
-      test(`the landing page in ${theme} mode`, async ({ page }) => {
-        await page.emulateMedia({
-          colorScheme: theme,
-          reducedMotion: "reduce",
-        });
+      test(`the signed-out screens in ${theme} mode`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
 
-        await page.goto("/");
-        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-        await page.waitForTimeout(600);
+        for (const screen of PUBLIC_SCREENS) {
+          await page.goto(screen.path);
+          await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+          await page.waitForTimeout(600);
 
+          await expect(page).toHaveScreenshot(
+            `${screen.name}-${theme}-${size.label}.png`,
+            SHOT,
+          );
+        }
+      });
+
+      /**
+       * The states a screen goes into that a plain visit never shows.
+       *
+       * Empty and error are reached honestly — a filter that matches nothing
+       * really is the empty state, and a URL with no page behind it really
+       * is the 404 — rather than by rendering the component with made-up
+       * props, which would snapshot a thing the app cannot actually produce.
+       */
+      test(`the states in ${theme} mode`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+        await signIn(page);
+
+        // Empty: a search that matches nothing.
+        await page.goto("/records?q=zzzznothingmatchesthis");
+        await expect(
+          page.getByRole("heading", { name: /nothing matches/i }),
+        ).toBeVisible();
+        await page.waitForTimeout(400);
         await expect(page).toHaveScreenshot(
-          `landing-${theme}-${size.label}.png`,
-          { fullPage: true, maxDiffPixelRatio: 0.01, animations: "disabled" },
+          `state-records-empty-${theme}-${size.label}.png`,
+          SHOT,
+        );
+
+        // Not found: a record id that is not one.
+        await page.goto("/recurring/00000000-0000-4000-8000-000000000000");
+        await page.waitForTimeout(600);
+        await expect(page).toHaveScreenshot(
+          `state-not-found-${theme}-${size.label}.png`,
+          SHOT,
+        );
+
+        // The add sheet, open, which is where most of the app's chrome lives.
+        await page.goto("/records");
+        await page.getByRole("button", { name: /add record/i }).first().click();
+        await expect(page.getByRole("dialog")).toBeVisible();
+        await page.waitForTimeout(600);
+        await expect(page).toHaveScreenshot(
+          `state-add-sheet-${theme}-${size.label}.png`,
+          SHOT,
         );
       });
     }

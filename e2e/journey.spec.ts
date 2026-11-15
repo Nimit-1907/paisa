@@ -51,6 +51,21 @@ async function typeAmount(page: Page, amount: string) {
 }
 
 /** The sheet that is open, whichever shape it took. */
+/**
+ * The month card on Records.
+ *
+ * A named region since Phase 13, labelled by the line above its figure —
+ * "Left this month", or "Overspent this month" when the month has gone the
+ * other way. Matching on "this month" covers both.
+ *
+ * Scoped rather than asserted against `main`: the row for a record that was
+ * just added shows the same amount, so a page-wide check would pass whatever
+ * the month total did.
+ */
+function monthCard(page: Page) {
+  return page.getByRole("region", { name: /this month/i });
+}
+
 function sheet(page: Page) {
   return page.locator(
     '[data-slot="drawer-content"], [data-slot="dialog-content"]',
@@ -153,7 +168,17 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(sheet(page)).toBeHidden();
 
     await expect(page.getByText(EXPENSE_NOTE).first()).toBeVisible();
-    await expect(page.getByLabel("This month")).toContainText("₹250.00");
+    /*
+     * The month card, not the page.
+     *
+     * This is proving the month's expense total, and the row for the record
+     * that was just added also says ₹250.00 - against `main` the assertion
+     * would pass whatever the total did. Since Phase 13 the card is a named
+     * region, labelled by the figure above it: "Left this month" when there
+     * is something left and "Overspent this month" when there is not, so
+     * the pattern matches either.
+     */
+    await expect(monthCard(page)).toContainText("₹250.00");
   });
 
   await test.step("add a transfer", async () => {
@@ -179,7 +204,17 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(page.getByText(TRANSFER_NOTE).first()).toBeVisible();
     // A transfer moves money between the user's own accounts, so the month's
     // expense total must not have moved.
-    await expect(page.getByLabel("This month")).toContainText("₹250.00");
+    /*
+     * The month card, not the page.
+     *
+     * This is proving the month's expense total, and the row for the record
+     * that was just added also says ₹250.00 - against `main` the assertion
+     * would pass whatever the total did. Since Phase 13 the card is a named
+     * region, labelled by the figure above it: "Left this month" when there
+     * is something left and "Overspent this month" when there is not, so
+     * the pattern matches either.
+     */
+    await expect(monthCard(page)).toContainText("₹250.00");
   });
 
   await test.step("create a monthly recurring rule", async () => {
@@ -223,8 +258,23 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(
       page.getByRole("heading", { name: /budgeted · 1/i }).first(),
     ).toBeVisible();
-    // ₹4,000 budget against the ₹250 expense.
-    await expect(page.getByText("₹3,750.00 left")).toBeVisible();
+    /*
+     * ₹4,000 budget against the ₹250 expense.
+     *
+     * Scoped to Food's own row. The figure and the word are separate nodes
+     * since Phase 13 — each amount carries its exact value as text beside
+     * the trimmed one it paints — so this cannot match a single contiguous
+     * string any more. Asserting them loose would be worse than useless:
+     * "Left this month" is on Records, so a bare search for "left" passes
+     * whatever this row says.
+     */
+    const foodBudget = page
+      .getByRole("listitem")
+      .filter({ hasText: "Food" })
+      .first();
+
+    await expect(foodBudget).toContainText("₹3,750.00");
+    await expect(foodBudget).toContainText("left");
   });
 
   await test.step("analysis shows the same numbers", async () => {
@@ -234,9 +284,17 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(page.getByRole("link", { name: /Rent/ }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Food/ }).first()).toBeVisible();
 
-    // ₹250 food + ₹12,000 rent, and not the ₹500 transfer.
+    /*
+     * ₹250 food + ₹12,000 rent, and not the ₹500 transfer.
+     *
+     * The total against `main` because it appears once; Food's own figure
+     * against Food's own legend row, since ₹250.00 shows up in several
+     * places on this screen.
+     */
     await expect(page.locator("main")).toContainText("₹12,250.00");
-    await expect(page.locator("main")).toContainText("₹250.00");
+    await expect(
+      page.getByRole("link", { name: /Food/ }).first(),
+    ).toContainText("₹250.00");
   });
 
   await test.step("export the records as CSV", async () => {

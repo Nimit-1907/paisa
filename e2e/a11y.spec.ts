@@ -125,7 +125,11 @@ test.describe("the keyboard", () => {
 
   test("gets past the navigation in one tab", async ({ page }) => {
     await page.goto("/records");
-    await expect(page.getByRole("heading", { name: "Records" })).toBeVisible();
+    // `level: 1` because the record count below it is an h2 reading
+    // "20 records", which a substring match on "Records" also finds.
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Records" }),
+    ).toBeVisible();
 
     await page.keyboard.press("Tab");
     const first = page.getByRole("link", { name: "Skip to content" });
