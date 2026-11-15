@@ -13,6 +13,7 @@ import { AmountKeypad } from "@/components/records/amount-keypad";
 import {
   type AccountOption,
   AccountSelect,
+  DateField,
   CategoryGrid,
   type CategoryOption,
   TypeTabs,
@@ -23,6 +24,8 @@ import {
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/shared/segmented-control";
+import { Stepper } from "@/components/shared/stepper";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +37,6 @@ import {
   type RecurrenceFrequency,
   type TransactionType,
 } from "@/lib/schemas/transactions";
-import { cn } from "@/lib/utils";
 
 /**
  * Edit a recurring rule.
@@ -267,32 +269,15 @@ export function RuleSheet({
         <div className="space-y-2 rounded-control border p-3">
           <Label id="rule-frequency-label">Repeats</Label>
 
-          <div
-            role="radiogroup"
-            aria-labelledby="rule-frequency-label"
-            className="flex flex-wrap gap-1"
-          >
-            {RECURRENCE_FREQUENCIES.map((value) => {
-              const active = frequency === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setFrequency(value)}
-                  className={cn(
-                    " h-11 rounded-lg border px-3 text-xs font-semibold transition-colors  ",
-                    active
-                      ? "border-ink bg-tint-peri text-text"
-                      : "text-text-secondary hoverable:bg-surface-muted",
-                  )}
-                >
-                  {REPEAT_LABELS[value]}
-                </button>
-              );
-            })}
-          </div>
+          <SegmentedControl
+            label="Repeats"
+            value={frequency}
+            onChange={setFrequency}
+            options={RECURRENCE_FREQUENCIES.map((value) => ({
+              value,
+              label: REPEAT_LABELS[value],
+            }))}
+          />
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <FormRow
@@ -307,51 +292,39 @@ export function RuleSheet({
               }
             >
               {(props) => (
-                <Input
-                  {...props}
-                  type="number"
-                  min={1}
-                  max={365}
-                  inputMode="numeric"
+                <Stepper
+                  id={props.id}
+                  label="Every how many"
                   value={interval}
-                  onChange={(event) => setInterval(event.target.value)}
+                  onChange={setInterval}
                 />
               )}
             </FormRow>
 
-            <FormRow
+            <DateField
               id="rule-next"
               label="Next due"
-              error={
-                errorField === "nextRunOn" ? (error ?? undefined) : undefined
-              }
-            >
-              {(props) => (
-                <Input
-                  {...props}
-                  type="date"
-                  value={nextRunOn}
-                  onChange={(event) => setNextRunOn(event.target.value)}
-                />
-              )}
-            </FormRow>
+              value={nextRunOn}
+              onChange={setNextRunOn}
+              invalid={errorField === "nextRunOn"}
+            />
           </div>
 
-          <FormRow
+          <DateField
             id="rule-end"
             label="Until"
-            hint="Optional — leave empty to keep going"
-            error={errorField === "endDate" ? (error ?? undefined) : undefined}
-          >
-            {(props) => (
-              <Input
-                {...props}
-                type="date"
-                value={endDate}
-                onChange={(event) => setEndDate(event.target.value)}
-              />
-            )}
-          </FormRow>
+            placeholder="No end date"
+            value={endDate}
+            onChange={setEndDate}
+            min={nextRunOn || undefined}
+            invalid={errorField === "endDate"}
+          />
+
+          {errorField === "nextRunOn" || errorField === "endDate" ? (
+            <p role="alert" className="text-expense text-sm">
+              {error}
+            </p>
+          ) : null}
 
           {preview ? (
             <p className="text-text-secondary text-xs" aria-live="polite">

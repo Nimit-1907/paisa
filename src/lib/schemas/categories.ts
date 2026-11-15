@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { isColor } from "@/lib/colors";
 import { ICON_NAMES } from "@/lib/icons";
+import { TINT_KEYS } from "@/lib/tokens";
 
 export const CATEGORY_KINDS = ["expense", "income"] as const;
 
@@ -15,7 +15,8 @@ export const categoryFormSchema = z.object({
   icon: z
     .string()
     .refine((value) => (ICON_NAMES as string[]).includes(value), "Pick an icon."),
-  color: z.string().refine(isColor, "Pick a colour."),
+  /** One of the eight tints; see src/lib/schemas/accounts.ts. */
+  tint: z.enum(TINT_KEYS),
 });
 
 export const createCategorySchema = categoryFormSchema;

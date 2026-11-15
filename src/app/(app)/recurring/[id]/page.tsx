@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ArrowLeft, CalendarClock, History, Repeat } from "lucide-react";
+import { Repeat } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { RuleActions } from "@/components/recurring/rule-actions";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";
-import { formatWith } from "@/lib/money";
+import { Amount } from "@/components/shared/amount";
+import { HeroStat } from "@/components/shared/hero-stat";
+import { Pill } from "@/components/shared/pill";
+import { SectionHeader } from "@/components/shared/section-header";
+import { ListCard } from "@/components/shared/surface";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
-import { currencyOf, getProfile } from "@/lib/profile";
+import { getProfile } from "@/lib/profile";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
@@ -49,13 +52,15 @@ export default async function RecurringRulePage({
   // A malformed id is a 404, not a 500: the path is user-typed.
   if (!isUuid(id)) notFound();
 
-  const [rule, profile] = await Promise.all([getRecurringRule(id), getProfile()]);
+  const [rule, profile] = await Promise.all([
+    getRecurringRule(id),
+    getProfile(),
+  ]);
 
   // RLS makes another user's rule indistinguishable from one that is gone,
   // which is exactly what the browser should be told.
   if (!rule) notFound();
 
-  const currency = currencyOf(profile);
   const timeZone = profile?.timezone ?? DEFAULT_TIME_ZONE;
   const today = localToday(timeZone);
 
@@ -86,51 +91,40 @@ export default async function RecurringRulePage({
         description={`${describeSchedule(scheduleOf(rule))}${
           rule.active ? "" : " · Paused"
         }`}
-        actions={
-          <Link
-            href="/recurring"
-            aria-label="Back to recurring"
-            className="hoverable:bg-surface-muted flex size-11 items-center justify-center rounded-full  "
+        back={{ href: "/recurring", label: "Back to recurring" }}
+      />
+
+      <HeroStat
+        label={
+          <span className="flex min-w-0 items-center gap-2">
+            <RuleAvatar rule={rule} dimmed={!rule.active} />
+            <span className="text-text truncate font-semibold">
+              {describeSchedule(scheduleOf(rule))}
+            </span>
+          </span>
+        }
+        trend={rule.active ? null : <Pill tone="quiet">Paused</Pill>}
+        value={
+          <span
+            className={cn(
+              rule.type === "income" && "text-income",
+              rule.type === "transfer" && "text-transfer",
+            )}
           >
-            <ArrowLeft className="size-5" aria-hidden="true" />
-          </Link>
+            <Amount value={BigInt(rule.amount)} signDisplay="never" />
+          </span>
+        }
+        helper={
+          rule.active
+            ? rule.dueOn
+              ? `Next on ${dayLabel(rule.dueOn)} · ${daysAway(rule.dueOn, today)}`
+              : "Nothing left to run"
+            : "Paused — nothing is scheduled"
         }
       />
 
       <section className="bg-surface rounded-card border p-4">
-        <div className="flex items-center gap-3">
-          <RuleAvatar rule={rule} size="lg" dimmed={!rule.active} />
-
-          <div className="min-w-0">
-            <p className="text-text-secondary text-xs font-semibold ">
-              {rule.type === "income"
-                ? "Income"
-                : rule.type === "transfer"
-                  ? "Transfer"
-                  : "Expense"}
-            </p>
-            <p
-              className={cn(
-                "amount text-2xl font-semibold",
-                rule.type === "income" && "text-income",
-                rule.type === "transfer" && "text-transfer",
-              )}
-            >
-              {formatWith(currency, BigInt(rule.amount), {
-                signDisplay: "never",
-              })}
-            </p>
-          </div>
-        </div>
-
-        <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-          <Fact label="Next due">
-            {rule.active
-              ? rule.dueOn
-                ? `${dayLabel(rule.dueOn)} · ${daysAway(rule.dueOn, today)}`
-                : "Nothing left"
-              : "Paused"}
-          </Fact>
+        <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
           <Fact label={rule.type === "transfer" ? "From" : "Account"}>
             {rule.accountName}
           </Fact>
@@ -161,10 +155,7 @@ export default async function RecurringRulePage({
         />
       </section>
 
-      <h2 className="text-text-secondary mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold ">
-        <CalendarClock className="size-3.5" aria-hidden="true" />
-        Coming up
-      </h2>
+      <SectionHeader className="mt-5 mb-1.5 px-1" title="Coming up" />
 
       {next.length === 0 ? (
         <p className="text-text-secondary bg-surface rounded-card border border-dashed px-4 py-6 text-center text-sm">
@@ -173,30 +164,56 @@ export default async function RecurringRulePage({
             : "Paused — nothing is scheduled."}
         </p>
       ) : (
-        <ol className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
-          {next.map((on) => (
-            <li
-              key={on}
-              className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm"
-            >
-              <span className="font-semibold">{dayLabel(on)}</span>
-              <span className="text-text-secondary text-xs">
-                {daysAway(on, today)}
+        /*
+          A timeline, not a list of rows.
+ 
+          Five dates in a bordered card read as five separate facts; on a
+          line they read as one thing continuing, which is what a recurring
+          rule is. The next one takes the periwinkle dot — the same accent
+          the dock's Add button and a just-saved row use for "the thing
+          about to happen" — and the rest are hairline rings.
+        */
+        <ol className="bg-surface rounded-card border p-4 pl-5">
+          {next.map((on, index) => (
+            <li key={on} className="relative flex gap-3 pb-4 last:pb-0">
+              {index < next.length - 1 ? (
+                <span
+                  aria-hidden="true"
+                  className="bg-hairline absolute top-3 bottom-0 left-[5px] w-px"
+                />
+              ) : null}
+
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "relative mt-1.5 size-[11px] shrink-0 rounded-full border-[1.5px]",
+                  index === 0
+                    ? "bg-accent border-ink"
+                    : "bg-surface border-hairline",
+                )}
+              />
+
+              <span className="flex min-w-0 flex-1 items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold">{dayLabel(on)}</span>
+                <span className="text-text-secondary text-xs">
+                  {daysAway(on, today)}
+                </span>
               </span>
             </li>
           ))}
         </ol>
       )}
 
-      <h2 className="text-text-secondary mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold ">
-        <History className="size-3.5" aria-hidden="true" />
-        Created so far
-        {rule.recordCount > HISTORY_SHOWN ? (
-          <span className="normal-case">
-            · last {HISTORY_SHOWN} of {rule.recordCount}
-          </span>
-        ) : null}
-      </h2>
+      <SectionHeader
+        className="mt-5 mb-1.5 px-1"
+        title="Created so far"
+        count={rule.recordCount}
+        description={
+          rule.recordCount > HISTORY_SHOWN
+            ? `The last ${HISTORY_SHOWN}`
+            : undefined
+        }
+      />
 
       {history.length === 0 ? (
         <EmptyState
@@ -205,7 +222,7 @@ export default async function RecurringRulePage({
           description="Records this rule creates will be listed here, newest first."
         />
       ) : (
-        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
+        <ListCard>
           {history.map((record) => (
             <li
               key={record.id}
@@ -228,13 +245,11 @@ export default async function RecurringRulePage({
                   rule.type === "income" && "text-income",
                 )}
               >
-                {formatWith(currency, BigInt(record.amount), {
-                  signDisplay: "never",
-                })}
+                <Amount value={BigInt(record.amount)} signDisplay="never" />
               </span>
             </li>
           ))}
-        </ul>
+        </ListCard>
       )}
     </PageShell>
   );

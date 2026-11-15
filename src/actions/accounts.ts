@@ -84,7 +84,7 @@ export async function createAccount(
       name: parsed.data.name,
       type: parsed.data.type,
       icon: parsed.data.icon,
-      color: parsed.data.color,
+      tint: parsed.data.tint,
       initial_balance: toDb(balance.minor),
       include_in_total: parsed.data.includeInTotal,
       sort_order: (last?.sort_order ?? -1) + 1,
@@ -118,7 +118,7 @@ export async function updateAccount(
       name: parsed.data.name,
       type: parsed.data.type,
       icon: parsed.data.icon,
-      color: parsed.data.color,
+      tint: parsed.data.tint,
       initial_balance: toDb(balance.minor),
       include_in_total: parsed.data.includeInTotal,
     })

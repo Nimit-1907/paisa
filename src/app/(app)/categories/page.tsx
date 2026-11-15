@@ -4,12 +4,25 @@ import { CategoriesScreen } from "@/components/categories/categories-screen";
 import type { CategoryView } from "@/components/categories/types";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
-import { getCategoriesOverview } from "@/lib/queries/categories";
+import { currentMonthRange } from "@/lib/dates";
+import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
+import { getProfile } from "@/lib/profile";
+import {
+  getCategoriesOverview,
+  getCategoryMonthTotals,
+} from "@/lib/queries/categories";
 
 export const metadata: Metadata = { title: "Categories" };
 
 export default async function CategoriesPage() {
-  const categories = await getCategoriesOverview();
+  const profile = await getProfile();
+  const timeZone = profile?.timezone ?? DEFAULT_TIME_ZONE;
+  const month = currentMonthRange(timeZone);
+
+  const [categories, totals] = await Promise.all([
+    getCategoriesOverview(),
+    getCategoryMonthTotals(month.monthStart),
+  ]);
 
   const view: CategoryView[] = categories.map((category) => ({
     id: category.id,
@@ -21,6 +34,7 @@ export default async function CategoriesPage() {
     archived: category.archived,
     usageCount: category.usageCount,
     transactionCount: category.transactionCount,
+    monthTotal: totals ? (totals.get(category.id) ?? "0") : null,
   }));
 
   return (

@@ -14,9 +14,9 @@ import {
   updateCategory,
 } from "@/actions/categories";
 import type { CategoryView } from "@/components/categories/types";
-import { ColorPicker } from "@/components/shared/color-picker";
+import { Tile, tintBackground } from "@/components/shared/tile";
+import { TintPicker } from "@/components/shared/tint-picker";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { IconPicker } from "@/components/shared/icon-picker";
 import {
   ResponsiveSheet,
@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEFAULT_COLOR, colorForName } from "@/lib/colors";
+import { DEFAULT_TINT, type TintKey, isTint, tintForName } from "@/lib/tokens";
 import { DEFAULT_CATEGORY_ICON } from "@/lib/icons";
 import type { CategoryKind } from "@/lib/schemas/categories";
 
@@ -54,7 +54,7 @@ export function CategoryFormSheet({
 
   const [name, setName] = React.useState("");
   const [icon, setIcon] = React.useState<string>(DEFAULT_CATEGORY_ICON);
-  const [color, setColor] = React.useState(DEFAULT_COLOR);
+  const [tint, setTint] = React.useState<TintKey>(DEFAULT_TINT);
   const [error, setError] = React.useState<string | null>(null);
   const [field, setField] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
@@ -65,7 +65,9 @@ export function CategoryFormSheet({
 
     setName(category?.name ?? "");
     setIcon(category?.icon ?? DEFAULT_CATEGORY_ICON);
-    setColor(category?.color ?? DEFAULT_COLOR);
+    setTint(
+      isTint(category?.tint ?? "") ? (category!.tint as TintKey) : DEFAULT_TINT,
+    );
     setError(null);
     setField(null);
   }, [open, category]);
@@ -126,12 +128,8 @@ export function CategoryFormSheet({
       >
         <SheetBody>
           <div className="flex items-center gap-3">
-            <span
-              className="flex size-12 shrink-0 items-center justify-center rounded-full text-white"
-              style={{ backgroundColor: color }}
-            >
-              <DynamicIcon name={icon} className="size-6" />
-            </span>
+            {/* The live preview: exactly the tile every list will draw. */}
+            <Tile tint={tint} icon={icon} size="lg" />
 
             <div className="min-w-0 flex-1">
               <FormRow
@@ -148,8 +146,8 @@ export function CategoryFormSheet({
                       setName(next);
                       // Give a new category a colour that looks chosen rather
                       // than default, until the user picks one.
-                      if (!category && color === DEFAULT_COLOR && next.trim()) {
-                        setColor(colorForName(next));
+                      if (!category && tint === DEFAULT_TINT && next.trim()) {
+                        setTint(tintForName(next));
                       }
                     }}
                     placeholder={kind === "income" ? "Freelance" : "Groceries"}
@@ -163,12 +161,16 @@ export function CategoryFormSheet({
 
           <div className="space-y-1.5">
             <Label>Colour</Label>
-            <ColorPicker value={color} onChange={setColor} />
+            <TintPicker value={tint} onChange={setTint} />
           </div>
 
           <div className="space-y-1.5">
             <Label>Icon</Label>
-            <IconPicker value={icon} onChange={setIcon} color={color} />
+            <IconPicker
+              value={icon}
+              onChange={setIcon}
+              tintClass={tintBackground(tint)}
+            />
           </div>
 
           {error && !field ? (
@@ -252,8 +254,8 @@ export function CategoryFormSheet({
               void run(
                 () =>
                   category
-                    ? updateCategory({ id: category.id, name, icon, color })
-                    : createCategory({ kind, name, icon, color }),
+                    ? updateCategory({ id: category.id, name, icon, tint })
+                    : createCategory({ kind, name, icon, tint }),
                 category ? "Category updated" : "Category added",
               )
             }
@@ -281,7 +283,10 @@ export function CategoryFormSheet({
         onConfirm={() => {
           if (!category) return;
           setConfirmingDelete(false);
-          void run(() => deleteCategory({ id: category.id }), "Category deleted");
+          void run(
+            () => deleteCategory({ id: category.id }),
+            "Category deleted",
+          );
         }}
       />
     </>

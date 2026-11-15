@@ -882,10 +882,62 @@ Two things this batch did **not** fix, listed rather than quietly left:
   were already listed under "What is not done" above, for the same reasons:
   46 needs a six-month-per-category trend query, 49 a day-by-day pace line.
 
+### Accounts, Categories, Recurring (batch d)
+
+| # | Screen | Done |
+| --- | --- | --- |
+| 51 | Accounts (`/accounts`) | ✅ |
+| 52 | Account detail | ✅ |
+| 53 | Add / edit account sheet | ✅ |
+| 54 | Transfer sheet | ✅ (it is the add sheet on its Transfer tab, done in batch a) |
+| 55 | Categories (`/categories`) | ✅ |
+| 56 | Add / edit category sheet | ✅ |
+| 57 | Recurring (`/recurring`) | ✅ |
+| 58 | Recurring rule detail | ✅ |
+| 59 | Add / edit recurring sheet | ✅ |
+
+**The free colour picker is gone.** Accounts and categories choose one of the
+eight tints, which `src/lib/tokens.test.ts` checks against AA on both themes
+before anything else runs — a promise a hex from a form could not make. The
+sixteen-colour swatch row and `ColorDot` are deleted, the icon picker
+previews the chosen tint behind the chosen icon, and the category sheet's
+live preview is the same `Tile` every list draws. `tintForName` replaces
+`colorForName` so a new category still starts somewhere sensible, and
+onboarding's two accounts are tinted rather than coloured.
+
+**Account names stopped truncating.** `"HDFC S…"`, `"ICICI Cred…"` — a drag
+handle in front of every row costs 28px of a 360px line, and that was the
+28px the name needed. Handles appear in a Reorder mode now, as on
+Categories, and the second line carries only what the group heading above it
+does not already say.
+
+**Recurring rows lead with the date.** Twelve rules wearing twelve category
+tiles is a list you have to read in full to find the one due on the 3rd; a
+column of day numbers can be scanned, and the name beside it still says
+which rule it is. The row's third line went with it — "Next on Thu, 3 Dec"
+beside a tile reading "3 DEC" is the same fact twice.
+
+**58** gets the hero and a timeline: five dates in a bordered card read as
+five separate facts, and on a line they read as one thing continuing, which
+is what a recurring rule is. **52** gets the hero, the in/out split and its
+own Edit/Archive menu, because the detail is where somebody lands from a
+record or a bookmark. **55** shows what each category has cost this month
+under its name — a grid of names answers "what are my categories", which is
+not the question anybody opens the screen with. **59** takes the segmented
+frequency and a stepper for "every N": a number input there asks for the
+on-screen number pad to set a value that is almost always 1 or 2, and its
+native spinners are 12px tall.
+
+Two inline `formatWith` calls were found and removed on the way — the
+account and rule detail pages were printing `₹2,94,415.00` on every row,
+because they predate the rule that amounts go through `<Amount>`.
+
+Still not done, and still for the same reason: **51**'s 30-day sparkline
+needs a per-account daily balance series that does not exist.
+
 ### Still to come
 
 | # | Screens | Batch |
 | --- | --- | --- |
-| 51–59 | Accounts, Categories, Recurring | d |
 | 60–65 | More, Settings | e |
 | 31–38, 66–70 | Public, auth, onboarding, system | f |

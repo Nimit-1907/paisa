@@ -17,7 +17,10 @@ import { toast } from "sonner";
 import { reorderCategories } from "@/actions/categories";
 import { CategoryFormSheet } from "@/components/categories/category-form-sheet";
 import type { CategoryView } from "@/components/categories/types";
+import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
+import { SectionHeader } from "@/components/shared/section-header";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_KINDS, type CategoryKind } from "@/lib/schemas/categories";
@@ -79,37 +82,18 @@ export function CategoriesScreen({
 
   return (
     <div className="space-y-4">
-      <div
-        role="tablist"
-        aria-label="Category kind"
-        className="bg-surface-muted grid grid-cols-2 gap-1 rounded-control p-1"
-      >
-        {CATEGORY_KINDS.map((value) => {
-          const selected = value === kind;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => {
-                setKind(value);
-                setReordering(false);
-              }}
-              className={cn(
-                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
-                selected
-                  ? value === "income"
-                    ? "bg-tint-mint text-income shadow-sm"
-                    : "bg-tint-rose text-expense shadow-sm"
-                  : "text-text-secondary hoverable:text-text",
-              )}
-            >
-              {KIND_LABELS[value]}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentedControl
+        label="Category kind"
+        value={kind}
+        onChange={(next) => {
+          setKind(next);
+          setReordering(false);
+        }}
+        options={CATEGORY_KINDS.map((value) => ({
+          value,
+          label: KIND_LABELS[value],
+        }))}
+      />
 
       {active.length === 0 ? (
         <EmptyState
@@ -125,30 +109,35 @@ export function CategoriesScreen({
         />
       ) : (
         <>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-text-secondary px-1 text-xs font-semibold ">
-              {active.length} {active.length === 1 ? "category" : "categories"}
-            </p>
-
-            <Button
-              variant={reordering ? "default" : "ghost"}
-              size="touch"
-              className="px-3"
-              onClick={() => setReordering((on) => !on)}
-            >
-              {reordering ? (
-                <>
-                  <Check className="size-4" aria-hidden="true" />
-                  Done
-                </>
-              ) : (
-                <>
-                  <GripVertical className="size-4" aria-hidden="true" />
-                  Reorder
-                </>
-              )}
-            </Button>
-          </div>
+          <SectionHeader
+            className="px-1"
+            // Not "Expense 13": the segmented control directly above
+            // already says which kind is showing, and a heading that
+            // repeats the control under it is a line of nothing.
+            title={`${active.length} ${
+              active.length === 1 ? "category" : "categories"
+            }`}
+            trailing={
+              <Button
+                variant={reordering ? "default" : "ghost"}
+                size="touch"
+                className="px-3"
+                onClick={() => setReordering((on) => !on)}
+              >
+                {reordering ? (
+                  <>
+                    <Check className="size-4" aria-hidden="true" />
+                    Done
+                  </>
+                ) : (
+                  <>
+                    <GripVertical className="size-4" aria-hidden="true" />
+                    Reorder
+                  </>
+                )}
+              </Button>
+            }
+          />
 
           {reordering ? (
             <SortableList
@@ -180,21 +169,43 @@ export function CategoriesScreen({
               )}
             />
           ) : (
-            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
-              {active.map((category) => (
-                <li key={category.id}>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(category)}
-                    className="bg-surface hoverable:bg-surface-muted flex w-full flex-col items-center gap-2 rounded-card border px-2 py-3 transition-colors  "
-                  >
-                    <CategoryBadge category={category} size="lg" />
-                    <span className="w-full truncate text-center text-xs font-semibold">
-                      {category.name}
-                    </span>
-                  </button>
-                </li>
-              ))}
+            <ul className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-6">
+              {active.map((category) => {
+                const total =
+                  category.monthTotal === null
+                    ? null
+                    : BigInt(category.monthTotal);
+                return (
+                  <li key={category.id}>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(category)}
+                      className="bg-surface hoverable:bg-surface-muted rounded-card pressable flex w-full flex-col items-center gap-1.5 border px-1 py-3 transition-colors"
+                    >
+                      <CategoryBadge category={category} size="lg" />
+                      <span className="w-full truncate text-center text-[11px] font-semibold">
+                        {category.name}
+                      </span>
+                      {/* This month, under the name. A grid of names answers
+                          "what are my categories", which is not the question
+                          anybody opens this screen with.
+
+                          Nothing at all when the totals could not be read:
+                          a dash there would say "you spent nothing", which
+                          a failed query has not earned. */}
+                      {total === null ? null : (
+                        <span className="text-text-secondary w-full truncate text-center text-[11px]">
+                          {total > 0n ? (
+                            <Amount value={total} signDisplay="never" whole />
+                          ) : (
+                            "—"
+                          )}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
 
               <li>
                 <button

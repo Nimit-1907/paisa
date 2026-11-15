@@ -20,7 +20,8 @@ import { HeroStat } from "@/components/shared/hero-stat";
 import { SectionHeader } from "@/components/shared/section-header";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { DeleteRuleDialog } from "@/components/recurring/delete-rule-dialog";
-import { RuleAvatar } from "@/components/recurring/rule-avatar";
+import { DateTile } from "@/components/shared/date-tile";
+import { ListCard } from "@/components/shared/surface";
 import { RuleSheet } from "@/components/recurring/rule-sheet";
 import { useRuleActions } from "@/components/recurring/use-rule-actions";
 import type {
@@ -42,7 +43,6 @@ import {
   scheduleOf,
 } from "@/lib/recurring-rule";
 import { dayDifference } from "@/lib/recurrence";
-import { relativeDay } from "@/lib/relative-day";
 import { cn } from "@/lib/utils";
 
 /**
@@ -77,7 +77,7 @@ export function RecurringScreen({
   if (rules.length === 0) {
     return (
       <EmptyState
-          art="recurring"
+        art="recurring"
         icon={Repeat}
         title="No recurring records"
         description="Rent, salary, a subscription: add the record once with Repeat set, and it will show up here creating itself every month."
@@ -137,7 +137,6 @@ export function RecurringScreen({
             <RuleItem
               key={rule.id}
               rule={rule}
-              today={today}
               pending={pending}
               onEdit={() => setEditing(rule)}
               onDelete={() => {
@@ -160,7 +159,6 @@ export function RecurringScreen({
           <RuleItem
             key={rule.id}
             rule={rule}
-            today={today}
             pending={pending}
             onEdit={() => setEditing(rule)}
             onDelete={() => {
@@ -179,7 +177,6 @@ export function RecurringScreen({
             <RuleItem
               key={rule.id}
               rule={rule}
-              today={today}
               pending={pending}
               onEdit={() => setEditing(rule)}
               onDelete={() => {
@@ -234,7 +231,7 @@ function Section({
 }) {
   return (
     <section>
-      <SectionHeader className="mb-1.5 px-1" title={`${title} · ${count}`} />
+      <SectionHeader className="mb-1.5 px-1" title={title} count={count} />
 
       {count === 0 ? (
         empty ? (
@@ -243,9 +240,7 @@ function Section({
           </p>
         ) : null
       ) : (
-        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
-          {children}
-        </ul>
+        <ListCard>{children}</ListCard>
       )}
     </section>
   );
@@ -253,7 +248,6 @@ function Section({
 
 function RuleItem({
   rule,
-  today,
   pending,
   onEdit,
   onDelete,
@@ -262,7 +256,6 @@ function RuleItem({
   onSkip,
 }: {
   rule: RecurringRule;
-  today: string;
   pending: boolean;
   onEdit: () => void;
   onDelete: () => void;
@@ -278,25 +271,22 @@ function RuleItem({
         href={`/recurring/${rule.id}`}
         className="hoverable:bg-surface-muted flex min-h-16 min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 transition-colors   "
       >
-        <RuleAvatar rule={rule} dimmed={!rule.active} />
+        <DateTile day={rule.dueOn} dimmed={!rule.active} />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{title}</span>
           <span className="text-text-secondary block truncate text-xs">
             {describeSchedule(scheduleOf(rule))} · {rule.accountName}
           </span>
-          <span
-            className={cn(
-              "block truncate text-xs",
-              rule.active ? "text-text" : "text-text-secondary",
-            )}
-          >
-            {rule.active
-              ? rule.dueOn
-                ? `Next ${relativeDay(rule.dueOn, today)}`
-                : "Finished"
-              : "Paused"}
-          </span>
+          {/* Only when the tile cannot say it. The date tile carries the
+              next occurrence, so "Next on Thu, 3 Dec" beside a tile reading
+              "3 DEC" is the same fact twice; what it cannot show is a rule
+              that has stopped. */}
+          {rule.active && rule.dueOn ? null : (
+            <span className="text-text-secondary block truncate text-xs">
+              {rule.active ? "Finished" : "Paused"}
+            </span>
+          )}
         </span>
 
         <span

@@ -14,7 +14,7 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
-import { DEFAULT_COLOR, colorForName } from "@/lib/colors";
+import { tintForName } from "@/lib/tokens";
 import { findCurrency } from "@/lib/currencies";
 import { toDb, tryToMinor } from "@/lib/money";
 import { HOME_PATH, LOGIN_PATH } from "@/lib/routes";
@@ -124,7 +124,9 @@ export async function completeOnboarding(
       name: accountName,
       type: "cash",
       icon: "Wallet",
-      color: DEFAULT_COLOR,
+      // Mint, like the Cash account the signup trigger makes. The two paths
+      // produce the same account or they are not the same account.
+      tint: "mint",
       initial_balance: toDb(minor),
       sort_order: 0,
     });
@@ -166,7 +168,7 @@ export async function completeOnboarding(
           name: bankName,
           type: "bank",
           icon: "Landmark",
-          color: colorForName(bankName),
+          tint: tintForName(bankName),
           initial_balance: toDb(bankMinor),
           sort_order: 1,
         });

@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Receipt } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Receipt } from "lucide-react";
 
+import { AccountActions } from "@/components/accounts/account-actions";
+import { Amount } from "@/components/shared/amount";
+import type { AccountView } from "@/components/accounts/types";
 import { EmptyState } from "@/components/shared/empty-state";
+import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
+import { SectionHeader } from "@/components/shared/section-header";
+import { ListCard } from "@/components/shared/surface";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { currentMonthRange } from "@/lib/dates";
-import { formatWith } from "@/lib/money";
-import { currencyOf, getProfile } from "@/lib/profile";
+import { getProfile } from "@/lib/profile";
 import {
   getAccount,
   getAccountBalance,
@@ -52,7 +56,6 @@ export default async function AccountDetailPage({
   // exist, which is exactly what we want to tell the browser.
   if (!account) notFound();
 
-  const currency = currencyOf(profile);
   const range = currentMonthRange(profile?.timezone ?? "Asia/Kolkata");
 
   const [balance, flow, transactions] = await Promise.all([
@@ -60,6 +63,23 @@ export default async function AccountDetailPage({
     getAccountMonthFlow(id, range.monthStart),
     getAccountTransactions(id),
   ]);
+
+  // The island below is a client component, so the account crosses the
+  // boundary as the same `AccountView` every other screen uses — amounts as
+  // minor-unit strings, because an RSC payload has no BigInt.
+  const view: AccountView = {
+    id: account.id,
+    name: account.name,
+    type: account.type,
+    icon: account.icon,
+    color: account.color,
+    tint: account.tint,
+    initialBalance: account.initial_balance.toString(),
+    balance: balance.toString(),
+    includeInTotal: account.include_in_total,
+    archived: account.archived,
+    usageCount: 0,
+  };
 
   const dateFormatter = new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
@@ -71,64 +91,52 @@ export default async function AccountDetailPage({
     <PageShell>
       <PageHeader
         title={account.name}
+        back={{ href: "/accounts", label: "Back to accounts" }}
         description={`${ACCOUNT_TYPE_LABELS[account.type]}${
           account.archived ? " · Archived" : ""
         }`}
-        actions={
-          <Link
-            href="/accounts"
-            aria-label="Back to accounts"
-            className="hoverable:bg-surface-muted flex size-11 items-center justify-center rounded-full  "
-          >
-            <ArrowLeft className="size-5" aria-hidden="true" />
-          </Link>
+        actions={<AccountActions account={view} />}
+      />
+
+      <HeroStat
+        label={
+          <span className="flex min-w-0 items-center gap-2">
+            <Tile tint={account.tint} icon={account.icon} size="sm" />
+            <span className="truncate">Balance</span>
+          </span>
+        }
+        value={
+          <span className={balance < 0n ? "text-expense" : undefined}>
+            <Amount value={balance} />
+          </span>
+        }
+        split={
+          <>
+            <HeroSplit
+              label="In this month"
+              tint="bg-tint-mint"
+              icon={<ArrowDownLeft className="size-3.5" />}
+              value={
+                <span className="text-income">
+                  <Amount value={flow.moneyIn} whole />
+                </span>
+              }
+            />
+            <HeroSplit
+              label="Out this month"
+              tint="bg-tint-rose"
+              icon={<ArrowUpRight className="size-3.5" />}
+              value={
+                <span className="text-expense">
+                  <Amount value={flow.moneyOut} whole />
+                </span>
+              }
+            />
+          </>
         }
       />
 
-      <section className="bg-surface rounded-card border p-4">
-        <div className="flex items-center gap-3">
-          <Tile tint={account.tint} icon={account.icon} size="lg" />
-          <div className="min-w-0">
-            <p className="text-text-secondary text-xs font-semibold ">
-              Balance
-            </p>
-            <p
-              className={cn(
-                "amount text-2xl font-semibold",
-                balance < 0n && "text-expense",
-              )}
-            >
-              {formatWith(currency, balance)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-tint-mint rounded-control p-3">
-            <p className="text-income flex items-center gap-1 text-xs font-semibold">
-              <ArrowDownLeft className="size-3.5" aria-hidden="true" />
-              In this month
-            </p>
-            <p className="amount text-income mt-1 truncate text-base font-semibold">
-              {formatWith(currency, flow.moneyIn)}
-            </p>
-          </div>
-
-          <div className="bg-tint-rose rounded-control p-3">
-            <p className="text-expense flex items-center gap-1 text-xs font-semibold">
-              <ArrowUpRight className="size-3.5" aria-hidden="true" />
-              Out this month
-            </p>
-            <p className="amount text-expense mt-1 truncate text-base font-semibold">
-              {formatWith(currency, flow.moneyOut)}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <h2 className="text-text-secondary mt-5 mb-1.5 px-1 text-xs font-semibold ">
-        Records
-      </h2>
+      <SectionHeader className="mt-5 mb-1.5 px-1" title="Records" />
 
       {transactions.length === 0 ? (
         <EmptyState
@@ -138,7 +146,7 @@ export default async function AccountDetailPage({
           action={<AddRecordButton />}
         />
       ) : (
-        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
+        <ListCard>
           {transactions.map((transaction) => (
             <li
               key={transaction.id}
@@ -176,18 +184,14 @@ export default async function AccountDetailPage({
               <span
                 className={cn(
                   "amount shrink-0 text-sm font-semibold",
-                  transaction.signedAmount > 0n
-                    ? "text-income"
-                    : "text-text",
+                  transaction.signedAmount > 0n ? "text-income" : "text-text",
                 )}
               >
-                {formatWith(currency, transaction.signedAmount, {
-                  signDisplay: "always",
-                })}
+                <Amount value={transaction.signedAmount} signDisplay="always" />
               </span>
             </li>
           ))}
-        </ul>
+        </ListCard>
       )}
     </PageShell>
   );

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { CalendarClock, MoreHorizontal } from "lucide-react";
+import { CalendarClock, CalendarDays, MoreHorizontal } from "lucide-react";
 
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { FieldCard } from "@/components/shared/field-card";
@@ -325,4 +325,78 @@ export function WhenField({
       }
     />
   );
+}
+
+/**
+ * A plain date, as a field card over a native date input.
+ *
+ * The sibling of {@link WhenField} for the places that take a day rather
+ * than a moment: a rule's next run, an end date, the start of a range. Same
+ * reasoning — the card shows "3 Dec 2026", the control underneath is the
+ * browser's own.
+ */
+export function DateField({
+  id,
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  placeholder = "Not set",
+  invalid = false,
+  className,
+}: {
+  id: string;
+  label: string;
+  /** `yyyy-mm-dd`, or "" when there is none. */
+  value: string;
+  onChange: (next: string) => void;
+  min?: string;
+  max?: string;
+  /** What to show when the date is unset — "No end date". */
+  placeholder?: string;
+  invalid?: boolean;
+  className?: string;
+}) {
+  return (
+    <FieldCard
+      label={label}
+      invalid={invalid}
+      className={className}
+      icon={
+        <CalendarDays
+          className="text-text-secondary size-3.5 shrink-0"
+          aria-hidden="true"
+        />
+      }
+      value={
+        value ? (
+          formatDay(value)
+        ) : (
+          <span className="text-text-secondary font-normal">{placeholder}</span>
+        )
+      }
+      control={
+        <input
+          id={id}
+          type="date"
+          aria-label={label}
+          value={value}
+          min={min}
+          max={max}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      }
+    />
+  );
+}
+
+/** "3 Dec 2026" — the same shape the rest of the app writes a date in. */
+function formatDay(day: string): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${day}T00:00:00Z`));
 }

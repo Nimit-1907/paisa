@@ -15,14 +15,19 @@ import { cn } from "@/lib/utils";
 export function IconPicker({
   value,
   onChange,
-  color,
+  tintClass,
   label = "Icon",
   className,
 }: {
   value: string;
   onChange: (icon: IconName) => void;
-  /** Tints the selected tile, so icon and colour are previewed together. */
-  color?: string;
+  /**
+   * The chosen tint, so the selected tile previews icon and colour at once.
+   *
+   * A `bg-tint-*` class, not a hex: Phase 14's eight tints are classes, and
+   * a hex handed to an inline style could not follow the theme.
+   */
+  tintClass?: string;
   label?: string;
   className?: string;
 }) {
@@ -31,7 +36,7 @@ export function IconPicker({
       role="radiogroup"
       aria-label={label}
       className={cn(
-        "bg-surface-muted/40 grid max-h-44 grid-cols-6 gap-1 overflow-y-auto overscroll-contain rounded-control p-2 sm:grid-cols-8",
+        "bg-surface-muted rounded-control grid max-h-44 grid-cols-6 gap-1 overflow-y-auto overscroll-contain p-2 sm:grid-cols-8",
         className,
       )}
     >
@@ -48,12 +53,11 @@ export function IconPicker({
             aria-label={name}
             onClick={() => onChange(name)}
             className={cn(
-              " flex size-11 items-center justify-center rounded-lg transition-colors  ",
+              "rounded-control flex size-11 items-center justify-center transition-colors",
               active
-                ? "text-white shadow-sm"
-                : "text-text-secondary hoverable:bg-background hoverable:text-text",
+                ? cn("text-text accent-sm", tintClass ?? "bg-tint-neutral")
+                : "text-text-secondary hoverable:bg-surface hoverable:text-text",
             )}
-            style={active ? { backgroundColor: color ?? undefined } : undefined}
           >
             <Icon className="size-5" aria-hidden="true" />
           </button>

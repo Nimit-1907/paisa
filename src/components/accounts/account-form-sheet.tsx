@@ -10,8 +10,8 @@ import { toast } from "sonner";
 import { createAccount, updateAccount } from "@/actions/accounts";
 import type { AccountView } from "@/components/accounts/types";
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
-import { ColorPicker } from "@/components/shared/color-picker";
-import { DynamicIcon } from "@/components/shared/dynamic-icon";
+import { Tile, tintBackground } from "@/components/shared/tile";
+import { TintPicker } from "@/components/shared/tint-picker";
 import { IconPicker } from "@/components/shared/icon-picker";
 import {
   ResponsiveSheet,
@@ -23,7 +23,7 @@ import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { DEFAULT_COLOR } from "@/lib/colors";
+import { DEFAULT_TINT, type TintKey, isTint } from "@/lib/tokens";
 import { ACCOUNT_TYPE_ICONS, DEFAULT_ACCOUNT_ICON } from "@/lib/icons";
 import { fromMinor, tryToMinor } from "@/lib/money";
 import {
@@ -56,7 +56,7 @@ export function AccountFormSheet({
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState<AccountType>("bank");
   const [icon, setIcon] = React.useState<string>(DEFAULT_ACCOUNT_ICON);
-  const [color, setColor] = React.useState(DEFAULT_COLOR);
+  const [tint, setTint] = React.useState<TintKey>(DEFAULT_TINT);
   const [initialBalance, setInitialBalance] = React.useState("");
   const [includeInTotal, setIncludeInTotal] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -75,9 +75,13 @@ export function AccountFormSheet({
     setName(account?.name ?? "");
     setType(account?.type ?? "bank");
     setIcon(account?.icon ?? ACCOUNT_TYPE_ICONS[account?.type ?? "bank"]);
-    setColor(account?.color ?? DEFAULT_COLOR);
+    setTint(
+      isTint(account?.tint ?? "") ? (account!.tint as TintKey) : DEFAULT_TINT,
+    );
     setInitialBalance(
-      account ? fromMinor(BigInt(account.initialBalance), currency.decimals) : "",
+      account
+        ? fromMinor(BigInt(account.initialBalance), currency.decimals)
+        : "",
     );
     setIncludeInTotal(account?.includeInTotal ?? true);
     setError(null);
@@ -99,7 +103,7 @@ export function AccountFormSheet({
         name,
         type,
         icon,
-        color,
+        tint,
         initialBalance,
         includeInTotal,
       };
@@ -161,11 +165,13 @@ export function AccountFormSheet({
 
         <div className="space-y-1.5">
           <Label htmlFor="account-type">Type</Label>
+          {/* Six options wrap to two rows, which a segmented control does
+              not do — this is a pill set, like the date presets. */}
           <div
             id="account-type"
             role="radiogroup"
             aria-label="Account type"
-            className="bg-surface-muted grid grid-cols-3 gap-1 rounded-control p-1"
+            className="flex flex-wrap gap-1.5"
           >
             {ACCOUNT_TYPES.map((value) => {
               const active = value === type;
@@ -184,10 +190,11 @@ export function AccountFormSheet({
                     }
                   }}
                   className={cn(
-                    " h-11 rounded-lg text-sm font-semibold transition-colors  ",
+                    "pressable flex h-11 items-center rounded-full px-3.5 text-sm font-semibold",
+                    "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
                     active
-                      ? "bg-background text-text shadow-sm"
-                      : "text-text-secondary hoverable:text-text",
+                      ? "accent-sm bg-surface text-text"
+                      : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
                   )}
                 >
                   {ACCOUNT_TYPE_LABELS[value]}
@@ -200,15 +207,15 @@ export function AccountFormSheet({
         <div className="space-y-1.5">
           <Label>Icon and colour</Label>
           <div className="flex items-center gap-3">
-            <span
-              className="flex size-11 shrink-0 items-center justify-center rounded-full text-white"
-              style={{ backgroundColor: color }}
-            >
-              <DynamicIcon name={icon} className="size-5" />
-            </span>
-            <ColorPicker value={color} onChange={setColor} className="flex-1" />
+            {/* The tile exactly as the lists will draw it. */}
+            <Tile tint={tint} icon={icon} size="lg" />
+            <TintPicker value={tint} onChange={setTint} className="flex-1" />
           </div>
-          <IconPicker value={icon} onChange={setIcon} color={color} />
+          <IconPicker
+            value={icon}
+            onChange={setIcon}
+            tintClass={tintBackground(tint)}
+          />
         </div>
 
         <FormRow
@@ -290,4 +297,3 @@ export function AccountFormSheet({
     </ResponsiveSheet>
   );
 }
-

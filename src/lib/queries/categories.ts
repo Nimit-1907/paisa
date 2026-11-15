@@ -1,5 +1,6 @@
 import "server-only";
 
+import { fromDb } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
 
@@ -70,4 +71,59 @@ export async function getActiveCategories(
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data;
+}
+
+/**
+ * What each category has come to this month, keyed by id.
+ *
+ * Both kinds in one map: the Categories screen shows expense and income
+ * under the same toggle, and two round trips to colour one grid is a round
+ * trip too many. The amounts are minor units as text, because this crosses
+ * the RSC boundary.
+ *
+ * `null` when either half fails, not an empty map. An empty map would make
+ * every category read "—", which is a claim — "you spent nothing on Food" —
+ * rather than an absence. The screen drops the line entirely instead, and
+ * goes back to being a grid of names, which is what it was before.
+ */
+export async function getCategoryMonthTotals(
+  monthStart: string,
+): Promise<Map<string, string> | null> {
+  const supabase = await createClient();
+  const monthEnd = lastDayOfMonth(monthStart);
+
+  const [expense, income] = await Promise.all([
+    supabase.rpc("category_totals", {
+      p_from: monthStart,
+      p_to: monthEnd,
+      p_kind: "expense",
+    }),
+    supabase.rpc("category_totals", {
+      p_from: monthStart,
+      p_to: monthEnd,
+      p_kind: "income",
+    }),
+  ]);
+
+  const totals = new Map<string, string>();
+
+  for (const result of [expense, income]) {
+    if (result.error) {
+      console.error("[categories]", result.error.message);
+      return null;
+    }
+
+    for (const row of result.data ?? []) {
+      totals.set(row.category_id, fromDb(row.total).toString());
+    }
+  }
+
+  return totals;
+}
+
+/** The last day of the month a `yyyy-mm-01` starts. */
+function lastDayOfMonth(monthStart: string): string {
+  const [year = 1970, month = 1] = monthStart.split("-").map(Number);
+  const last = new Date(Date.UTC(year, month, 0));
+  return last.toISOString().slice(0, 10);
 }

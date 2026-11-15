@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { isColor } from "@/lib/colors";
 import { ICON_NAMES } from "@/lib/icons";
+import { TINT_KEYS } from "@/lib/tokens";
 
 export const ACCOUNT_TYPES = [
   "cash",
@@ -34,13 +34,20 @@ const icon = z
   .string()
   .refine((value) => (ICON_NAMES as string[]).includes(value), "Pick an icon.");
 
-const color = z.string().refine(isColor, "Pick a colour.");
+/**
+ * One of the eight, not a hex.
+ *
+ * Phase 14 replaced the free colour picker: every tint is checked against
+ * AA on both themes in `src/lib/tokens.test.ts`, and a hex from a form
+ * could not be.
+ */
+const tint = z.enum(TINT_KEYS);
 
 export const accountFormSchema = z.object({
   name,
   type: z.enum(ACCOUNT_TYPES),
   icon,
-  color,
+  tint,
   // Text until the server knows the currency's exponent; toMinor does the rest.
   initialBalance: z.string().trim().max(20, "That is a very large number."),
   includeInTotal: z.boolean(),

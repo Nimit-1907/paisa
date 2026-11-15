@@ -144,3 +144,23 @@ export function tintVar(tint: string | null | undefined): string {
 export const TINT_CYCLE: string[] = TINT_KEYS.filter(
   (key) => key !== "neutral",
 ).map((key) => `var(--tint-${key})`);
+
+/**
+ * A tint picked from a name, so a new category starts somewhere sensible.
+ *
+ * Stable and spread: the same name always gets the same tint, and two names
+ * typed one after another almost never get the same one. `neutral` is left
+ * out — it is the fallback for a row with no tint at all, and handing it out
+ * as a default would make "no colour chosen" and "grey chosen" the same
+ * thing.
+ */
+export function tintForName(name: string): TintKey {
+  const palette = TINT_KEYS.filter((key) => key !== "neutral");
+
+  let hash = 0;
+  for (let index = 0; index < name.length; index += 1) {
+    hash = (hash * 31 + name.charCodeAt(index)) >>> 0;
+  }
+
+  return palette[hash % palette.length]!;
+}

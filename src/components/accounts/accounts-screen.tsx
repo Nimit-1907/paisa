@@ -8,9 +8,11 @@ import { useRouter } from "next/navigation";
 import {
   Archive,
   ArchiveRestore,
+  Check,
   ChevronDown,
   ChevronRight,
   EllipsisVertical,
+  GripVertical,
   Pencil,
   Plus,
   Trash2,
@@ -66,6 +68,16 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
   const [deleting, setDeleting] = React.useState(false);
   const [showNetWorth, setShowNetWorth] = React.useState(false);
   const [showArchived, setShowArchived] = React.useState(false);
+  /*
+   * Handles only while reordering, as on Categories.
+   *
+   * A drag handle in front of every row costs 28px of a 360px line, and
+   * that was the 28px the account's name needed: "HDFC Savings" came out
+   * as "HDFC S…" next to a balance that is five digits and a symbol wide.
+   * Reordering is something people do once; reading the names is what the
+   * screen is for.
+   */
+  const [reordering, setReordering] = React.useState(false);
 
   const active = accounts.filter((account) => !account.archived);
   const archived = accounts.filter((account) => account.archived);
@@ -229,6 +241,29 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         />
       ) : null}
 
+      {active.length > 1 ? (
+        <div className="flex justify-end">
+          <Button
+            variant={reordering ? "default" : "ghost"}
+            size="touch"
+            className="-my-1 px-3"
+            onClick={() => setReordering((on) => !on)}
+          >
+            {reordering ? (
+              <>
+                <Check className="size-4" aria-hidden="true" />
+                Done
+              </>
+            ) : (
+              <>
+                <GripVertical className="size-4" aria-hidden="true" />
+                Reorder
+              </>
+            )}
+          </Button>
+        </div>
+      ) : null}
+
       {groups.map((group) => (
         <section key={group.type} aria-label={ACCOUNT_TYPE_LABELS[group.type]}>
           <SectionHeader
@@ -249,11 +284,12 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
               router.refresh();
             }}
             className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border"
+            disabled={!reordering}
             renderItem={(account, { handleProps, isDragging }) => (
               <AccountRow
                 account={account}
                 isDragging={isDragging}
-                handleProps={handleProps}
+                handleProps={reordering ? handleProps : undefined}
                 onEdit={() => openEdit(account)}
                 onArchive={() => void toggleArchived(account)}
                 onDelete={() => {
@@ -357,20 +393,23 @@ function AccountRow({
         isDragging && "bg-surface-muted",
       )}
     >
-      {handleProps ? <DragHandle {...handleProps} /> : <span className="w-2" />}
+      {handleProps ? <DragHandle {...handleProps} /> : <span className="w-1" />}
 
       <Link
         href={`/accounts/${account.id}`}
-        className="hoverable:bg-surface-muted flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors   "
+        className="hoverable:bg-surface-muted rounded-control flex min-h-14 min-w-0 flex-1 items-center gap-3 px-2 transition-colors"
       >
-        <Tile tint={account.tint} icon={account.icon} />
+        <Tile tint={account.tint} icon={account.icon} size="lg" />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">
             {account.name}
           </span>
-          {!account.includeInTotal || account.archived ? (
-            <span className="text-text-secondary block text-xs">
+          {/* Only what the group heading above does not already say. The
+              row sits under "Bank"; repeating "Bank" on it is a word that
+              costs a line and says nothing. */}
+          {account.archived || !account.includeInTotal ? (
+            <span className="text-text-secondary block truncate text-xs">
               {account.archived ? "Archived" : "Not in total"}
             </span>
           ) : null}

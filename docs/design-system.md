@@ -201,7 +201,8 @@ prints Copy and Delete through the row for a second and a half.
 - the frosted-glass header, and the `backdrop-filter` with it
 - the separate floating "+" — the dock carries Add between its four
   destinations, and the sidebar carries it above its list
-- the sixteen-colour picker, in favour of eight tints
+- the sixteen-colour picker, in favour of eight tints — `ColorPicker` and
+  `ColorDot` are deleted, and `tintForName` replaced `colorForName`
 - Instrument Serif
 - every gradient and noise texture
 - `font-heading`, which was never defined and so was never doing anything
@@ -212,6 +213,6 @@ prints Copy and Delete through the row for a second and a half.
 
 ## 6. Still to come
 
-Batches (d) to (f) — Accounts, Categories, Recurring, More, Settings, the
-public pages, auth, onboarding and the system screens.
+Batches (e) and (f) — More, Settings, the public pages, auth, onboarding and
+the system screens.
 Each one lands with its screenshots and its ticks in `docs/screens.md`.

@@ -7,6 +7,7 @@ import {
   DEFAULT_TINT,
   PALETTE,
   TINT_KEYS,
+  tintForName,
   type Theme,
   type TintKey,
   contrast,
@@ -138,9 +139,7 @@ describe("lines and bars", () => {
 
       // Stated so the next person sees why the border is not optional.
       expect(fills).toBeLessThan(2);
-      expect(border, `${border.toFixed(2)}:1`).toBeGreaterThanOrEqual(
-        NON_TEXT,
-      );
+      expect(border, `${border.toFixed(2)}:1`).toBeGreaterThanOrEqual(NON_TEXT);
     });
   }
 });
@@ -179,14 +178,12 @@ describe("the tint keys", () => {
  * anything drift, so this is the check that they have not.
  */
 describe("the CSS and this file agree", () => {
-  const css = readFileSync(
-    join(process.cwd(), "src/app/globals.css"),
-    "utf8",
-  );
+  const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
 
   /** Reads `--name: #value;` out of the `:root` or `.dark` block. */
   function declared(theme: Theme, name: string): string | null {
-    const block = theme === "light" ? /:root\s*\{([^}]*)\}/ : /\.dark\s*\{([^}]*)\}/;
+    const block =
+      theme === "light" ? /:root\s*\{([^}]*)\}/ : /\.dark\s*\{([^}]*)\}/;
     const body = block.exec(css)?.[1] ?? "";
     const match = new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`).exec(body);
     return match ? match[1].toLowerCase() : null;
@@ -225,4 +222,38 @@ describe("the CSS and this file agree", () => {
       });
     }
   }
+});
+
+describe("tintForName", () => {
+  it("gives the same name the same tint, every time", () => {
+    expect(tintForName("Groceries")).toBe(tintForName("Groceries"));
+    expect(tintForName("")).toBe(tintForName(""));
+  });
+
+  it("never hands out neutral", () => {
+    // Neutral is the fallback for a row with no tint at all. Handing it out
+    // as a choice would make "nothing chosen" and "grey chosen" the same.
+    const names = Array.from(
+      { length: 200 },
+      (_, index) => `Category ${index}`,
+    );
+    for (const name of names) {
+      expect(tintForName(name)).not.toBe("neutral");
+    }
+  });
+
+  it("only ever returns a real tint", () => {
+    for (const name of ["Rent", "Food", "Café ☕", "日本語", "x".repeat(60)]) {
+      expect(TINT_KEYS).toContain(tintForName(name));
+    }
+  });
+
+  it("spreads names across the palette rather than piling them up", () => {
+    const names = Array.from({ length: 140 }, (_, index) => `Name ${index}`);
+    const used = new Set(names.map(tintForName));
+
+    // Seven tints are on offer; with 140 names, hitting all of them is the
+    // low bar a hash has to clear to be worth using at all.
+    expect(used.size).toBe(TINT_KEYS.length - 1);
+  });
 });

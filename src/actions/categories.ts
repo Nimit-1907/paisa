@@ -87,7 +87,7 @@ export async function createCategory(
       name: parsed.data.name,
       kind: parsed.data.kind,
       icon: parsed.data.icon,
-      color: parsed.data.color,
+      tint: parsed.data.tint,
       sort_order: (last?.sort_order ?? -1) + 1,
     })
     .select("id")
@@ -120,7 +120,7 @@ export async function updateCategory(
     .update({
       name: parsed.data.name,
       icon: parsed.data.icon,
-      color: parsed.data.color,
+      tint: parsed.data.tint,
     })
     .eq("id", parsed.data.id)
     .eq("user_id", user.id)
