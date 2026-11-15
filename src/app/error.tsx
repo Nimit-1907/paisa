@@ -42,7 +42,7 @@ export default function RouteError({
 
   return (
     <main className="pt-safe pb-safe mx-auto flex min-h-dvh w-full max-w-sm flex-col items-center justify-center px-4 text-center">
-      <span className="bg-destructive/10 text-destructive rounded-card mb-5 flex size-14 items-center justify-center">
+      <span className="bg-tint-rose text-expense rounded-card mb-5 flex size-14 items-center justify-center">
         <TriangleAlert className="size-7" aria-hidden="true" />
       </span>
 
@@ -50,7 +50,7 @@ export default function RouteError({
         That did not load.
       </h1>
 
-      <p className="text-ink-2 mt-2 text-sm text-pretty">
+      <p className="text-text-secondary mt-2 text-sm text-pretty">
         Something went wrong at our end. Nothing you have saved is affected —
         your records are on the server, not on this screen.
       </p>
@@ -67,7 +67,7 @@ export default function RouteError({
       </div>
 
       {error.digest ? (
-        <p className="text-ink-3 mt-6 font-mono text-xs">
+        <p className="text-text-secondary mt-6 font-mono text-xs">
           Reference: {error.digest}
         </p>
       ) : null}

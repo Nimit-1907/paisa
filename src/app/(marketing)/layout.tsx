@@ -27,13 +27,13 @@ export default function MarketingLayout({
     <div className="flex min-h-dvh flex-col">
       <SkipLink />
 
-      <header className="glass site-header pt-safe sticky top-0 z-30 border-b">
+      <header className="bg-background site-header pt-safe sticky top-0 z-30 border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-3">
           <Link
             href="/"
-            className="focus-visible:ring-ring flex min-h-11 items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+            className=" flex min-h-11 items-center gap-2 rounded-lg "
           >
-            <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-control">
+            <span className="bg-ink text-on-ink flex size-8 items-center justify-center rounded-control">
               <IndianRupee className="size-4" aria-hidden="true" />
             </span>
             <span className="font-semibold tracking-tight">{SITE.name}</span>
@@ -45,7 +45,7 @@ export default function MarketingLayout({
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-ink-2 hoverable:text-ink focus-visible:ring-ring flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                    className="text-text-secondary hoverable:text-text flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold  "
                   >
                     {link.label}
                   </Link>
@@ -54,7 +54,7 @@ export default function MarketingLayout({
               <li>
                 <Link
                   href="/login"
-                  className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring ml-1 flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                  className="bg-ink text-on-ink hoverable:bg-ink/90 ml-1 flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold  "
                 >
                   Log in
                 </Link>
@@ -69,7 +69,7 @@ export default function MarketingLayout({
       </main>
 
       <footer className="pb-safe mt-8 border-t">
-        <div className="text-ink-2 mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-6 text-sm">
+        <div className="text-text-secondary mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-6 text-sm">
           <p>
             {SITE.name} — {SITE.tagline}
           </p>
@@ -80,7 +80,7 @@ export default function MarketingLayout({
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="hoverable:text-ink focus-visible:ring-ring inline-flex min-h-11 items-center rounded focus-visible:ring-2 focus-visible:outline-none"
+                      className="hoverable:text-text inline-flex min-h-11 items-center rounded  "
                     >
                       {link.label}
                     </Link>

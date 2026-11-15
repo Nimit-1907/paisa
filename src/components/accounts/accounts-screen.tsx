@@ -44,7 +44,7 @@ import {
   type AccountType,
 } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 /**
  * The Accounts tab.
@@ -190,14 +190,14 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
             <Amount value={shown} whole />
           </span>
         }
-        caption={
+        helper={
           showNetWorth
             ? `Every account, including the ${excluded} left out of your total`
             : `Across ${included} of ${active.length} ${
                 active.length === 1 ? "account" : "accounts"
               }`
         }
-        aside={
+        trend={
           excluded > 0 ? (
             <Button
               variant="outline"
@@ -245,7 +245,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
               );
               router.refresh();
             }}
-            className="bg-card divide-border divide-y overflow-hidden rounded-card border"
+            className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border"
             renderItem={(account, { handleProps, isDragging }) => (
               <AccountRow
                 account={account}
@@ -281,7 +281,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="text-text-secondary hoverable:text-text flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold  "
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -292,7 +292,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
           </button>
 
           {showArchived ? (
-            <ul className="bg-card divide-border mt-1.5 divide-y overflow-hidden rounded-card border opacity-80">
+            <ul className="bg-surface divide-hairline mt-1.5 divide-y overflow-hidden rounded-card border opacity-80">
               {archived.map((account) => (
                 <li key={account.id}>
                   <AccountRow
@@ -350,24 +350,24 @@ function AccountRow({
   return (
     <div
       className={cn(
-        "bg-card flex items-center gap-1 pr-1 pl-1",
-        isDragging && "bg-muted",
+        "bg-surface flex items-center gap-1 pr-1 pl-1",
+        isDragging && "bg-surface-muted",
       )}
     >
       {handleProps ? <DragHandle {...handleProps} /> : <span className="w-2" />}
 
       <Link
         href={`/accounts/${account.id}`}
-        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-surface-muted flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-lg px-2 transition-colors   "
       >
-        <ColorDot color={account.color} icon={account.icon} />
+        <Tile tint={account.tint} icon={account.icon} />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">
             {account.name}
           </span>
           {!account.includeInTotal || account.archived ? (
-            <span className="text-ink-2 block text-xs">
+            <span className="text-text-secondary block text-xs">
               {account.archived ? "Archived" : "Not in total"}
             </span>
           ) : null}

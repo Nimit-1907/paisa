@@ -29,13 +29,13 @@ export function AuthCard({
         <Link
           href="/"
           aria-label="Paisa"
-          className="bg-primary text-primary-foreground focus-visible:ring-ring mb-4 flex size-12 items-center justify-center rounded-card focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="bg-ink text-on-ink mb-4 flex size-12 items-center justify-center rounded-card  focus-visible:ring-offset-2 "
         >
           <IndianRupee className="size-6" aria-hidden="true" />
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description ? (
-          <p className="text-ink-2 mt-1.5 text-sm text-balance">
+          <p className="text-text-secondary mt-1.5 text-sm text-balance">
             {description}
           </p>
         ) : null}
@@ -44,14 +44,14 @@ export function AuthCard({
       {children}
 
       {reassurance ? (
-        <p className="text-ink-2 mt-6 flex items-center justify-center gap-1.5 text-xs">
+        <p className="text-text-secondary mt-6 flex items-center justify-center gap-1.5 text-xs">
           <Lock className="size-3 shrink-0" aria-hidden="true" />
           Your records stay yours. No ads, no trackers.
         </p>
       ) : null}
 
       {footer ? (
-        <div className="text-ink-2 mt-4 text-center text-sm">
+        <div className="text-text-secondary mt-4 text-center text-sm">
           {footer}
         </div>
       ) : null}

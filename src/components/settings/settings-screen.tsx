@@ -133,7 +133,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
 
   return (
     <div className="space-y-4">
-      <section className="bg-card space-y-4 rounded-card border p-4">
+      <section className="bg-surface space-y-4 rounded-card border p-4">
         <FormRow
           id="display-name"
           label="Your name"
@@ -156,7 +156,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
             id="currency"
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="focus-visible:ring-ring flex min-h-11 w-full items-center gap-3 rounded-control border px-3 text-left transition-colors hoverable:bg-muted/60 focus-visible:ring-2 focus-visible:outline-none"
+            className=" flex min-h-11 w-full items-center gap-3 rounded-control border px-3 text-left transition-colors hoverable:bg-surface-muted "
           >
             <span className="amount text-lg font-semibold">
               {currency?.symbol ?? "?"}
@@ -165,7 +165,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               <span className="block truncate text-sm font-semibold">
                 {currency?.name ?? currencyCode}
               </span>
-              <span className="text-ink-2 block truncate text-xs">
+              <span className="text-text-secondary block truncate text-xs">
                 {currency
                   ? formatMoney(123456n, {
                       symbol: currency.symbol,
@@ -175,7 +175,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               </span>
             </span>
             <ChevronRight
-              className="text-ink-2 size-4 shrink-0"
+              className="text-text-secondary size-4 shrink-0"
               aria-hidden="true"
             />
           </button>
@@ -185,8 +185,8 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
               className={cn(
                 "text-xs",
                 currency.decimals === currentDecimals
-                  ? "text-ink-2"
-                  : "text-warning font-semibold",
+                  ? "text-text-secondary"
+                  : "text-text font-semibold",
               )}
             >
               {currency.decimals === currentDecimals
@@ -217,10 +217,10 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                   aria-checked={active}
                   onClick={() => setWeekStart(day.value)}
                   className={cn(
-                    "focus-visible:ring-ring h-11 min-w-11 rounded-lg border px-2.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    " h-11 min-w-11 rounded-lg border px-2.5 text-xs font-semibold transition-colors  ",
                     active
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "text-ink-2 hoverable:bg-muted",
+                      ? "border-ink bg-tint-peri text-text"
+                      : "text-text-secondary hoverable:bg-surface-muted",
                   )}
                 >
                   {day.label}
@@ -235,7 +235,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
           <div
             role="radiogroup"
             aria-labelledby="theme-label"
-            className="bg-muted grid grid-cols-3 gap-1 rounded-control p-1"
+            className="bg-surface-muted grid grid-cols-3 gap-1 rounded-control p-1"
           >
             {THEMES.map((option) => {
               const active = theme === option.value;
@@ -252,10 +252,10 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                     setTheme(option.value);
                   }}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    " h-11 rounded-lg text-sm font-semibold transition-colors  ",
                     active
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-ink-2",
+                      ? "bg-background text-text shadow-sm"
+                      : "text-text-secondary",
                   )}
                 >
                   {option.label}
@@ -266,7 +266,7 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
         </div>
 
         {error && !errorField ? (
-          <p role="alert" className="text-destructive text-sm">
+          <p role="alert" className="text-expense text-sm">
             {error}
           </p>
         ) : null}
@@ -331,7 +331,7 @@ function CurrencySheet({
       <SheetBody>
         <div className="relative">
           <Search
-            className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+            className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
             aria-hidden="true"
           />
           <Input
@@ -343,7 +343,7 @@ function CurrencySheet({
           />
         </div>
 
-        <ul className="divide-border divide-y">
+        <ul className="divide-hairline divide-y">
           {results.map((currency) => {
             const active = currency.code === selected;
             return (
@@ -352,7 +352,7 @@ function CurrencySheet({
                   type="button"
                   aria-pressed={active}
                   onClick={() => onSelect(currency)}
-                  className="hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-12 w-full items-center gap-3 px-1 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="hoverable:bg-surface-muted flex min-h-12 w-full items-center gap-3 px-1 text-left transition-colors  "
                 >
                   <span className="amount w-8 shrink-0 text-center text-base font-semibold">
                     {currency.symbol}
@@ -361,7 +361,7 @@ function CurrencySheet({
                     <span className="block truncate text-sm font-semibold">
                       {currency.name}
                     </span>
-                    <span className="text-ink-2 block text-xs">
+                    <span className="text-text-secondary block text-xs">
                       {currency.code} ·{" "}
                       {formatMoney(123456n, {
                         symbol: currency.symbol,
@@ -370,7 +370,7 @@ function CurrencySheet({
                     </span>
                   </span>
                   {active ? (
-                    <Check className="text-primary size-4 shrink-0" aria-hidden="true" />
+                    <Check className="text-text size-4 shrink-0" aria-hidden="true" />
                   ) : null}
                 </button>
               </li>
@@ -378,7 +378,7 @@ function CurrencySheet({
           })}
 
           {results.length === 0 ? (
-            <li className="text-ink-2 py-6 text-center text-sm">
+            <li className="text-text-secondary py-6 text-center text-sm">
               No currency matches “{query}”.
             </li>
           ) : null}

@@ -92,18 +92,18 @@ export default function LandingPage() {
       */}
       <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
         <div>
-          <h1 className="font-display text-ink text-[2.5rem] leading-[1.05] text-balance sm:text-[3.5rem]">
+          <h1 className="font-display text-text text-[2.5rem] leading-[1.05] text-balance sm:text-[3.5rem]">
             Know where the month went.
           </h1>
 
-          <p className="text-ink-2 mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
+          <p className="text-text-secondary mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
             {SITE.description}
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href="/signup"
-              className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring rounded-control inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none active:scale-[0.97]"
+              className="bg-ink text-on-ink hoverable:bg-ink/90 rounded-control inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)]   motion-reduce:transition-none active:scale-[0.97]"
             >
               Get started free
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -111,7 +111,7 @@ export default function LandingPage() {
 
             <Link
               href="#how"
-              className="text-primary focus-visible:ring-ring rounded-control inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+              className="text-text rounded-control inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4  "
             >
               See how it works
             </Link>
@@ -121,11 +121,11 @@ export default function LandingPage() {
         <AppPreview />
       </section>
 
-      <section id="how" className="bg-card rounded-card border p-5 sm:p-6">
+      <section id="how" className="bg-surface rounded-card border p-5 sm:p-6">
         <h2 className="text-lg font-semibold tracking-tight">
           Logging an expense, in full
         </h2>
-        <p className="text-ink-2 mt-1 text-sm">
+        <p className="text-text-secondary mt-1 text-sm">
           Four taps, because the account and the date are already filled in and
           the categories you use at this time of day are at the top.
         </p>
@@ -136,7 +136,7 @@ export default function LandingPage() {
               key={step}
               className="bg-background rounded-control flex items-center gap-2.5 border p-3"
             >
-              <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
+              <span className="bg-tint-peri text-text flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
                 {index + 1}
               </span>
               <span className="text-sm font-semibold">{step}</span>
@@ -150,19 +150,19 @@ export default function LandingPage() {
 
         <ul className="mt-4 grid gap-3 sm:grid-cols-3">
           {BLOCKS.map(({ feature, crop: Crop, label }) => (
-            <li key={label} className="bg-card rounded-card border p-4">
+            <li key={label} className="bg-surface rounded-card border p-4">
               <Crop />
-              <p className="text-ink-3 text-label font-semibold tracking-wide uppercase">
+              <p className="text-text-secondary text-xs font-semibold ">
                 {label}
               </p>
               <h3 className="mt-0.5 text-sm font-semibold">{feature.title}</h3>
-              <p className="text-ink-2 mt-1 text-sm">{feature.body}</p>
+              <p className="text-text-secondary mt-1 text-sm">{feature.body}</p>
             </li>
           ))}
         </ul>
 
         <p className="mt-4 text-sm">
-          <Link href="/features" className="text-primary underline">
+          <Link href="/features" className="text-text underline">
             Everything else it does
           </Link>
         </p>
@@ -209,22 +209,22 @@ export default function LandingPage() {
           {FAQS.slice(0, 4).map((faq) => (
             <details
               key={faq.question}
-              className="bg-card rounded-card group border px-4"
+              className="bg-surface rounded-card group border px-4"
             >
-              <summary className="focus-visible:ring-ring marker:content-none flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none">
+              <summary className=" marker:content-none flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold ">
                 {faq.question}
                 <ChevronDown
-                  className="text-ink-2 size-4 shrink-0 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+                  className="text-text-secondary size-4 shrink-0 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
                   aria-hidden="true"
                 />
               </summary>
-              <p className="text-ink-2 pb-4 text-sm">{faq.answer}</p>
+              <p className="text-text-secondary pb-4 text-sm">{faq.answer}</p>
             </details>
           ))}
         </div>
 
         <p className="mt-4 text-sm">
-          <Link href="/faq" className="text-primary underline">
+          <Link href="/faq" className="text-text underline">
             All the questions
           </Link>
         </p>
@@ -234,13 +234,13 @@ export default function LandingPage() {
         <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
           Start with today&rsquo;s first expense.
         </h2>
-        <p className="text-ink-2 mx-auto mt-2 max-w-[46ch] text-sm">
+        <p className="text-text-secondary mx-auto mt-2 max-w-[46ch] text-sm">
           It takes a minute to set up and four taps after that. Nothing to pay,
           nothing to connect.
         </p>
         <Link
           href="/signup"
-          className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring rounded-control mt-6 inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-ink text-on-ink hoverable:bg-ink/90 rounded-control mt-6 inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold  "
         >
           Get started free
           <ArrowRight className="size-4" aria-hidden="true" />

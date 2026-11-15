@@ -24,22 +24,22 @@ export function MonthStrip({
 
   return (
     <div aria-hidden="true" className="flex items-baseline gap-3 pb-1">
-      <p className="text-ink-2 text-label shrink-0 font-semibold tracking-wide uppercase">
+      <p className="text-text-secondary shrink-0 text-xs">
         {net < 0n ? "Over by" : "Left"}
       </p>
-      <p className="font-display text-xl leading-none">
+      <p className="font-display amount-hero text-xl leading-none">
         <Amount value={net < 0n ? -net : net} whole />
       </p>
 
-      <p className="text-ink-2 ml-auto flex shrink-0 items-baseline gap-2 text-xs">
+      <p className="text-text-secondary ml-auto flex shrink-0 items-baseline gap-2 text-xs">
         <span className="text-income font-semibold">
           <Amount value={BigInt(summary.income)} whole />
         </span>
-        <span className="text-ink-3">in</span>
+        <span className="text-text-secondary">in</span>
         <span className="text-expense font-semibold">
           <Amount value={BigInt(summary.expense)} whole />
         </span>
-        <span className="text-ink-3">out</span>
+        <span className="text-text-secondary">out</span>
       </p>
     </div>
   );

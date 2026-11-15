@@ -167,7 +167,7 @@ export function PeriodBars({
       </ResponsiveContainer>
       </div>
 
-      <p className="text-ink-2 mt-1 px-1 text-xs">
+      <p className="text-text-secondary mt-1 px-1 text-xs">
         <span className="text-income font-semibold">
           {compact(incomeTotal)} in
         </span>

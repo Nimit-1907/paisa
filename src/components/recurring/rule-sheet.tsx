@@ -282,10 +282,10 @@ export function RuleSheet({
                   aria-checked={active}
                   onClick={() => setFrequency(value)}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                    " h-11 rounded-lg border px-3 text-xs font-semibold transition-colors  ",
                     active
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "text-ink-2 hoverable:bg-muted",
+                      ? "border-ink bg-tint-peri text-text"
+                      : "text-text-secondary hoverable:bg-surface-muted",
                   )}
                 >
                   {REPEAT_LABELS[value]}
@@ -354,14 +354,14 @@ export function RuleSheet({
           </FormRow>
 
           {preview ? (
-            <p className="text-ink-2 text-xs" aria-live="polite">
+            <p className="text-text-secondary text-xs" aria-live="polite">
               {preview}, starting {nextRunOn}
             </p>
           ) : null}
         </div>
 
         {error && !errorField ? (
-          <p role="alert" className="text-destructive text-sm">
+          <p role="alert" className="text-expense text-sm">
             {error}
           </p>
         ) : null}

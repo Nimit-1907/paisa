@@ -77,7 +77,7 @@ export function EditScopeDialog({
           </Button>
         </div>
 
-        <p className="text-ink-2 text-xs">
+        <p className="text-text-secondary text-xs">
           Updating the rule changes future occurrences only.
         </p>
       </DialogContent>

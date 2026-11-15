@@ -21,7 +21,7 @@ export function PreferencesCard({
   showPaise: boolean;
 }) {
   return (
-    <section className="bg-card rounded-card space-y-4 border p-4">
+    <section className="bg-surface rounded-card space-y-4 border p-4">
       <PreferenceToggle
         icon={Vibrate}
         label="Haptic feedback"

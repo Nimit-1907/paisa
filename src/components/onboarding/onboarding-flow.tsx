@@ -158,13 +158,13 @@ export function OnboardingFlow({
             <span
               className={cn(
                 "block h-1.5 rounded-full transition-colors",
-                index <= step ? "bg-primary" : "bg-muted",
+                index <= step ? "bg-ink" : "bg-surface-muted",
               )}
             />
             <span
               className={cn(
                 "mt-2 block text-xs font-semibold",
-                index === step ? "text-foreground" : "text-ink-2",
+                index === step ? "text-text" : "text-text-secondary",
               )}
               aria-current={index === step ? "step" : undefined}
             >
@@ -181,7 +181,7 @@ export function OnboardingFlow({
             <h1 className="font-display text-3xl tracking-tight">
               First, your name
             </h1>
-            <p className="text-ink-2 mt-1.5 text-sm">
+            <p className="text-text-secondary mt-1.5 text-sm">
               Only used to greet you — nobody else sees it.
             </p>
           </header>
@@ -222,20 +222,20 @@ export function OnboardingFlow({
             <h1 className="font-display text-3xl tracking-tight">
               Your first account
             </h1>
-            <p className="text-ink-2 mt-1.5 text-sm">
+            <p className="text-text-secondary mt-1.5 text-sm">
               Every record is booked against an account. You can add banks,
               cards and wallets later.
             </p>
           </header>
 
-          <div className="bg-card space-y-4 rounded-card border p-4">
+          <div className="bg-surface space-y-4 rounded-card border p-4">
             <div className="flex items-center gap-3">
-              <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-control">
+              <span className="bg-tint-peri text-text flex size-10 items-center justify-center rounded-control">
                 <Wallet className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Created for you at signup</p>
-                <p className="text-ink-2 text-xs">
+                <p className="text-text-secondary text-xs">
                   Rename it or set what is in it right now.
                 </p>
               </div>
@@ -273,7 +273,7 @@ export function OnboardingFlow({
             >
               {(field) => (
                 <div className="relative">
-                  <span className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+                  <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
                     {currency.symbol}
                   </span>
                   <Input
@@ -299,14 +299,14 @@ export function OnboardingFlow({
             that makes setup feel longer than it is.
           */}
           {wantsBank ? (
-            <div className="bg-card rounded-card space-y-4 border p-4">
+            <div className="bg-surface rounded-card space-y-4 border p-4">
               <div className="flex items-center gap-3">
-                <span className="bg-primary/10 text-primary rounded-control flex size-10 items-center justify-center">
+                <span className="bg-tint-peri text-text rounded-control flex size-10 items-center justify-center">
                   <Landmark className="size-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">Bank account</p>
-                  <p className="text-ink-2 text-xs">
+                  <p className="text-text-secondary text-xs">
                     Transfers between this and your cash are not spending.
                   </p>
                 </div>
@@ -346,7 +346,7 @@ export function OnboardingFlow({
               >
                 {(field) => (
                   <div className="relative">
-                    <span className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+                    <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
                       {currency.symbol}
                     </span>
                     <Input
@@ -378,7 +378,7 @@ export function OnboardingFlow({
 
       {step === 3 ? (
         <section className="text-center">
-          <span className="bg-income-soft text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-card">
+          <span className="bg-tint-mint text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-card">
             <Check className="size-7" aria-hidden="true" />
           </span>
 
@@ -386,7 +386,7 @@ export function OnboardingFlow({
             You are set up, {displayName.trim()}.
           </h2>
 
-          <p className="text-ink-2 mt-2 text-sm">
+          <p className="text-text-secondary mt-2 text-sm">
             Tracking in {currency.name} ({currency.symbol}), starting with{" "}
             {/* Both accounts named when there are two: a summary that leaves
                 one out invites a second trip to Accounts to check. */}
@@ -477,7 +477,7 @@ function CurrencyStep({
         <h1 className="font-display text-3xl tracking-tight">
           Which currency?
         </h1>
-        <p className="text-ink-2 mt-1.5 text-sm">
+        <p className="text-text-secondary mt-1.5 text-sm">
           Sets the symbol and the decimal places every amount is shown with.
           Changeable later in Settings.
         </p>
@@ -493,7 +493,7 @@ function CurrencyStep({
       */}
       <div className="relative">
         <Search
-          className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+          className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
           aria-hidden="true"
         />
         <Input
@@ -506,7 +506,7 @@ function CurrencyStep({
       </div>
 
       <div
-        className="bg-card divide-border max-h-[45dvh] divide-y overflow-y-auto overscroll-contain rounded-card border"
+        className="bg-surface divide-hairline max-h-[45dvh] divide-y overflow-y-auto overscroll-contain rounded-card border"
         role="radiogroup"
         aria-label="Currency"
       >
@@ -521,18 +521,18 @@ function CurrencyStep({
                 aria-checked={active}
                 onClick={() => onSelect(currency)}
                 className={cn(
-                  "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none",
-                  active && "bg-primary/5",
+                  "hoverable:bg-surface-muted  flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors   ",
+                  active && "bg-surface-muted",
                 )}
               >
-                <span className="amount text-ink-2 w-9 shrink-0 text-base">
+                <span className="amount text-text-secondary w-9 shrink-0 text-base">
                   {currency.symbol}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">
                     {currency.name}
                   </span>
-                  <span className="text-ink-2 block text-xs">
+                  <span className="text-text-secondary block text-xs">
                     {currency.code} ·{" "}
                     {currency.decimals === 0
                       ? "no decimals"
@@ -540,14 +540,14 @@ function CurrencyStep({
                   </span>
                 </span>
                 {active ? (
-                  <Check className="text-primary size-5 shrink-0" aria-hidden="true" />
+                  <Check className="text-text size-5 shrink-0" aria-hidden="true" />
                 ) : null}
               </button>
           );
         })}
 
         {results.length === 0 ? (
-          <p className="text-ink-2 px-4 py-8 text-center text-sm">
+          <p className="text-text-secondary px-4 py-8 text-center text-sm">
             No currency matches “{query}”.
           </p>
         ) : null}

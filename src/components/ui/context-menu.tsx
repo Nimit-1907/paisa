@@ -67,11 +67,11 @@ function ContextMenuItem({
         // 44px tall: a menu item is a tap target like any other, and a
         // long-press menu is reached by thumb more often than by mouse.
         "rounded-control relative flex min-h-11 cursor-default items-center gap-2.5 px-3 text-sm font-medium outline-none select-none",
-        "data-highlighted:bg-muted data-highlighted:text-ink",
+        "data-highlighted:bg-surface-muted data-highlighted:text-text",
         "[&_svg]:size-4 [&_svg]:shrink-0",
         tone === "destructive"
-          ? "text-destructive data-highlighted:bg-destructive/10"
-          : "text-ink",
+          ? "text-expense data-highlighted:bg-tint-rose"
+          : "text-text",
         className,
       )}
       {...props}
@@ -100,7 +100,7 @@ function ContextMenuLabel({
     <ContextMenuPrimitive.Label
       data-slot="context-menu-label"
       className={cn(
-        "text-ink-2 text-label truncate px-3 pt-2 pb-1 font-semibold tracking-wide uppercase",
+        "text-text-secondary text-xs truncate px-3 pt-2 pb-1 font-semibold ",
         className,
       )}
       {...props}

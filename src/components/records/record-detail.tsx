@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 import {
   ResponsiveSheet,
   SheetBody,
@@ -78,7 +78,7 @@ export function RecordDetail({
                     ? "text-income"
                     : transfer
                       ? "text-transfer"
-                      : "text-ink",
+                      : "text-text",
                 )}
               >
                 {record.type === "income"
@@ -96,13 +96,13 @@ export function RecordDetail({
               </p>
             </div>
 
-            <dl className="divide-border bg-card rounded-card divide-y border">
+            <dl className="divide-hairline bg-surface rounded-card divide-y border">
               {transfer ? (
                 <Row label="Moved">
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate">{record.accountName}</span>
                     <ArrowRight
-                      className="text-ink-3 size-3.5 shrink-0"
+                      className="text-text-secondary size-3.5 shrink-0"
                       aria-hidden="true"
                     />
                     <span className="truncate">{record.toAccountName}</span>
@@ -112,9 +112,9 @@ export function RecordDetail({
                 <>
                   <Row label="Category">
                     <span className="flex min-w-0 items-center gap-2">
-                      <ColorDot
+                      <Tile
                         size="sm"
-                        color={record.categoryColor}
+                        tint={record.categoryTint}
                         icon={record.categoryIcon}
                       />
                       <span className="truncate">
@@ -126,7 +126,7 @@ export function RecordDetail({
                   <Row label="Account">
                     <span className="flex min-w-0 items-center gap-2">
                       <Wallet
-                        className="text-ink-3 size-4 shrink-0"
+                        className="text-text-secondary size-4 shrink-0"
                         aria-hidden="true"
                       />
                       <span className="truncate">{record.accountName}</span>
@@ -147,7 +147,7 @@ export function RecordDetail({
                 <Row label="Repeats">
                   <Link
                     href={`/recurring/${record.recurringRuleId}`}
-                    className="text-primary focus-visible:ring-ring inline-flex items-center gap-1.5 rounded font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                    className="text-text inline-flex items-center gap-1.5 rounded font-semibold  "
                   >
                     <Repeat className="size-3.5" aria-hidden="true" />
                     See the rule
@@ -181,7 +181,7 @@ export function RecordDetail({
             <Button
               variant="ghost"
               size="touch"
-              className="text-destructive hoverable:bg-destructive/10 w-full"
+              className="text-expense hoverable:bg-tint-rose w-full"
               onClick={onDelete}
             >
               <Trash2 className="size-4" aria-hidden="true" />
@@ -210,7 +210,7 @@ function Row({
 }) {
   return (
     <div className="flex min-h-12 items-center justify-between gap-3 px-3 py-2">
-      <dt className="text-ink-2 shrink-0 text-xs font-semibold">{label}</dt>
+      <dt className="text-text-secondary shrink-0 text-xs font-semibold">{label}</dt>
       <dd className="min-w-0 text-right text-sm font-medium">{children}</dd>
     </div>
   );

@@ -21,7 +21,7 @@ import {
 } from "@/lib/queries/accounts";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 export async function generateMetadata({
   params,
@@ -78,18 +78,18 @@ export default async function AccountDetailPage({
           <Link
             href="/accounts"
             aria-label="Back to accounts"
-            className="hoverable:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+            className="hoverable:bg-surface-muted flex size-11 items-center justify-center rounded-full  "
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Link>
         }
       />
 
-      <section className="bg-card rounded-card border p-4">
+      <section className="bg-surface rounded-card border p-4">
         <div className="flex items-center gap-3">
-          <ColorDot color={account.color} icon={account.icon} size="lg" />
+          <Tile tint={account.tint} icon={account.icon} size="lg" />
           <div className="min-w-0">
-            <p className="text-ink-2 text-xs font-semibold tracking-wide uppercase">
+            <p className="text-text-secondary text-xs font-semibold ">
               Balance
             </p>
             <p
@@ -104,7 +104,7 @@ export default async function AccountDetailPage({
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-income-soft rounded-control p-3">
+          <div className="bg-tint-mint rounded-control p-3">
             <p className="text-income flex items-center gap-1 text-xs font-semibold">
               <ArrowDownLeft className="size-3.5" aria-hidden="true" />
               In this month
@@ -114,7 +114,7 @@ export default async function AccountDetailPage({
             </p>
           </div>
 
-          <div className="bg-expense-soft rounded-control p-3">
+          <div className="bg-tint-rose rounded-control p-3">
             <p className="text-expense flex items-center gap-1 text-xs font-semibold">
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
               Out this month
@@ -126,7 +126,7 @@ export default async function AccountDetailPage({
         </div>
       </section>
 
-      <h2 className="text-ink-2 mt-5 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-text-secondary mt-5 mb-1.5 px-1 text-xs font-semibold ">
         Records
       </h2>
 
@@ -138,17 +138,17 @@ export default async function AccountDetailPage({
           action={<AddRecordButton />}
         />
       ) : (
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
           {transactions.map((transaction) => (
             <li
               key={transaction.id}
               className="flex min-h-14 items-center gap-3 px-3 py-2"
             >
-              <ColorDot
-                color={
+              <Tile
+                tint={
                   transaction.type === "transfer"
-                    ? null
-                    : transaction.categoryColor
+                    ? "sky"
+                    : transaction.categoryTint
                 }
                 icon={
                   transaction.type === "transfer"
@@ -163,7 +163,7 @@ export default async function AccountDetailPage({
                     transaction.categoryName ??
                     (transaction.type === "transfer" ? "Transfer" : "Record")}
                 </span>
-                <span className="text-ink-2 block truncate text-xs">
+                <span className="text-text-secondary block truncate text-xs">
                   {dateFormatter.format(new Date(transaction.occurredAt))}
                   {transaction.counterparty
                     ? ` · ${transaction.signedAmount > 0n ? "from" : "to"} ${transaction.counterparty}`
@@ -178,7 +178,7 @@ export default async function AccountDetailPage({
                   "amount shrink-0 text-sm font-semibold",
                   transaction.signedAmount > 0n
                     ? "text-income"
-                    : "text-foreground",
+                    : "text-text",
                 )}
               >
                 {formatWith(currency, transaction.signedAmount, {

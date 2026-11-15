@@ -25,7 +25,7 @@ export default function FeaturesPage() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
         Features
       </h1>
-      <p className="text-ink-2 mt-3 max-w-[56ch]">
+      <p className="text-text-secondary mt-3 max-w-[56ch]">
         Six things, each of which exists because logging money is otherwise
         tedious enough that people stop.
       </p>
@@ -34,12 +34,12 @@ export default function FeaturesPage() {
         {FEATURES.map((feature) => {
           const Icon = feature.icon;
           return (
-            <li key={feature.title} className="bg-card rounded-card border p-4">
-              <span className="bg-muted text-ink-2 mb-3 flex size-10 items-center justify-center rounded-control">
+            <li key={feature.title} className="bg-surface rounded-card border p-4">
+              <span className="bg-surface-muted text-text-secondary mb-3 flex size-10 items-center justify-center rounded-control">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
               <h2 className="text-sm font-semibold">{feature.title}</h2>
-              <p className="text-ink-2 mt-1 text-sm">
+              <p className="text-text-secondary mt-1 text-sm">
                 {feature.body}
               </p>
             </li>
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
       <p className="mt-8">
         <Link
           href="/signup"
-          className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-control px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-ink text-on-ink hoverable:bg-ink/90 inline-flex min-h-12 items-center gap-2 rounded-control px-5 text-sm font-semibold  "
         >
           Start tracking — it&rsquo;s free
           <ArrowRight className="size-4" aria-hidden="true" />

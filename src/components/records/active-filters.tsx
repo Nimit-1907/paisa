@@ -99,7 +99,7 @@ export function ActiveFilters({
           type="button"
           onClick={() => onRemove(chip.key, chip.value)}
           aria-label={`Remove filter: ${chip.label}`}
-          className="bg-accent text-accent-foreground hoverable:bg-accent/80 focus-visible:ring-ring flex h-9 items-center gap-1.5 rounded-full pr-2 pl-3 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-accent text-text hoverable:bg-accent/80 flex h-9 items-center gap-1.5 rounded-full pr-2 pl-3 text-xs font-semibold  "
         >
           <span className="max-w-[16ch] truncate">{chip.label}</span>
           <X className="size-3.5 shrink-0" aria-hidden="true" />
@@ -110,7 +110,7 @@ export function ActiveFilters({
         <button
           type="button"
           onClick={onClearAll}
-          className="text-ink-2 hoverable:text-ink focus-visible:ring-ring h-9 rounded-full px-2 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="text-text-secondary hoverable:text-text h-9 rounded-full px-2 text-xs font-semibold  "
         >
           Clear all
         </button>

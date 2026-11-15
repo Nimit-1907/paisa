@@ -116,7 +116,7 @@ export function PeriodSelector({
       <div
         role="radiogroup"
         aria-label="Period"
-        className="bg-muted grid grid-cols-4 gap-1 rounded-control p-1"
+        className="bg-surface-muted grid grid-cols-4 gap-1 rounded-control p-1"
       >
         {PERIOD_KINDS.map((kind) => {
           const active = period.kind === kind;
@@ -128,10 +128,10 @@ export function PeriodSelector({
               aria-checked={active}
               onClick={() => choose(kind)}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
                 active
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-ink-2 hoverable:bg-background/60",
+                  ? "bg-background text-text shadow-sm"
+                  : "text-text-secondary hoverable:bg-background/60",
               )}
             >
               {PERIOD_LABELS[kind]}
@@ -154,7 +154,7 @@ export function PeriodSelector({
         <button
           type="button"
           onClick={() => setRangeOpen(true)}
-          className="focus-visible:ring-ring min-h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-center text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className=" min-h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-center text-sm font-semibold "
         >
           {periodLabel(period)}
         </button>
@@ -205,7 +205,7 @@ export function PeriodSelector({
           </div>
 
           {rangeError && from && to ? (
-            <p role="alert" className="text-destructive text-sm">
+            <p role="alert" className="text-expense text-sm">
               {rangeError}
             </p>
           ) : null}

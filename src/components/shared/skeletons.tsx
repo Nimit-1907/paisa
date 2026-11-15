@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  */
 export function RowSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <ul className="bg-card rounded-card divide-border divide-y border">
+    <ul className="bg-surface rounded-card divide-hairline divide-y border">
       {Array.from({ length: count }, (_, index) => (
         <li key={index} className="flex min-h-16 items-center gap-3 px-3 py-2">
           <Skeleton className="size-10 shrink-0 rounded-full" />

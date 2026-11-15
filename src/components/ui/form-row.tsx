@@ -63,11 +63,11 @@ export function FormRow({
       })}
 
       {error ? (
-        <p id={messageId} role="alert" className="text-destructive text-sm">
+        <p id={messageId} role="alert" className="text-expense text-sm">
           {error}
         </p>
       ) : hint ? (
-        <p id={messageId} className="text-ink-2 text-sm">
+        <p id={messageId} className="text-text-secondary text-sm">
           {hint}
         </p>
       ) : null}
@@ -100,7 +100,7 @@ export function PasswordInput({
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
-        className="text-ink-2 hoverable:text-ink focus-visible:ring-ring absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        className="text-text-secondary hoverable:text-text absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg transition-colors  "
       >
         {visible ? (
           <EyeOff className="size-[18px]" aria-hidden="true" />

@@ -88,7 +88,7 @@ export function PreferenceToggle({
 
   return (
     <label className="flex min-h-11 cursor-pointer items-start gap-3">
-      <span className="bg-muted text-ink-2 rounded-control flex size-10 shrink-0 items-center justify-center">
+      <span className="bg-surface-muted text-text-secondary rounded-control flex size-10 shrink-0 items-center justify-center">
         <Icon className="size-5" aria-hidden="true" />
       </span>
 
@@ -114,7 +114,7 @@ export function PreferenceToggle({
           </span>
         </span>
 
-        <span className="text-ink-2 mt-0.5 block text-xs">{description}</span>
+        <span className="text-text-secondary mt-0.5 block text-xs">{description}</span>
       </span>
 
       <input

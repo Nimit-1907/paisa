@@ -64,11 +64,11 @@ export function DeleteAccountCard({ email }: { email: string }) {
 
   return (
     <section className="border-destructive/30 bg-destructive/5 rounded-card border p-4">
-      <h2 className="text-destructive flex items-center gap-1.5 text-sm font-semibold">
+      <h2 className="text-expense flex items-center gap-1.5 text-sm font-semibold">
         <TriangleAlert className="size-4" aria-hidden="true" />
         Delete account
       </h2>
-      <p className="text-ink-2 mt-1 text-xs">
+      <p className="text-text-secondary mt-1 text-xs">
         Removes {email} and every record, account, budget and recurring rule
         that belongs to it. This cannot be undone — export your records first
         if you want to keep them.
@@ -77,7 +77,7 @@ export function DeleteAccountCard({ email }: { email: string }) {
       <Button
         variant="outline"
         size="touch"
-        className="text-destructive hoverable:text-destructive mt-3 w-full"
+        className="text-expense hoverable:text-expense mt-3 w-full"
         onClick={() => setOpen(true)}
       >
         Delete my account

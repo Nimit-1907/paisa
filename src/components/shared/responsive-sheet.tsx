@@ -157,7 +157,7 @@ export function SheetBody({
  * The save area of a sheet.
  *
  * A thin naming layer over {@link StickyActionBar} — the keyboard handling
- * and the glass live there now, so the sheet and the page can never drift
+ * and the surface live there now, so the sheet and the page cannot drift
  * apart.
  */
 export function SheetFooter({

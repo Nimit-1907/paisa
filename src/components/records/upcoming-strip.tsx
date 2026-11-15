@@ -97,33 +97,33 @@ export function UpcomingStrip({
   return (
     <section
       aria-label="Upcoming"
-      className="bg-card overflow-hidden rounded-card border"
+      className="bg-surface overflow-hidden rounded-card border"
     >
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-12 w-full items-center gap-2 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-surface-muted flex min-h-12 w-full items-center gap-2 px-3 py-2 text-left transition-colors   "
       >
         <CalendarClock
-          className="text-ink-2 size-4 shrink-0"
+          className="text-text-secondary size-4 shrink-0"
           aria-hidden="true"
         />
         <span className="flex-1 text-sm font-semibold">
           Upcoming
-          <span className="text-ink-2 font-normal">
+          <span className="text-text-secondary font-normal">
             {" · "}
             {items.length} in 7 days
           </span>
         </span>
         {total > 0n ? (
-          <span className="amount text-ink-2 shrink-0 text-xs font-semibold">
+          <span className="amount text-text-secondary shrink-0 text-xs font-semibold">
             <Amount value={total} signDisplay="never" />
           </span>
         ) : null}
         <ChevronDown
           className={cn(
-            "text-ink-2 size-4 shrink-0 transition-transform",
+            "text-text-secondary size-4 shrink-0 transition-transform",
             open && "rotate-180",
           )}
           aria-hidden="true"
@@ -131,7 +131,7 @@ export function UpcomingStrip({
       </button>
 
       {open ? (
-        <ul className="divide-border border-t divide-y">
+        <ul className="divide-hairline border-t divide-y">
           {shown.map((item) => {
             const { rule } = item;
 
@@ -142,11 +142,11 @@ export function UpcomingStrip({
                 <span className="min-w-0 flex-1">
                   <Link
                     href={`/recurring/${rule.id}`}
-                    className="focus-visible:ring-ring block truncate text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                    className=" block truncate text-sm font-semibold "
                   >
                     {ruleTitle(rule)}
                   </Link>
-                  <span className="text-ink-2 block truncate text-xs">
+                  <span className="text-text-secondary block truncate text-xs">
                     {relativeDay(item.on, today)} ·{" "}
                     <Amount
                       value={BigInt(rule.amount)}
@@ -175,7 +175,7 @@ export function UpcomingStrip({
             <li>
               <Link
                 href="/recurring"
-                className="text-primary hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center justify-center gap-1 text-xs font-semibold focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+                className="text-text hoverable:bg-surface-muted flex min-h-11 items-center justify-center gap-1 text-xs font-semibold   "
               >
                 See all {items.length} scheduled
                 <ChevronRight className="size-3.5" aria-hidden="true" />

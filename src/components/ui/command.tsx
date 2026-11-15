@@ -63,11 +63,11 @@ function CommandInput({
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div className="flex items-center gap-2.5 border-b px-4">
-      <Search className="text-ink-3 size-4 shrink-0" aria-hidden="true" />
+      <Search className="text-text-secondary size-4 shrink-0" aria-hidden="true" />
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          "placeholder:text-ink-3 h-12 w-full bg-transparent text-sm outline-none disabled:opacity-50",
+          "placeholder:text-text-secondary h-12 w-full bg-transparent text-sm outline-none disabled:opacity-50",
           className,
         )}
         {...props}
@@ -98,7 +98,7 @@ function CommandEmpty({
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
-      className="text-ink-2 py-8 text-center text-sm"
+      className="text-text-secondary py-8 text-center text-sm"
       {...props}
     />
   );
@@ -112,8 +112,8 @@ function CommandGroup({
     <CommandPrimitive.Group
       data-slot="command-group"
       className={cn(
-        "text-ink overflow-hidden",
-        "[&_[cmdk-group-heading]]:text-ink-2 [&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase",
+        "text-text overflow-hidden",
+        "[&_[cmdk-group-heading]]:text-text-secondary [&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase",
         className,
       )}
       {...props}
@@ -130,9 +130,9 @@ function CommandItem({
       data-slot="command-item"
       className={cn(
         "rounded-control relative flex min-h-11 cursor-default items-center gap-2.5 px-3 text-sm font-medium outline-none select-none",
-        "data-[selected=true]:bg-muted data-[selected=true]:text-ink",
+        "data-[selected=true]:bg-surface-muted data-[selected=true]:text-text",
         "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
-        "[&_svg]:text-ink-2 [&_svg]:size-4 [&_svg]:shrink-0",
+        "[&_svg]:text-text-secondary [&_svg]:size-4 [&_svg]:shrink-0",
         className,
       )}
       {...props}
@@ -145,7 +145,7 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<"kbd">) {
   return (
     <kbd
       className={cn(
-        "bg-muted text-ink-2 ml-auto rounded px-1.5 py-0.5 font-sans text-xs font-semibold",
+        "bg-surface-muted text-text-secondary ml-auto rounded px-1.5 py-0.5 font-sans text-xs font-semibold",
         className,
       )}
       {...props}

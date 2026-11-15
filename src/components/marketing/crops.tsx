@@ -66,7 +66,7 @@ export function TrackCrop() {
         ].map((row) => (
           <div
             key={row.name}
-            className="bg-card rounded-control flex items-center gap-2 border px-2 py-1.5"
+            className="bg-surface rounded-control flex items-center gap-2 border px-2 py-1.5"
           >
             <span
               className="size-5 shrink-0 rounded-full"
@@ -76,7 +76,7 @@ export function TrackCrop() {
               <span className="block truncate text-[11px] font-semibold">
                 {row.name}
               </span>
-              <span className="text-ink-3 block truncate text-[9px]">
+              <span className="text-text-secondary block truncate text-[9px]">
                 {row.account}
               </span>
             </span>
@@ -96,26 +96,26 @@ export function BudgetCrop() {
   // The amount is split from its words so the rupee mark can be the drawn
   // one; the glyph itself would pull a second font file onto this page.
   const rows = [
-    { name: "Food", before: "", amount: "2,300", after: " left", used: 62, tone: "bg-primary" },
+    { name: "Food", before: "", amount: "2,300", after: "left", used: 62, tone: "bg-ink" },
     { name: "Transport", before: "Over by ", amount: "400", after: "", used: 100, tone: "bg-expense" },
-    { name: "Shopping", before: "", amount: "900", after: " left", used: 84, tone: "bg-warning" },
+    { name: "Shopping", before: "", amount: "900", after: "left", used: 84, tone: "bg-warning" },
   ];
 
   return (
     <Frame>
       <div className="space-y-2">
         {rows.map((row) => (
-          <div key={row.name} className="bg-card rounded-control border px-2 py-1.5">
+          <div key={row.name} className="bg-surface rounded-control border px-2 py-1.5">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-[11px] font-semibold">{row.name}</span>
-              <span className="text-ink-2 amount text-[9px] font-medium">
+              <span className="text-text-secondary amount text-[9px] font-medium">
                 {row.before}
                 <Rupee />
                 {row.amount}
                 {row.after}
               </span>
             </div>
-            <div className="bg-muted mt-1.5 h-1.5 overflow-hidden rounded-full">
+            <div className="bg-surface-muted mt-1.5 h-1.5 overflow-hidden rounded-full">
               <span
                 className={`block h-full rounded-full ${row.tone}`}
                 style={{ width: `${row.used}%` }}
@@ -142,16 +142,16 @@ export function RecurringCrop() {
         {rows.map((row) => (
           <div
             key={row.name}
-            className="bg-card rounded-control flex items-center gap-2 border px-2 py-1.5"
+            className="bg-surface rounded-control flex items-center gap-2 border px-2 py-1.5"
           >
-            <span className="bg-muted flex size-7 shrink-0 flex-col items-center justify-center rounded-md leading-none">
+            <span className="bg-surface-muted flex size-7 shrink-0 flex-col items-center justify-center rounded-md leading-none">
               <span className="text-[10px] font-semibold tabular-nums">
                 {row.day}
               </span>
               {/* ink-2, not ink-3: ink-3 measures 4.17:1 on a muted
                   surface, which is under the 4.5 this text needs, and axe
                   says so. */}
-              <span className="text-ink-2 text-[7px] font-semibold uppercase">
+              <span className="text-text-secondary text-[7px] font-semibold">
                 {row.month}
               </span>
             </span>
@@ -159,7 +159,7 @@ export function RecurringCrop() {
               <span className="block truncate text-[11px] font-semibold">
                 {row.name}
               </span>
-              <span className="text-ink-3 block truncate text-[9px]">
+              <span className="text-text-secondary block truncate text-[9px]">
                 {row.every}
               </span>
             </span>

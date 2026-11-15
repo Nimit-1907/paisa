@@ -74,11 +74,11 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
   }, [isCurrent, step]);
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="-ml-2 flex items-center gap-0.5 pb-2">
       <Button
         variant="ghost"
         size="icon-touch"
-        className="rounded-full"
+        className="text-text-secondary hoverable:text-text"
         aria-label={`Previous month`}
         onClick={() => step(-1)}
       >
@@ -89,7 +89,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-11 min-w-[8.5ch] px-2 text-sm font-semibold tabular-nums"
+            className="text-text h-9 min-w-[8.5ch] px-2 text-sm font-medium tabular-nums"
             aria-label={`${MONTHS[month - 1]} ${year}. Choose a month`}
           >
             {MONTHS[month - 1]} {year}
@@ -143,10 +143,10 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
                     setPickerOpen(false);
                   }}
                   className={cn(
-                    "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40",
+                    "rounded-control h-11 text-sm font-semibold transition-colors disabled:opacity-40",
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "hoverable:bg-muted",
+                      ? "bg-ink text-on-ink"
+                      : "hoverable:bg-surface-muted",
                   )}
                 >
                   {label}
@@ -160,7 +160,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
       <Button
         variant="ghost"
         size="icon-touch"
-        className="rounded-full"
+        className="text-text-secondary hoverable:text-text"
         aria-label="Next month"
         disabled={isCurrent}
         onClick={() => step(1)}

@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/layout/page-header";
  */
 export function CollapsingHeader({
   title,
+  greeting,
   description,
   actions,
   monthNav,
@@ -30,6 +31,7 @@ export function CollapsingHeader({
   children,
 }: {
   title: string;
+  greeting?: string;
   description?: string;
   actions?: React.ReactNode;
   monthNav?: React.ComponentProps<typeof PageHeader>["monthNav"];
@@ -66,6 +68,7 @@ export function CollapsingHeader({
     <>
       <PageHeader
         title={title}
+        greeting={greeting}
         description={description}
         actions={actions}
         monthNav={monthNav}

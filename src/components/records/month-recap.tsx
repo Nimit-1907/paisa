@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import { dismissRecap } from "@/actions/profile";
 import { useFormatMoney } from "@/components/profile-provider";
 import type { MonthRecap } from "@/lib/queries/recap";
-import { PRESSABLE } from "@/lib/motion";
-import { cn } from "@/lib/utils";
 
 /**
  * Last month, once, on the first visit of the new one.
@@ -86,31 +84,36 @@ export function MonthRecap({
   }
 
   return (
+    /*
+     * The hero of the day it appears.
+     *
+     * Phase 14 allows exactly one accent card per screen, and on the first
+     * open of a new month this is the thing worth reading — so it takes the
+     * accent and the month card below it goes flat for that one visit. Two
+     * bold cards would be two focal points and therefore none.
+     */
     <section
       aria-label={`${monthLabel} in summary`}
-      className="bg-card relative rounded-card border p-4"
+      className="bg-surface rounded-hero accent-lg relative mr-1 mb-1 p-4"
     >
       <button
         type="button"
         onClick={() => void dismiss()}
         aria-label={`Dismiss the ${monthLabel} summary`}
-        className={cn(
-          PRESSABLE,
-          "text-ink-2 hoverable:bg-muted hoverable:text-foreground focus-visible:ring-ring absolute top-2 right-2 flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none",
-        )}
+        className="text-text-secondary hoverable:bg-surface-muted hoverable:text-text rounded-control absolute top-2 right-2 flex size-11 items-center justify-center"
       >
         <X className="size-4" aria-hidden="true" />
       </button>
 
-      <h2 className="text-ink-2 text-label font-semibold tracking-wide uppercase">
+      <h2 className="text-text-secondary text-[13px]">
         {monthLabel} in summary
       </h2>
 
-      <p className="amount mt-0.5 truncate pr-10 text-2xl font-semibold">
-        {spent} spent
+      <p className="font-display amount-hero mt-0.5 truncate pr-10 text-[42px] leading-[1.05] tracking-[-0.03em]">
+        {spent}
       </p>
 
-      <ul className="text-ink-2 mt-2 space-y-0.5 text-sm">
+      <ul className="text-text-secondary mt-2 space-y-0.5 text-sm">
         {facts.map((fact) => (
           <li key={fact}>{fact}</li>
         ))}
@@ -118,7 +121,7 @@ export function MonthRecap({
 
       <Link
         href={`/analysis?p=month&d=${recap.month}`}
-        className="text-primary focus-visible:ring-ring mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+        className="text-text mt-3 inline-flex min-h-11 items-center gap-1 text-sm font-semibold underline underline-offset-4"
       >
         See the full month
         <ArrowRight className="size-4" aria-hidden="true" />

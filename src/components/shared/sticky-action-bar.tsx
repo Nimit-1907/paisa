@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * The glass strip that holds the action you came to take.
+ * The strip that holds the action you came to take.
  *
  * Three places need the same thing: the save area of a sheet, the Continue
  * button in onboarding, and the confirm step of an import. All three have to
@@ -30,7 +30,7 @@ export function StickyActionBar({
   return (
     <div
       className={cn(
-        "glass pb-safe sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-3",
+        "bg-surface pb-safe sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-3",
         variant === "sheet" &&
           "lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:backdrop-filter-none",
         className,

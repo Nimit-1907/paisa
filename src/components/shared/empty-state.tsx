@@ -28,19 +28,19 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "border-border/70 bg-card rounded-card flex flex-col items-center border border-dashed px-6 py-12 text-center",
+        "border-hairline bg-surface rounded-card flex flex-col items-center border border-dashed px-6 py-12 text-center",
         className,
       )}
     >
       {art ? (
         <EmptyIllustration art={art} />
       ) : (
-        <span className="bg-muted text-ink-2 rounded-card mb-4 flex size-12 items-center justify-center">
+        <span className="bg-surface-muted text-text-secondary rounded-card mb-4 flex size-12 items-center justify-center">
           <Icon className="size-6" aria-hidden="true" />
         </span>
       )}
       <h2 className="text-base font-semibold">{title}</h2>
-      <p className="text-ink-2 mx-auto mt-1 max-w-[42ch] text-sm">
+      <p className="text-text-secondary mx-auto mt-1 max-w-[42ch] text-sm">
         {description}
       </p>
       {action ? <div className="mt-5">{action}</div> : null}

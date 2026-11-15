@@ -17,12 +17,12 @@ export type AmountTone =
 
 const TONES: Record<AmountTone, string> = {
   inherit: "",
-  ink: "text-ink",
-  "ink-2": "text-ink-2",
+  ink: "text-text",
+  "ink-2": "text-text-secondary",
   income: "text-income",
   expense: "text-expense",
   transfer: "text-transfer",
-  warning: "text-warning",
+  warning: "text-text",
 };
 
 type AmountProps = {
@@ -121,7 +121,7 @@ export function Amount({
       type="button"
       onClick={() => setRevealed((shown) => !shown)}
       aria-label={revealed ? `${exact}. Shorten` : `${exact}. Show in full`}
-      className="focus-visible:ring-ring rounded-control focus-visible:ring-2 focus-visible:outline-none"
+      className=" rounded-control "
     >
       {content}
     </button>
@@ -146,7 +146,7 @@ function Parts({
       <span className="amount-unit">{symbol}</span>
       {whole}
       {fraction ? (
-        <span className={cn("amount-minor", dimMinor && "text-ink-2")}>
+        <span className={cn("amount-minor", dimMinor && "text-text-secondary")}>
           {point}
           {fraction}
         </span>

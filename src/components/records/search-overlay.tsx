@@ -5,7 +5,7 @@ import * as React from "react";
 import { ArrowLeft, Clock, Search, X } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatWith } from "@/lib/money";
@@ -104,7 +104,7 @@ export function SearchOverlay({
 
           <div className="relative flex-1">
             <Search
-              className="text-ink-3 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+              className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
               aria-hidden="true"
             />
             <Input
@@ -146,7 +146,7 @@ export function SearchOverlay({
           {recent.length > 0 ? (
             <section className="mb-6">
               <div className="mb-2 flex items-center justify-between gap-3">
-                <h2 className="text-ink-2 text-label font-semibold tracking-wide uppercase">
+                <h2 className="text-text-secondary text-xs font-semibold ">
                   Recent
                 </h2>
                 <button
@@ -155,7 +155,7 @@ export function SearchOverlay({
                     forgetSearches();
                     setRecent([]);
                   }}
-                  className="text-ink-2 hoverable:text-ink focus-visible:ring-ring -my-2 rounded px-1 py-2 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                  className="text-text-secondary hoverable:text-text -my-2 rounded px-1 py-2 text-xs font-semibold  "
                 >
                   Clear
                 </button>
@@ -167,10 +167,10 @@ export function SearchOverlay({
                     <button
                       type="button"
                       onClick={() => submit(term)}
-                      className="hoverable:bg-muted focus-visible:ring-ring rounded-control flex min-h-11 w-full items-center gap-2.5 px-2 text-left text-sm focus-visible:ring-2 focus-visible:outline-none"
+                      className="hoverable:bg-surface-muted rounded-control flex min-h-11 w-full items-center gap-2.5 px-2 text-left text-sm  "
                     >
                       <Clock
-                        className="text-ink-3 size-4 shrink-0"
+                        className="text-text-secondary size-4 shrink-0"
                         aria-hidden="true"
                       />
                       <span className="truncate">{term}</span>
@@ -182,7 +182,7 @@ export function SearchOverlay({
           ) : null}
 
           <section>
-            <h2 className="text-ink-2 text-label mb-2 font-semibold tracking-wide uppercase">
+            <h2 className="text-text-secondary text-xs mb-2 font-semibold ">
               Or narrow it down
             </h2>
 
@@ -205,9 +205,9 @@ export function SearchOverlay({
                   key={category.id}
                   onClick={() => onFilter({ category: category.id })}
                 >
-                  <ColorDot
+                  <Tile
                     size="sm"
-                    color={category.color}
+                    tint={category.tint}
                     icon={category.icon}
                     className="-ml-1.5"
                   />
@@ -234,9 +234,9 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "border-input text-ink hoverable:bg-muted focus-visible:ring-ring",
+        "border-hairline text-text hoverable:bg-surface-muted ",
         "flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold",
-        "focus-visible:ring-2 focus-visible:outline-none",
+        " ",
       )}
     >
       {children}

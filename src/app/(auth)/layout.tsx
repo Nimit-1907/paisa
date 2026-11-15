@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { AppPreview } from "@/components/marketing/app-preview";
-import { Grain } from "@/components/shared/grain";
 
 /**
  * The signed-out frame.
@@ -22,25 +21,23 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative min-h-dvh overflow-hidden">
-      <Grain />
-
       <div className="relative grid min-h-dvh lg:grid-cols-2">
         {/*
           Decorative and hidden below lg: it is the same preview the landing
           page shows, and on a phone the form is the whole point of the
           screen.
         */}
-        <aside className="accent-wash hidden flex-col items-center justify-center gap-8 border-r p-10 lg:flex">
+        <aside className="bg-surface-muted hidden flex-col items-center justify-center gap-8 border-r p-10 lg:flex">
           <Link
             href="/"
-            className="focus-visible:ring-ring rounded-control flex items-center gap-2 focus-visible:ring-2 focus-visible:outline-none"
+            className=" rounded-control flex items-center gap-2 "
           >
-            <span className="font-display text-ink text-xl">Paisa</span>
+            <span className="font-display text-text text-xl">Paisa</span>
           </Link>
 
           <AppPreview />
 
-          <p className="text-ink-2 max-w-[34ch] text-center text-sm text-balance">
+          <p className="text-text-secondary max-w-[34ch] text-center text-sm text-balance">
             Four taps to log a spend. No bank login, no ads, and your records
             stay yours.
           </p>

@@ -19,6 +19,7 @@ import {
 import { addDays } from "@/lib/recurrence";
 import { localToday } from "@/lib/recurring-check";
 import { upcomingBetween } from "@/lib/recurring-rule";
+import { getMonthInsight } from "@/lib/queries/month-insight";
 import { getProfile } from "@/lib/profile";
 import { transactionFiltersSchema } from "@/lib/schemas/transactions";
 
@@ -117,8 +118,17 @@ export default async function RecordsPage({
     ),
   );
 
-  const [page, summary, monthDays, accounts, categories, rules, created] =
-    await Promise.all([
+  const [
+    page,
+    summary,
+    previousSummary,
+    insight,
+    monthDays,
+    accounts,
+    categories,
+    rules,
+    created,
+  ] = await Promise.all([
       getMonthTransactions({
         year: month.year,
         month: month.month,
@@ -127,6 +137,21 @@ export default async function RecordsPage({
         filters,
       }),
       getMonthSummary(month.year, month.month),
+      // Last month's totals, for the trend pill on the month card. Already
+      // in the same Promise.all, so it costs no extra round trip.
+      getMonthSummary(previousMonth.year, previousMonth.month),
+      /*
+       * The sentence under the card, from the same rows Analysis uses.
+       *
+       * Caught here as well as inside: it is one decorative line on the
+       * screen people open most, and a rejection anywhere in this
+       * Promise.all takes the whole page with it. The function already
+       * swallows a query error; this catches a thrown one.
+       */
+      getMonthInsight(month.year, month.month).catch((thrown: unknown) => {
+        console.error("[records]", thrown);
+        return null;
+      }),
       // The shape of the month, for the bars on the card.
       getMonthDays(month.year, month.month),
       getActiveAccounts().then((result) => result.rows),
@@ -158,6 +183,9 @@ export default async function RecordsPage({
           net: summary.net.toString(),
         }}
         monthDays={monthDays}
+        previousExpense={previousSummary.expense.toString()}
+        displayName={profile?.display_name ?? ""}
+        insight={insight}
         monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}

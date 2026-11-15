@@ -28,6 +28,8 @@ import { APPLY_FORWARD_MONTHS } from "@/lib/schemas/budgets";
 export type BudgetCategoryOption = {
   id: string;
   name: string;
+  /** One of the eight Phase 14 tint keys. */
+  tint: string | null;
   icon: string | null;
   color: string | null;
 };
@@ -226,7 +228,7 @@ export function BudgetSheet({
                   }
                   className={cn(
                     PRESSABLE,
-                    "hoverable:bg-muted/60 focus-visible:ring-ring flex h-11 items-center gap-2 rounded-full border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none",
+                    "hoverable:bg-surface-muted  flex h-11 items-center gap-2 rounded-full border px-3 text-sm  ",
                   )}
                 >
                   <span className="amount font-semibold">
@@ -235,7 +237,7 @@ export function BudgetSheet({
                       whole: true,
                     })}
                   </span>
-                  <span className="text-ink-2 text-xs">
+                  <span className="text-text-secondary text-xs">
                     {suggestion.label}
                   </span>
                 </button>
@@ -263,7 +265,7 @@ export function BudgetSheet({
           )}
         </FormRow>
 
-        <label className="hoverable:bg-muted/60 flex min-h-11 cursor-pointer items-start gap-3 rounded-control border p-3 transition-colors">
+        <label className="hoverable:bg-surface-muted flex min-h-11 cursor-pointer items-start gap-3 rounded-control border p-3 transition-colors">
           <input
             type="checkbox"
             checked={applyForward}
@@ -272,7 +274,7 @@ export function BudgetSheet({
           />
           <span className="min-w-0">
             <span className="text-sm font-semibold">Apply to all future months</span>
-            <span className="text-ink-2 mt-0.5 block text-xs">
+            <span className="text-text-secondary mt-0.5 block text-xs">
               Copies this limit into the next {APPLY_FORWARD_MONTHS} months,
               stopping at any month you have already set to something else.
             </span>
@@ -280,7 +282,7 @@ export function BudgetSheet({
         </label>
 
         {error && !errorField ? (
-          <p role="alert" className="text-destructive text-sm">
+          <p role="alert" className="text-expense text-sm">
             {error}
           </p>
         ) : null}
@@ -290,7 +292,7 @@ export function BudgetSheet({
             <Button
               variant="outline"
               size="touch"
-              className="text-destructive hoverable:text-destructive w-full"
+              className="text-expense hoverable:text-expense w-full"
               disabled={saving}
               onClick={() => void remove()}
             >

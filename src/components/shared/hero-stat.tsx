@@ -2,123 +2,130 @@
 
 import * as React from "react";
 
-import { Grain } from "@/components/shared/grain";
+import { HeroCard } from "@/components/shared/surface";
 import { cn } from "@/lib/utils";
 
 /**
- * The one figure a screen is built around.
+ * The one figure a screen is built around, in the Phase 14 anatomy.
  *
- * Every summary screen had grown its own version of this — a label, a big
- * number, a line underneath — at slightly different sizes, which is how five
- * screens end up with five ideas of what "the important one" looks like. This
- * is that anatomy once.
+ * Reading down the reference: a small label, an optional trend pill on the
+ * same line, the number in the display face, a helper line, then anything
+ * the screen adds — bars, a progress track — and finally an optional split
+ * row divided by hairlines.
  *
- * The figure is set in the anchor serif. Phase 12 kept the serif to the month
- * card alone; Phase 13 widens it to the hero figure on any screen, which is
- * the same rule stated better — the serif marks *the number you came for*,
- * and that is one per screen wherever you are. CLAUDE.md carries the updated
- * wording.
+ * The number is `font-display` at 42px, which is the one place besides the
+ * page title that Bricolage appears. A screen with two of these has two
+ * focal points and therefore none, so `HeroCard` carries the accent and
+ * every screen uses exactly one.
  */
 export function HeroStat({
   label,
+  trend,
   value,
-  caption,
-  aside,
-  legs,
-  texture = true,
+  helper,
+  split,
+  flat = false,
   children,
   className,
 }: {
-  /** Small line above the figure: "Left to spend", "Total balance". */
+  /** "Left to spend", "Total balance". Sentence case — no. */
   label: string;
-  /** The figure itself, already formatted — usually an `<Amount>`. */
+  /** Top-right pill: "12% less than Oct". */
+  trend?: React.ReactNode;
+  /** The figure, already formatted — usually an `<Amount>`. */
   value: React.ReactNode;
-  /** One short line under the figure, in plain words. */
-  caption?: React.ReactNode;
-  /** Top-right slot: a toggle, a chip, a link. */
-  aside?: React.ReactNode;
-  /** The two or three smaller figures that sit under the hero. */
-  legs?: React.ReactNode;
+  /** One quiet line under the figure. */
+  helper?: React.ReactNode;
+  /** The two-up row at the bottom, divided by hairlines. */
+  split?: React.ReactNode;
   /**
-   * The faint grain. On by default: a hero is the one large flat panel on
-   * its screen, which is exactly what the texture stops reading as a hole.
+   * Drops the accent, for the rare screen where something else is the one
+   * bold card — the month recap on the first open of a new month.
    */
-  texture?: boolean;
-  /** Anything below: the bars on the month card, a progress track. */
+  flat?: boolean;
+  /** Bars, a progress track, anything between the helper and the split. */
   children?: React.ReactNode;
   className?: string;
 }) {
-  /*
-   * A <section> is only a landmark if it has a name.
-   *
-   * Without one it is a generic box, and a screen reader user tabbing by
-   * region never finds the figure the whole screen is built around. The
-   * label above the number is already that name, so it is pointed at rather
-   * than duplicated into an aria-label that could drift from it.
-   */
   const labelId = React.useId();
 
   return (
-    <section
+    <HeroCard
+      flat={flat}
       aria-labelledby={labelId}
-      className={cn(
-        "bento accent-wash relative overflow-hidden p-4",
-        className,
-      )}
+      // Padding is on the parts, not the card: the split row runs edge to
+      // edge and its hairline has to reach both sides.
+      className={cn("p-0", className)}
     >
-      {texture ? <Grain /> : null}
-
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p
-            id={labelId}
-            className="text-ink-2 text-label font-semibold tracking-wide uppercase"
-          >
+      <div className="px-4 pt-3.5 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <p id={labelId} className="text-text-secondary text-[13px]">
             {label}
           </p>
-          <p className="font-display mt-1 text-[2.5rem] leading-[1.05] tracking-tight">
-            {value}
-          </p>
-          {caption ? (
-            <p className="text-ink-2 mt-1.5 text-sm">{caption}</p>
-          ) : null}
+          {trend}
         </div>
-        {aside ? <div className="shrink-0">{aside}</div> : null}
+
+        {/* `amount-hero` drops the ₹ to half-size; at body sizes the same
+            ratio would make it a smudge. See globals.css. */}
+        <p className="font-display amount-hero mt-0.5 text-[42px] leading-[1.05] tracking-[-0.03em]">
+          {value}
+        </p>
+
+        {helper ? (
+          <p className="text-text-secondary mt-1 text-xs">{helper}</p>
+        ) : null}
+
+        {children}
       </div>
 
-      {legs ? (
-        <div className="relative mt-4 flex items-stretch gap-3">{legs}</div>
+      {split ? (
+        <div className="divide-hairline grid grid-cols-2 divide-x border-t">
+          {split}
+        </div>
       ) : null}
-
-      {children ? <div className="relative">{children}</div> : null}
-    </section>
+    </HeroCard>
   );
 }
 
 /**
- * One of the smaller figures under a hero.
+ * One half of the hero's split row.
  *
- * Income and expense on Records, in and out on an account, spent and left on
- * a budget: the same two-up shape every time, so the eye learns it once.
+ * Income and Spent on Records, in and out on an account. Each carries its
+ * own tinted arrow tile, because the two are read as a pair and the tiles
+ * are what makes the pairing legible before the numbers are.
  */
-export function HeroLeg({
+export function HeroSplit({
+  icon,
   label,
   value,
-  icon,
+  tint,
   className,
 }: {
+  icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
-  icon?: React.ReactNode;
+  /** A `bg-tint-*` class for the icon tile. */
+  tint: string;
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0 flex-1", className)}>
-      <p className="text-ink-2 text-label flex items-center gap-1 font-semibold tracking-wide uppercase">
+    <div className={cn("flex items-center gap-2.5 px-3 py-2.5", className)}>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "text-text flex size-7 shrink-0 items-center justify-center rounded-[9px]",
+          tint,
+        )}
+      >
         {icon}
-        {label}
-      </p>
-      <p className="mt-0.5 truncate text-base font-semibold">{value}</p>
+      </span>
+
+      <span className="min-w-0">
+        <span className="text-text-secondary block text-[11px]">{label}</span>
+        <span className="block truncate text-[13px] font-semibold">
+          {value}
+        </span>
+      </span>
     </div>
   );
 }

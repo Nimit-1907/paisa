@@ -120,7 +120,7 @@ function Card({
     // stretch to its height. Content pinned to the top of a 300px card reads
     // as a mistake; centred, the empty space is margin.
     <div className="bento flex flex-col justify-center p-3">
-      <p className="text-ink-2 text-label flex items-center gap-1.5 font-semibold">
+      <p className="text-text-secondary text-xs flex items-center gap-1.5 font-semibold">
         <Icon className="size-3.5" aria-hidden={true} />
         <span className="truncate">{label}</span>
       </p>
@@ -135,7 +135,7 @@ function Card({
         {value}
       </p>
 
-      <p className="text-ink-2 truncate text-label">{hint}</p>
+      <p className="text-text-secondary truncate text-xs">{hint}</p>
     </div>
   );
 }

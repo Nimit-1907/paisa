@@ -30,7 +30,7 @@ export function PasswordHints({ value }: { value: string }) {
 
       {started ? (
         <>
-          <p className="text-ink-3 mt-2 text-xs font-semibold">
+          <p className="text-text-secondary mt-2 text-xs font-semibold">
             Stronger if it also:
           </p>
           <ul className="mt-1 space-y-1">
@@ -57,7 +57,7 @@ function Hint({
     <p
       className={cn(
         "flex items-center gap-1.5 text-xs",
-        hint.met ? "text-income" : required ? "text-ink-2" : "text-ink-3",
+        hint.met ? "text-income" : required ? "text-text-secondary" : "text-text-secondary",
       )}
     >
       {hint.met ? (

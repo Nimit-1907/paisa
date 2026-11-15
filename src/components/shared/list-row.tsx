@@ -183,7 +183,7 @@ export function ListRow({
           {titleBadge}
         </span>
         {subtitle ? (
-          <span className="text-ink-2 flex items-center gap-1 truncate text-xs">
+          <span className="text-text-secondary flex items-center gap-1 truncate text-xs">
             {subtitle}
           </span>
         ) : null}
@@ -195,7 +195,7 @@ export function ListRow({
             <span className="block text-sm font-semibold">{trailing}</span>
           ) : null}
           {trailingMeta ? (
-            <span className="text-ink-2 mt-0.5 block text-xs">
+            <span className="text-text-secondary mt-0.5 block text-xs">
               {trailingMeta}
             </span>
           ) : null}
@@ -205,15 +205,15 @@ export function ListRow({
   );
 
   const interactiveClass = cn(
-    "hoverable:bg-muted/50 focus-visible:ring-ring block w-full text-left focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none",
+    "hoverable:bg-surface-muted  block w-full text-left   ",
     // Colour only, never a transform: a row that shrinks under the thumb
     // drags the whole list with it.
     "duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] transition-colors motion-reduce:transition-none",
-    "active:bg-muted/70",
-    selected && "bg-accent/60 hoverable:bg-accent/70",
+    "active:bg-surface-muted",
+    selected && "bg-surface-muted hoverable:bg-surface-muted",
     // Fades out over a second, leading the eye to the new row without
     // asking anything of it.
-    highlight && "bg-primary/10 duration-1000",
+    highlight && "bg-tint-peri duration-1000",
   );
 
   const interactive =
@@ -241,7 +241,7 @@ export function ListRow({
     );
 
   const row = (
-    <div className={cn("bg-card group relative overflow-hidden", className)}>
+    <div className={cn("bg-surface group relative overflow-hidden", className)}>
       {swipeRight ? (
         <SwipeAction
           action={swipeRight}
@@ -266,7 +266,7 @@ export function ListRow({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
         className={cn(
-          "bg-card relative transition-transform",
+          "bg-surface relative transition-transform",
           drag.current && "transition-none",
           pending && "opacity-60",
         )}
@@ -334,8 +334,8 @@ function SwipeAction({
         "absolute inset-y-0 flex w-[88px] flex-col items-center justify-center gap-0.5 text-xs font-semibold",
         side === "left" ? "left-0" : "right-0",
         action.tone === "destructive"
-          ? "bg-destructive/10 text-destructive"
-          : "bg-accent text-accent-foreground",
+          ? "bg-tint-rose text-expense"
+          : "bg-accent text-text",
       )}
     >
       <Icon className="size-5" aria-hidden="true" />

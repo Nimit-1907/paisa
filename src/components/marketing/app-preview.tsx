@@ -20,27 +20,27 @@ export function AppPreview() {
       aria-hidden="true"
       className="pointer-events-none mx-auto w-[260px] select-none sm:w-[300px]"
     >
-      <div className="border-foreground/15 bg-card rounded-[2rem] border-[6px] p-2 shadow-xl">
+      <div className="border-foreground/15 bg-surface rounded-[2rem] border-[6px] p-2 shadow-xl">
         <div className="bg-background overflow-hidden rounded-[1.5rem]">
           {/* Header */}
           <div className="flex items-center justify-between border-b px-3 py-2.5">
             <span className="text-[13px] font-semibold tracking-tight">
               Records
             </span>
-            <span className="text-ink-2 text-[11px]">Nov 2026</span>
+            <span className="text-text-secondary text-[11px]">Nov 2026</span>
           </div>
 
           <div className="space-y-2.5 p-3">
             {/* The month card, the same shape it has inside the app. */}
-            <div className="bg-card accent-wash relative overflow-hidden rounded-card border px-3 py-2">
-              <p className="text-ink-3 text-[9px] font-semibold tracking-[0.08em] uppercase">
+            <div className="bg-surface accent-sm relative overflow-hidden rounded-card px-3 py-2">
+              <p className="text-text-secondary text-[9px] font-semibold ">
                 Left this month
               </p>
-              <p className="font-display text-ink text-[22px] leading-none">
+              <p className="font-display text-text text-[22px] leading-none">
                 <Rupee />
                 48,931
               </p>
-              <p className="text-ink-2 mt-1 flex gap-2 text-[9px]">
+              <p className="text-text-secondary mt-1 flex gap-2 text-[9px]">
                 <span>
                   <span className="text-income font-semibold">
                     ↙ <Rupee />
@@ -64,8 +64,8 @@ export function AppPreview() {
                     key={index}
                     className={
                       index === 14
-                        ? "bg-primary flex-1 rounded-full"
-                        : "bg-primary/25 flex-1 rounded-full"
+                        ? "bg-ink flex-1 rounded-full"
+                        : "bg-ink/25 flex-1 rounded-full"
                     }
                     style={{ height: `${Math.min(100, Math.max(8, spent))}%` }}
                   />
@@ -73,11 +73,11 @@ export function AppPreview() {
               </div>
             </div>
 
-            <p className="text-ink-2 text-[9px] font-semibold tracking-wider uppercase">
+            <p className="text-text-secondary text-[9px] font-semibold ">
               Today
             </p>
 
-            <div className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+            <div className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
               {ROWS.map((row) => (
                 <div key={row.name} className="flex items-center gap-2 px-2.5 py-2">
                   <span
@@ -88,7 +88,7 @@ export function AppPreview() {
                     <span className="block truncate text-[11px] font-semibold">
                       {row.name}
                     </span>
-                    <span className="text-ink-2 block truncate text-[9px]">
+                    <span className="text-text-secondary block truncate text-[9px]">
                       {row.account}
                     </span>
                   </span>
@@ -110,8 +110,8 @@ export function AppPreview() {
                     key={tab}
                     className={
                       index === 0
-                        ? "text-primary text-[8px] font-semibold"
-                        : "text-ink-2 text-[8px]"
+                        ? "text-text text-[8px] font-semibold"
+                        : "text-text-secondary text-[8px]"
                     }
                   >
                     {tab}
@@ -120,7 +120,7 @@ export function AppPreview() {
               )}
             </div>
 
-            <span className="bg-primary text-primary-foreground absolute -top-8 right-3 flex size-9 items-center justify-center rounded-full text-lg leading-none shadow-lg">
+            <span className="bg-ink text-on-ink absolute -top-8 right-3 flex size-9 items-center justify-center rounded-full text-lg leading-none shadow-lg">
               +
             </span>
           </div>

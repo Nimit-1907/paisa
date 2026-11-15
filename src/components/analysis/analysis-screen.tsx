@@ -98,7 +98,7 @@ export function AnalysisScreen({
       <div
         role="radiogroup"
         aria-label="Income or expense"
-        className="bg-muted rounded-control grid grid-cols-2 gap-1 p-1"
+        className="bg-surface-muted rounded-control grid grid-cols-2 gap-1 p-1"
       >
         {(["expense", "income"] as const).map((value) => {
           const active = kind === value;
@@ -110,10 +110,10 @@ export function AnalysisScreen({
               aria-checked={active}
               onClick={() => chooseKind(value)}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
-                "text-ink-2",
-                active && value === "expense" && "bg-expense-soft text-expense",
-                active && value === "income" && "bg-income-soft text-income",
+                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
+                "text-text-secondary",
+                active && value === "expense" && "bg-tint-rose text-expense",
+                active && value === "income" && "bg-tint-mint text-income",
                 active && "shadow-sm",
               )}
             >

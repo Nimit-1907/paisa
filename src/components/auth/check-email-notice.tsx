@@ -79,18 +79,18 @@ export function CheckEmailNotice({
   }
 
   return (
-    <div className="bg-card rounded-card border p-6 text-center">
-      <span className="bg-income-soft text-income rounded-card mx-auto mb-4 flex size-12 items-center justify-center">
+    <div className="bg-surface rounded-card border p-6 text-center">
+      <span className="bg-tint-mint text-income rounded-card mx-auto mb-4 flex size-12 items-center justify-center">
         <MailCheck className="size-6" aria-hidden="true" />
       </span>
 
       <h2 className="text-base font-semibold">{title}</h2>
 
       {email ? (
-        <p className="text-ink mt-1 text-sm font-semibold break-all">{email}</p>
+        <p className="text-text mt-1 text-sm font-semibold break-all">{email}</p>
       ) : null}
 
-      <p className="text-ink-2 mt-1 text-sm">{children}</p>
+      <p className="text-text-secondary mt-1 text-sm">{children}</p>
 
       {onResend ? (
         <div className="mt-5">
@@ -113,7 +113,7 @@ export function CheckEmailNotice({
           {left > 0 ? (
             // Polite: a countdown that interrupts a screen reader every
             // second would be unbearable, and nothing here needs acting on.
-            <p className="text-ink-3 mt-2 text-xs" aria-live="polite">
+            <p className="text-text-secondary mt-2 text-xs" aria-live="polite">
               You can ask for another in {left} second{left === 1 ? "" : "s"}.
             </p>
           ) : null}
@@ -121,7 +121,7 @@ export function CheckEmailNotice({
       ) : null}
 
       {process.env.NODE_ENV === "development" ? (
-        <p className="text-ink-3 mt-4 text-xs">
+        <p className="text-text-secondary mt-4 text-xs">
           Developing locally? The mail is waiting in Mailpit at{" "}
           <a
             className="underline underline-offset-2"

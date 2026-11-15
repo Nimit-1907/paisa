@@ -22,7 +22,7 @@ import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_KINDS, type CategoryKind } from "@/lib/schemas/categories";
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 const KIND_LABELS: Record<CategoryKind, string> = {
   expense: "Expense",
@@ -82,7 +82,7 @@ export function CategoriesScreen({
       <div
         role="tablist"
         aria-label="Category kind"
-        className="bg-muted grid grid-cols-2 gap-1 rounded-control p-1"
+        className="bg-surface-muted grid grid-cols-2 gap-1 rounded-control p-1"
       >
         {CATEGORY_KINDS.map((value) => {
           const selected = value === kind;
@@ -97,12 +97,12 @@ export function CategoriesScreen({
                 setReordering(false);
               }}
               className={cn(
-                "focus-visible:ring-ring h-11 rounded-lg text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
                 selected
                   ? value === "income"
-                    ? "bg-income-soft text-income shadow-sm"
-                    : "bg-expense-soft text-expense shadow-sm"
-                  : "text-ink-2 hoverable:text-foreground",
+                    ? "bg-tint-mint text-income shadow-sm"
+                    : "bg-tint-rose text-expense shadow-sm"
+                  : "text-text-secondary hoverable:text-text",
               )}
             >
               {KIND_LABELS[value]}
@@ -126,7 +126,7 @@ export function CategoriesScreen({
       ) : (
         <>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-ink-2 px-1 text-xs font-semibold tracking-wider uppercase">
+            <p className="text-text-secondary px-1 text-xs font-semibold ">
               {active.length} {active.length === 1 ? "category" : "categories"}
             </p>
 
@@ -163,12 +163,12 @@ export function CategoriesScreen({
                 );
                 router.refresh();
               }}
-              className="bg-card divide-border divide-y overflow-hidden rounded-card border"
+              className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border"
               renderItem={(category, { handleProps, isDragging }) => (
                 <div
                   className={cn(
-                    "bg-card flex min-h-14 items-center gap-2 pr-3 pl-1",
-                    isDragging && "bg-muted",
+                    "bg-surface flex min-h-14 items-center gap-2 pr-3 pl-1",
+                    isDragging && "bg-surface-muted",
                   )}
                 >
                   <DragHandle {...handleProps} />
@@ -186,7 +186,7 @@ export function CategoriesScreen({
                   <button
                     type="button"
                     onClick={() => openEdit(category)}
-                    className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-card border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    className="bg-surface hoverable:bg-surface-muted flex w-full flex-col items-center gap-2 rounded-card border px-2 py-3 transition-colors  "
                   >
                     <CategoryBadge category={category} size="lg" />
                     <span className="w-full truncate text-center text-xs font-semibold">
@@ -200,7 +200,7 @@ export function CategoriesScreen({
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="border-border/70 text-ink-2 hoverable:border-border hoverable:text-foreground focus-visible:ring-ring flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-control border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="border-hairline text-text-secondary hoverable:border-hairline hoverable:text-text flex h-full min-h-[92px] w-full flex-col items-center justify-center gap-2 rounded-control border border-dashed px-2 py-3 transition-colors  "
                 >
                   <Plus className="size-5" aria-hidden="true" />
                   <span className="text-xs font-semibold">Add</span>
@@ -217,7 +217,7 @@ export function CategoriesScreen({
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            className="text-text-secondary hoverable:text-text flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold  "
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />
@@ -229,7 +229,7 @@ export function CategoriesScreen({
 
           {showArchived ? (
             <>
-              <p className="text-ink-2 mb-2 px-1 text-xs">
+              <p className="text-text-secondary mb-2 px-1 text-xs">
                 Still shown on the records that use them, but not offered when
                 you add something new.
               </p>
@@ -239,7 +239,7 @@ export function CategoriesScreen({
                     <button
                       type="button"
                       onClick={() => openEdit(category)}
-                      className="bg-card hoverable:bg-muted/50 focus-visible:ring-ring flex w-full flex-col items-center gap-2 rounded-card border border-dashed px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                      className="bg-surface hoverable:bg-surface-muted flex w-full flex-col items-center gap-2 rounded-card border border-dashed px-2 py-3 transition-colors  "
                     >
                       <CategoryBadge category={category} size="lg" />
                       <span className="w-full truncate text-center text-xs font-semibold">
@@ -272,8 +272,8 @@ function CategoryBadge({
   size?: "sm" | "lg";
 }) {
   return (
-    <ColorDot
-      color={category.color}
+    <Tile
+      tint={category.tint}
       icon={category.icon}
       size={size === "lg" ? "lg" : "md"}
     />

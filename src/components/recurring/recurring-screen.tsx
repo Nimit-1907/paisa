@@ -124,7 +124,7 @@ export function RecurringScreen({
       <HeroStat
         label="Scheduled this month"
         value={<Amount value={scheduledThisMonth} signDisplay="never" whole />}
-        caption={
+        helper={
           dueSoon.length > 0
             ? `${dueSoon.length} due in the next 7 days`
             : "Nothing due in the next 7 days"
@@ -238,12 +238,12 @@ function Section({
 
       {count === 0 ? (
         empty ? (
-          <p className="text-ink-2 bg-card rounded-card border border-dashed px-4 py-6 text-center text-sm">
+          <p className="text-text-secondary bg-surface rounded-card border border-dashed px-4 py-6 text-center text-sm">
             {empty}
           </p>
         ) : null
       ) : (
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
           {children}
         </ul>
       )}
@@ -276,19 +276,19 @@ function RuleItem({
     <li className="flex items-stretch">
       <Link
         href={`/recurring/${rule.id}`}
-        className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+        className="hoverable:bg-surface-muted flex min-h-16 min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 transition-colors   "
       >
         <RuleAvatar rule={rule} dimmed={!rule.active} />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{title}</span>
-          <span className="text-ink-2 block truncate text-xs">
+          <span className="text-text-secondary block truncate text-xs">
             {describeSchedule(scheduleOf(rule))} · {rule.accountName}
           </span>
           <span
             className={cn(
               "block truncate text-xs",
-              rule.active ? "text-primary" : "text-ink-2",
+              rule.active ? "text-text" : "text-text-secondary",
             )}
           >
             {rule.active
@@ -304,7 +304,7 @@ function RuleItem({
             "amount shrink-0 text-right text-sm font-semibold",
             rule.type === "income" && "text-income",
             rule.type === "transfer" && "text-transfer",
-            !rule.active && "text-ink-2",
+            !rule.active && "text-text-secondary",
           )}
         >
           {rule.type === "income" ? "+" : rule.type === "expense" ? "−" : ""}

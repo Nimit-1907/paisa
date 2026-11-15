@@ -18,7 +18,7 @@ export default function AnalysisLoading() {
       </div>
 
       {[0, 1].map((chart) => (
-        <div key={chart} className="bg-card space-y-3 rounded-card border p-3">
+        <div key={chart} className="bg-surface space-y-3 rounded-card border p-3">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-[200px] w-full rounded-control" />
         </div>

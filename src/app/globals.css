@@ -380,13 +380,25 @@
 /*
  * The currency symbol, set back from the digits beside it.
  *
- * Roughly half the size and in secondary text, which is what the reference
- * does and what keeps a 48px number from being read as a 48px rupee sign.
+ * Secondary colour and a size down, which is what keeps a 42px number from
+ * reading as a 42px rupee sign.
+ *
+ * Two ratios, because one does not fit both ends of the type scale. At
+ * 0.5em a hero's ₹ is a well-judged 21px; the same ratio on a 13px row is
+ * 6.5px, which is not a glyph, it is a smudge. Body amounts step down
+ * gently and the hero opts into the bigger reduction.
  */
 @utility amount-unit {
-  font-size: 0.5em;
-  font-weight: 700;
+  font-size: 0.82em;
+  font-weight: 600;
   color: var(--text-secondary);
+}
+
+@utility amount-hero {
+  & .amount-unit {
+    font-size: 0.5em;
+    font-weight: 700;
+  }
 }
 
 /* The paise, one step down from the digits but not from the unit. */

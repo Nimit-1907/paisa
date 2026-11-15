@@ -67,11 +67,11 @@ export function ChangePasswordCard() {
     errorField === field ? (error ?? undefined) : undefined;
 
   return (
-    <section className="bg-card rounded-card border p-4">
+    <section className="bg-surface rounded-card border p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">Password</h2>
-          <p className="text-ink-2 text-xs">
+          <p className="text-text-secondary text-xs">
             Change the password you sign in with.
           </p>
         </div>
@@ -139,7 +139,7 @@ export function ChangePasswordCard() {
           </FormRow>
 
           {error && !errorField ? (
-            <p role="alert" className="text-destructive text-sm">
+            <p role="alert" className="text-expense text-sm">
               {error}
             </p>
           ) : null}

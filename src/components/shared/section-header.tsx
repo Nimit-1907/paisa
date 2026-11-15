@@ -32,21 +32,25 @@ export function SectionHeader({
   return (
     <div className={cn("flex items-baseline justify-between gap-3", className)}>
       <div className="min-w-0">
-        <h2 className="text-ink flex items-baseline gap-1.5 text-sm font-semibold">
+        {/* 14px/600, sentence case. Phase 14 removes labels
+            everywhere — a row of small-caps headings reads as filing. */}
+        <h2 className="text-text flex items-baseline gap-1.5 text-sm font-semibold">
           {title}
           {count !== undefined ? (
-            <span className="text-ink-3 text-xs font-medium">{count}</span>
+            <span className="text-text-secondary text-xs font-medium">
+              {count}
+            </span>
           ) : null}
         </h2>
         {description ? (
-          <p className="text-ink-2 mt-0.5 text-xs">{description}</p>
+          <p className="text-text-secondary mt-0.5 text-xs">{description}</p>
         ) : null}
       </div>
 
       {action ? (
         <Link
           href={action.href}
-          className="text-primary focus-visible:ring-ring -mr-1 shrink-0 rounded-control px-1 py-1 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+          className="text-text-secondary hoverable:text-text rounded-control -mr-1 shrink-0 px-1 py-1 text-xs font-semibold"
         >
           {action.label}
         </Link>

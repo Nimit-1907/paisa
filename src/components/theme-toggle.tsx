@@ -31,7 +31,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       role="radiogroup"
       aria-label="Theme"
       className={cn(
-        "bg-muted inline-flex items-center gap-1 rounded-full p-1",
+        "bg-surface-muted inline-flex items-center gap-1 rounded-full p-1",
         className,
       )}
     >
@@ -46,10 +46,10 @@ export function ThemeToggle({ className }: { className?: string }) {
             aria-label={label}
             onClick={() => setTheme(value)}
             className={cn(
-              "focus-visible:ring-ring inline-flex size-11 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
+              " inline-flex size-11 items-center justify-center rounded-full transition-colors  focus-visible:ring-offset-1 ",
               active
-                ? "bg-background text-foreground shadow-sm"
-                : "text-ink-2 hoverable:text-foreground",
+                ? "bg-background text-text shadow-sm"
+                : "text-text-secondary hoverable:text-text",
             )}
           >
             <Icon className="size-[18px]" aria-hidden="true" />

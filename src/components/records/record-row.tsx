@@ -3,22 +3,24 @@
 import { ArrowRight, Copy, Pencil, Repeat, Search, Trash2 } from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 import { ListRow } from "@/components/shared/list-row";
 import type { TransactionRow } from "@/lib/queries/transactions";
 
 /**
  * What colour a record's amount carries.
  *
- * Expense stays in plain ink. Phase 12 softened the money palette because
- * three colours down one list read as three warnings, and in a list that is
- * mostly expenses the expense colour carries no information at all — income
- * and transfers are the ones worth marking.
+ * All three kinds are coloured, including expense. Phase 12 had argued the
+ * other way — that in a mostly-expense list the expense colour carries no
+ * information — and Phase 14's reference reverses it. On these surfaces the
+ * reversal holds up: the money colours are deep and the tints are pale, so
+ * three coloured amounts down a column read as a key rather than as three
+ * warnings. Measured at 6.5:1 or better on every surface in both themes.
  */
 const TONE_CLASS = {
   income: "text-income",
   transfer: "text-transfer",
-  ink: "text-ink",
+  expense: "text-expense",
 } as const;
 
 /**
@@ -64,7 +66,7 @@ export function RecordRow({
   const transfer = record.type === "transfer";
 
   const tone: keyof typeof TONE_CLASS =
-    record.type === "income" ? "income" : transfer ? "transfer" : "ink";
+    record.type === "income" ? "income" : transfer ? "transfer" : "expense";
 
   return (
     <ListRow
@@ -73,16 +75,19 @@ export function RecordRow({
       selected={selected}
       onClick={onOpen}
       leading={
-        <ColorDot
-          size="lg"
-          color={transfer ? null : record.categoryColor}
+        <Tile
+          size="md"
+          tint={transfer ? "sky" : record.categoryTint}
           icon={transfer ? "ArrowLeftRight" : record.categoryIcon}
         />
       }
       title={transfer ? "Transfer" : (record.categoryName ?? "Uncategorised")}
       titleBadge={
         record.recurringRuleId ? (
-          <Repeat className="text-ink-3 size-3 shrink-0" aria-label="Repeats" />
+          <Repeat
+            className="text-text-secondary size-3 shrink-0"
+            aria-label="Repeats"
+          />
         ) : null
       }
       subtitle={

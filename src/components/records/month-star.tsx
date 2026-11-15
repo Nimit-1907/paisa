@@ -1,9 +1,15 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
-import { HeroStat } from "@/components/shared/hero-stat";
+import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
+import { Pill } from "@/components/shared/pill";
 import { useCountUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -31,11 +37,23 @@ export function MonthStar({
   summary,
   days,
   today,
+  daysLeft,
+  trend,
+  flat = false,
 }: {
   summary: { income: string; expense: string; net: string };
   days: DaySpend[];
   /** Today where the user is, `yyyy-mm-dd`. Empty for a past month. */
   today: string;
+  /** Days remaining in the month, for the per-day line. 0 for a past one. */
+  daysLeft: number;
+  /** "12% less than Oct", when there is a previous month to compare with. */
+  trend?: { text: string; better: boolean } | null;
+  /**
+   * Drops the accent for the one visit where the recap card is showing.
+   * Exactly one bold card per screen; two would be none.
+   */
+  flat?: boolean;
 }) {
   const net = BigInt(summary.net);
   const shown = useCountUp(net < 0n ? -net : net);
@@ -43,35 +61,62 @@ export function MonthStar({
   const amounts = days.map((day) => Number(BigInt(day.expense)));
   const scale = ordinaryPeak(amounts);
 
+  // Only while the month is still running, and only when there is something
+  // left: "₹0 a day for 0 days" is arithmetic, not help.
+  const perDay = daysLeft > 0 && net > 0n ? net / BigInt(daysLeft) : null;
+
   return (
     <HeroStat
-      // The anatomy is `HeroStat`, shared with Budgets and Accounts. What is
-      // the month card's own is in here: the bars, and which way the figure
-      // reads when the month has gone the wrong way.
-      label={net < 0n ? "Overspent this month" : "Left this month"}
+      flat={flat}
+      label={net < 0n ? "Overspent this month" : "Left to spend"}
+      trend={
+        trend ? (
+          <Pill tone={trend.better ? "income" : "expense"}>
+            {trend.better ? (
+              <TrendingDown className="size-3" aria-hidden="true" />
+            ) : (
+              <TrendingUp className="size-3" aria-hidden="true" />
+            )}
+            {trend.text}
+          </Pill>
+        ) : null
+      }
       value={
-        <span className={net < 0n ? "text-expense" : "text-ink"}>
+        <span className={net < 0n ? "text-expense" : undefined}>
           <Amount value={shown} signDisplay="never" whole />
         </span>
       }
-      legs={
-        <p className="text-ink-2 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs">
-          <span className="flex items-center gap-1">
-            <ArrowDownLeft className="text-income size-3.5" aria-hidden="true" />
-            <span className="text-ink font-semibold">
-              <Amount value={BigInt(summary.income)} signDisplay="never" />
-            </span>
-            in
-          </span>
-
-          <span className="flex items-center gap-1">
-            <ArrowUpRight className="text-expense size-3.5" aria-hidden="true" />
-            <span className="text-ink font-semibold">
-              <Amount value={BigInt(summary.expense)} signDisplay="never" />
-            </span>
-            out
-          </span>
-        </p>
+      helper={
+        perDay ? (
+          <>
+            <Amount value={perDay} signDisplay="never" whole /> a day ·{" "}
+            {daysLeft} {daysLeft === 1 ? "day" : "days"} left
+          </>
+        ) : null
+      }
+      split={
+        <>
+          <HeroSplit
+            tint="bg-tint-mint"
+            icon={<ArrowDownLeft className="size-3.5" />}
+            label="Income"
+            value={
+              <span className="text-income">
+                +<Amount value={BigInt(summary.income)} signDisplay="never" whole />
+              </span>
+            }
+          />
+          <HeroSplit
+            tint="bg-tint-rose"
+            icon={<ArrowUpRight className="size-3.5" />}
+            label="Spent"
+            value={
+              <span className="text-expense">
+                −<Amount value={BigInt(summary.expense)} signDisplay="never" whole />
+              </span>
+            }
+          />
+        </>
       }
     >
       {days.length > 0 ? (
@@ -81,21 +126,23 @@ export function MonthStar({
          * Each bar was a link to that day's records, which is a lovely idea
          * and an inaccessible one: thirty bars across 328px makes each
          * target about seven pixels wide, against the 24 that WCAG 2.5.8
-         * asks for and the 44 this app promises. axe called it, and it was
-         * right — there is no spacing trick that fixes a target that small.
+         * asks for and the 44 this app promises. The behaviour moved to the
+         * day headings in the list below, which are full width.
          *
-         * The behaviour did not go away, it moved: every day heading in the
-         * list below is a link to that day, full width and easy to hit. The
-         * shape stays here, where it is read rather than touched, and the
-         * list underneath is its text alternative.
+         * Today's bar is periwinkle *and* carries an ink border. The two
+         * fills are 1.03:1 apart in light mode — they differ in hue, not
+         * brightness — so without the border, colour vision would be the
+         * only way to find today. See src/lib/tokens.test.ts.
          */
-        <div aria-hidden="true" className="mt-3 flex h-12 items-end gap-[3px]">
+        <div aria-hidden="true" className="mt-3 flex h-10 items-end gap-[2px]">
           {days.map((day) => (
             <span
               key={day.on}
               className={cn(
-                "flex-1 rounded-full",
-                day.on === today ? "bg-primary" : "bg-primary/25",
+                "flex-1 rounded-[2px]",
+                day.on === today
+                  ? "bg-accent border-ink border-[1.5px]"
+                  : "bg-bar-muted",
               )}
               style={{
                 height: `${barHeight(Number(BigInt(day.expense)), scale)}%`,

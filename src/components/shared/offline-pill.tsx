@@ -28,7 +28,7 @@ export function OfflinePill({ className }: { className?: string }) {
       // somebody is reading to tell them the wifi dropped is not urgent.
       role="status"
       className={cn(
-        "bg-warning-soft text-warning rounded-full px-2 py-0.5 text-label inline-flex shrink-0 items-center gap-1 font-semibold",
+        "bg-tint-butter text-text rounded-full px-2 py-0.5 text-xs inline-flex shrink-0 items-center gap-1 font-semibold",
         className,
       )}
     >
@@ -55,7 +55,7 @@ export function OfflineNotice({ className }: { className?: string }) {
     <p
       role="status"
       className={cn(
-        "bg-warning-soft text-warning rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium",
+        "bg-tint-butter text-text rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium",
         className,
       )}
     >

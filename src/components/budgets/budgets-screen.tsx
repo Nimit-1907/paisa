@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import type { BudgetHint, BudgetMonth } from "@/lib/queries/budgets";
 import { budgetPercent, budgetTone } from "@/lib/schemas/budgets";
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 /**
  * The Budgets tab.
@@ -178,7 +178,7 @@ export function BudgetsScreen({
       <HeroStat
         label={remaining >= 0n ? "Left to spend" : "Over budget"}
         value={
-          <span className={remaining >= 0n ? "text-ink" : "text-expense"}>
+          <span className={remaining >= 0n ? "text-text" : "text-expense"}>
             <Amount
               value={remaining < 0n ? -remaining : remaining}
               signDisplay="never"
@@ -186,9 +186,9 @@ export function BudgetsScreen({
             />
           </span>
         }
-        caption={
+        helper={
           data.daysLeft > 0 && remaining > 0n ? (
-            <span className="text-ink font-semibold">
+            <span className="text-text font-semibold">
               <Amount
                 value={remaining / BigInt(data.daysLeft)}
                 signDisplay="never"
@@ -198,7 +198,7 @@ export function BudgetsScreen({
             </span>
           ) : null
         }
-        aside={
+        trend={
           <BudgetRing percent={percent} tone={tone} size={72}>
             <span className="amount text-sm font-semibold tabular-nums">
               {Math.round(percent)}%
@@ -206,7 +206,7 @@ export function BudgetsScreen({
           </BudgetRing>
         }
       >
-        <p className="text-ink-2 mt-1 text-xs">
+        <p className="text-text-secondary mt-1 text-xs">
           <Amount value={totalSpent} signDisplay="never" /> of{" "}
           <Amount value={totalBudget} signDisplay="never" /> budgeted
         </p>
@@ -251,7 +251,7 @@ export function BudgetsScreen({
           title={`Budgeted · ${data.lines.length}`}
         />
 
-        <ul className="bg-card divide-border rounded-card divide-y overflow-hidden border">
+        <ul className="bg-surface divide-hairline rounded-card divide-y overflow-hidden border">
           {data.lines.map((line) => (
             <li key={line.categoryId}>
               <BudgetRow
@@ -290,16 +290,16 @@ function BudgetRow({
     <button
       type="button"
       onClick={onOpen}
-      className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+      className="hoverable:bg-surface-muted flex min-h-16 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors   "
     >
-      <ColorDot color={line.color} icon={line.icon} size="lg" />
+      <Tile tint={line.tint} icon={line.icon} size="lg" />
 
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
           <span className="truncate text-sm font-semibold">{line.name}</span>
           <span className="amount shrink-0 text-xs font-semibold tabular-nums">
             <Amount value={spent} signDisplay="never" />
-            <span className="text-ink-2 font-normal">
+            <span className="text-text-secondary font-normal">
               {" / "}
               <Amount value={budget} signDisplay="never" />
             </span>
@@ -314,7 +314,7 @@ function BudgetRow({
           <span
             className={cn(
               "shrink-0 text-xs whitespace-nowrap",
-              tone === "over" ? "text-expense font-semibold" : "text-ink-2",
+              tone === "over" ? "text-expense font-semibold" : "text-text-secondary",
             )}
           >
             {tone === "over"
@@ -323,7 +323,7 @@ function BudgetRow({
           </span>
 
           {scheduled > 0n ? (
-            <span className="text-ink-2 flex min-w-0 items-center gap-1 text-label">
+            <span className="text-text-secondary flex min-w-0 items-center gap-1 text-xs">
               <CalendarClock className="size-3 shrink-0" aria-hidden="true" />
               <span className="truncate">
                 includes <Amount value={scheduled} signDisplay="never" />{" "}
@@ -353,20 +353,20 @@ function Unbudgeted({
 
   return (
     <section>
-      <h2 className="text-ink-2 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-text-secondary mb-1.5 px-1 text-xs font-semibold ">
         Not budgeted · {lines.length}
       </h2>
 
-      <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+      <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
         {lines.map((line) => (
           <li key={line.categoryId} className="flex items-center gap-3 py-2 pl-3">
-            <ColorDot color={line.color} icon={line.icon} />
+            <Tile tint={line.tint} icon={line.icon} />
 
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">
                 {line.name}
               </span>
-              <span className="amount text-ink-2 block text-xs">
+              <span className="amount text-text-secondary block text-xs">
                 <Amount value={BigInt(line.spent)} signDisplay="never" /> spent
               </span>
             </span>

@@ -86,7 +86,7 @@ export function ChartCard({
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">{title}</h2>
           {subtitle ? (
-            <p className="text-ink-2 truncate text-xs">{subtitle}</p>
+            <p className="text-text-secondary truncate text-xs">{subtitle}</p>
           ) : null}
         </div>
         {actions}
@@ -135,7 +135,7 @@ export function ChartTooltip({
                 style={{ backgroundColor: row.color }}
               />
             ) : null}
-            <span className="text-ink-2">{row.label}</span>
+            <span className="text-text-secondary">{row.label}</span>
             <span className="amount ml-auto font-semibold tabular-nums">
               {formatWith(currency, BigInt(row.value), {
                 signDisplay: "never",
@@ -145,7 +145,7 @@ export function ChartTooltip({
         ))}
       </ul>
 
-      {hint ? <p className="text-ink-2 mt-1">{hint}</p> : null}
+      {hint ? <p className="text-text-secondary mt-1">{hint}</p> : null}
     </div>
   );
 }
@@ -180,14 +180,14 @@ export function ChartTable({
 
   return (
     <details className="mt-3 border-t pt-2">
-      <summary className="text-ink-2 hoverable:text-foreground focus-visible:ring-ring inline-flex min-h-11 cursor-pointer items-center text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none">
+      <summary className="text-text-secondary hoverable:text-text inline-flex min-h-11 cursor-pointer items-center text-xs font-semibold  ">
         View as table
       </summary>
 
       <div className="mt-1 max-h-64 overflow-y-auto">
         <table className="w-full text-xs">
           <caption className="sr-only">{caption}</caption>
-          <thead className="text-ink-2 sticky top-0 bg-card">
+          <thead className="text-text-secondary sticky top-0 bg-surface">
             <tr>
               {columns.map((column, index) => (
                 <th

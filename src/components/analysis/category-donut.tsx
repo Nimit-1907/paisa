@@ -126,7 +126,7 @@ export function CategoryDonut({
         {/* The total sits in the hole rather than in a label, which is the
             only place on a 360px ring with room for it. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className="text-ink-2 text-label font-semibold tracking-wide uppercase">
+          <span className="text-text-secondary text-xs font-semibold ">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
           <span className="amount max-w-[9rem] truncate text-lg font-semibold tabular-nums">
@@ -138,12 +138,12 @@ export function CategoryDonut({
         </div>
       </div>
 
-      <ul className="divide-border mt-2 divide-y border-t">
+      <ul className="divide-hairline mt-2 divide-y border-t">
         {data.map((slice) => (
           <li key={slice.categoryId}>
             <Link
               href={recordsHref(slice.categoryId)}
-              className="hoverable:bg-muted/50 focus-visible:ring-ring flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
+              className="hoverable:bg-surface-muted flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors   "
             >
               <ColorDot color={slice.fill} icon={slice.icon} size="sm" />
 
@@ -151,7 +151,7 @@ export function CategoryDonut({
                 {slice.name}
               </span>
 
-              <span className="text-ink-2 shrink-0 text-xs tabular-nums">
+              <span className="text-text-secondary shrink-0 text-xs tabular-nums">
                 {share(BigInt(slice.total)).toFixed(0)}%
               </span>
 
@@ -160,7 +160,7 @@ export function CategoryDonut({
               </span>
 
               <ChevronRight
-                className="text-ink-3 size-4 shrink-0"
+                className="text-text-secondary size-4 shrink-0"
                 aria-hidden="true"
               />
             </Link>

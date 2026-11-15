@@ -6,7 +6,6 @@ import { Delete, Equal } from "lucide-react";
 
 import { useCurrency, useFormatMoney } from "@/components/profile-provider";
 import { evaluate, isExpression, pressKey } from "@/lib/calculator";
-import { PRESSABLE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -99,13 +98,21 @@ export function AmountKeypad({
 
   return (
     <div className="space-y-3">
+      {/*
+        The amount is the screen, not a field on it.
+
+        Phase 14 takes it out of its grey box and sets it centred in the
+        display face at 48px, with the sign in the money colour. There is
+        nothing else above the keypad, so a box drawn around it was dividing
+        one thing from nothing.
+      */}
       <label
         htmlFor="amount-field"
         className={cn(
-          "bg-muted/50 block rounded-card px-4 py-3 text-right",
+          "block px-2 py-2 text-center",
           // The outline is the message under reduced motion, where the shake
           // never fires; with motion on, both happen.
-          invalid && "ring-destructive ring-2",
+          invalid && "rounded-card ring-expense ring-2",
           shaking && "shake",
         )}
       >
@@ -138,18 +145,22 @@ export function AmountKeypad({
         <p
           aria-hidden="true"
           className={cn(
-            "amount truncate text-3xl font-semibold tabular-nums",
-            value ? toneClass : "text-ink-2",
+            "font-display amount-hero truncate text-[48px] leading-none tracking-[-0.03em] tabular-nums",
+            value ? toneClass : "text-text-secondary",
           )}
         >
-          {value ? `${currency.symbol}${value}` : `${currency.symbol}0`}
+          <span className="amount-unit">
+            {tone === "income" ? "+" : tone === "expense" ? "−" : ""}
+            {currency.symbol}
+          </span>
+          {value || "0"}
         </p>
 
         <p
           aria-live="polite"
           className={cn(
             "mt-0.5 h-5 text-sm",
-            result.ok && !invalid ? "text-ink-2" : "text-destructive",
+            result.ok && !invalid ? "text-text-secondary" : "text-expense",
           )}
         >
           {error
@@ -169,12 +180,12 @@ export function AmountKeypad({
             type="button"
             onClick={() => press(key)}
             aria-label={key === "backspace" ? "Backspace" : key}
+            // Flat muted keys with no borders: twelve outlined boxes in a
+            // grid is a lot of line for something a thumb aims at by
+            // position rather than by edge.
             className={cn(
-              PRESSABLE,
-              "focus-visible:ring-ring flex h-11 items-center justify-center rounded-control text-lg font-semibold focus-visible:ring-2 focus-visible:outline-none",
-              /[\d.]/.test(key)
-                ? "bg-muted hoverable:bg-muted/70"
-                : "bg-secondary text-secondary-foreground hoverable:bg-secondary/70",
+              "pressable rounded-control bg-surface-muted text-text flex h-12 items-center justify-center text-lg font-semibold",
+              "hoverable:bg-hairline",
             )}
           >
             {key === "backspace" ? (
@@ -194,7 +205,7 @@ export function AmountKeypad({
             onChange(resolved(result.minor, currency.decimals));
           }}
           disabled={!result.ok}
-          className="bg-secondary text-secondary-foreground hoverable:bg-secondary/70 focus-visible:ring-ring flex h-11 w-full items-center justify-center gap-2 rounded-control text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+          className="bg-surface-muted text-text hoverable:bg-surface-muted/70 flex h-11 w-full items-center justify-center gap-2 rounded-control text-sm font-semibold transition-colors   disabled:opacity-50"
         >
           <Equal className="size-4" aria-hidden="true" />
           Work it out

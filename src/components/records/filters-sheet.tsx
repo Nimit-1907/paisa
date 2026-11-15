@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 import type {
   AccountOption,
   CategoryOption,
@@ -188,7 +188,7 @@ export function FiltersSheet({
           {(props) => (
             <div className="relative">
               <Search
-                className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+                className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
                 aria-hidden="true"
               />
               <Input
@@ -250,9 +250,9 @@ export function FiltersSheet({
                 {/* The same dot the rows use. A list of forty category names
                     is a wall of text; the colour is how people actually find
                     the one they want. */}
-                <ColorDot
+                <Tile
                   size="sm"
-                  color={category.color}
+                  tint={category.tint}
                   icon={category.icon}
                   className="-ml-1.5"
                 />
@@ -371,10 +371,10 @@ function Chip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "focus-visible:ring-ring flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+        " flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-colors  ",
         active
-          ? "border-primary bg-primary/10 text-primary"
-          : "text-ink-2 hoverable:bg-muted",
+          ? "border-ink bg-tint-peri text-text"
+          : "text-text-secondary hoverable:bg-surface-muted",
       )}
     >
       {children}

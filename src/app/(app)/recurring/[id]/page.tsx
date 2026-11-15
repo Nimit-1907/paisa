@@ -90,19 +90,19 @@ export default async function RecurringRulePage({
           <Link
             href="/recurring"
             aria-label="Back to recurring"
-            className="hoverable:bg-muted focus-visible:ring-ring flex size-11 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+            className="hoverable:bg-surface-muted flex size-11 items-center justify-center rounded-full  "
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Link>
         }
       />
 
-      <section className="bg-card rounded-card border p-4">
+      <section className="bg-surface rounded-card border p-4">
         <div className="flex items-center gap-3">
           <RuleAvatar rule={rule} size="lg" dimmed={!rule.active} />
 
           <div className="min-w-0">
-            <p className="text-ink-2 text-xs font-semibold tracking-wide uppercase">
+            <p className="text-text-secondary text-xs font-semibold ">
               {rule.type === "income"
                 ? "Income"
                 : rule.type === "transfer"
@@ -161,26 +161,26 @@ export default async function RecurringRulePage({
         />
       </section>
 
-      <h2 className="text-ink-2 mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-text-secondary mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold ">
         <CalendarClock className="size-3.5" aria-hidden="true" />
         Coming up
       </h2>
 
       {next.length === 0 ? (
-        <p className="text-ink-2 bg-card rounded-card border border-dashed px-4 py-6 text-center text-sm">
+        <p className="text-text-secondary bg-surface rounded-card border border-dashed px-4 py-6 text-center text-sm">
           {rule.active
             ? "This rule has run its course."
             : "Paused — nothing is scheduled."}
         </p>
       ) : (
-        <ol className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+        <ol className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
           {next.map((on) => (
             <li
               key={on}
               className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm"
             >
               <span className="font-semibold">{dayLabel(on)}</span>
-              <span className="text-ink-2 text-xs">
+              <span className="text-text-secondary text-xs">
                 {daysAway(on, today)}
               </span>
             </li>
@@ -188,7 +188,7 @@ export default async function RecurringRulePage({
         </ol>
       )}
 
-      <h2 className="text-ink-2 mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
+      <h2 className="text-text-secondary mt-5 mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold ">
         <History className="size-3.5" aria-hidden="true" />
         Created so far
         {rule.recordCount > HISTORY_SHOWN ? (
@@ -205,7 +205,7 @@ export default async function RecurringRulePage({
           description="Records this rule creates will be listed here, newest first."
         />
       ) : (
-        <ul className="bg-card divide-border divide-y overflow-hidden rounded-card border">
+        <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
           {history.map((record) => (
             <li
               key={record.id}
@@ -216,7 +216,7 @@ export default async function RecurringRulePage({
                   {recordDate.format(new Date(record.occurredAt))}
                 </span>
                 {record.note ? (
-                  <span className="text-ink-2 block truncate text-xs">
+                  <span className="text-text-secondary block truncate text-xs">
                     {record.note}
                   </span>
                 ) : null}
@@ -249,7 +249,7 @@ function Fact({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-ink-2 text-xs">{label}</dt>
+      <dt className="text-text-secondary text-xs">{label}</dt>
       <dd className="truncate font-semibold">{children}</dd>
     </div>
   );

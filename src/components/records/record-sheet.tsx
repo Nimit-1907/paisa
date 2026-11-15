@@ -54,7 +54,7 @@ import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 export type { AccountOption, CategoryOption };
 
@@ -618,12 +618,12 @@ export function RecordSheet({
                   }}
                   className={cn(
                     PRESSABLE,
-                    "hoverable:bg-muted/60 focus-visible:ring-ring flex h-11 shrink-0 items-center gap-2 rounded-full border pr-3 pl-1.5 text-sm focus-visible:ring-2 focus-visible:outline-none",
+                    "hoverable:bg-surface-muted  flex h-11 shrink-0 items-center gap-2 rounded-full border pr-3 pl-1.5 text-sm  ",
                   )}
                 >
-                  <ColorDot color={quick.color} icon={quick.icon} size="sm" />
+                  <Tile tint={quick.tint} icon={quick.icon} size="sm" />
                   <span className="font-semibold">{quick.name}</span>
-                  <span className="amount text-ink-2">
+                  <span className="amount text-text-secondary">
                     {formatWith(currency, BigInt(quick.amount), {
                       signDisplay: "never",
                       whole: true,
@@ -715,7 +715,7 @@ export function RecordSheet({
             {!balancesKnown && accountId ? (
               <p
                 role="status"
-                className="bg-muted text-ink-2 rounded-control px-3 py-2 text-xs font-medium"
+                className="bg-surface-muted text-text-secondary rounded-control px-3 py-2 text-xs font-medium"
               >
                 Balances could not be loaded, so this will not warn you if the
                 account is short.
@@ -725,7 +725,7 @@ export function RecordSheet({
             {overdraw ? (
               <p
                 role="status"
-                className="bg-warning-soft text-warning rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium"
+                className="bg-tint-butter text-text rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium"
               >
                 <TriangleAlert
                   className="mt-0.5 size-3.5 shrink-0"
@@ -762,14 +762,14 @@ export function RecordSheet({
                         aria-pressed={active}
                         onClick={() => setCategoryId(category.id)}
                         className={cn(
-                          "focus-visible:ring-ring flex h-11 items-center gap-2 rounded-control border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                          " flex h-11 items-center gap-2 rounded-control border px-3 text-sm font-semibold transition-colors  ",
                           active
-                            ? "border-primary bg-primary/5"
-                            : "text-ink-2 hoverable:bg-muted/60",
+                            ? "border-ink bg-surface-muted"
+                            : "text-text-secondary hoverable:bg-surface-muted",
                         )}
                       >
-                        <ColorDot
-                          color={category.color}
+                        <Tile
+                          tint={category.tint}
                           icon={category.icon}
                           size="sm"
                         />
@@ -810,16 +810,16 @@ export function RecordSheet({
           onClick={() => setMoreOpen((open) => !open)}
           className={cn(
             PRESSABLE,
-            "hoverable:bg-muted/60 focus-visible:ring-ring flex min-h-11 w-full items-center gap-2 rounded-control border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none",
+            "hoverable:bg-surface-muted  flex min-h-11 w-full items-center gap-2 rounded-control border px-3 text-sm font-semibold  ",
           )}
         >
           <span className="flex-1 text-left">More options</span>
-          <span className="text-ink-2 truncate text-xs font-normal">
+          <span className="text-text-secondary truncate text-xs font-normal">
             {moreSummary}
           </span>
           <ChevronDown
             className={cn(
-              "text-ink-2 size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
+              "text-text-secondary size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
               moreOpen && "rotate-180",
             )}
             aria-hidden="true"
@@ -878,7 +878,7 @@ export function RecordSheet({
             <div className="space-y-2 rounded-control border p-3">
               <div className="flex items-center gap-2">
                 <Repeat
-                  className="text-ink-2 size-4 shrink-0"
+                  className="text-text-secondary size-4 shrink-0"
                   aria-hidden="true"
                 />
                 <Label htmlFor="repeat" className="flex-1">
@@ -902,10 +902,10 @@ export function RecordSheet({
                       aria-checked={active}
                       onClick={() => setFrequency(value)}
                       className={cn(
-                        "focus-visible:ring-ring h-9 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                        " h-9 rounded-lg border px-3 text-xs font-semibold transition-colors  ",
                         active
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "text-ink-2 hoverable:bg-muted",
+                          ? "border-ink bg-tint-peri text-text"
+                          : "text-text-secondary hoverable:bg-surface-muted",
                       )}
                     >
                       {value === "none" ? "No" : REPEAT_LABELS[value]}
@@ -956,7 +956,7 @@ export function RecordSheet({
           fields that usually are — is what stops a save refusing silently.
         */}
         {error && !errorShownInline ? (
-          <p role="alert" className="text-destructive text-sm">
+          <p role="alert" className="text-expense text-sm">
             {error}
           </p>
         ) : null}

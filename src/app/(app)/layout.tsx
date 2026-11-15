@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { Dock } from "@/components/layout/dock";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { SkipLink } from "@/components/layout/skip-link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
-import { AddRecordFab } from "@/components/records/add-record-fab";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
 import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
@@ -92,13 +91,14 @@ export default async function AppLayout({
               should be through `PageShell`, because a screen you read down
               and a screen you scan across want different answers.
             */}
-            <main id="main" className="pb-nav w-full lg:pb-16">
+            <main id="main" className="pb-dock w-full lg:pb-16">
               {children}
             </main>
           </div>
 
-          <BottomNav />
-          <AddRecordFab />
+          {/* One piece of fixed furniture: the dock carries the Add
+              button, so the separate FAB is gone. */}
+          <Dock />
           <KeyboardShortcuts />
           <RecurringCreatedToast created={created} />
         </div>

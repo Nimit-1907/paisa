@@ -127,8 +127,8 @@ export function PullToRefresh({
       >
         <span
           className={cn(
-            "text-ink-2 flex items-center gap-2 text-xs font-semibold",
-            ready && !refreshing && "text-primary",
+            "text-text-secondary flex items-center gap-2 text-xs font-semibold",
+            ready && !refreshing && "text-text",
           )}
         >
           {refreshing ? (

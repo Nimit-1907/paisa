@@ -43,7 +43,7 @@ export function ColorDot({
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full",
         sizes.circle,
-        iconInkFor(hex) === "light" ? "text-white" : "text-dot-ink",
+        iconInkFor(hex) === "light" ? "text-white" : "text-text",
         className,
       )}
       style={{ backgroundColor: hex }}

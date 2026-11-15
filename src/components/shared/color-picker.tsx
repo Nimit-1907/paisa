@@ -34,7 +34,7 @@ export function ColorPicker({
             aria-checked={active}
             aria-label={color}
             onClick={() => onChange(color)}
-            className="focus-visible:ring-ring flex size-11 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+            className=" flex size-11 items-center justify-center rounded-lg "
           >
             <span
               className={cn(

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const TONE_CLASS: Record<BudgetTone, string> = {
   under: "text-income",
-  close: "text-warning",
+  close: "text-text",
   over: "text-expense",
 };
 
@@ -100,7 +100,7 @@ export function BudgetBar({
   return (
     <div
       aria-hidden="true"
-      className="bg-muted mt-1.5 h-1.5 w-full overflow-hidden rounded-full"
+      className="bg-surface-muted mt-1.5 h-1.5 w-full overflow-hidden rounded-full"
     >
       <div
         className={cn(

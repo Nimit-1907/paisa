@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
 
 /**
  * The coloured circle that stands for a rule.
@@ -18,6 +18,7 @@ export function RuleAvatar({
     type: "income" | "expense" | "transfer";
     categoryIcon: string | null;
     categoryColor: string | null;
+    categoryTint: string | null;
   };
   size?: "md" | "lg";
   /** Paused rules sit back a little. */
@@ -26,10 +27,10 @@ export function RuleAvatar({
   const transfer = rule.type === "transfer";
 
   return (
-    <ColorDot
+    <Tile
       className={cn(dimmed && "opacity-50")}
       size={size}
-      color={transfer ? null : rule.categoryColor}
+      tint={transfer ? null : rule.categoryTint}
       icon={transfer ? "ArrowLeftRight" : rule.categoryIcon}
     />
   );

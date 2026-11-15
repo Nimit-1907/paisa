@@ -26,6 +26,9 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { useCurrency } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
 import { CollapsingHeader } from "@/components/layout/collapsing-header";
+import { HeaderAvatar } from "@/components/layout/page-header";
+import { InsightStrip } from "@/components/shared/insight-strip";
+import { ListCard } from "@/components/shared/surface";
 import { MonthRecap } from "@/components/records/month-recap";
 import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
@@ -73,6 +76,12 @@ export type RecordsScreenProps = {
   summary: { income: string; expense: string; net: string };
   /** One row per day of the month, for the bars on the card. */
   monthDays: DaySpend[];
+  /** Last month's expense total, minor units as text, for the trend pill. */
+  previousExpense: string;
+  /** The signed-in person's name, for the greeting and the avatar. */
+  displayName: string;
+  /** One plain sentence about the month, or null. */
+  insight: string | null;
   /** `yyyy-mm`, for the link behind each bar. */
   monthKey: string;
   accounts: AccountOption[];
@@ -111,6 +120,9 @@ export function RecordsScreen({
   hasMore,
   summary,
   monthDays,
+  previousExpense,
+  displayName,
+  insight,
   monthKey,
   accounts,
   categories,
@@ -495,6 +507,76 @@ export function RecordsScreen({
     [sheet, timeZone],
   );
 
+  /*
+   * How much of the month is left, counted from the days the card draws.
+   *
+   * From `monthDays` rather than from a calendar: that array already has one
+   * entry per day of the month the user is looking at, so this cannot
+   * disagree with the bars above it — and on a past month `today` is not in
+   * it, which is exactly when the per-day line should not appear.
+   */
+  /*
+   * "Good evening, Aarav".
+   *
+   * Computed on the client from the device clock rather than passed down
+   * from the server: a page rendered at 5pm and read at 9pm would otherwise
+   * greet somebody with the wrong part of their day, and this is the one
+   * string on the screen where that is obvious.
+   */
+  const [greeting, setGreeting] = React.useState("Welcome back");
+
+  React.useEffect(() => {
+    const hour = new Date().getHours();
+    const part =
+      hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const name = displayName.split(/\s+/)[0];
+    setGreeting(name ? `${part}, ${name}` : part);
+  }, [displayName]);
+
+  /** "Oct" — the month the trend pill compares against. */
+  const previousLabel = React.useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-IN", {
+        timeZone: "UTC",
+        month: "short",
+      }).format(new Date(Date.UTC(year, month - 2, 1))),
+    [year, month],
+  );
+
+  const daysLeft = React.useMemo(() => {
+    const index = monthDays.findIndex((day) => day.on === today);
+    return index < 0 ? 0 : monthDays.length - index;
+  }, [monthDays, today]);
+
+  /**
+   * "12% less than Oct", or nothing.
+   *
+   * Nothing when last month had no spending: every amount is an increase
+   * from zero, and "+∞%" is not a thing to put on a card. Nothing either
+   * when the difference rounds to zero, because "0% less than Oct" is a
+   * sentence that cost somebody a second to read and told them nothing.
+   */
+  const trend = React.useMemo(() => {
+    const previous = BigInt(previousExpense);
+    if (previous <= 0n) return null;
+
+    const current = BigInt(summary.expense);
+
+    // Rounded, not truncated. BigInt division floors toward zero, so a
+    // 12.9% rise read as 12% and a 0.9% one read as 0 and hid the pill
+    // altogether. The ratio is small enough that Number is exact here.
+    const percent = Math.round(
+      (Number(current - previous) * 100) / Number(previous),
+    );
+    if (percent === 0) return null;
+
+    const less = percent < 0;
+    return {
+      better: less,
+      text: `${Math.abs(percent)}% ${less ? "less" : "more"} than ${previousLabel}`,
+    };
+  }, [previousExpense, summary.expense, previousLabel]);
+
   /** A record as the sheet's draft. Shared by Edit and Duplicate. */
   const draftOf = React.useCallback(
     (record: TransactionRow) => ({
@@ -578,18 +660,21 @@ export function RecordsScreen({
     <PullToRefresh onRefresh={refresh}>
       <CollapsingHeader
         title="Records"
+        greeting={greeting}
         monthNav={monthNav}
         compact={<MonthStrip summary={summary} />}
         actions={
-          <Button
-            variant="ghost"
-            size="icon-touch"
-            className="rounded-full"
-            aria-label="Search records"
-            onClick={() => setSearchOpen(true)}
-          >
-            <Search className="size-5" aria-hidden="true" />
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="icon-touch"
+              aria-label="Search records"
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search className="size-5" aria-hidden="true" />
+            </Button>
+            <HeaderAvatar name={displayName} />
+          </>
         }
       >
         <div className="space-y-4">
@@ -597,7 +682,17 @@ export function RecordsScreen({
             <MonthRecap recap={recap} monthLabel={recapMonthLabel} />
           ) : null}
 
-          <MonthStar summary={summary} days={monthDays} today={today} />
+          <MonthStar
+            summary={summary}
+            days={monthDays}
+            today={today}
+            daysLeft={daysLeft}
+            trend={trend}
+            // The recap takes the accent on the one day it appears.
+            flat={Boolean(recap && recapMonthLabel)}
+          />
+
+          <InsightStrip>{insight}</InsightStrip>
         </div>
       </CollapsingHeader>
 
@@ -673,7 +768,7 @@ export function RecordsScreen({
                   */}
                     <Link
                       href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
-                      className="text-ink-2 hoverable:text-ink focus-visible:ring-ring inline-flex min-h-11 items-center gap-1 rounded text-xs font-semibold tracking-[0.08em] uppercase focus-visible:ring-2 focus-visible:outline-none"
+                      className="text-text hoverable:text-text-secondary rounded-control inline-flex min-h-11 items-center gap-1 text-sm font-semibold"
                     >
                       {day.label}
                       <ChevronRight className="size-3.5" aria-hidden="true" />
@@ -686,7 +781,7 @@ export function RecordsScreen({
                     <span
                       className={cn(
                         "text-xs font-semibold",
-                        day.net > 0n ? "text-income" : "text-ink-2",
+                        day.net > 0n ? "text-income" : "text-text-secondary",
                       )}
                     >
                       <Amount value={day.net} signDisplay="always" />
@@ -694,7 +789,7 @@ export function RecordsScreen({
                   )}
                 </div>
 
-                <ul className="bg-card divide-border rounded-card divide-y overflow-hidden border">
+                <ListCard>
                   {day.rows.map((record) => (
                     <li key={record.id}>
                       <RecordRow
@@ -715,7 +810,7 @@ export function RecordsScreen({
                       />
                     </li>
                   ))}
-                </ul>
+                </ListCard>
               </section>
             ))}
 
@@ -974,6 +1069,7 @@ function toOptimisticRow(
     categoryName: category?.name ?? null,
     categoryIcon: category?.icon ?? null,
     categoryColor: category?.color ?? null,
+    categoryTint: category?.tint ?? null,
     recurringRuleId: null,
   };
 }
