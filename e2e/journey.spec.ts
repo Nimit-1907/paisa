@@ -325,9 +325,14 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
   await test.step("the export page offers both files", async () => {
     await page.goto("/export");
+
+    // Since Phase 14 the format is chosen first and there is one download
+    // button, which names the file it will produce.
     await expect(
       page.getByRole("button", { name: "Download CSV" }),
     ).toBeEnabled();
+
+    await page.getByRole("radio", { name: /Monthly report/ }).click();
     await expect(
       page.getByRole("button", { name: "Download PDF" }),
     ).toBeEnabled();

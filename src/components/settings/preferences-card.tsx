@@ -9,9 +9,11 @@ import { haptic } from "@/lib/motion";
 /**
  * The preferences that save themselves.
  *
- * One card rather than two, because they are the same kind of thing — small
- * switches you judge by the result — and two cards with one row each is a
- * settings screen that looks longer than it is.
+ * No card of its own: these sit inside the screen's Preferences section,
+ * beside the week start, because they are the same kind of thing — small
+ * switches you judge by the result. They were a card at the bottom of the
+ * screen, below the danger zone, which is the last place to put something
+ * harmless.
  */
 export function PreferencesCard({
   haptics,
@@ -21,7 +23,7 @@ export function PreferencesCard({
   showPaise: boolean;
 }) {
   return (
-    <section className="bg-surface rounded-card space-y-4 border p-4">
+    <div className="space-y-4">
       <PreferenceToggle
         icon={Vibrate}
         label="Haptic feedback"
@@ -40,6 +42,6 @@ export function PreferencesCard({
         enabled={showPaise}
         onToggle={setShowPaise}
       />
-    </section>
+    </div>
   );
 }

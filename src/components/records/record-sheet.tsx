@@ -948,7 +948,7 @@ export function RecordSheet({
                           aria-checked={active}
                           onClick={() => setFrequency(value)}
                           className={cn(
-                            "rounded-segment pressable flex h-9 items-center px-3 text-xs font-semibold transition-[background-color,box-shadow,border-color] duration-[120ms] motion-reduce:transition-none",
+                            "rounded-segment pressable flex h-11 items-center px-3 text-xs font-semibold transition-[background-color,box-shadow,border-color] duration-[120ms] motion-reduce:transition-none",
                             active
                               ? "accent-sm bg-surface text-text"
                               : "text-text-secondary hoverable:bg-surface-muted border border-transparent",

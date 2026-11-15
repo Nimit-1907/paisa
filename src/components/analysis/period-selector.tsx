@@ -13,7 +13,7 @@ import {
 } from "@/components/shared/responsive-sheet";
 import {
   RangeCalendar,
-  rangePresets,
+  RangePresetPills,
 } from "@/components/shared/range-calendar";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ import {
   shiftPeriod,
 } from "@/lib/period";
 import { dayDifference } from "@/lib/recurrence";
-import { cn } from "@/lib/utils";
 
 /**
  * Week, month, year or a range of your own, and arrows to walk through them.
@@ -170,31 +169,15 @@ export function PeriodSelector({
         <SheetBody>
           {/* The ranges people ask for by name, first. Most custom ranges
               are one of these five, and tapping one is a tap. */}
-          <div className="flex flex-wrap gap-1.5">
-            {rangePresets(today).map((preset) => {
-              const active = from === preset.from && to === preset.to;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => {
-                    setFrom(preset.from);
-                    setTo(preset.to);
-                  }}
-                  className={cn(
-                    "pressable flex h-9 items-center rounded-full px-3 text-[13px] font-semibold",
-                    "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
-                    active
-                      ? "accent-sm bg-surface text-text"
-                      : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
-                  )}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
+          <RangePresetPills
+            from={from}
+            to={to}
+            today={today}
+            onSelect={(next) => {
+              setFrom(next.from);
+              setTo(next.to);
+            }}
+          />
 
           <RangeCalendar
             from={from}

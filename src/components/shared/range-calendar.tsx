@@ -154,9 +154,20 @@ export function RangeCalendar({
         </Button>
       </div>
 
+      {/*
+        The two grids break out of their card's padding on a phone, and
+        there is no gap between the cells.
+
+        Seven columns inside 16px of card padding is 40px a column at
+        360px, and a tap target is 44. Taking the padding back gets to 43;
+        the last pixel comes from the gap. Which is the better calendar
+        anyway: with the cells touching, a selected range is one block
+        rather than a dotted line of them, so only its two ends are
+        rounded.
+      */}
       <div
         aria-hidden="true"
-        className="text-text-secondary grid grid-cols-7 gap-0.5 text-center text-[11px]"
+        className="text-text-secondary -mx-4 grid grid-cols-7 text-center text-[11px] sm:mx-0"
       >
         {names.map((name, index) => (
           <span key={`${name}-${index}`} className="py-1">
@@ -176,7 +187,7 @@ export function RangeCalendar({
       <div
         role="group"
         aria-label={`Days in ${label}`}
-        className="grid grid-cols-7 gap-0.5"
+        className="-mx-4 grid grid-cols-7 sm:mx-0"
       >
         {Array.from({ length: lead }, (_, index) => (
           <span key={`lead-${index}`} />
@@ -213,7 +224,7 @@ export function RangeCalendar({
               }`}
               onClick={() => choose(day)}
               className={cn(
-                "rounded-control relative flex h-10 items-center justify-center text-[13px] font-medium",
+                "relative flex h-11 items-center justify-center text-[13px] font-medium",
                 "disabled:text-text-secondary disabled:pointer-events-none disabled:opacity-40",
                 // The ends are ink; the days between them take the muted
                 // surface, so the run reads as one stretch rather than as
@@ -222,7 +233,10 @@ export function RangeCalendar({
                   ? "bg-ink text-on-ink font-semibold"
                   : inside
                     ? "bg-surface-muted"
-                    : "hoverable:bg-surface-muted",
+                    : "rounded-control hoverable:bg-surface-muted",
+                // Only the ends of the block are rounded.
+                isStart && "rounded-l-control",
+                isEnd && "rounded-r-control",
               )}
             >
               {index + 1}
@@ -235,7 +249,7 @@ export function RangeCalendar({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "rounded-control pointer-events-none absolute inset-0 border-[1.5px]",
+                    "rounded-control pointer-events-none absolute inset-y-0 inset-x-px border-[1.5px]",
                     isStart || isEnd ? "border-on-ink" : "border-ink",
                   )}
                 />
@@ -269,4 +283,51 @@ export function rangePresets(today: string) {
     },
     { label: "This year", from: format(at.year, 1, 1), to: today },
   ];
+}
+
+/**
+ * The preset pills that sit above a {@link RangeCalendar}.
+ *
+ * Both callers — the Analysis range sheet and Export — had their own copy
+ * of this loop, which meant raising the pills from 36px to 44px was the
+ * same edit twice. It is one component because it is one control.
+ */
+export function RangePresetPills({
+  from,
+  to,
+  today,
+  onSelect,
+  className,
+}: {
+  from: string;
+  to: string;
+  today: string;
+  onSelect: (range: { from: string; to: string }) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-wrap gap-1.5", className)}>
+      {rangePresets(today).map((preset) => {
+        const active = from === preset.from && to === preset.to;
+
+        return (
+          <button
+            key={preset.label}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect({ from: preset.from, to: preset.to })}
+            className={cn(
+              "pressable flex h-11 items-center rounded-full px-3 text-[13px] font-semibold",
+              "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
+              active
+                ? "accent-sm bg-surface text-text"
+                : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
+            )}
+          >
+            {preset.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }

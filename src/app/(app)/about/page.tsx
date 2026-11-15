@@ -7,6 +7,7 @@ import { Database, Lock, Smartphone } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { InstallButton } from "@/components/pwa/install-button";
+import { Card, ListCard } from "@/components/shared/surface";
 
 export const metadata: Metadata = { title: "About" };
 
@@ -34,7 +35,7 @@ export default function AboutPage() {
       <PageHeader title="About" description="Paisa — expense tracker" />
 
       <div className="space-y-4">
-        <section className="bg-surface rounded-card border p-4">
+        <Card as="section" className="p-4">
           <p className="text-sm">
             Paisa keeps track of what you spend, earn and move between your own
             accounts: records by the day, limits by the month, and charts that
@@ -49,17 +50,14 @@ export default function AboutPage() {
             screen will hand you every record as a CSV, or one month as a PDF,
             whenever you want it.
           </p>
-        </section>
+        </Card>
 
-        <ul className="space-y-2">
+        <ListCard>
           {POINTS.map((point) => {
             const Icon = point.icon;
             return (
-              <li
-                key={point.title}
-                className="bg-surface flex gap-3 rounded-card border p-3"
-              >
-                <span className="bg-surface-muted text-text-secondary flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <li key={point.title} className="flex gap-3 p-3">
+                <span className="bg-surface-muted text-text rounded-control flex size-9 shrink-0 items-center justify-center">
                   <Icon className="size-[18px]" aria-hidden="true" />
                 </span>
                 <span className="min-w-0">
@@ -73,7 +71,7 @@ export default function AboutPage() {
               </li>
             );
           })}
-        </ul>
+        </ListCard>
 
         <InstallButton />
       </div>

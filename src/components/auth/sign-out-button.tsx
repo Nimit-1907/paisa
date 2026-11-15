@@ -7,13 +7,20 @@ import { Loader2, LogOut } from "lucide-react";
 import { signOut } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Sign out, in expense text on a plain surface.
+ *
+ * The `destructive` variant rather than the colour of the thing it is:
+ * signing out loses nothing, but it is the one row in the Account group
+ * that ends the session, and the brief asks for it to read that way.
+ */
 export function SignOutButton({ className }: { className?: string }) {
   const [pending, startTransition] = React.useTransition();
 
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="destructive"
       size="touch"
       className={className}
       disabled={pending}

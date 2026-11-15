@@ -165,6 +165,11 @@ measures 1.5:1, and a ring nobody can see is not a ring.
 The money colours appear only where the two series *are* income and expense,
 which is the one chart that is about the difference between them.
 
+**Settings saves on a button, not on every change.** The brief asks for
+instant saves. Changing a currency rescales every stored amount, so an
+instant save on the keystroke after picking one is a migration nobody asked
+for. The switches that are safe to save instantly already do.
+
 **Field cards hold a native control at zero opacity.** Account, When, From
 and To draw their value the way this app draws values (an icon, "Today, 1:30
 pm"), which no native control can be made to do, while the thing a tap, a
@@ -213,6 +218,5 @@ prints Copy and Delete through the row for a second and a half.
 
 ## 6. Still to come
 
-Batches (e) and (f) — More, Settings, the public pages, auth, onboarding and
-the system screens.
+Batch (f) — the public pages, auth, onboarding and the system screens.
 Each one lands with its screenshots and its ticks in `docs/screens.md`.

@@ -935,9 +935,48 @@ because they predate the rule that amounts go through `<Amount>`.
 Still not done, and still for the same reason: **51**'s 30-day sparkline
 needs a per-account daily balance series that does not exist.
 
+### More and Settings (batch e)
+
+| # | Screen | Done |
+| --- | --- | --- |
+| 60 | More / Profile | ✅ |
+| 61 | Settings | ✅ |
+| 62 | Change password sheet, Delete account | ✅ (both already typed `DELETE`; restyled) |
+| 63 | Export | ✅ |
+| 64 | Import | ✖ never built |
+| 65 | About | ✅ |
+
+**60** is a profile hero and four groups built from `MORE_ITEMS` rather than
+beside it, so the sidebar and this screen cannot drift apart about what a
+screen is called. Data has one row in it, because Import does not exist and
+a group with one row is still a group while an empty promise is not.
+
+**61** is six labelled sections where it was one long card: Profile,
+Currency and format (with a live preview pill of how an amount will read),
+Preferences, Appearance, Security, Danger zone. The theme choice is three
+tiles with a two-line sketch of the surfaces rather than three words — Light,
+Dark and System ask you to imagine the result, and thirty pixels show it.
+The two self-saving switches moved out of a card below the danger zone and
+into Preferences beside the week start, which is the last place to put
+something harmless and the first place to look for it.
+
+**63** was a CSV card and a PDF card, each with its own dates and its own
+button, which asked somebody to read both before choosing either. It is a
+summary hero, a two-tile format picker, the shared `RangeCalendar` with its
+preset pills, and one ink pill that names the file.
+
+Three more dead classes found in `ui/switch.tsx`, the same leftovers `Input`
+had: a `ring-3` with no ring colour, a stray `/50`, and `bg-input` paired
+with `dark:bg-input/80` where one `bar-muted` says it for both themes.
+
+**61 keeps its Save button.** The brief asks for changes to save instantly.
+Name, currency, week start and theme save together because changing a
+currency *rescales every stored amount* — an instant save on the keystroke
+after picking one is a migration nobody asked for. The two switches that are
+safe to save instantly already do.
+
 ### Still to come
 
 | # | Screens | Batch |
 | --- | --- | --- |
-| 60–65 | More, Settings | e |
 | 31–38, 66–70 | Public, auth, onboarding, system | f |

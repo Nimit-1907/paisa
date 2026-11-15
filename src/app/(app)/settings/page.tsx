@@ -36,16 +36,15 @@ export default async function SettingsPage() {
           weekStart: profile?.week_start ?? 1,
           theme,
         }}
+        preferences={
+          <PreferencesCard
+            haptics={profile?.haptics ?? true}
+            showPaise={profile?.show_paise ?? false}
+          />
+        }
       />
 
-      <div className="mt-4">
-        <PreferencesCard
-          haptics={profile?.haptics ?? true}
-          showPaise={profile?.show_paise ?? false}
-        />
-      </div>
-
-      <SignOutButton className="mt-4 w-full" />
+      <SignOutButton className="mt-5 w-full" />
     </PageShell>
   );
 }

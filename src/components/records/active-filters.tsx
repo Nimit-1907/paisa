@@ -59,7 +59,11 @@ export function ActiveFilters({
     // An id with no account behind it is a hand-edited URL or an account
     // deleted in another tab. Named rather than dropped, so the chip can
     // still be taken off.
-    chips.push({ key: "account", value: id, label: account?.name ?? "Account" });
+    chips.push({
+      key: "account",
+      value: id,
+      label: account?.name ?? "Account",
+    });
   }
 
   for (const id of filters.categoryIds ?? []) {
@@ -73,7 +77,9 @@ export function ActiveFilters({
 
   const money = (text: string) => {
     const minor = tryToMinor(text, currency.decimals);
-    return minor === null ? text : formatWith(currency, minor, { paise: "trim" });
+    return minor === null
+      ? text
+      : formatWith(currency, minor, { paise: "trim" });
   };
 
   if (filters.minAmount) {
@@ -99,7 +105,7 @@ export function ActiveFilters({
           type="button"
           onClick={() => onRemove(chip.key, chip.value)}
           aria-label={`Remove filter: ${chip.label}`}
-          className="bg-accent text-text hoverable:bg-accent/80 flex h-9 items-center gap-1.5 rounded-full pr-2 pl-3 text-xs font-semibold  "
+          className="bg-accent text-text hoverable:bg-accent/80 pressable flex h-11 items-center gap-1.5 rounded-full pr-2.5 pl-3.5 text-xs font-semibold"
         >
           <span className="max-w-[16ch] truncate">{chip.label}</span>
           <X className="size-3.5 shrink-0" aria-hidden="true" />
@@ -110,7 +116,7 @@ export function ActiveFilters({
         <button
           type="button"
           onClick={onClearAll}
-          className="text-text-secondary hoverable:text-text h-9 rounded-full px-2 text-xs font-semibold  "
+          className="text-text-secondary hoverable:text-text rounded-full h-11 px-3 text-xs font-semibold"
         >
           Clear all
         </button>

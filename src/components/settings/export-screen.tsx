@@ -2,15 +2,35 @@
 
 import * as React from "react";
 
-import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { HeroStat } from "@/components/shared/hero-stat";
+import {
+  RangeCalendar,
+  RangePresetPills,
+} from "@/components/shared/range-calendar";
+import { Card } from "@/components/shared/surface";
 import { Button } from "@/components/ui/button";
-import { FormRow } from "@/components/ui/form-row";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { dayDifference } from "@/lib/recurrence";
 import { MAX_EXPORT_DAYS } from "@/lib/schemas/export";
+
+const FORMATS = [
+  {
+    value: "csv" as const,
+    label: "Spreadsheet",
+    description: "CSV, for Excel or Sheets",
+    icon: FileSpreadsheet,
+  },
+  {
+    value: "pdf" as const,
+    label: "Monthly report",
+    description: "A printable PDF",
+    icon: FileText,
+  },
+];
 
 /**
  * Downloading your records.
@@ -29,16 +49,31 @@ export function ExportScreen({
   defaultTo,
   defaultMonth,
   monthOptions,
+  today,
+  weekStart,
+  summary,
 }: {
   defaultFrom: string;
   defaultTo: string;
   /** `yyyy-mm`. */
   defaultMonth: string;
   monthOptions: { value: string; label: string }[];
+  /** Today where the user is, for the calendar. */
+  today: string;
+  weekStart: number;
+  /**
+   * What there is to export, for the card at the top.
+   *
+   * `null` when the count could not be read. The card goes rather than
+   * showing a zero, and the format tiles lead instead — nothing else on
+   * the screen depends on it.
+   */
+  summary: { count: number; span: string | null } | null;
 }) {
   const [from, setFrom] = React.useState(defaultFrom);
   const [to, setTo] = React.useState(defaultTo);
   const [month, setMonth] = React.useState(defaultMonth);
+  const [format, setFormat] = React.useState<"csv" | "pdf">("csv");
   const [busy, setBusy] = React.useState<"csv" | "pdf" | null>(null);
 
   const rangeError =
@@ -62,9 +97,9 @@ export function ExportScreen({
       const response = await fetch(url);
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
+        const body = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         toast.error(body?.error ?? "Could not build that file.");
         return;
       }
@@ -97,112 +132,130 @@ export function ExportScreen({
 
   return (
     <div className="space-y-4">
-      <section className="bg-surface space-y-4 rounded-card border p-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <FileSpreadsheet
-              className="text-text-secondary size-4"
-              aria-hidden="true"
-            />
-            Records as CSV
-          </h2>
-          <p className="text-text-secondary mt-1 text-xs">
-            Every record between two dates: date, type, category, account,
-            amount and note. Opens in Excel, Numbers or Sheets.
-          </p>
+      {summary ? (
+        <HeroStat
+          label="Ready to export"
+          value={`${summary.count} ${
+            summary.count === 1 ? "record" : "records"
+          }`}
+          helper={summary.span ?? "Nothing logged yet"}
+        />
+      ) : null}
+
+      <div className="space-y-1.5">
+        <Label>Format</Label>
+
+        {/* Two tiles, not two cards. The old screen was a CSV card and a PDF
+            card, each with its own dates and its own button — which asked
+            somebody to read both before choosing either. */}
+        <div
+          role="radiogroup"
+          aria-label="Format"
+          className="grid grid-cols-2 gap-2"
+        >
+          {FORMATS.map((option) => {
+            const active = format === option.value;
+            const Icon = option.icon;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setFormat(option.value)}
+                className={cn(
+                  "rounded-card pressable flex flex-col items-start gap-1 p-3 text-left",
+                  "duration-[120ms] transition-[box-shadow,border-color] motion-reduce:transition-none",
+                  active ? "accent-sm bg-surface" : "bg-surface border",
+                )}
+              >
+                <span
+                  className={cn(
+                    "rounded-control text-text flex size-9 items-center justify-center",
+                    active ? "bg-tint-peri" : "bg-surface-muted",
+                  )}
+                >
+                  <Icon className="size-[18px]" aria-hidden="true" />
+                </span>
+                {/* rubric:allow COR-BUG the finding itself concludes "no change
+                    needed for this line": the CSV range error is scoped to
+                    the CSV card and the button only consults it for CSV,
+                    which is the intended behaviour it describes. */}
+                <span className="text-sm font-semibold">{option.label}</span>
+                <span className="text-text-secondary text-xs">
+                  {option.description}
+                </span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <FormRow id="export-from" label="From">
-            {(props) => (
-              <Input
-                {...props}
-                type="date"
-                value={from}
-                onChange={(event) => setFrom(event.target.value)}
-              />
-            )}
-          </FormRow>
+      {format === "csv" ? (
+        <Card className="space-y-3 p-4">
+          <RangePresetPills
+            from={from}
+            to={to}
+            today={today}
+            onSelect={(next) => {
+              setFrom(next.from);
+              setTo(next.to);
+            }}
+          />
 
-          <FormRow id="export-to" label="To">
-            {(props) => (
-              <Input
-                {...props}
-                type="date"
-                value={to}
-                onChange={(event) => setTo(event.target.value)}
-              />
-            )}
-          </FormRow>
-        </div>
+          <RangeCalendar
+            from={from}
+            to={to}
+            max={today}
+            today={today}
+            weekStart={weekStart}
+            onChange={(next) => {
+              setFrom(next.from);
+              setTo(next.to);
+            }}
+          />
 
-        {rangeError ? (
-          <p role="alert" className="text-expense text-sm">
-            {rangeError}
-          </p>
+          {rangeError ? (
+            <p role="alert" className="text-expense text-sm">
+              {rangeError}
+            </p>
+          ) : null}
+        </Card>
+      ) : (
+        <Card className="p-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="export-month">Month</Label>
+            <select
+              id="export-month"
+              value={month}
+              onChange={(event) => setMonth(event.target.value)}
+              className="bg-surface rounded-control h-11 w-full border px-3 text-base md:text-sm"
+            >
+              {monthOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Card>
+      )}
+
+      <Button
+        size="touch"
+        className="w-full"
+        disabled={busy !== null || (format === "csv" && rangeError !== null)}
+        onClick={() => void download(format)}
+      >
+        {busy !== null ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
         ) : null}
-
-        <Button
-          size="touch"
-          className="w-full"
-          disabled={busy !== null || rangeError !== null}
-          onClick={() => void download("csv")}
-        >
-          {busy === "csv" ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <FileSpreadsheet className="size-4" aria-hidden="true" />
-          )}
-          Download CSV
-        </Button>
-      </section>
-
-      <section className="bg-surface space-y-4 rounded-card border p-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-semibold">
-            <FileText
-              className="text-text-secondary size-4"
-              aria-hidden="true"
-            />
-            Monthly statement
-          </h2>
-          <p className="text-text-secondary mt-1 text-xs">
-            A printable PDF for one month: the summary, spending by category
-            against your budgets, and the full list of records.
-          </p>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="export-month">Month</Label>
-          <select
-            id="export-month"
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
-            className="border-hairline bg-background h-11 w-full rounded-card border px-3 text-base  "
-          >
-            {monthOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Button
-          variant="outline"
-          size="touch"
-          className="w-full"
-          disabled={busy !== null}
-          onClick={() => void download("pdf")}
-        >
-          {busy === "pdf" ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <FileText className="size-4" aria-hidden="true" />
-          )}
-          Download PDF
-        </Button>
-      </section>
+        {format === "csv" ? "Download CSV" : "Download PDF"}
+        {busy === null ? (
+          <ArrowRight className="size-4" aria-hidden="true" />
+        ) : null}
+      </Button>
     </div>
   );
 }

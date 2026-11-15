@@ -108,6 +108,14 @@
   --color-tint-peri: var(--tint-peri);
   --color-tint-neutral: var(--tint-neutral);
 
+  /* Fixed to one theme each; see the note beside their values. */
+  --color-preview-light-page: var(--preview-light-page);
+  --color-preview-light-ink: var(--preview-light-ink);
+  --color-preview-light-line: var(--preview-light-line);
+  --color-preview-dark-page: var(--preview-dark-page);
+  --color-preview-dark-ink: var(--preview-dark-ink);
+  --color-preview-dark-line: var(--preview-dark-line);
+
   /* ── Shape ─────────────────────────────────────────────────────────── */
   --radius-hero: 20px;
   --radius-card: 16px;
@@ -198,6 +206,22 @@
   --tint-neutral: #efeeea;
 
   --radius: 12px;
+
+  /*
+   * The theme previews in Settings.
+   *
+   * Six values that deliberately do **not** follow the current theme: the
+   * Light tile has to look light while the app is dark, which is the one
+   * thing a token that follows the theme cannot do. They live here rather
+   * than in the component because colour lives here — `grep` for a hex in
+   * src/components should find nothing.
+   */
+  --preview-light-page: #f6f6f4;
+  --preview-light-ink: #141414;
+  --preview-light-line: #d6d4ce;
+  --preview-dark-page: #111111;
+  --preview-dark-ink: #ededed;
+  --preview-dark-line: #3a3a3a;
 }
 
 .dark {

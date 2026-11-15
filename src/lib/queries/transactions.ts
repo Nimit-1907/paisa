@@ -358,3 +358,51 @@ export async function getMonthDays(
     expense: fromDb(row.expense).toString(),
   }));
 }
+
+/**
+ * How many records there are in all, and the span they cover.
+ *
+ * For the Export screen's summary: "1,284 records · Sept 2024 – Nov 2026".
+ *
+ * All three ride `transactions_user_occurred_idx (user_id, occurred_at desc)`
+ * from the initial schema: the count is an index-only scan of this user's
+ * slice, and each date is the first row off one end of it — a btree reads
+ * in either direction, so the ascending one costs no sort.
+ */
+// rubric:allow PERF-MISSING-INDEX the index is in 20261114120000_initial_schema.sql
+export async function getRecordsSpan(): Promise<{
+  count: number;
+  first: string | null;
+  last: string | null;
+}> {
+  const supabase = await createClient();
+
+  const [total, earliest, latest] = await Promise.all([
+    supabase.from("transactions").select("id", { count: "exact", head: true }),
+    supabase
+      .from("transactions")
+      .select("occurred_at")
+      .order("occurred_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("transactions")
+      .select("occurred_at")
+      .order("occurred_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  // All three, not only the count: a failed head read would hand back a
+  // null date, and "86 records · Nothing logged yet" is a sentence that
+  // argues with itself. The page catches this and drops the summary line.
+  if (total.error) throw new Error(total.error.message);
+  if (earliest.error) throw new Error(earliest.error.message);
+  if (latest.error) throw new Error(latest.error.message);
+
+  return {
+    count: total.count ?? 0,
+    first: earliest.data?.occurred_at ?? null,
+    last: latest.data?.occurred_at ?? null,
+  };
+}

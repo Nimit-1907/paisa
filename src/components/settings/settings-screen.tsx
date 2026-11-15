@@ -16,11 +16,18 @@ import {
   SheetBody,
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
+import { Pill } from "@/components/shared/pill";
+import { SectionHeader } from "@/components/shared/section-header";
+import { Card } from "@/components/shared/surface";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { type Currency, findCurrency, searchCurrencies } from "@/lib/currencies";
+import {
+  type Currency,
+  findCurrency,
+  searchCurrencies,
+} from "@/lib/currencies";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +64,14 @@ export type SettingsProfile = {
  * start are two halves of the same thought, and an autosave that fires on
  * every keystroke of a name is a write per letter.
  */
-export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
+export function SettingsScreen({
+  profile,
+  preferences,
+}: {
+  profile: SettingsProfile;
+  /** The two switches that save themselves; see PreferencesCard. */
+  preferences: React.ReactNode;
+}) {
   const router = useRouter();
   const { setTheme } = useTheme();
 
@@ -132,110 +146,150 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
   }
 
   return (
-    <div className="space-y-4">
-      <section className="bg-surface space-y-4 rounded-card border p-4">
-        <FormRow
-          id="display-name"
-          label="Your name"
-          error={errorField === "displayName" ? (error ?? undefined) : undefined}
-        >
-          {(props) => (
-            <Input
-              {...props}
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              maxLength={80}
-              autoComplete="name"
-            />
-          )}
-        </FormRow>
+    <div className="space-y-5">
+      <section>
+        <SectionHeader className="mb-1.5 px-1" title="Profile" />
 
-        <div className="space-y-1.5">
-          <Label htmlFor="currency">Currency</Label>
-          <button
-            id="currency"
-            type="button"
-            onClick={() => setPickerOpen(true)}
-            className=" flex min-h-11 w-full items-center gap-3 rounded-control border px-3 text-left transition-colors hoverable:bg-surface-muted "
+        <Card className="space-y-4 p-4">
+          <FormRow
+            id="display-name"
+            label="Your name"
+            error={
+              errorField === "displayName" ? (error ?? undefined) : undefined
+            }
           >
-            <span className="amount text-lg font-semibold">
-              {currency?.symbol ?? "?"}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">
-                {currency?.name ?? currencyCode}
-              </span>
-              <span className="text-text-secondary block truncate text-xs">
-                {currency
-                  ? formatMoney(123456n, {
-                      symbol: currency.symbol,
-                      decimals: currency.decimals,
-                    })
-                  : ""}
-              </span>
-            </span>
-            <ChevronRight
-              className="text-text-secondary size-4 shrink-0"
-              aria-hidden="true"
-            />
-          </button>
+            {(props) => (
+              <Input
+                {...props}
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                maxLength={80}
+                autoComplete="name"
+              />
+            )}
+          </FormRow>
+        </Card>
+      </section>
 
-          {currency && currency.code !== profile.currencyCode ? (
-            <p
-              className={cn(
-                "text-xs",
-                currency.decimals === currentDecimals
-                  ? "text-text-secondary"
-                  : "text-text font-semibold",
-              )}
+      <section>
+        <SectionHeader
+          className="mb-1.5 px-1"
+          title="Currency and format"
+          trailing={
+            // How an amount will look, as a pill: the point of this section
+            // is what the rest of the app will read like, and a sample is
+            // worth more than the code.
+            currency ? (
+              <Pill tone="accent">
+                {formatMoney(123456n, {
+                  symbol: currency.symbol,
+                  decimals: currency.decimals,
+                })}
+              </Pill>
+            ) : null
+          }
+        />
+
+        <Card className="space-y-4 p-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="currency">Currency</Label>
+            <button
+              id="currency"
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className=" flex min-h-11 w-full items-center gap-3 rounded-control border px-3 text-left transition-colors hoverable:bg-surface-muted "
             >
-              {currency.decimals === currentDecimals
-                ? "Amounts already saved keep their value; only the symbol changes."
-                : `Amounts already saved will be rescaled to ${
-                    currency.decimals === 0
-                      ? "whole units"
-                      : `${currency.decimals} decimal places`
-                  }, and rounding cannot be undone.`}
-            </p>
-          ) : null}
-        </div>
+              <span className="amount text-lg font-semibold">
+                {currency?.symbol ?? "?"}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">
+                  {currency?.name ?? currencyCode}
+                </span>
+                <span className="text-text-secondary block truncate text-xs">
+                  {currency
+                    ? formatMoney(123456n, {
+                        symbol: currency.symbol,
+                        decimals: currency.decimals,
+                      })
+                    : ""}
+                </span>
+              </span>
+              <ChevronRight
+                className="text-text-secondary size-4 shrink-0"
+                aria-hidden="true"
+              />
+            </button>
 
-        <div className="space-y-1.5">
-          <Label id="week-start-label">Week starts on</Label>
-          <div
-            role="radiogroup"
-            aria-labelledby="week-start-label"
-            className="flex flex-wrap gap-1"
-          >
-            {WEEK_DAYS.map((day) => {
-              const active = weekStart === day.value;
-              return (
-                <button
-                  key={day.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setWeekStart(day.value)}
-                  className={cn(
-                    " h-11 min-w-11 rounded-lg border px-2.5 text-xs font-semibold transition-colors  ",
-                    active
-                      ? "border-ink bg-tint-peri text-text"
-                      : "text-text-secondary hoverable:bg-surface-muted",
-                  )}
-                >
-                  {day.label}
-                </button>
-              );
-            })}
+            {currency && currency.code !== profile.currencyCode ? (
+              <p
+                className={cn(
+                  "text-xs",
+                  currency.decimals === currentDecimals
+                    ? "text-text-secondary"
+                    : "text-text font-semibold",
+                )}
+              >
+                {currency.decimals === currentDecimals
+                  ? "Amounts already saved keep their value; only the symbol changes."
+                  : `Amounts already saved will be rescaled to ${
+                      currency.decimals === 0
+                        ? "whole units"
+                        : `${currency.decimals} decimal places`
+                    }, and rounding cannot be undone.`}
+              </p>
+            ) : null}
           </div>
-        </div>
+        </Card>
+      </section>
 
-        <div className="space-y-1.5">
-          <Label id="theme-label">Appearance</Label>
+      <section>
+        <SectionHeader className="mb-1.5 px-1" title="Preferences" />
+
+        <Card className="space-y-4 p-4">
+          <div className="space-y-1.5">
+            <Label id="week-start-label">Week starts on</Label>
+            <div
+              role="radiogroup"
+              aria-labelledby="week-start-label"
+              className="flex flex-wrap gap-1"
+            >
+              {WEEK_DAYS.map((day) => {
+                const active = weekStart === day.value;
+                return (
+                  <button
+                    key={day.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setWeekStart(day.value)}
+                    className={cn(
+                      "pressable h-11 min-w-11 rounded-full px-2.5 text-xs font-semibold",
+                      "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
+                      active
+                        ? "accent-sm bg-surface text-text"
+                        : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
+                    )}
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {preferences}
+        </Card>
+      </section>
+
+      <section>
+        <SectionHeader className="mb-1.5 px-1" title="Appearance" />
+
+        <Card className="p-4">
           <div
             role="radiogroup"
-            aria-labelledby="theme-label"
-            className="bg-surface-muted grid grid-cols-3 gap-1 rounded-control p-1"
+            aria-label="Appearance"
+            className="grid grid-cols-3 gap-2"
           >
             {THEMES.map((option) => {
               const active = theme === option.value;
@@ -252,19 +306,25 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
                     setTheme(option.value);
                   }}
                   className={cn(
-                    " h-11 rounded-lg text-sm font-semibold transition-colors  ",
+                    "rounded-control pressable flex flex-col items-center gap-2 p-2",
+                    "duration-[120ms] transition-[box-shadow,border-color] motion-reduce:transition-none",
                     active
-                      ? "bg-background text-text shadow-sm"
-                      : "text-text-secondary",
+                      ? "accent-sm bg-surface"
+                      : "border border-transparent",
                   )}
                 >
-                  {option.label}
+                  <ThemePreview theme={option.value} />
+                  <span className="text-text text-xs font-semibold">
+                    {option.label}
+                  </span>
                 </button>
               );
             })}
           </div>
-        </div>
+        </Card>
+      </section>
 
+      <div className="space-y-4">
         {error && !errorField ? (
           <p role="alert" className="text-expense text-sm">
             {error}
@@ -284,11 +344,21 @@ export function SettingsScreen({ profile }: { profile: SettingsProfile }) {
           )}
           {dirty ? "Save changes" : "Saved"}
         </Button>
+      </div>
+
+      <section>
+        <SectionHeader className="mb-1.5 px-1" title="Security" />
+        <ChangePasswordCard />
       </section>
 
-      <ChangePasswordCard />
-
-      <DeleteAccountCard email={profile.email} />
+      <section>
+        <SectionHeader
+          className="mb-1.5 px-1"
+          title="Danger zone"
+          description="There is no undo for this one."
+        />
+        <DeleteAccountCard email={profile.email} />
+      </section>
 
       <CurrencySheet
         open={pickerOpen}
@@ -370,7 +440,10 @@ function CurrencySheet({
                     </span>
                   </span>
                   {active ? (
-                    <Check className="text-text size-4 shrink-0" aria-hidden="true" />
+                    <Check
+                      className="text-text size-4 shrink-0"
+                      aria-hidden="true"
+                    />
                   ) : null}
                 </button>
               </li>
@@ -396,5 +469,51 @@ function CurrencySheet({
         </Button>
       </SheetFooter>
     </ResponsiveSheet>
+  );
+}
+
+/**
+ * A two-line sketch of what a screen looks like in that theme.
+ *
+ * Three words — Light, Dark, System — ask somebody to imagine the result.
+ * Thirty pixels of the actual surfaces show it, and `system` is drawn as
+ * the two halves because that is what following the device means.
+ */
+function ThemePreview({ theme }: { theme: "light" | "dark" | "system" }) {
+  const sketch = (dark: boolean, className?: string) => (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex h-10 flex-col justify-center gap-1 overflow-hidden px-1.5",
+        dark ? "bg-preview-dark-page" : "bg-preview-light-page",
+        className,
+      )}
+    >
+      <span
+        className={cn(
+          "block h-1.5 w-7 rounded-full",
+          dark ? "bg-preview-dark-ink" : "bg-preview-light-ink",
+        )}
+      />
+      <span
+        className={cn(
+          "block h-1 w-5 rounded-full",
+          dark ? "bg-preview-dark-line" : "bg-preview-light-line",
+        )}
+      />
+    </span>
+  );
+
+  return (
+    <span className="rounded-control flex w-full overflow-hidden border">
+      {theme === "system" ? (
+        <>
+          {sketch(false, "w-1/2")}
+          {sketch(true, "w-1/2")}
+        </>
+      ) : (
+        sketch(theme === "dark", "w-full")
+      )}
+    </span>
   );
 }
