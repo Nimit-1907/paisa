@@ -91,6 +91,27 @@ export async function getAccount(id: string) {
   return data;
 }
 
+/**
+ * Records and repeating rules that point at one account.
+ *
+ * What decides whether Delete can remove it outright. The account screen
+ * used to pass a hard-coded 0 here, which would have offered every account
+ * as deletable and left the server to say no.
+ */
+export async function getAccountUsage(id: string): Promise<number> {
+  assertUuid(id);
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("account_usage")
+    .select("transaction_count, recurring_rule_count")
+    .eq("account_id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return (data?.transaction_count ?? 0) + (data?.recurring_rule_count ?? 0);
+}
+
 export async function getAccountBalance(id: string): Promise<bigint> {
   assertUuid(id);
   const supabase = await createClient();

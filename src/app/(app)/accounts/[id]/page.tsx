@@ -21,6 +21,7 @@ import {
   getAccountBalance,
   getAccountMonthFlow,
   getAccountTransactions,
+  getAccountUsage,
   isUuid,
 } from "@/lib/queries/accounts";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
@@ -58,10 +59,11 @@ export default async function AccountDetailPage({
 
   const range = currentMonthRange(profile?.timezone ?? "Asia/Kolkata");
 
-  const [balance, flow, transactions] = await Promise.all([
+  const [balance, flow, transactions, usageCount] = await Promise.all([
     getAccountBalance(id),
     getAccountMonthFlow(id, range.monthStart),
     getAccountTransactions(id),
+    getAccountUsage(id),
   ]);
 
   // The island below is a client component, so the account crosses the
@@ -78,7 +80,7 @@ export default async function AccountDetailPage({
     balance: balance.toString(),
     includeInTotal: account.include_in_total,
     archived: account.archived,
-    usageCount: 0,
+    usageCount,
   };
 
   const dateFormatter = new Intl.DateTimeFormat("en-IN", {

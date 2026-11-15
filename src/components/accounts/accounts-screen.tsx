@@ -6,40 +6,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
-  Archive,
-  ArchiveRestore,
   Check,
   ChevronDown,
   ChevronRight,
-  EllipsisVertical,
   GripVertical,
-  Pencil,
   Plus,
-  Trash2,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  deleteAccount,
-  reorderAccounts,
-  setAccountArchived,
-} from "@/actions/accounts";
+import { reorderAccounts } from "@/actions/accounts";
+import { AccountMenu } from "@/components/accounts/account-actions";
 import { AccountFormSheet } from "@/components/accounts/account-form-sheet";
 import type { AccountView } from "@/components/accounts/types";
 import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
 import { HeroStat } from "@/components/shared/hero-stat";
 import { SectionHeader } from "@/components/shared/section-header";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   ACCOUNT_TYPES,
   ACCOUNT_TYPE_LABELS,
@@ -60,12 +45,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<AccountView | undefined>();
-  const [pendingDelete, setPendingDelete] = React.useState<AccountView | null>(
-    null,
-  );
-  // Kept so the dialog does not flash "Delete undefined?" while it closes.
-  const lastDeleteName = React.useRef("");
-  const [deleting, setDeleting] = React.useState(false);
   const [showNetWorth, setShowNetWorth] = React.useState(false);
   const [showArchived, setShowArchived] = React.useState(false);
   /*
@@ -125,55 +104,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
     // Without this the props keep the old order, and a drag in another group
     // would then send that stale sequence and undo this one.
     router.refresh();
-  }
-
-  async function toggleArchived(account: AccountView) {
-    try {
-      const result = await setAccountArchived({
-        id: account.id,
-        archived: !account.archived,
-      });
-
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success(
-        account.archived ? "Account restored" : `${account.name} archived`,
-      );
-      router.refresh();
-    } catch (thrown) {
-      console.error("[accounts]", thrown);
-      toast.error("Could not save that. Check your connection and try again.");
-    }
-  }
-
-  async function confirmDelete() {
-    if (!pendingDelete) return;
-
-    setDeleting(true);
-
-    try {
-      const result = await deleteAccount({ id: pendingDelete.id });
-
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success("Account deleted");
-      setPendingDelete(null);
-      router.refresh();
-    } catch (thrown) {
-      console.error("[accounts]", thrown);
-      toast.error(
-        "Could not delete that. Check your connection and try again.",
-      );
-    } finally {
-      // In a finally so a thrown action cannot leave the dialog spinning.
-      setDeleting(false);
-    }
   }
 
   const included = active.filter((account) => account.includeInTotal).length;
@@ -291,11 +221,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
                 isDragging={isDragging}
                 handleProps={reordering ? handleProps : undefined}
                 onEdit={() => openEdit(account)}
-                onArchive={() => void toggleArchived(account)}
-                onDelete={() => {
-                  lastDeleteName.current = account.name;
-                  setPendingDelete(account);
-                }}
               />
             )}
           />
@@ -337,11 +262,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
                   <AccountRow
                     account={account}
                     onEdit={() => openEdit(account)}
-                    onArchive={() => void toggleArchived(account)}
-                    onDelete={() => {
-                      lastDeleteName.current = account.name;
-                      setPendingDelete(account);
-                    }}
                   />
                 </li>
               ))}
@@ -356,14 +276,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         account={editing}
       />
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => !open && setPendingDelete(null)}
-        title={`Delete ${pendingDelete?.name ?? lastDeleteName.current}?`}
-        description="This account has no records, so nothing else will change. It cannot be undone."
-        pending={deleting}
-        onConfirm={() => void confirmDelete()}
-      />
     </div>
   );
 }
@@ -373,18 +285,13 @@ function AccountRow({
   handleProps,
   isDragging,
   onEdit,
-  onArchive,
-  onDelete,
 }: {
   account: AccountView;
   handleProps?: React.HTMLAttributes<HTMLElement>;
   isDragging?: boolean;
   onEdit: () => void;
-  onArchive: () => void;
-  onDelete: () => void;
 }) {
   const balance = BigInt(account.balance);
-  const canDelete = account.usageCount === 0;
 
   return (
     <div
@@ -425,47 +332,7 @@ function AccountRow({
         </span>
       </Link>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-touch"
-            aria-label={`Actions for ${account.name}`}
-          >
-            <EllipsisVertical className="size-4" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={onEdit}>
-            <Pencil className="size-4" aria-hidden="true" />
-            Edit
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onSelect={onArchive}>
-            {account.archived ? (
-              <>
-                <ArchiveRestore className="size-4" aria-hidden="true" />
-                Restore
-              </>
-            ) : (
-              <>
-                <Archive className="size-4" aria-hidden="true" />
-                Archive
-              </>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            variant="destructive"
-            disabled={!canDelete}
-            onSelect={canDelete ? onDelete : undefined}
-          >
-            <Trash2 className="size-4" aria-hidden="true" />
-            {canDelete ? "Delete" : "Delete (has records)"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <AccountMenu account={account} onEdit={onEdit} />
     </div>
   );
 }

@@ -26,6 +26,8 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Delete",
+  cancelLabel = "Cancel",
+  tone = "destructive",
   pending = false,
   onConfirm,
 }: {
@@ -34,8 +36,19 @@ export function ConfirmDialog({
   title: string;
   description: string;
   confirmLabel?: string;
+  cancelLabel?: string;
+  /**
+   * Red only for what removes something. Archiving hides an account and can
+   * be reversed; a red button would claim otherwise.
+   */
+  tone?: "destructive" | "default";
   pending?: boolean;
-  onConfirm: () => void;
+  /**
+   * Omit to show an explanation with a single button: "you cannot do that,
+   * and here is why". Better than a disabled menu item, which says no and
+   * says nothing else.
+   */
+  onConfirm?: () => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,20 +66,22 @@ export function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            Cancel
+            {cancelLabel}
           </Button>
-          <Button
-            variant="destructive"
-            size="touch"
-            className="flex-1"
-            onClick={onConfirm}
-            disabled={pending}
-          >
-            {pending ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            ) : null}
-            {confirmLabel}
-          </Button>
+          {onConfirm ? (
+            <Button
+              variant={tone === "destructive" ? "destructive" : "default"}
+              size="touch"
+              className="flex-1"
+              onClick={onConfirm}
+              disabled={pending}
+            >
+              {pending ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : null}
+              {confirmLabel}
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
