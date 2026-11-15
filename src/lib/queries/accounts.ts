@@ -220,14 +220,77 @@ export async function getAccountMonthFlow(
 export async function getActiveAccounts() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("accounts")
-    .select("*")
-    .eq("archived", false)
-    .order("sort_order", { ascending: true });
+  // The balances come along because the transfer sheet warns when money is
+  // being moved out of an account that has not got it. Two round trips in
+  // parallel rather than one, which is still one request's worth of waiting,
+  // and the view is the only thing that knows a *current* balance -
+  // `accounts.initial_balance` is where it started.
+  const [accounts, balances] = await Promise.all([
+    supabase
+      .from("accounts")
+      .select("*")
+      .eq("archived", false)
+      .order("sort_order", { ascending: true }),
+    supabase.from("account_balances").select("account_id, balance"),
+  ]);
 
-  if (error) throw new Error(error.message);
-  return data;
+  if (accounts.error) throw new Error(accounts.error.message);
+
+  /*
+   * A failed balance lookup is reported, not thrown, and not dropped.
+   *
+   * Not thrown, because this runs in the signed-in layout and every screen
+   * renders through it: taking Records, Budgets and Analysis down over a
+   * figure that one advisory warning reads is the worse outcome. The
+   * accounts themselves come from a separate query that *is* allowed to
+   * fail the page.
+   *
+   * Not dropped either. `balancesKnown` travels with the rows so the
+   * transfer sheet can tell "this account is fine" apart from "nobody
+   * checked", and say the second out loud rather than staying quiet and
+   * looking like the first.
+   */
+  if (balances.error) {
+    console.error(
+      "[accounts] account_balances lookup failed; transfer overdraw warnings cannot be checked:",
+      balances.error.message,
+    );
+  }
+
+  /*
+   * Rows with no balance are left out rather than read as zero.
+   *
+   * Null from the view means "no answer", and an account recorded as
+   * holding zero would make every transfer out of it look like an overdraw.
+   * Leaving it out of the map is what gets it `balance: null` below, which
+   * the sheet already reads as "nothing to check".
+   */
+  const balanceById = new Map(
+    (balances.data ?? [])
+      .filter((row) => row.balance !== null)
+      .map((row) => [row.account_id, row.balance as number]),
+  );
+
+  const rows = (accounts.data ?? []).map((account) => {
+    const current = balanceById.get(account.id);
+
+    return {
+      ...account,
+      /*
+       * Null when the view has nothing to say, never `initial_balance`.
+       *
+       * `initial_balance` is where the account started, which after a month
+       * of records is not what it holds. Falling back to it would let the
+       * transfer sheet warn about an overdraw that is not happening, or
+       * stay quiet about one that is — and print the wrong figure as what
+       * the account "has". Null is the only honest answer, and the sheet
+       * already reads it as "nothing to check".
+       */
+      balance: current === undefined ? null : fromDb(current).toString(),
+    };
+  });
+
+  return { rows, balancesKnown: !balances.error };
 }
 
 /** The four buckets `entry_defaults()` sorts the day into. */

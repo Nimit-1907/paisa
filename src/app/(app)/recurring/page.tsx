@@ -19,7 +19,7 @@ export default async function RecurringPage() {
 
   const [rules, accounts, categories] = await Promise.all([
     getRecurringRules(),
-    getActiveAccounts(),
+    getActiveAccounts().then((result) => result.rows),
     getActiveCategories(),
   ]);
 

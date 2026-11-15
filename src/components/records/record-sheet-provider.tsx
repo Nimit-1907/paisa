@@ -82,6 +82,7 @@ export function RecordSheetProvider({
   entryDefaults,
   quickAdds,
   noteHints,
+  balancesKnown,
   firstRecordSeen,
   children,
 }: {
@@ -93,6 +94,8 @@ export function RecordSheetProvider({
   quickAdds: QuickAdd[];
   /** Notes written before, offered as you type. */
   noteHints: string[];
+  /** False when the balance lookup failed, so the sheet can say so. */
+  balancesKnown: boolean;
   /** False until the "first record" note has been shown once. */
   firstRecordSeen: boolean;
   children: React.ReactNode;
@@ -334,6 +337,7 @@ export function RecordSheetProvider({
         entryDefaults={entryDefaults}
         quickAdds={quickAdds}
         noteHints={noteHints}
+        balancesKnown={balancesKnown}
       />
     </RecordSheetContext.Provider>
   );

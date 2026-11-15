@@ -3,12 +3,14 @@
 import * as React from "react";
 
 import {
+  ArrowUpDown,
   Check,
   ChevronDown,
   Loader2,
   Plus,
   Repeat,
   Trash2,
+  TriangleAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,6 +23,7 @@ import type {
 } from "@/lib/queries/accounts";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountKeypad } from "@/components/records/amount-keypad";
+import { Amount } from "@/components/shared/amount";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
@@ -47,6 +50,7 @@ import {
 } from "@/lib/schemas/transactions";
 import { evaluate } from "@/lib/calculator";
 import { nowLocal } from "@/lib/dates";
+import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -139,6 +143,7 @@ export function RecordSheet({
   entryDefaults,
   quickAdds = [],
   noteHints = [],
+  balancesKnown = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -159,6 +164,8 @@ export function RecordSheet({
   quickAdds?: QuickAdd[];
   /** Notes written before, offered as you type. */
   noteHints?: string[];
+  /** False when the balance lookup failed, so the overdraw check cannot run. */
+  balancesKnown?: boolean;
 }) {
   const currency = useCurrency();
   const editing = draft ?? null;
@@ -348,6 +355,48 @@ export function RecordSheet({
           whole: true,
         })
       : null;
+
+  /**
+   * Whether this transfer takes the From account below zero.
+   *
+   * Null unless there is a balance to check, an amount that parses, and a
+   * transfer to check it against — there is nothing useful to say about an
+   * account whose balance this screen was never given.
+   */
+  const overdraw = React.useMemo(() => {
+    if (type !== "transfer") return null;
+
+    const from = accounts.find((account) => account.id === accountId);
+    if (!from || from.balance === null || from.balance === undefined) {
+      return null;
+    }
+
+    const sum = evaluate(amount || "0", currency.decimals);
+    if (!sum.ok || sum.minor <= 0n) return null;
+
+    const balance = BigInt(from.balance);
+
+    // Only when this is the same account the transfer already came out of:
+    // a transfer moved here from somewhere else never touched this balance,
+    // so there is nothing to put back. See src/lib/overdraw.ts.
+    const original =
+      editing && editing.mode !== "copy" && editing.accountId === accountId
+        ? BigInt(editing.amount)
+        : null;
+
+    const after = balanceAfterTransfer({
+      balance,
+      amount: sum.minor,
+      original,
+    });
+    if (after >= 0n) return null;
+
+    // What it "has" is the balance without this transfer in it, so the two
+    // figures in the sentence are measured the same way.
+    const held = original === null ? balance : balance + original;
+
+    return { name: from.name, balance: held, after };
+  }, [type, accounts, accountId, amount, currency.decimals, editing]);
 
   const toAccountName = accounts.find(
     (account) => account.id === toAccountId,
@@ -609,6 +658,33 @@ export function RecordSheet({
               value={accountId}
               onChange={setAccountId}
             />
+
+            {/*
+              Swap, between the two pickers it swaps.
+
+              Picking the wrong way round is the mistake people make on this
+              screen, and correcting it meant two pickers and four taps.
+              Disabled until both are chosen: swapping one account with
+              nothing is not a thing anybody means.
+            */}
+            <div className="-my-1 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-touch"
+                className="rounded-full"
+                aria-label="Swap the two accounts"
+                disabled={!accountId || !toAccountId}
+                onClick={() => {
+                  const from = accountId;
+                  setAccountId(toAccountId);
+                  setToAccountId(from);
+                }}
+              >
+                <ArrowUpDown className="size-4" aria-hidden="true" />
+              </Button>
+            </div>
+
             <AccountSelect
               id="to-account"
               label="To"
@@ -619,6 +695,53 @@ export function RecordSheet({
                 errorField === "toAccountId" ? (error ?? undefined) : undefined
               }
             />
+
+            {/*
+              A warning, not a block.
+
+              An account can legitimately go below zero - a credit card is
+              negative by definition, and a balance can be out of date
+              because a record has not been entered yet. Refusing the
+              transfer would make this app argue with reality; saying so and
+              letting it through is the honest version.
+            */}
+            {/*
+              "Nobody checked" is not "nothing to worry about".
+
+              When the balance lookup failed, staying quiet would look
+              exactly like an account with plenty in it. Said once, where
+              the warning would have been.
+            */}
+            {!balancesKnown && accountId ? (
+              <p
+                role="status"
+                className="bg-muted text-ink-2 rounded-control px-3 py-2 text-xs font-medium"
+              >
+                Balances could not be loaded, so this will not warn you if the
+                account is short.
+              </p>
+            ) : null}
+
+            {overdraw ? (
+              <p
+                role="status"
+                className="bg-warning-soft text-warning rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium"
+              >
+                <TriangleAlert
+                  className="mt-0.5 size-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>
+                  {/* `auto`, not `never`: a credit card is negative, and
+                      "has ₹500" for an account at −₹500 states a debt as
+                      money held. */}
+                  {overdraw.name} has{" "}
+                  <Amount value={overdraw.balance} signDisplay="auto" />. This
+                  takes it to{" "}
+                  <Amount value={overdraw.after} signDisplay="auto" />.
+                </span>
+              </p>
+            ) : null}
           </>
         ) : (
           <>

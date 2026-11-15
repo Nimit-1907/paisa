@@ -65,7 +65,7 @@ export default async function RecurringRulePage({
 
   const [history, accounts, categories] = await Promise.all([
     getRuleTransactions(rule.id, HISTORY_SHOWN),
-    getActiveAccounts(),
+    getActiveAccounts().then((result) => result.rows),
     getActiveCategories(),
   ]);
 

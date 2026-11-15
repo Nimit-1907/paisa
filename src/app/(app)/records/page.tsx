@@ -129,7 +129,7 @@ export default async function RecordsPage({
       getMonthSummary(month.year, month.month),
       // The shape of the month, for the bars on the card.
       getMonthDays(month.year, month.month),
-      getActiveAccounts(),
+      getActiveAccounts().then((result) => result.rows),
       getActiveCategories(),
       rulesPromise,
       createdPromise,

@@ -12,6 +12,14 @@ export type AccountOption = {
   name: string;
   icon: string | null;
   color: string | null;
+  /**
+   * Minor units as text, or null where the caller has no balance to hand.
+   *
+   * Only the transfer sheet reads it, to warn when money is being moved out
+   * of an account that does not have it. Text rather than a BigInt because
+   * this crosses the RSC boundary, which cannot carry one.
+   */
+  balance?: string | null;
 };
 
 export type CategoryOption = AccountOption & { kind: "income" | "expense" };

@@ -54,7 +54,7 @@ export default async function AppLayout({
   // The recurring catch-up rides along here because this layout is the one
   // thing every signed-in page renders through, and it only does any work on
   // the first page of a new day.
-  const [accounts, categories, created, entryDefaults, quickAdds, noteHints] =
+  const [accountData, categories, created, entryDefaults, quickAdds, noteHints] =
     await Promise.all([
       getActiveAccounts(),
       getActiveCategories(),
@@ -72,7 +72,10 @@ export default async function AppLayout({
     >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
-        accounts={toAccountOptions(accounts)}
+        // With balances: this is the list the transfer sheet picks From
+        // from, and it warns when an account cannot cover the amount.
+        accounts={toAccountOptions(accountData.rows, { withBalances: true })}
+        balancesKnown={accountData.balancesKnown}
         categories={toCategoryOptions(categories)}
         entryDefaults={entryDefaults}
         quickAdds={quickAdds}
