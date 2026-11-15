@@ -65,7 +65,29 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   an optional one is marked with nothing. No field is labelled "Optional".
 - Selects are `src/components/ui/select.tsx`, never a native `<select>`:
   the OS list knows nothing about the radii, the hairlines or the 44px
-  floor. Dates and times are still native inputs behind a `FieldCard`.
+  floor. Dates are `DateInput` (`src/components/shared/date-input.tsx`):
+  typed as digits with the slashes drawn for you (15112026 is 15/11/2026),
+  or picked from the calendar beside it. Date cards (`DateField`,
+  `WhenField`) open the same typed field and calendar in a panel. No
+  native `type="date"` or `datetime-local` anywhere.
+- Every screen's header is `PageHeader`, and it is the same everywhere:
+  the mark (phones and tablets; the sidebar has it on desktop), the title
+  with a one-line `description` (required, short enough to read whole at
+  360px), the screen's one own action if it has one, search, and the
+  profile. A detail screen shows its back link in place of the mark.
+- Every button has the `control` radius, primary included. Chips (filters,
+  suggestions, weekday pickers) stay pills: they are tags, not buttons.
+- The currency symbol takes the figure's own colour and weight at 0.8 of
+  its size, everywhere: `amount-unit` in globals.css, nothing per screen.
+- Empty states are `EmptyState` with an icon tile and, wherever there is a
+  next step, one action. Illustrations are for 404 and offline only.
+- Repeating records are made and managed on Recurring alone, through
+  `RuleSheet` and `createRecurringRule`. Add Record takes one record and
+  has no repeat option, and editing a record never edits its rule. A rule
+  whose first date has arrived posts it as it is created.
+- `pt-safe` / `pb-safe` set the whole padding on their side; never pair
+  one with a `py-*`, `pt-*` or `pb-*`. Where a side needs both, write
+  `pt-[max(0.5rem,env(safe-area-inset-top))]`.
 - No em dash in any user-facing string. Use a full stop, a colon or a
   comma; a sentence that needs an em dash usually wants to be two.
 - Never put a margin on a child of a `space-y-*` stack. Tailwind v4 emits
@@ -109,9 +131,10 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - Screens are built from the shared components, not from fresh markup:
   `PageHeader`, `PageShell`, `HeroStat`, `SectionHeader`, `ListRow`, `Card`,
   `ListCard`, `HeroCard`, `Tile`, `TilePicker`, `TintPicker`, `FieldCard`,
-  `SegmentedControl`, `ProgressBar`, `RangeCalendar`, `Stepper`, `Pill`,
-  `StickyActionBar`, `EmptyState`, `ErrorState`. If a screen needs something
-  one of these nearly does, change the shared one.
+  `SegmentedControl`, `ProgressBar`, `RangeCalendar`, `DateInput`,
+  `Stepper`, `Pill`, `StickyActionBar`, `EmptyState`, `ErrorState`,
+  `ConfirmDialog`, and the `Select` and dropdown-menu primitives. If a
+  screen needs something one of these nearly does, change the shared one.
 - How wide a screen is belongs to the screen: `<PageShell>` is 768px for
   anything you read down and `width="wide"` (1200px) for the bento grids on
   Analysis, Budgets and Accounts. The app shell sets no width.

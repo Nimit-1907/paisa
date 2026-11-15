@@ -82,7 +82,18 @@ export function PageHeader({
           )}
 
           <div className="min-w-0">
-            <h1 className="font-display truncate text-2xl leading-tight tracking-[-0.03em] sm:text-[28px]">
+            {/* A detail screen's title is a name ("HDFC Savings", "Metro card
+                top-up") and it is the thing the screen is about, so beside a
+                back link, a menu, search and the profile it gets a size down
+                and up to two lines rather than being cut to "HDFC Sa…". */}
+            <h1
+              className={cn(
+                "font-display leading-tight tracking-[-0.03em]",
+                back
+                  ? "line-clamp-2 text-xl break-words sm:text-2xl"
+                  : "truncate text-2xl sm:text-[28px]",
+              )}
+            >
               {title}
             </h1>
             <p className="text-text-secondary truncate text-xs sm:text-sm">

@@ -195,11 +195,10 @@ export function CategoriesScreen({
                           a failed query has not earned. */}
                       {total === null ? null : (
                         <span className="text-text-secondary w-full truncate text-center text-[11px]">
-                          {total > 0n ? (
-                            <Amount value={total} signDisplay="never" whole />
-                          ) : (
-                            "None"
-                          )}
+                          {/* ₹0 rather than a word: an amount slot that
+                              changes kind for one value is the
+                              inconsistency the eye catches first. */}
+                          <Amount value={total} signDisplay="never" whole />
                         </span>
                       )}
                     </button>

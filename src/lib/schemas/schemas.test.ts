@@ -255,7 +255,7 @@ describe("budget tone and percent", () => {
 
 describe("updateProfileSchema", () => {
   const profile = {
-    displayName: "Nimit",
+    displayName: "Aarav",
     currencyCode: "inr",
     weekStart: 1,
     theme: "system" as const,

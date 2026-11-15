@@ -201,7 +201,7 @@ export function OnboardingFlow({
                   autoComplete="name"
                   // eslint-disable-next-line jsx-a11y/no-autofocus -- this step has just replaced the one before it, so focus has to land somewhere.
                   autoFocus
-                  placeholder="Nimit"
+                  placeholder="Aarav"
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();

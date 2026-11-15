@@ -92,7 +92,7 @@ export function SignupForm() {
             {...field}
             {...register("displayName")}
             autoComplete="name"
-            placeholder="Nimit"
+            placeholder="Aarav"
           />
         )}
       </FormRow>
