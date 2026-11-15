@@ -17,12 +17,16 @@ import { HOME_PATH } from "@/lib/routes";
  */
 export function HeaderLogo() {
   return (
+    // A 44px target around a 36px mark: the tap target floor applies to
+    // the hit area, and a 44px tile would crowd the title at 360px.
     <Link
       href={HOME_PATH}
       aria-label="Paisa, go to records"
-      className="bg-ink text-on-ink rounded-control pressable flex size-9 shrink-0 items-center justify-center lg:hidden"
+      className="pressable -ml-1 flex size-11 shrink-0 items-center justify-center lg:hidden"
     >
-      <IndianRupee className="size-4" aria-hidden="true" />
+      <span className="bg-ink text-on-ink rounded-control flex size-9 items-center justify-center">
+        <IndianRupee className="size-4" aria-hidden="true" />
+      </span>
     </Link>
   );
 }

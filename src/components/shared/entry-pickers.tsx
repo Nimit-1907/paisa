@@ -4,6 +4,14 @@ import * as React from "react";
 
 import { CalendarClock, CalendarDays, MoreHorizontal } from "lucide-react";
 
+import { Popover as PopoverPrimitive } from "radix-ui";
+
+import {
+  DATE_PANEL,
+  DateInput,
+  focusChosenDay,
+  useToday,
+} from "@/components/shared/date-input";
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { FieldCard } from "@/components/shared/field-card";
 import {
@@ -13,6 +21,8 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Tile } from "@/components/shared/tile";
+import { RangeCalendar } from "@/components/shared/range-calendar";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PRESSABLE } from "@/lib/motion";
 import { SegmentedControl } from "@/components/shared/segmented-control";
@@ -287,12 +297,66 @@ export function AccountField({
 }
 
 /**
- * When it happened, as a field card with a native datetime picker behind it.
+ * The panel a date card opens: the typed field above, the calendar below.
  *
- * The visible text is {@link describeLocal}'s — "Today, 1:30 pm" — because
- * the browser's own rendering of a `datetime-local` is a different string in
- * every browser and says "today" in none of them. The input itself is what a
- * tap, a keyboard and a screen reader reach.
+ * Both ways in at once, so nobody has to know which one the card expects.
+ * Typing a full date updates the card and leaves the panel open (they may
+ * still be checking it); picking a day off the calendar is a decision, so
+ * it closes the panel.
+ */
+function DatePanel({
+  id,
+  label,
+  value,
+  onType,
+  onPick,
+  min,
+  max,
+  children,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onType: (next: string) => void;
+  onPick: (next: string) => void;
+  min?: string;
+  max?: string;
+  children?: React.ReactNode;
+}) {
+  const today = useToday();
+  return (
+    <div className="space-y-2">
+      <DateInput
+        id={id}
+        aria-label={label}
+        calendar={false}
+        value={value}
+        min={min}
+        max={max}
+        onChange={onType}
+      />
+      <RangeCalendar
+        single
+        bleed={false}
+        from={value}
+        to={value}
+        min={min}
+        max={max}
+        today={today}
+        onChange={(next) => onPick(next.from)}
+      />
+      {children}
+    </div>
+  );
+}
+
+/**
+ * When it happened: a field card that opens a date and time panel.
+ *
+ * The card shows {@link describeLocal}'s words ("Today, 1:30 pm"). It used
+ * to sit over an invisible native datetime input, which on a phone meant a
+ * spinning wheel and no way to type; the panel takes typed digits or a day
+ * off the calendar, and a time field below.
  */
 export function WhenField({
   value,
@@ -309,38 +373,86 @@ export function WhenField({
   invalid?: boolean;
   className?: string;
 }) {
+  const [open, setOpen] = React.useState(false);
+  const today = useToday();
+  const [rawDay = "", rawTime = ""] = value.split("T");
+  // Both halves always present, so neither field can emit "T10:30" or
+  // "2026-11-16T": an empty value means now.
+  const day = rawDay || today;
+  const time = rawTime || "00:00";
+
   return (
-    <FieldCard
-      label="When"
-      invalid={invalid}
-      className={className}
-      icon={
-        <CalendarClock
-          className="text-text-secondary size-3.5 shrink-0"
-          aria-hidden="true"
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Trigger asChild>
+        <FieldCard
+          asTrigger
+          label="When"
+          invalid={invalid}
+          className={className}
+          icon={
+            <CalendarClock
+              className="text-text-secondary size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+          }
+          value={display}
         />
-      }
-      value={display}
-      control={
-        <input
-          id="occurred-at"
-          type="datetime-local"
-          aria-label="When"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      }
-    />
+      </PopoverPrimitive.Trigger>
+
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          align="end"
+          sideOffset={6}
+          collisionPadding={8}
+          onOpenAutoFocus={focusChosenDay}
+          className={DATE_PANEL}
+        >
+          <DatePanel
+            id="occurred-at"
+            label="Date"
+            value={day}
+            onType={(next) => next && onChange(`${next}T${time}`)}
+            onPick={(next) => onChange(`${next}T${time}`)}
+          >
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="occurred-at-time"
+                className="text-text-secondary w-12 text-sm"
+              >
+                Time
+              </label>
+              <input
+                id="occurred-at-time"
+                type="time"
+                value={time}
+                onChange={(event) => {
+                  if (event.target.value) {
+                    onChange(`${day}T${event.target.value}`);
+                  }
+                }}
+                className="bg-surface rounded-control amount h-11 min-w-0 flex-1 border px-3 text-base"
+              />
+              <Button
+                size="touch"
+                className="px-4"
+                onClick={() => setOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </DatePanel>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }
 
 /**
- * A plain date, as a field card over a native date input.
+ * A plain date: a field card that opens the date panel.
  *
  * The sibling of {@link WhenField} for the places that take a day rather
- * than a moment: a rule's next run, an end date, the start of a range. Same
- * reasoning — the card shows "3 Dec 2026", the control underneath is the
- * browser's own.
+ * than a moment: a rule's next run, an end date. Clearing the typed field
+ * clears the date, for the ones that may be unset ("No end date").
  */
 export function DateField({
   id,
@@ -360,41 +472,62 @@ export function DateField({
   onChange: (next: string) => void;
   min?: string;
   max?: string;
-  /** What to show when the date is unset — "No end date". */
+  /** What to show when the date is unset: "No end date". */
   placeholder?: string;
   invalid?: boolean;
   className?: string;
 }) {
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <FieldCard
-      label={label}
-      invalid={invalid}
-      className={className}
-      icon={
-        <CalendarDays
-          className="text-text-secondary size-3.5 shrink-0"
-          aria-hidden="true"
+    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
+      <PopoverPrimitive.Trigger asChild>
+        <FieldCard
+          asTrigger
+          label={label}
+          invalid={invalid}
+          className={className}
+          icon={
+            <CalendarDays
+              className="text-text-secondary size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+          }
+          value={
+            value ? (
+              formatDay(value)
+            ) : (
+              <span className="text-text-secondary font-normal">
+                {placeholder}
+              </span>
+            )
+          }
         />
-      }
-      value={
-        value ? (
-          formatDay(value)
-        ) : (
-          <span className="text-text-secondary font-normal">{placeholder}</span>
-        )
-      }
-      control={
-        <input
-          id={id}
-          type="date"
-          aria-label={label}
-          value={value}
-          min={min}
-          max={max}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      }
-    />
+      </PopoverPrimitive.Trigger>
+
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          align="start"
+          sideOffset={6}
+          collisionPadding={8}
+          onOpenAutoFocus={focusChosenDay}
+          className={DATE_PANEL}
+        >
+          <DatePanel
+            id={id}
+            label={label}
+            value={value}
+            min={min}
+            max={max}
+            onType={onChange}
+            onPick={(next) => {
+              onChange(next);
+              setOpen(false);
+            }}
+          />
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }
 

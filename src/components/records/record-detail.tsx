@@ -5,10 +5,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarClock,
-  Copy,
   Pencil,
   Repeat,
-  Search,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -29,15 +27,8 @@ import type { TransactionRow } from "@/lib/queries/transactions";
 /**
  * One record, read rather than edited.
  *
- * Opening a row used to go straight to the edit sheet, which is the fastest
- * route to fixing a typo and the slowest to everything else — duplicating,
- * finding the rest of this category, or seeing which rule created it were
- * all behind a long-press that announces itself to nobody.
- *
- * This is the trade: one more tap before editing, in exchange for every
- * action on a record being visible in one place. The fast path survives —
- * the row's own menu still has Edit on it — so people who know the gesture
- * keep it.
+ * Two actions, Edit and Delete, in the footer. The facts are above them:
+ * the amount as the hero, then the same field cards the add sheet uses.
  *
  * Deliberately not a form. Everything here is a fact about the record and a
  * place to go next; the moment it starts holding a value it has to worry
@@ -53,18 +44,14 @@ export function RecordDetail({
   timeZone,
   onOpenChange,
   onEdit,
-  onCopy,
   onDelete,
-  onShowSimilar,
 }: {
   /** Null closes the sheet; the row that opened it may have been deleted. */
   record: TransactionRow | null;
   timeZone: string;
   onOpenChange: (open: boolean) => void;
   onEdit: () => void;
-  onCopy: () => void;
   onDelete: () => void;
-  onShowSimilar?: () => void;
 }) {
   const transfer = record?.type === "transfer";
 
@@ -201,42 +188,23 @@ export function RecordDetail({
               ) : null}
             </div>
 
-            {/* Duplicate takes the width on its own when there is no
-                category to be similar to. A disabled button explaining why
-                the other one is missing is noise where a gap would do. */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" size="touch" onClick={onCopy}>
-                <Copy className="size-4" aria-hidden="true" />
-                Duplicate
-              </Button>
-
-              {onShowSimilar ? (
-                <Button
-                  variant="secondary"
-                  size="touch"
-                  onClick={onShowSimilar}
-                >
-                  <Search className="size-4" aria-hidden="true" />
-                  Show similar
-                </Button>
-              ) : null}
-
-              <Button
-                variant="destructive"
-                size="touch"
-                className={onShowSimilar ? "col-span-2" : undefined}
-                onClick={onDelete}
-              >
-                <Trash2 className="size-4" aria-hidden="true" />
-                Delete record
-              </Button>
-            </div>
           </SheetBody>
 
-          <SheetFooter>
+          {/* Edit and Delete, and nothing else: the record's two actions,
+              side by side and the same size, so neither is hiding. */}
+          <SheetFooter className="flex-row gap-2">
+            <Button
+              variant="destructive"
+              size="touch"
+              className="flex-1"
+              onClick={onDelete}
+            >
+              <Trash2 className="size-4" aria-hidden="true" />
+              Delete
+            </Button>
             <Button size="touch" className="flex-1" onClick={onEdit}>
-              Edit record
               <Pencil className="size-4" aria-hidden="true" />
+              Edit
             </Button>
           </SheetFooter>
         </>

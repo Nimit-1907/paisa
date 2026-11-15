@@ -297,3 +297,20 @@ export function describeLocal(local: string, todayLocal: string): string {
 
   return `${label}, ${clock}`;
 }
+
+/**
+ * Today as the user's own calendar sees it, `yyyy-mm-dd`.
+ *
+ * Pure, so it runs on the server and in a client component alike: the
+ * Records page and the date pickers must agree on which day is today, and
+ * they only can if both ask the profile's time zone, not one the server's
+ * and the other the device's.
+ */
+export function localToday(timeZone: string, now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}

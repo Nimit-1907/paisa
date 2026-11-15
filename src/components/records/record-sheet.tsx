@@ -89,7 +89,7 @@ export type RecordDraft = {
    * data: a sheet that has the values but not the intent is one `title` away
    * from offering Delete on a record that does not exist yet.
    */
-  mode?: "edit" | "copy";
+  mode?: "edit";
   type: TransactionType;
   /** Minor units as text. */
   amount: string;
@@ -209,8 +209,9 @@ export function RecordSheet({
   const opened = React.useRef<string>("");
 
   // A copy starts from a record but is not one, so it has no id to update.
-  const copying = editing?.mode === "copy";
-  const editingId = editing && !copying ? editing.id : null;
+  // Only an explicit edit updates a row. A draft that arrives without the
+  // mode is a prefilled add, and must not be saved over an id.
+  const editingId = editing?.mode === "edit" ? editing.id : null;
 
   // Reset when the sheet opens, or when it is pointed at a different record.
   // Keyed on the id rather than the object, so a refresh underneath does not
@@ -417,7 +418,7 @@ export function RecordSheet({
     // a transfer moved here from somewhere else never touched this balance,
     // so there is nothing to put back. See src/lib/overdraw.ts.
     const original =
-      editing && editing.mode !== "copy" && editing.accountId === accountId
+      editing && editing.accountId === accountId
         ? BigInt(editing.amount)
         : null;
 

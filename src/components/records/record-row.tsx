@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Copy, Pencil, Repeat, Search, Trash2 } from "lucide-react";
+import { ArrowRight, Pencil, Repeat, Trash2 } from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
 import { Tile } from "@/components/shared/tile";
@@ -42,9 +42,7 @@ export function RecordRow({
   selected = false,
   onOpen,
   onEdit,
-  onCopy,
   onDelete,
-  onShowSimilar,
 }: {
   record: TransactionRow;
   /** True while the row is still being saved. */
@@ -57,10 +55,7 @@ export function RecordRow({
   onOpen: () => void;
   /** The menu's Edit, which skips the detail. */
   onEdit: () => void;
-  onCopy: () => void;
   onDelete: () => void;
-  /** Omitted for a transfer, which has no category to be similar to. */
-  onShowSimilar?: () => void;
 }) {
   const amount = BigInt(record.amount);
   const transfer = record.type === "transfer";
@@ -156,13 +151,13 @@ export function RecordRow({
         tone: "destructive",
         onAction: onDelete,
       }}
-      swipeRight={{ label: "Copy", icon: Copy, onAction: onCopy }}
+      // Two actions, each reachable three ways: swipe, the long-press
+      // menu, and the buttons on the record's own sheet. Duplicate and
+      // "Show similar" used to sit beside them; they are gone rather than
+      // left behind a gesture, where nothing should live alone.
+      swipeRight={{ label: "Edit", icon: Pencil, onAction: onEdit }}
       menu={[
         { label: "Edit", icon: Pencil, onAction: onEdit },
-        { label: "Duplicate", icon: Copy, onAction: onCopy },
-        ...(onShowSimilar
-          ? [{ label: "Show similar", icon: Search, onAction: onShowSimilar }]
-          : []),
         {
           label: "Delete",
           icon: Trash2,

@@ -69,6 +69,7 @@ export default async function AppLayout({
       haptics={profile?.haptics ?? true}
       showPaise={profile?.show_paise ?? false}
       displayName={profile?.display_name ?? ""}
+      timeZone={profile?.timezone ?? "Asia/Kolkata"}
     >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}

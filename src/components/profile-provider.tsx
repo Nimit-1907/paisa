@@ -20,6 +20,7 @@ const HapticsContext = React.createContext(true);
 /** Whether lists should draw ".00". Off by default; see the migration. */
 const ShowPaiseContext = React.createContext(false);
 const DisplayNameContext = React.createContext("");
+const TimeZoneContext = React.createContext("Asia/Kolkata");
 
 /**
  * Carries the signed-in user's currency down to Client Components.
@@ -35,6 +36,7 @@ export function ProfileProvider({
   haptics,
   showPaise,
   displayName,
+  timeZone,
   children,
 }: {
   currency: CurrencySettings;
@@ -42,6 +44,8 @@ export function ProfileProvider({
   showPaise: boolean;
   /** For the header's profile avatar, which is on every screen. */
   displayName: string;
+  /** The profile's time zone, for anything on the client that asks "today". */
+  timeZone: string;
   children: React.ReactNode;
 }) {
   return (
@@ -49,12 +53,19 @@ export function ProfileProvider({
       <HapticsContext.Provider value={haptics}>
         <ShowPaiseContext.Provider value={showPaise}>
           <DisplayNameContext.Provider value={displayName}>
-            {children}
+            <TimeZoneContext.Provider value={timeZone}>
+              {children}
+            </TimeZoneContext.Provider>
           </DisplayNameContext.Provider>
         </ShowPaiseContext.Provider>
       </HapticsContext.Provider>
     </CurrencyContext.Provider>
   );
+}
+
+/** The profile's time zone. */
+export function useTimeZone(): string {
+  return React.useContext(TimeZoneContext);
 }
 
 /** The signed-in user's display name, or "" if they have not set one. */

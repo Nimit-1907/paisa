@@ -25,9 +25,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { useCurrency } from "@/components/profile-provider";
 import { FiltersSheet } from "@/components/records/filters-sheet";
 import { CollapsingHeader } from "@/components/layout/collapsing-header";
-import { InsightStrip } from "@/components/shared/insight-strip";
 import { ListCard } from "@/components/shared/surface";
-import { MonthRecap } from "@/components/records/month-recap";
 import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
 import { Amount } from "@/components/shared/amount";
@@ -44,11 +42,10 @@ import { RecordRow } from "@/components/records/record-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { evaluate } from "@/lib/calculator";
-import { instantToLocal, localToInstant, nowLocal } from "@/lib/dates";
+import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
-import type { MonthRecap as MonthRecapData } from "@/lib/queries/recap";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
 import {
   useClearFilters,
@@ -77,8 +74,6 @@ export type RecordsScreenProps = {
   monthDays: DaySpend[];
   /** Last month's expense total, minor units as text, for the trend pill. */
   previousExpense: string;
-  /** One plain sentence about the month, or null. */
-  insight: string | null;
   /** `yyyy-mm`, for the link behind each bar. */
   monthKey: string;
   accounts: AccountOption[];
@@ -96,10 +91,6 @@ export type RecordsScreenProps = {
     maxYear: number;
     maxMonth: number;
   };
-  /** Last month's recap, on the first open of a new month. */
-  recap: MonthRecapData | null;
-  /** "October", for the recap heading. */
-  recapMonthLabel: string | null;
 };
 
 /**
@@ -118,7 +109,6 @@ export function RecordsScreen({
   summary,
   monthDays,
   previousExpense,
-  insight,
   monthKey,
   accounts,
   categories,
@@ -127,8 +117,6 @@ export function RecordsScreen({
   upcoming,
   today,
   monthNav,
-  recap,
-  recapMonthLabel,
 }: RecordsScreenProps) {
   const router = useRouter();
   const currency = useCurrency();
@@ -476,33 +464,6 @@ export function RecordsScreen({
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
 
-  /** Records in the same category, which is what "similar" means here. */
-  const showSimilar = React.useCallback(
-    (record: TransactionRow) => {
-      setDetailId(null);
-      if (!record.categoryId) return;
-      router.push(`/records?m=${monthKey}&category=${record.categoryId}`);
-    },
-    [monthKey, router],
-  );
-
-  /** Opens a new record pre-filled from an existing one. */
-  const copyOf = React.useCallback(
-    (record: TransactionRow) => {
-      setDetailId(null);
-      sheet.openCopy({
-        ...draftOf(record),
-        // Today, not the original date: a duplicate is almost always "the
-        // same thing again, now".
-        occurredAtLocal: nowLocal(timeZone),
-        // The copy is its own record, not another instance of a rule.
-        recurringRuleId: null,
-      });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sheet, timeZone],
-  );
-
   /*
    * How much of the month is left, counted from the days the card draws.
    *
@@ -648,21 +609,17 @@ export function RecordsScreen({
         onSearch={() => setSearchOpen(true)}
       >
         <div className="space-y-4">
-          {recap && recapMonthLabel ? (
-            <MonthRecap recap={recap} monthLabel={recapMonthLabel} />
-          ) : null}
-
+          {/* The month card and nothing above it. A recap of last month and
+              a sentence about this one used to sit around it; both were
+              commentary on a screen whose job is the records themselves.
+              The sentence still lives on Analysis, where it belongs. */}
           <MonthStar
             summary={summary}
             days={monthDays}
             today={today}
             daysLeft={daysLeft}
             trend={trend}
-            // The recap takes the accent on the one day it appears.
-            flat={Boolean(recap && recapMonthLabel)}
           />
-
-          <InsightStrip>{insight}</InsightStrip>
         </div>
       </CollapsingHeader>
 
@@ -769,12 +726,6 @@ export function RecordsScreen({
                         // fast path for people who know it is there.
                         onOpen={() => setDetailId(record.id)}
                         onEdit={() => sheet.openEdit(draftOf(record))}
-                        onCopy={() => copyOf(record)}
-                        onShowSimilar={
-                          record.categoryId
-                            ? () => showSimilar(record)
-                            : undefined
-                        }
                         onDelete={() => remove(record)}
                       />
                     </li>
@@ -800,10 +751,6 @@ export function RecordsScreen({
             setDetailId(null);
             sheet.openEdit(draftOf(detail));
           }}
-          onCopy={() => detail && copyOf(detail)}
-          onShowSimilar={
-            detail?.categoryId ? () => showSimilar(detail) : undefined
-          }
           onDelete={() => {
             if (!detail) return;
             setDetailId(null);

@@ -6,15 +6,9 @@ import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { getProfile } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 
-/** Today as the user's own calendar sees it, `yyyy-mm-dd`. */
-export function localToday(timeZone: string, now: Date = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-}
+import { localToday } from "@/lib/dates";
+
+export { localToday };
 
 /**
  * Creates whatever the user's recurring rules owe, at most once a day.

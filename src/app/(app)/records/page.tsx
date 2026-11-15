@@ -6,7 +6,6 @@ import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { getMonthContext, parseFilters } from "@/lib/month-param";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
-import { getMonthRecap } from "@/lib/queries/recap";
 import {
   getCreatedOccurrences,
   getRecurringRules,
@@ -19,19 +18,9 @@ import {
 import { addDays } from "@/lib/recurrence";
 import { localToday } from "@/lib/recurring-check";
 import { upcomingBetween } from "@/lib/recurring-rule";
-import { getMonthInsight } from "@/lib/queries/month-insight";
-import { getProfile } from "@/lib/profile";
 import { transactionFiltersSchema } from "@/lib/schemas/transactions";
 
 export const metadata: Metadata = { title: "Records" };
-
-/** "October" — the month the recap is about. */
-function monthName(firstOfMonth: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
-    timeZone: "UTC",
-    month: "long",
-  }).format(new Date(`${firstOfMonth}T00:00:00Z`));
-}
 
 export default async function RecordsPage({
   searchParams,
@@ -78,36 +67,6 @@ export default async function RecordsPage({
     year: month.month === 1 ? month.year - 1 : month.year,
     month: month.month === 1 ? 12 : month.month - 1,
   };
-  const previousStart = `${previousMonth.year}-${String(previousMonth.month).padStart(2, "0")}-01`;
-
-  /*
-   * Last month's recap, on the first visit of the new one.
-   *
-   * Decided before it is started, so the queries only run on the days the
-   * card can actually be shown, and started alongside the month's own
-   * queries rather than after them, so it costs no round trip of its own.
-   * getProfile() is cached per request and the layout has already awaited
-   * it, so the guard itself is free.
-   *
-   * The catch matters: this promise is awaited after the others, and a
-   * throw from the RPC in between would be an unhandled rejection. A recap
-   * is the least important thing on the screen — it can be missing.
-   */
-  const profile = await getProfile();
-
-  const wantsRecap =
-    isCurrentMonth &&
-    activeFilterCount === 0 &&
-    profile?.recap_seen_for !== previousStart;
-
-  const recapPromise = wantsRecap
-    ? getMonthRecap(previousMonth.year, previousMonth.month).catch(
-        (thrown: unknown) => {
-          console.error("[records]", thrown);
-          return null;
-        },
-      )
-    : Promise.resolve(null);
 
   const createdPromise = rulesPromise.then((loaded) =>
     getCreatedOccurrences(
@@ -122,7 +81,6 @@ export default async function RecordsPage({
     page,
     summary,
     previousSummary,
-    insight,
     monthDays,
     accounts,
     categories,
@@ -140,18 +98,6 @@ export default async function RecordsPage({
       // Last month's totals, for the trend pill on the month card. Already
       // in the same Promise.all, so it costs no extra round trip.
       getMonthSummary(previousMonth.year, previousMonth.month),
-      /*
-       * The sentence under the card, from the same rows Analysis uses.
-       *
-       * Caught here as well as inside: it is one decorative line on the
-       * screen people open most, and a rejection anywhere in this
-       * Promise.all takes the whole page with it. The function already
-       * swallows a query error; this catches a thrown one.
-       */
-      getMonthInsight(month.year, month.month).catch((thrown: unknown) => {
-        console.error("[records]", thrown);
-        return null;
-      }),
       // The shape of the month, for the bars on the card.
       getMonthDays(month.year, month.month),
       getActiveAccounts().then((result) => result.rows),
@@ -164,9 +110,7 @@ export default async function RecordsPage({
     ? upcomingBetween(rules, today, weekAhead, created)
     : [];
 
-  const recap = await recapPromise;
-
-  // The header, the recap and the month card are rendered by the screen
+  // The header and the month card are rendered by the screen
   // rather than here: the header collapses the card into a one-line summary
   // once it scrolls away, which means it has to know where the card ends.
   return (
@@ -184,7 +128,6 @@ export default async function RecordsPage({
         }}
         monthDays={monthDays}
         previousExpense={previousSummary.expense.toString()}
-        insight={insight}
         monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}
@@ -193,8 +136,6 @@ export default async function RecordsPage({
         upcoming={upcoming}
         today={today}
         monthNav={month}
-        recap={recap}
-        recapMonthLabel={recap ? monthName(previousStart) : null}
       />
     </PageShell>
   );

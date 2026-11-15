@@ -39,8 +39,6 @@ type RecordSheetContextValue = {
   /** Opens a blank sheet, optionally on the Income or Transfer tab. */
   openAdd: (type?: TransactionType) => void;
   openEdit: (draft: RecordDraft) => void;
-  /** Opens a new record pre-filled from an existing one. */
-  openCopy: (draft: Omit<RecordDraft, "mode">) => void;
   /**
    * Lets the screen showing the records take over saving, so the row can
    * appear before the server answers. Returns the undo function.
@@ -60,7 +58,6 @@ type RecordSheetContextValue = {
 const RecordSheetContext = React.createContext<RecordSheetContextValue>({
   openAdd: () => {},
   openEdit: () => {},
-  openCopy: () => {},
   setSubmitHandler: () => () => {},
   setDeleteHandler: () => () => {},
   lastSavedId: null,
@@ -136,10 +133,6 @@ export function RecordSheetProvider({
       },
       openEdit: (next) => {
         setDraft({ ...next, mode: "edit" });
-        setOpen(true);
-      },
-      openCopy: (next) => {
-        setDraft({ ...next, mode: "copy" });
         setOpen(true);
       },
       setSubmitHandler: (handler) => {

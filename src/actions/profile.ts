@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { z } from "zod";
 
 import {
   type ActionResult,
@@ -381,7 +380,6 @@ export async function deleteAccount(input: {
 async function setPreference(
   patch: Partial<{
     haptics: boolean;
-    recap_seen_for: string;
     first_record_seen: boolean;
     show_paise: boolean;
   }>,
@@ -452,24 +450,6 @@ export async function setShowPaise(
   return saved;
 }
 
-/**
- * The first day of a month that has already started.
- *
- * `new Date("9999-99-99")` is Invalid Date rather than a throw, and the
- * regex alone would let it through to the column.
- */
-const monthStartSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-01$/, "not a month")
-  .refine((value) => {
-    const parsed = new Date(`${value}T00:00:00Z`);
-    return (
-      !Number.isNaN(parsed.getTime()) &&
-      parsed.toISOString().slice(0, 10) === value &&
-      parsed.getTime() <= Date.now()
-    );
-  }, "not a month that has happened");
-
 /** Called once, the first time somebody saves a record. */
 export async function markFirstRecordSeen(): Promise<ActionResult<undefined>> {
   return setPreference(
@@ -478,24 +458,3 @@ export async function markFirstRecordSeen(): Promise<ActionResult<undefined>> {
   );
 }
 
-/**
- * Hides this month's recap card.
- *
- * Takes the month it is dismissing rather than "now": the card is for the
- * month that just ended, and a clock a few seconds out should not be able to
- * dismiss the wrong one.
- */
-export async function dismissRecap(
-  month: string,
-): Promise<ActionResult<undefined>> {
-  // The first of a real month, and not one that has not happened yet: the
-  // column decides whether a recap is ever shown again, so a value the
-  // client made up should not reach it.
-  const parsed = monthStartSchema.safeParse(month);
-  if (!parsed.success) return fail("Could not dismiss that.");
-
-  return setPreference(
-    { recap_seen_for: parsed.data },
-    "Could not dismiss that.",
-  );
-}

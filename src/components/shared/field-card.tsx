@@ -11,23 +11,22 @@ import { cn } from "@/lib/utils";
  * the value below with its icon, which is the reference's arrangement and
  * the reason two of them fit side by side at 360px.
  *
- * Three ways to be operable, in order of preference:
+ * Two ways to be operable:
  *
- *  - `control`: a real native control — a `<select>`, an `<input
- *    type="datetime-local">` — laid over the card at zero opacity. The card
- *    draws the value the way this app draws values (a tint tile, "Today,
- *    1:30 pm"), which no native control can be made to do, while the thing
- *    a tap, a keyboard and a screen reader actually meet is the native one.
- *    The card then takes the focus ring on its behalf.
- *  - `onClick`: a button, for a choice that opens something of our own.
+ *  - a button that opens something of our own: `onClick`, or `asTrigger`
+ *    for a Select or a date panel that attaches its own handlers.
  *  - neither: a read-only fact.
+ *
+ * There used to be a third, an invisible native control laid over the
+ * card. It is gone with the last native select and date input: the OS
+ * pickers matched nothing else in the app, and the date ones could not be
+ * typed into on a phone.
  */
 export function FieldCard({
   label,
   icon,
   value,
   onClick,
-  control,
   invalid = false,
   className,
   asTrigger = false,
@@ -47,8 +46,6 @@ export function FieldCard({
   value: React.ReactNode;
   /** Omit for a read-only fact. */
   onClick?: () => void;
-  /** A native control to lay over the card; see above. */
-  control?: React.ReactNode;
   /** The save was refused because of this field. */
   invalid?: boolean;
   className?: string;
@@ -68,28 +65,6 @@ export function FieldCard({
       </span>
     </>
   );
-
-  if (control) {
-    return (
-      // The ring is drawn here because the control inside is invisible, and
-      // an outline on something with no pixels is an outline nobody sees.
-      <div
-        className={cn(
-          base,
-          "relative has-[:focus-visible]:outline-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2",
-        )}
-      >
-        {/* The native control below carries the same words to the
-            accessibility tree, and says what kind of control it is. */}
-        <span aria-hidden="true" className="block">
-          {inside}
-        </span>
-        <span className="absolute inset-0 opacity-0 [&>*]:size-full">
-          {control}
-        </span>
-      </div>
-    );
-  }
 
   if (!onClick && !asTrigger) return <div className={base}>{inside}</div>;
 

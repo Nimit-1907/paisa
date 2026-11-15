@@ -4,9 +4,10 @@ import * as React from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { Search } from "lucide-react";
+import { RotateCcw, Search } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
+import { DateInput } from "@/components/shared/date-input";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { TilePicker } from "@/components/shared/tile-picker";
 import type {
@@ -328,38 +329,46 @@ export function FiltersSheet({
         </div>
 
         <div className="grid grid-cols-2 gap-2">
+          {/* Typed (digits only, the slashes draw themselves) or picked
+              off the calendar behind the icon. Each end bounds the other,
+              so a range can never run backwards. */}
           <FormRow id="filter-from" label="From">
             {(props) => (
-              <Input
-                {...props}
-                type="date"
+              <DateInput
+                id={props.id}
+                aria-describedby={props["aria-describedby"]}
                 value={from}
-                onChange={(event) => setFrom(event.target.value)}
+                max={to || undefined}
+                onChange={setFrom}
               />
             )}
           </FormRow>
 
           <FormRow id="filter-to" label="To">
             {(props) => (
-              <Input
-                {...props}
-                type="date"
+              <DateInput
+                id={props.id}
+                aria-describedby={props["aria-describedby"]}
                 value={to}
-                onChange={(event) => setTo(event.target.value)}
+                min={from || undefined}
+                onChange={setTo}
               />
             )}
           </FormRow>
         </div>
       </SheetBody>
 
-      <SheetFooter>
+      {/* Reset is an icon: the recognisable "start over" arrow, square
+          beside the one action this sheet exists for. */}
+      <SheetFooter className="flex-row gap-2">
         <Button
           variant="outline"
-          size="touch"
-          className="flex-1"
+          size="icon-touch"
+          aria-label="Reset filters"
+          title="Reset filters"
           onClick={clearAll}
         >
-          Clear all
+          <RotateCcw className="size-5" aria-hidden="true" />
         </Button>
         <Button size="touch" className="flex-1" onClick={apply}>
           Show results

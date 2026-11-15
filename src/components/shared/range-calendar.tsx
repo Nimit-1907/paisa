@@ -71,17 +71,33 @@ const WEEKDAY_NAMES = ["S", "M", "T", "W", "T", "F", "S"];
 export function RangeCalendar({
   from,
   to,
-  max,
+  max = "9999-12-31",
+  min = "0000-01-01",
   today,
   weekStart = 1,
+  single = false,
+  bleed = true,
   onChange,
   className,
 }: {
   /** `yyyy-mm-dd`, or "" for an end that has not been chosen. */
   from: string;
   to: string;
-  /** The last selectable day, usually today. */
-  max: string;
+  /** The last selectable day. Omit for no limit. */
+  max?: string;
+  /** The first selectable day. Omit for no limit. */
+  min?: string;
+  /**
+   * Pick one day rather than a range: every tap sets both ends to it. The
+   * date fields use this, so a single date and a range are chosen off the
+   * same calendar.
+   */
+  single?: boolean;
+  /**
+   * Break out of a card's padding to reach 44px cells at 360px. Off inside
+   * a popover, which has no card padding to borrow.
+   */
+  bleed?: boolean;
   /** Today where the user is, for the ring. */
   today: string;
   /** 0 = Sunday, 1 = Monday. From the profile. */
@@ -113,6 +129,11 @@ export function RangeCalendar({
   ];
 
   function choose(day: string) {
+    if (single) {
+      onChange({ from: day, to: day });
+      return;
+    }
+
     // Nothing chosen, or a complete range: start again from here.
     if (!from || (from && to)) {
       onChange({ from: day, to: "" });
@@ -131,6 +152,7 @@ export function RangeCalendar({
           variant="ghost"
           size="icon-touch"
           aria-label="Previous month"
+          disabled={month <= monthStart(min)}
           onClick={() => setMonth(shiftMonth(month, -1))}
         >
           <ChevronLeft className="size-5" aria-hidden="true" />
@@ -165,7 +187,10 @@ export function RangeCalendar({
       */}
       <div
         aria-hidden="true"
-        className="text-text-secondary -mx-4 grid grid-cols-7 text-center text-[11px] sm:mx-0"
+        className={cn(
+          "text-text-secondary grid grid-cols-7 text-center text-[11px]",
+          bleed && "-mx-4 sm:mx-0",
+        )}
       >
         {names.map((name, index) => (
           <span key={`${name}-${index}`} className="py-1">
@@ -185,7 +210,7 @@ export function RangeCalendar({
       <div
         role="group"
         aria-label={`Days in ${label}`}
-        className="-mx-4 grid grid-cols-7 sm:mx-0"
+        className={cn("grid grid-cols-7", bleed && "-mx-4 sm:mx-0")}
       >
         {Array.from({ length: lead }, (_, index) => (
           <span key={`lead-${index}`} />
@@ -204,7 +229,7 @@ export function RangeCalendar({
           // end of the range that was handed in, because a month period
           // runs to the 30th while today is the 15th. Dimming it then
           // would hide the end of the range the sheet opened on.
-          const disabled = day > max && !isStart && !isEnd;
+          const disabled = (day > max || day < min) && !isStart && !isEnd;
 
           return (
             <button
