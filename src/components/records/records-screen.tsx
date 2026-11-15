@@ -54,6 +54,7 @@ import {
   useRemoveFilter,
 } from "@/components/records/use-clear-filters";
 import { ActiveFilters } from "@/components/records/active-filters";
+import { RecordDetail } from "@/components/records/record-detail";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 import { cn } from "@/lib/utils";
@@ -174,6 +175,8 @@ export function RecordsScreen({
   const [more, setMore] = React.useState(hasMore);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
+  /** The record whose detail sheet is open, by id. */
+  const [detailId, setDetailId] = React.useState<string | null>(null);
 
   // Ids the user has deleted, so a refresh that still carries them (or a
   // page loaded earlier) does not put them back.
@@ -452,6 +455,46 @@ export function RecordsScreen({
     [visible, timeZone, today],
   );
 
+  /*
+   * Held by id rather than by value.
+   *
+   * The record behind an open detail sheet can change underneath it — an
+   * edit saved from the sheet, a refresh landing, the row deleted in
+   * another tab. Looking it up each render means the sheet shows what is
+   * true now, and closes itself when the row is gone rather than showing a
+   * record that no longer exists.
+   */
+  const detail = detailId
+    ? (visible.find((row) => row.id === detailId) ?? null)
+    : null;
+
+  /** Records in the same category, which is what "similar" means here. */
+  const showSimilar = React.useCallback(
+    (record: TransactionRow) => {
+      setDetailId(null);
+      if (!record.categoryId) return;
+      router.push(`/records?m=${monthKey}&category=${record.categoryId}`);
+    },
+    [monthKey, router],
+  );
+
+  /** Opens a new record pre-filled from an existing one. */
+  const copyOf = React.useCallback(
+    (record: TransactionRow) => {
+      setDetailId(null);
+      sheet.openCopy({
+        ...draftOf(record),
+        // Today, not the original date: a duplicate is almost always "the
+        // same thing again, now".
+        occurredAtLocal: nowLocal(timeZone),
+        // The copy is its own record, not another instance of a rule.
+        recurringRuleId: null,
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sheet, timeZone],
+  );
+
   /** A record as the sheet's draft. Shared by Edit and Duplicate. */
   const draftOf = React.useCallback(
     (record: TransactionRow) => ({
@@ -658,24 +701,14 @@ export function RecordsScreen({
                         record={record}
                         pending={record.id.startsWith("optimistic-")}
                         highlight={record.id === sheet.lastSavedId}
-                        onOpen={() => sheet.openEdit(draftOf(record))}
-                        onCopy={() =>
-                          sheet.openCopy({
-                            ...draftOf(record),
-                            // Today, not the original date: a duplicate is
-                            // almost always "the same thing again, now".
-                            occurredAtLocal: nowLocal(timeZone),
-                            // The copy is its own record, not another
-                            // instance of a rule.
-                            recurringRuleId: null,
-                          })
-                        }
+                        // Tapping opens the detail; the menu's Edit is the
+                        // fast path for people who know it is there.
+                        onOpen={() => setDetailId(record.id)}
+                        onEdit={() => sheet.openEdit(draftOf(record))}
+                        onCopy={() => copyOf(record)}
                         onShowSimilar={
                           record.categoryId
-                            ? () =>
-                                router.push(
-                                  `/records?m=${monthKey}&category=${record.categoryId}`,
-                                )
+                            ? () => showSimilar(record)
                             : undefined
                         }
                         onDelete={() => remove(record)}
@@ -691,6 +724,28 @@ export function RecordsScreen({
             ) : null}
           </div>
         )}
+
+        <RecordDetail
+          record={detail}
+          timeZone={timeZone}
+          onOpenChange={(next) => {
+            if (!next) setDetailId(null);
+          }}
+          onEdit={() => {
+            if (!detail) return;
+            setDetailId(null);
+            sheet.openEdit(draftOf(detail));
+          }}
+          onCopy={() => detail && copyOf(detail)}
+          onShowSimilar={
+            detail?.categoryId ? () => showSimilar(detail) : undefined
+          }
+          onDelete={() => {
+            if (!detail) return;
+            setDetailId(null);
+            remove(detail);
+          }}
+        />
 
         <SearchOverlay
           open={searchOpen}

@@ -39,6 +39,7 @@ export function RecordRow({
   highlight = false,
   selected = false,
   onOpen,
+  onEdit,
   onCopy,
   onDelete,
   onShowSimilar,
@@ -50,7 +51,10 @@ export function RecordRow({
   highlight?: boolean;
   /** Shown in the detail pane beside the list, on a wide screen. */
   selected?: boolean;
+  /** Tapping the row. Opens the detail. */
   onOpen: () => void;
+  /** The menu's Edit, which skips the detail. */
+  onEdit: () => void;
   onCopy: () => void;
   onDelete: () => void;
   /** Omitted for a transfer, which has no category to be similar to. */
@@ -116,7 +120,7 @@ export function RecordRow({
       }}
       swipeRight={{ label: "Copy", icon: Copy, onAction: onCopy }}
       menu={[
-        { label: "Edit", icon: Pencil, onAction: onOpen },
+        { label: "Edit", icon: Pencil, onAction: onEdit },
         { label: "Duplicate", icon: Copy, onAction: onCopy },
         ...(onShowSimilar
           ? [{ label: "Show similar", icon: Search, onAction: onShowSimilar }]

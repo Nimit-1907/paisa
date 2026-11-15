@@ -324,3 +324,60 @@ itself. Partial data does not apply.
 
 **Screenshots.** `records-390-search`, `records-390-filtered`,
 `records-390-filters`.
+
+---
+
+## 11. Record detail
+
+**Purpose.** Everything about one record, and every way out of it.
+
+**The trade, stated.** Opening a row used to go straight to the edit sheet,
+which is the fastest route to fixing a typo and the slowest to everything
+else: duplicating, finding the rest of a category, or seeing which rule
+created a record were all behind a long-press that announces itself to
+nobody. This adds one tap before editing and puts every action on a record in
+one visible place. The fast path survives — the row's own menu still has Edit
+on it, so people who know the gesture keep it.
+
+**Layout decisions**
+
+- A sheet on a phone, a centred dialog from `lg`, through the same
+  `ResponsiveSheet` every other sheet uses.
+- The amount is the hero, in the anchor serif, coloured by kind, and
+  **always exact**: a list can trim ".00", but the screen you opened to check
+  an amount cannot. `paise="show"` overrides the preference here.
+- Then the facts, as a `<dl>`: category with its dot, account (or
+  "Cash → HDFC" for a transfer), the full date and time, the note, and
+  "See the rule" when a recurring rule made it.
+- Duplicate and Show similar side by side; Delete as a quiet text button;
+  Edit as the one primary action in the sticky footer. Duplicate takes the
+  full width on its own when there is no category to be similar to — a
+  disabled button explaining why the other one is missing is noise where a
+  gap would do.
+- **Deliberately not a form.** Everything here is a fact or a place to go; the
+  moment it holds a value it has to worry about saving, and there is already
+  a sheet that does that properly.
+
+**Held by id, not by value.** The record behind an open sheet can change
+underneath it — an edit saved from the sheet, a refresh landing, the row
+deleted in another tab. Looking it up each render means the sheet shows what
+is true now and closes itself when the row is gone, rather than displaying a
+record that no longer exists.
+
+**Measured.** Tapping a row opens "Transport — Metro card top-up / −₹250.00 /
+Category / Account / When / Note / Repeats"; Edit swaps to the edit sheet;
+Show similar lands on `?m=2026-11&category=…` with a "Transport" chip.
+
+**States.** Loading does not apply — the record is already in the list that
+opened it. Empty cannot occur. Error and offline belong to the actions it
+launches. Success is the sheet closing behind an edit or a delete, with the
+list's own toast and Undo. Partial data does not apply.
+
+**Not done: the two-pane desktop layout.** The spec asks for list left,
+detail right at `lg`. The app shell currently caps every signed-in screen at
+768px, which is too narrow to split, and widening it is a change to how every
+page sizes itself. That is in the responsive pass (Part C) rather than
+smuggled in here; until then the detail is a centred dialog on desktop, which
+shows the same thing.
+
+**Screenshots.** `records-390-detail`.
