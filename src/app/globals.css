@@ -434,12 +434,21 @@
   font-size: 0.82em;
   font-weight: 600;
   color: var(--text-secondary);
+  /*
+   * A hair of air before the digits. Set solid, the symbol's own side
+   * bearing is all that separates two different sizes of type, and at hero
+   * scale — where the symbol is half the height of the figure — the ₹ reads
+   * as a mark on the first digit rather than as a word before it.
+   */
+  margin-inline-end: 0.12em;
 }
 
 @utility amount-hero {
   & .amount-unit {
     font-size: 0.5em;
     font-weight: 700;
+    /* 0.12em of a half-size symbol is half the gap; keep it even. */
+    margin-inline-end: 0.24em;
   }
 }
 

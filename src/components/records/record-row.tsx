@@ -81,7 +81,29 @@ export function RecordRow({
           icon={transfer ? "ArrowLeftRight" : record.categoryIcon}
         />
       }
-      title={transfer ? "Transfer" : (record.categoryName ?? "Uncategorised")}
+      /*
+       * A transfer has no category, so its title slot used to hold the
+       * constant word "Transfer" while the note and both account names
+       * fought over the second line — and at 360px all three lost, leaving
+       * "Paytm to… · HDFC Sa… → Paytm …", which answers nothing. The icon
+       * and the figure's colour already say "transfer"; the note goes in
+       * the free slot, and the accounts get the whole line to themselves.
+       * The word stays for a screen reader, which has no icon to read.
+       */
+      title={
+        transfer ? (
+          record.note ? (
+            <>
+              {record.note}
+              <span className="sr-only"> · Transfer</span>
+            </>
+          ) : (
+            "Transfer"
+          )
+        ) : (
+          (record.categoryName ?? "Uncategorised")
+        )
+      }
       titleBadge={
         record.recurringRuleId ? (
           <Repeat
@@ -92,7 +114,7 @@ export function RecordRow({
       }
       subtitle={
         <>
-          {record.note ? (
+          {record.note && !transfer ? (
             <>
               <span className="truncate">{record.note}</span>
               <span aria-hidden="true">·</span>

@@ -576,6 +576,20 @@ export function RecordsScreen({
     if (percent === 0) return null;
 
     const less = percent < 0;
+
+    /*
+     * Past a tripling, a percentage stops being a comparison and becomes a
+     * number to decode: one outlier record against a quiet previous month
+     * produced "247101% more than Oct", six digits of noise in a pill built
+     * for four characters. A multiple is the same fact in a shape a glance
+     * can take. Only the rising side needs it — spending cannot fall by
+     * more than 100%.
+     */
+    if (percent > 200) {
+      const times = Math.round(Number(current) / Number(previous));
+      return { better: false, text: `${times}× ${previousLabel}` };
+    }
+
     return {
       better: less,
       text: `${Math.abs(percent)}% ${less ? "less" : "more"} than ${previousLabel}`,
