@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
+import { ColorDot } from "@/components/shared/color-dot";
 import type {
   AccountOption,
   CategoryOption,
@@ -33,6 +34,66 @@ const TYPE_LABELS: Record<TransactionType, string> = {
   income: "Income",
   transfer: "Transfer",
 };
+
+/** `yyyy-mm-dd` for a UTC date, which is what the date inputs want. */
+const day = (date: Date) => date.toISOString().slice(0, 10);
+
+/**
+ * The date ranges people actually ask for.
+ *
+ * Built from today each time they are rendered rather than once at module
+ * load: a tab left open overnight would otherwise offer yesterday's
+ * "last 7 days".
+ *
+ * Computed in UTC, matching the `date` inputs beside them and the
+ * `yyyy-mm-dd` the server parses. The server turns these into the user's own
+ * local midnight, which is the only place a timezone belongs.
+ */
+const DATE_PRESETS = [
+  {
+    label: "Last 7 days",
+    range: () => {
+      const today = new Date();
+      const start = new Date(today);
+      start.setUTCDate(start.getUTCDate() - 6);
+      return { from: day(start), to: day(today) };
+    },
+  },
+  {
+    label: "Last 30 days",
+    range: () => {
+      const today = new Date();
+      const start = new Date(today);
+      start.setUTCDate(start.getUTCDate() - 29);
+      return { from: day(start), to: day(today) };
+    },
+  },
+  {
+    label: "First half",
+    range: () => {
+      const today = new Date();
+      const year = today.getUTCFullYear();
+      const month = today.getUTCMonth();
+      return {
+        from: day(new Date(Date.UTC(year, month, 1))),
+        to: day(new Date(Date.UTC(year, month, 15))),
+      };
+    },
+  },
+  {
+    label: "Second half",
+    range: () => {
+      const today = new Date();
+      const year = today.getUTCFullYear();
+      const month = today.getUTCMonth();
+      return {
+        from: day(new Date(Date.UTC(year, month, 16))),
+        // Day 0 of the next month is the last day of this one.
+        to: day(new Date(Date.UTC(year, month + 1, 0))),
+      };
+    },
+  },
+] as const;
 
 /**
  * Search and filters.
@@ -127,7 +188,7 @@ export function FiltersSheet({
           {(props) => (
             <div className="relative">
               <Search
-                className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
+                className="text-ink-2 pointer-events-none absolute inset-y-0 left-3 my-auto size-4"
                 aria-hidden="true"
               />
               <Input
@@ -186,6 +247,15 @@ export function FiltersSheet({
                 active={categoryIds.includes(category.id)}
                 onClick={() => setCategoryIds(toggle(categoryIds, category.id))}
               >
+                {/* The same dot the rows use. A list of forty category names
+                    is a wall of text; the colour is how people actually find
+                    the one they want. */}
+                <ColorDot
+                  size="sm"
+                  color={category.color}
+                  icon={category.icon}
+                  className="-ml-1.5"
+                />
                 {category.name}
               </Chip>
             ))}
@@ -218,6 +288,30 @@ export function FiltersSheet({
               />
             )}
           </FormRow>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Dates</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {DATE_PRESETS.map((preset) => {
+              const range = preset.range();
+              return (
+                <Chip
+                  key={preset.label}
+                  active={from === range.from && to === range.to}
+                  onClick={() => {
+                    // A second tap on the active preset clears it, so the
+                    // chips are not a one-way door into a date range.
+                    const on = from === range.from && to === range.to;
+                    setFrom(on ? "" : range.from);
+                    setTo(on ? "" : range.to);
+                  }}
+                >
+                  {preset.label}
+                </Chip>
+              );
+            })}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -277,10 +371,10 @@ function Chip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "focus-visible:ring-ring h-11 rounded-xl border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+        "focus-visible:ring-ring flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
         active
           ? "border-primary bg-primary/10 text-primary"
-          : "text-muted-foreground hoverable:bg-muted",
+          : "text-ink-2 hoverable:bg-muted",
       )}
     >
       {children}

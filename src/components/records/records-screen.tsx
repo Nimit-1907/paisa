@@ -49,7 +49,12 @@ import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { MonthRecap as MonthRecapData } from "@/lib/queries/recap";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
-import { useClearFilters } from "@/components/records/use-clear-filters";
+import {
+  useClearFilters,
+  useRemoveFilter,
+} from "@/components/records/use-clear-filters";
+import { ActiveFilters } from "@/components/records/active-filters";
+import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 import { cn } from "@/lib/utils";
 
@@ -119,6 +124,7 @@ export function RecordsScreen({
   const router = useRouter();
   const currency = useCurrency();
   const clearFilters = useClearFilters();
+  const removeFilter = useRemoveFilter();
   const sheet = useRecordSheet();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -145,6 +151,23 @@ export function RecordsScreen({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
+
+  const searchOpen = params.get("search") === "1";
+
+  /** Sets or clears `?search=1`, keeping the month and the filters. */
+  const setSearchOpen = React.useCallback(
+    (next: boolean) => {
+      const query = new URLSearchParams(params.toString());
+      if (next) query.set("search", "1");
+      else query.delete("search");
+
+      const text = query.toString();
+      router.replace(text ? `${pathname}?${text}` : pathname, {
+        scroll: false,
+      });
+    },
+    [params, pathname, router],
+  );
 
   const [pending, startTransition] = React.useTransition();
   const [loaded, setLoaded] = React.useState(rows);
@@ -520,7 +543,7 @@ export function RecordsScreen({
             size="icon-touch"
             className="rounded-full"
             aria-label="Search records"
-            onClick={() => router.push(`/records?m=${monthKey}&search=1`)}
+            onClick={() => setSearchOpen(true)}
           >
             <Search className="size-5" aria-hidden="true" />
           </Button>
@@ -556,6 +579,14 @@ export function RecordsScreen({
                 : "Filter"}
             </Button>
           }
+        />
+
+        <ActiveFilters
+          filters={filters}
+          accounts={accounts}
+          categories={categories}
+          onRemove={removeFilter}
+          onClearAll={clearFilters}
         />
 
         {visible.length === 0 ? (
@@ -660,6 +691,33 @@ export function RecordsScreen({
             ) : null}
           </div>
         )}
+
+        <SearchOverlay
+          open={searchOpen}
+          initialQuery={filters.search ?? ""}
+          categories={categories}
+          monthKey={monthKey}
+          onClose={() => setSearchOpen(false)}
+          onSearch={(term) => {
+            const query = new URLSearchParams(params.toString());
+            query.delete("search");
+            if (term) query.set("q", term);
+            else query.delete("q");
+            router.replace(`${pathname}?${query.toString()}`, {
+              scroll: false,
+            });
+          }}
+          onFilter={(extra) => {
+            const query = new URLSearchParams(params.toString());
+            query.delete("search");
+            for (const [key, value] of Object.entries(extra)) {
+              query.set(key, value);
+            }
+            router.replace(`${pathname}?${query.toString()}`, {
+              scroll: false,
+            });
+          }}
+        />
 
         <FiltersSheet
           open={filtersOpen}

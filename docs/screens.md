@@ -261,3 +261,66 @@ navigation happens in one step. Partial data does not apply.
 
 **Screenshots.** `onboarding-360-step1/2/3`, `onboarding-360-done`,
 `onboarding-360-nameclash`, `signup-360-sent`.
+
+---
+
+## 12. Search and filters
+
+**Purpose.** Stop reading the month, find one thing.
+
+**Search is a mode, not a field.** It takes the whole screen on a phone and
+becomes a dialog from `lg`. A box tucked inside the filters sheet made
+searching a three-tap detour, and the keyboard covered the results anyway.
+It lives at `?search=1`, like `?add=1` does, so a refresh keeps it open and
+the back button closes it.
+
+Under the input are the only two things worth offering:
+
+- **Recent searches**, which on a phone is most searches. Five, newest first,
+  matched case-insensitively so "Swiggy" after "swiggy" moves the one entry up
+  instead of making a second. Stored per device in `localStorage` with every
+  accessor wrapped — a private window makes them throw — and **shaped on the
+  way out**, because what is in storage was written by an older version of the
+  app, another tab, or by hand in devtools. Twelve tests cover that shaping
+  and the blocked-storage path.
+- **One-tap filters**: this month, over ₹1,000, income only, then the six
+  categories most used, each with the same coloured dot the rows carry.
+  A list of forty category names is a wall of text; the colour is how people
+  find the one they want.
+
+**Nothing is searched as you type.** A query per keystroke over a month of
+records is a lot of work to render a list nobody is reading yet, and the
+keyboard's own Search key is the gesture people already have. The input is
+`type="search"` with `enterKeyHint="search"` so that key says so.
+
+**Active filters are chips you can take off.** A filter you cannot see is a
+filter you forget, and "where did my records go?" is the support question that
+follows. The count on the Filter button says *how many*; the chips say
+*which*. Each reads as a sentence fragment — "Food", "over ₹1,000",
+"from 1 Nov" — because a bare value with no preposition is a guessing game
+about which field it belongs to. Removing one knows the difference between a
+single-valued parameter and a list: taking one category off leaves the others
+alone.
+
+An id with no category behind it — a hand-edited URL, or something deleted in
+another tab — still gets a chip, labelled generically, so it can be taken off
+rather than being invisible and permanent.
+
+**The filters sheet** gained date-range presets (last 7 days, last 30 days,
+first half, second half) and coloured category chips. The presets are built
+from today each time they render, not once at module load: a tab left open
+overnight would otherwise offer yesterday's "last 7 days". A second tap on
+the active preset clears it, so the chips are not a one-way door.
+
+**Measured.** Opening focuses the input; typing "metro" and pressing Enter
+gives `?q=metro`, 4 records, and a `"metro"` chip; reopening shows "metro"
+under Recent; "Last 7 days" fills `2026-11-09`→`2026-11-15` and a second tap
+empties both.
+
+**States.** Loading: the list behind keeps its own skeleton. Empty: the
+records empty state switches to "Nothing matches those filters" with a Clear
+filters button. Error and offline are the list's. Success is the result set
+itself. Partial data does not apply.
+
+**Screenshots.** `records-390-search`, `records-390-filtered`,
+`records-390-filters`.

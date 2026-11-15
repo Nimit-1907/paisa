@@ -27,3 +27,37 @@ export function useClearFilters() {
     );
   };
 }
+
+/**
+ * Drops one filter rather than all of them.
+ *
+ * `value` matters for the multi-valued ones: `category=a,b,c` should lose
+ * `b` and keep the rest, where `q` or `min` is simply removed. Without that
+ * distinction, taking one category chip off would clear every category.
+ */
+export function useRemoveFilter() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+
+  return (key: string, value?: string) => {
+    const next = new URLSearchParams(params.toString());
+
+    if (value === undefined) {
+      next.delete(key);
+    } else {
+      const rest = (next.get(key) ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item && item !== value);
+
+      if (rest.length) next.set(key, rest.join(","));
+      else next.delete(key);
+    }
+
+    router.replace(
+      next.toString() ? `${pathname}?${next.toString()}` : pathname,
+      { scroll: false },
+    );
+  };
+}
