@@ -16,7 +16,23 @@ import {
  * what search engines are told cannot drift apart.
  */
 
+/**
+ * `id` is how a page asks for one of these.
+ *
+ * The landing page wants Track, Budget and Recurring specifically, and
+ * reaching for them by position would break the moment this list is
+ * reordered or trimmed - silently on a type level, loudly at render.
+ */
+export type FeatureId =
+  | "track"
+  | "budget"
+  | "charts"
+  | "accounts"
+  | "recurring"
+  | "offline";
+
 export type Feature = {
+  id: FeatureId;
   icon: LucideIcon;
   title: string;
   body: string;
@@ -24,31 +40,37 @@ export type Feature = {
 
 export const FEATURES: Feature[] = [
   {
+    id: "track",
     icon: Zap,
     title: "Four taps to log a spend",
     body: "The sheet opens with the account you used last and the categories you usually pick at this hour. Type the amount, pick the category, save. It does the arithmetic too, so a split bill goes in as 840÷3.",
   },
   {
+    id: "budget",
     icon: Target,
     title: "A budget per category",
     body: "Set a monthly limit and the screen leads with the number you came for: what is left, and what that is per day for the days remaining. Amber at 80%, red when it is gone.",
   },
   {
+    id: "charts",
     icon: ChartPie,
     title: "Charts that agree with the list",
     body: "Spending by category, day by day, and your running balance — all added up in the database from the same rows the Records tab shows, so the chart and the list never disagree.",
   },
   {
+    id: "accounts",
     icon: Wallet,
     title: "Every account in one total",
     body: "Cash, bank, cards and wallets, with transfers between them that move money without counting as income or expense.",
   },
   {
+    id: "recurring",
     icon: Repeat2,
     title: "Rent that logs itself",
     body: "Set up the bills that repeat and they appear on the day they are due — including the months you did not open the app, caught up without ever duplicating a record.",
   },
   {
+    id: "offline",
     icon: WifiOff,
     title: "Works on your home screen",
     body: "Install it and it opens like an app, with the screens you have already visited still readable when you have no signal.",
@@ -94,3 +116,16 @@ export const FAQS: Faq[] = [
       "Yes. It is designed for a phone first, and from a laptop width the bottom tabs become a sidebar. The amount keypad takes a physical keyboard, including Enter to save.",
   },
 ];
+
+/**
+ * One feature by id, or a loud failure.
+ *
+ * Throwing rather than returning undefined: this runs while a Server
+ * Component renders, so a missing id becomes a build-time error on the page
+ * that asked for it instead of a blank card in production.
+ */
+export function feature(id: FeatureId): Feature {
+  const found = FEATURES.find((item) => item.id === id);
+  if (!found) throw new Error(`No feature called "${id}"`);
+  return found;
+}

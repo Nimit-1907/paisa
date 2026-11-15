@@ -1,4 +1,5 @@
-import { COLORS } from "@/lib/colors";
+import { Rupee } from "@/app/(marketing)/_crops";
+import { colorNamed } from "@/lib/colors";
 
 /**
  * The Records screen, drawn rather than photographed.
@@ -129,34 +130,6 @@ export function AppPreview() {
   );
 }
 
-/**
- * The rupee sign, drawn.
- *
- * Inter has no U+20B9 in the subset the rest of this page needs, so five of
- * these characters were pulling a second 85KB font file — on the one page
- * where first paint matters most, and only for the mock-up. The same mark as
- * a path costs nothing and is the shape lucide draws in the app itself.
- */
-function Rupee() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="inline-block size-[0.85em] align-[-0.08em]"
-    >
-      <path d="M6 3h12" />
-      <path d="M6 8h12" />
-      <path d="m6 13 8.5 8" />
-      <path d="M6 13h3" />
-      <path d="M9 13c6.667 0 6.667-10 0-10" />
-    </svg>
-  );
-}
-
 /** A month with a rent day in it, already scaled. */
 const DAYS = [
   18, 100, 12, 8, 26, 14, 48, 40, 10, 8, 22, 16, 11, 24, 32, 8, 15, 28, 10,
@@ -165,7 +138,7 @@ const DAYS = [
 
 /** The same swatches the app uses: green, sky and orange from the palette. */
 const ROWS = [
-  { name: "Groceries", account: "Paytm Wallet", amount: "400", color: COLORS[13] },
-  { name: "Transport", account: "Metro card", amount: "500", color: COLORS[1] },
-  { name: "Food", account: "ICICI Credit", amount: "484", color: COLORS[9] },
+  { name: "Groceries", account: "Paytm Wallet", amount: "400", color: colorNamed("green") },
+  { name: "Transport", account: "Metro card", amount: "500", color: colorNamed("sky") },
+  { name: "Food", account: "ICICI Credit", amount: "484", color: colorNamed("orange") },
 ];

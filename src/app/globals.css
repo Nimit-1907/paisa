@@ -432,6 +432,44 @@
 }
 
 /*
+ * The public header, which earns its background by scrolling.
+ *
+ * Driven by a scroll timeline rather than a scroll listener, so the marketing
+ * pages stay what they are: server-rendered markup with nothing to hydrate.
+ * A client component for this would have put a React tree on the one page
+ * whose whole job is painting fast.
+ *
+ * The keyframe has only a `from`. The implicit `to` is the element's own
+ * glass, which means every way this can fail - no scroll-timeline support, a
+ * reduced-motion rule collapsing the duration - fails to a header that is
+ * simply always frosted. The bad outcome would be a header stuck transparent
+ * over scrolled content, and there is no path to it.
+ */
+@keyframes paisa-header-top {
+  from {
+    background-color: transparent;
+    border-color: transparent;
+    backdrop-filter: none;
+  }
+}
+
+/*
+ * A plain class rather than an `@utility`, on purpose.
+ *
+ * A utility whose whole body is a nested at-rule has nothing to emit at the
+ * top level, and relying on a build step to hoist it correctly is relying on
+ * an implementation detail. Written as ordinary CSS it is the same rule with
+ * one less thing that can quietly stop being generated.
+ */
+@supports (animation-timeline: scroll()) {
+  .site-header {
+    animation: paisa-header-top linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 72px;
+  }
+}
+
+/*
  * The one gradient in the app.
  *
  * Barely there — a wash of the brand colour across a surface, so the star

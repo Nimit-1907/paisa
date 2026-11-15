@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 
 import Link from "next/link";
 
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ChevronDown } from "lucide-react";
 
 import { AppPreview } from "@/app/(marketing)/_app-preview";
-import { FEATURES } from "@/app/(marketing)/_content";
+import { FAQS, FEATURES, feature } from "@/app/(marketing)/_content";
+import {
+  BudgetCrop,
+  RecurringCrop,
+  TrackCrop,
+} from "@/app/(marketing)/_crops";
 import { SITE, siteOrigin } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -27,12 +32,19 @@ export const metadata: Metadata = {
 };
 
 /** Four taps, named, because the claim in the hero has to be checkable. */
-const STEPS = [
-  "Tap +",
-  "Type the amount",
-  "Pick the category",
-  "Save",
-];
+const STEPS = ["Tap +", "Type the amount", "Pick the category", "Save"];
+
+/**
+ * The three blocks, each with a crop of the screen it is about.
+ *
+ * Track, Budget, Recurring — the three things somebody decides between when
+ * they are choosing one of these apps, in the order they would meet them.
+ */
+const BLOCKS = [
+  { feature: feature("track"), crop: TrackCrop, label: "Track" },
+  { feature: feature("budget"), crop: BudgetCrop, label: "Budget" },
+  { feature: feature("recurring"), crop: RecurringCrop, label: "Recurring" },
+] as const;
 
 export default function LandingPage() {
   const origin = siteOrigin();
@@ -75,8 +87,8 @@ export default function LandingPage() {
 
       {/*
         Above the fold: a headline, a sentence, one button, and the app.
-        What used to be here too — a second button and a line of
-        reassurance — competed with the only decision this page asks for.
+        The secondary route is a text link rather than a second button —
+        two buttons of equal weight is two decisions where there is one.
       */}
       <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
         <div>
@@ -84,27 +96,36 @@ export default function LandingPage() {
             Know where the month went.
           </h1>
 
-          <p className="text-muted-foreground mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
+          <p className="text-ink-2 mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
             {SITE.description}
           </p>
 
-          <Link
-            href="/signup"
-            className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none active:scale-[0.97]"
-          >
-            Start tracking — it&rsquo;s free
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
+          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <Link
+              href="/signup"
+              className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring rounded-control inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none active:scale-[0.97]"
+            >
+              Get started free
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+
+            <Link
+              href="#how"
+              className="text-primary focus-visible:ring-ring rounded-control inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+            >
+              See how it works
+            </Link>
+          </div>
         </div>
 
         <AppPreview />
       </section>
 
-      <section className="bg-card rounded-2xl border p-5 sm:p-6">
+      <section id="how" className="bg-card rounded-card border p-5 sm:p-6">
         <h2 className="text-lg font-semibold tracking-tight">
           Logging an expense, in full
         </h2>
-        <p className="text-muted-foreground mt-1 text-sm">
+        <p className="text-ink-2 mt-1 text-sm">
           Four taps, because the account and the date are already filled in and
           the categories you use at this time of day are at the top.
         </p>
@@ -113,7 +134,7 @@ export default function LandingPage() {
           {STEPS.map((step, index) => (
             <li
               key={step}
-              className="bg-background flex items-center gap-2.5 rounded-xl border p-3"
+              className="bg-background rounded-control flex items-center gap-2.5 border p-3"
             >
               <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
                 {index + 1}
@@ -125,28 +146,19 @@ export default function LandingPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-semibold tracking-tight">
-          What you get
-        </h2>
+        <h2 className="text-lg font-semibold tracking-tight">What you get</h2>
 
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.slice(0, 3).map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <li
-                key={feature.title}
-                className="bg-card rounded-2xl border p-4"
-              >
-                <span className="bg-muted text-muted-foreground mb-3 flex size-10 items-center justify-center rounded-xl">
-                  <Icon className="size-5" aria-hidden="true" />
-                </span>
-                <h3 className="text-sm font-semibold">{feature.title}</h3>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {feature.body}
-                </p>
-              </li>
-            );
-          })}
+        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+          {BLOCKS.map(({ feature, crop: Crop, label }) => (
+            <li key={label} className="bg-card rounded-card border p-4">
+              <Crop />
+              <p className="text-ink-3 text-label font-semibold tracking-wide uppercase">
+                {label}
+              </p>
+              <h3 className="mt-0.5 text-sm font-semibold">{feature.title}</h3>
+              <p className="text-ink-2 mt-1 text-sm">{feature.body}</p>
+            </li>
+          ))}
         </ul>
 
         <p className="mt-4 text-sm">
@@ -177,16 +189,62 @@ export default function LandingPage() {
             </li>
           ))}
         </ul>
+      </section>
 
-        <p className="mt-6">
-          <Link
-            href="/signup"
-            className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring inline-flex min-h-12 items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
-          >
-            Create your account
-            <ArrowRight className="size-4" aria-hidden="true" />
+      {/*
+        An accordion built from <details>, not from a component.
+
+        It is an accordion in the sense that matters — one question per row,
+        answers that open and close, operable from the keyboard — and it costs
+        this page nothing to hydrate. The full FAQ at /faq leaves every answer
+        open instead, because that is the page search engines read for rich
+        results and a collapsed answer does not qualify.
+      */}
+      <section className="mt-10 border-t pt-8">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Questions people ask first
+        </h2>
+
+        <div className="mt-4 space-y-2">
+          {FAQS.slice(0, 4).map((faq) => (
+            <details
+              key={faq.question}
+              className="bg-card rounded-card group border px-4"
+            >
+              <summary className="focus-visible:ring-ring marker:content-none flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none">
+                {faq.question}
+                <ChevronDown
+                  className="text-ink-2 size-4 shrink-0 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+                  aria-hidden="true"
+                />
+              </summary>
+              <p className="text-ink-2 pb-4 text-sm">{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+
+        <p className="mt-4 text-sm">
+          <Link href="/faq" className="text-primary underline">
+            All the questions
           </Link>
         </p>
+      </section>
+
+      <section className="mt-10 border-t pt-8 text-center">
+        <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
+          Start with today&rsquo;s first expense.
+        </h2>
+        <p className="text-ink-2 mx-auto mt-2 max-w-[46ch] text-sm">
+          It takes a minute to set up and four taps after that. Nothing to pay,
+          nothing to connect.
+        </p>
+        <Link
+          href="/signup"
+          className="bg-primary text-primary-foreground hoverable:bg-primary/90 focus-visible:ring-ring rounded-control mt-6 inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+        >
+          Get started free
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
       </section>
     </>
   );

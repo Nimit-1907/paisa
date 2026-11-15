@@ -30,7 +30,49 @@ export const COLORS = [
   "#69737D", // slate
 ] as const;
 
+/**
+ * The same sixteen, in the same order, as names.
+ *
+ * So a page that wants "the green one" can say so. Reaching into COLORS by
+ * position works right up until the palette is reordered, and then it works
+ * differently without anything failing. The two arrays are kept in step by a
+ * test rather than by a comment.
+ */
+export const COLOR_NAMES = [
+  "teal",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "fuchsia",
+  "pink",
+  "rose",
+  "red",
+  "orange",
+  "amber",
+  "gold",
+  "lime",
+  "green",
+  "emerald",
+  "slate",
+] as const;
+
+export type ColorName = (typeof COLOR_NAMES)[number];
+
 export type Color = (typeof COLORS)[number];
+
+/**
+ * One swatch by name.
+ *
+ * Throws on a name that is not one, so a typo stops the build rather than
+ * rendering a dot with no background - which is invisible, and looks like a
+ * missing category rather than a mistake.
+ */
+export function colorNamed(name: ColorName): string {
+  const index = COLOR_NAMES.indexOf(name);
+  if (index < 0) throw new Error(`No swatch called "${name}"`);
+  return COLORS[index];
+}
 
 export const DEFAULT_COLOR: string = COLORS[0];
 
