@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 
 import { payOccurrenceNow } from "@/actions/recurring";
-import { useFormatMoney } from "@/components/profile-provider";
+import { Amount } from "@/components/shared/amount";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";
 import { Button } from "@/components/ui/button";
 import { ruleTitle, type UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -40,7 +40,6 @@ export function UpcomingStrip({
   today: string;
 }) {
   const router = useRouter();
-  const formatMoney = useFormatMoney();
 
   const [open, setOpen] = React.useState(false);
   const [paying, setPaying] = React.useState<string | null>(null);
@@ -119,7 +118,7 @@ export function UpcomingStrip({
         </span>
         {total > 0n ? (
           <span className="amount text-ink-2 shrink-0 text-xs font-semibold">
-            {formatMoney(total, { signDisplay: "never" })}
+            <Amount value={total} signDisplay="never" />
           </span>
         ) : null}
         <ChevronDown
@@ -149,9 +148,10 @@ export function UpcomingStrip({
                   </Link>
                   <span className="text-ink-2 block truncate text-xs">
                     {relativeDay(item.on, today)} ·{" "}
-                    {formatMoney(BigInt(rule.amount), {
-                      signDisplay: "never",
-                    })}
+                    <Amount
+                      value={BigInt(rule.amount)}
+                      signDisplay="never"
+                    />
                   </span>
                 </span>
 

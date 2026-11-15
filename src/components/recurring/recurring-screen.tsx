@@ -14,8 +14,10 @@ import {
   SkipForward,
   Trash2,
 } from "lucide-react";
+import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
-import { useFormatMoney } from "@/components/profile-provider";
+import { HeroStat } from "@/components/shared/hero-stat";
+import { SectionHeader } from "@/components/shared/section-header";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { DeleteRuleDialog } from "@/components/recurring/delete-rule-dialog";
 import { RuleAvatar } from "@/components/recurring/rule-avatar";
@@ -39,6 +41,7 @@ import {
   ruleTitle,
   scheduleOf,
 } from "@/lib/recurring-rule";
+import { dayDifference } from "@/lib/recurrence";
 import { relativeDay } from "@/lib/relative-day";
 import { cn } from "@/lib/utils";
 
@@ -83,14 +86,77 @@ export function RecurringScreen({
     );
   }
 
+  /*
+   * Due soon is the next seven days, and it comes *out* of Active rather
+   * than being repeated in it. A rule in two lists is a rule somebody pauses
+   * twice and is surprised the second time.
+   */
+  const dueSoon = active.filter(
+    (rule) => rule.dueOn && dayDifference(today, rule.dueOn) <= 7,
+  );
+  const dueSoonIds = new Set(dueSoon.map((rule) => rule.id));
+  const later = active.filter((rule) => !dueSoonIds.has(rule.id));
+
+  /*
+   * What the active rules add up to over this month.
+   *
+   * Expenses only — mixing a salary into "scheduled" would produce a figure
+   * that is neither what goes out nor what is left, and the question people
+   * are asking is the first one. Weekly rules count four times, which is the
+   * number of times they will actually be paid in most months.
+   */
+  const scheduledThisMonth = active.reduce((sum, rule) => {
+    if (rule.type !== "expense") return sum;
+    const times = rule.frequency === "weekly" ? 4n : 1n;
+    return sum + BigInt(rule.amount) * times;
+  }, 0n);
+
   return (
     <div className="space-y-6">
+      {/*
+        What this month costs you without deciding anything.
+
+        Rent, a phone bill and three subscriptions are a number people
+        cannot hold in their head, and it is the number that decides whether
+        a month is comfortable. It leads the screen for the same reason the
+        month card leads Records.
+      */}
+      <HeroStat
+        label="Scheduled this month"
+        value={<Amount value={scheduledThisMonth} signDisplay="never" whole />}
+        caption={
+          dueSoon.length > 0
+            ? `${dueSoon.length} due in the next 7 days`
+            : "Nothing due in the next 7 days"
+        }
+      />
+
+      {dueSoon.length > 0 ? (
+        <Section title="Due soon" count={dueSoon.length}>
+          {dueSoon.map((rule) => (
+            <RuleItem
+              key={rule.id}
+              rule={rule}
+              today={today}
+              pending={pending}
+              onEdit={() => setEditing(rule)}
+              onDelete={() => {
+                setDeleting(rule);
+                setDeleteOpen(true);
+              }}
+              onPause={() => void pause(rule)}
+              onSkip={rule.dueOn ? () => void skip(rule) : undefined}
+            />
+          ))}
+        </Section>
+      ) : null}
+
       <Section
         title="Active"
-        count={active.length}
+        count={later.length}
         empty="Nothing is scheduled right now."
       >
-        {active.map((rule) => (
+        {later.map((rule) => (
           <RuleItem
             key={rule.id}
             rule={rule}
@@ -168,9 +234,7 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="text-ink-2 mb-1.5 px-1 text-xs font-semibold tracking-wider uppercase">
-        {title} · {count}
-      </h2>
+      <SectionHeader className="mb-1.5 px-1" title={`${title} · ${count}`} />
 
       {count === 0 ? (
         empty ? (
@@ -206,7 +270,6 @@ function RuleItem({
   onResume?: () => void;
   onSkip?: () => void;
 }) {
-  const formatMoney = useFormatMoney();
   const title = ruleTitle(rule);
 
   return (
@@ -245,7 +308,7 @@ function RuleItem({
           )}
         >
           {rule.type === "income" ? "+" : rule.type === "expense" ? "−" : ""}
-          {formatMoney(BigInt(rule.amount), { signDisplay: "never" })}
+          <Amount value={BigInt(rule.amount)} signDisplay="never" />
         </span>
       </Link>
 

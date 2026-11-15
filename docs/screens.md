@@ -549,3 +549,54 @@ including the 1 left out of your total", `aria-pressed` flipping with it.
 **States.** Loading is the shell's. Empty is "No accounts yet" with Add
 account. Error and offline belong to the sheet. Success is its toast. Partial
 data does not apply.
+
+---
+
+## 18. Recurring (`/recurring`)
+
+**Purpose.** What repeats, what it costs, and what is about to happen.
+
+- **A hero: "Scheduled this month".** Rent, a phone bill and three
+  subscriptions are a number nobody holds in their head, and it is the number
+  that decides whether a month is comfortable. It leads the screen for the
+  same reason the month card leads Records.
+  - **Expenses only.** Mixing a salary into "scheduled" gives a figure that is
+    neither what goes out nor what is left, and the question being asked is
+    the first one.
+  - Weekly rules count four times, which is how often they are actually paid
+    in most months.
+- **Due soon** is the next seven days, and it comes *out* of Active rather
+  than being repeated above it. A rule in two lists is a rule somebody pauses
+  twice and is surprised the second time.
+- Amounts through `Amount`; headings through `SectionHeader`.
+
+**Measured**: "SCHEDULED THIS MONTH ₹24,448 / 1 due in the next 7 days", then
+"Due soon · 1" and "Active · 3". The total checks out by hand — ₹250 weekly
+×4, plus ₹22,000 rent, ₹799 and ₹649.
+
+**States.** Loading is the shell's. Empty is "No recurring records" with
+"Add a repeating record". Error and offline belong to the rule sheet. Success
+is its toast. Partial data does not apply.
+
+**Not done: the rule detail timeline** — the next five dates and the history
+list. The detail page exists with Pause/Resume, Skip, Edit and Delete from
+Phase 6; the timeline is in the gaps.
+
+---
+
+## 17, 19, 21. Categories, More, Export
+
+These three needed no structural change for Phase 13 — they were already a
+tabbed tile grid, a grouped list and a form. What they got is the sweep that
+went through every screen: the `text-ink-*` emphasis steps in place of
+`text-muted-foreground`, the two-radius family in place of `rounded-xl` and
+`rounded-2xl`, and `SectionHeader` for group headings.
+
+The radius sweep was not a blanket replacement. `rounded-xl` is 16.8px, which
+is neither of this app's two radii, so it became `rounded-card` where it sat
+on a card surface and `rounded-control` everywhere else — 48 files, verified
+by loading every signed-in screen at 390px and checking for overflow and page
+errors.
+
+**Not done on Categories:** drag-to-reorder already exists, but the spec's
+"live preview tile at the top of the edit sheet" does not. Listed in the gaps.

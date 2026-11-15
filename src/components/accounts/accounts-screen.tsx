@@ -29,7 +29,6 @@ import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
 import { HeroStat } from "@/components/shared/hero-stat";
 import { SectionHeader } from "@/components/shared/section-header";
-import { useFormatMoney } from "@/components/profile-provider";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DragHandle, SortableList } from "@/components/shared/sortable-list";
 import { Button } from "@/components/ui/button";
@@ -56,7 +55,6 @@ import { ColorDot } from "@/components/shared/color-dot";
  */
 export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
   const router = useRouter();
-  const formatMoney = useFormatMoney();
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<AccountView | undefined>();
@@ -253,7 +251,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
                 account={account}
                 isDragging={isDragging}
                 handleProps={handleProps}
-                formatMoney={formatMoney}
                 onEdit={() => openEdit(account)}
                 onArchive={() => void toggleArchived(account)}
                 onDelete={() => {
@@ -300,8 +297,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
                 <li key={account.id}>
                   <AccountRow
                     account={account}
-                    formatMoney={formatMoney}
-                    onEdit={() => openEdit(account)}
+                        onEdit={() => openEdit(account)}
                     onArchive={() => void toggleArchived(account)}
                     onDelete={() => {
                       lastDeleteName.current = account.name;
@@ -337,7 +333,6 @@ function AccountRow({
   account,
   handleProps,
   isDragging,
-  formatMoney,
   onEdit,
   onArchive,
   onDelete,
@@ -345,7 +340,6 @@ function AccountRow({
   account: AccountView;
   handleProps?: React.HTMLAttributes<HTMLElement>;
   isDragging?: boolean;
-  formatMoney: (minor: bigint) => string;
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
@@ -385,7 +379,7 @@ function AccountRow({
             balance < 0n && "text-expense",
           )}
         >
-          {formatMoney(balance)}
+          <Amount value={balance} />
         </span>
       </Link>
 
