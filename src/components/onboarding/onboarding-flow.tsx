@@ -538,8 +538,13 @@ function CurrencyStep({
               aria-checked={active}
               onClick={() => onSelect(currency)}
               className={cn(
-                "hoverable:bg-surface-muted  flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors   ",
-                active && "bg-surface-muted",
+                "flex min-h-14 w-full items-center gap-3 px-4 text-left",
+                "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
+                // The chosen row carries the ink edge every other selected
+                // thing in this app does, not just a change of background.
+                active
+                  ? "accent-sm bg-surface relative z-10"
+                  : "hoverable:bg-surface-muted border border-transparent",
               )}
             >
               <span className="amount text-text-secondary w-9 shrink-0 text-base">

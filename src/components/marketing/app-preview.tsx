@@ -1,5 +1,6 @@
 import { Rupee } from "@/components/marketing/crops";
-import { colorNamed } from "@/lib/colors";
+import { DynamicIcon } from "@/components/shared/dynamic-icon";
+import { cn } from "@/lib/utils";
 
 /**
  * The Records screen, drawn rather than photographed.
@@ -64,8 +65,8 @@ export function AppPreview() {
                     key={index}
                     className={
                       index === 14
-                        ? "bg-ink flex-1 rounded-full"
-                        : "bg-ink/25 flex-1 rounded-full"
+                        ? "bg-accent border-ink flex-1 rounded-full border-[1.5px]"
+                        : "bg-bar-muted flex-1 rounded-full"
                     }
                     style={{ height: `${Math.min(100, Math.max(8, spent))}%` }}
                   />
@@ -79,11 +80,20 @@ export function AppPreview() {
 
             <div className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
               {ROWS.map((row) => (
-                <div key={row.name} className="flex items-center gap-2 px-2.5 py-2">
+                <div
+                  key={row.name}
+                  className="flex items-center gap-2 px-2.5 py-2"
+                >
+                  {/* The tinted square the app draws, so the picture on
+                      the landing page is a picture of the product. */}
                   <span
-                    className="size-6 shrink-0 rounded-full"
-                    style={{ backgroundColor: row.color }}
-                  />
+                    className={cn(
+                      "text-text rounded-control flex size-6 shrink-0 items-center justify-center",
+                      row.tint,
+                    )}
+                  >
+                    <DynamicIcon name={row.icon} className="size-3.5" />
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[11px] font-semibold">
                       {row.name}
@@ -132,13 +142,31 @@ export function AppPreview() {
 
 /** A month with a rent day in it, already scaled. */
 const DAYS = [
-  18, 100, 12, 8, 26, 14, 48, 40, 10, 8, 22, 16, 11, 24, 32, 8, 15, 28, 10,
-  62, 14, 8, 20, 16, 36, 12, 8, 26, 18, 8,
+  18, 100, 12, 8, 26, 14, 48, 40, 10, 8, 22, 16, 11, 24, 32, 8, 15, 28, 10, 62,
+  14, 8, 20, 16, 36, 12, 8, 26, 18, 8,
 ];
 
 /** The same swatches the app uses: green, sky and orange from the palette. */
 const ROWS = [
-  { name: "Groceries", account: "Paytm Wallet", amount: "400", color: colorNamed("green") },
-  { name: "Transport", account: "Metro card", amount: "500", color: colorNamed("sky") },
-  { name: "Food", account: "ICICI Credit", amount: "484", color: colorNamed("orange") },
+  {
+    name: "Groceries",
+    account: "Paytm Wallet",
+    amount: "400",
+    tint: "bg-tint-peach",
+    icon: "ShoppingBasket",
+  },
+  {
+    name: "Transport",
+    account: "Metro card",
+    amount: "500",
+    tint: "bg-tint-sky",
+    icon: "Bus",
+  },
+  {
+    name: "Food",
+    account: "ICICI Credit",
+    amount: "484",
+    tint: "bg-tint-rose",
+    icon: "UtensilsCrossed",
+  },
 ];

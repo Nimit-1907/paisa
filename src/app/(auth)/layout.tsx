@@ -11,8 +11,9 @@ import { AppPreview } from "@/components/marketing/app-preview";
  * left half is also the only place a signed-out visitor sees what they are
  * signing in to.
  *
- * The grain sits over the whole frame rather than over a card. These screens
- * are mostly empty surface, which is what the texture is for.
+ * Phase 14 took the grain off it. The texture was there to stop a large
+ * empty surface reading as unfinished; a hairline split and a card on each
+ * side does that without a background image.
  */
 export default function AuthLayout({
   children,
@@ -28,10 +29,7 @@ export default function AuthLayout({
           screen.
         */}
         <aside className="bg-surface-muted hidden flex-col items-center justify-center gap-8 border-r p-10 lg:flex">
-          <Link
-            href="/"
-            className=" rounded-control flex items-center gap-2 "
-          >
+          <Link href="/" className=" rounded-control flex items-center gap-2 ">
             <span className="font-display text-text text-xl">Paisa</span>
           </Link>
 

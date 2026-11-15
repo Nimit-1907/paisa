@@ -12,8 +12,10 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#f8fafc",
-    theme_color: "#f8fafc",
+    // The light theme's page. A manifest is static JSON, so these are the
+    // one place the palette is written out rather than read.
+    background_color: "#f6f6f4",
+    theme_color: "#f6f6f4",
     categories: ["finance", "productivity"],
     icons: [
       {

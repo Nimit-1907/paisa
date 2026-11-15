@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 import Link from "next/link";
 
-import { Compass } from "lucide-react";
-
+import { EmptyIllustration } from "@/components/shared/empty-illustration";
+import { Button } from "@/components/ui/button";
 import { HOME_PATH } from "@/lib/routes";
 
 export const metadata: Metadata = { title: "Page not found" };
@@ -22,11 +22,9 @@ export const metadata: Metadata = { title: "Page not found" };
 export default function NotFound() {
   return (
     <main className="pt-safe pb-safe mx-auto flex min-h-dvh w-full max-w-sm flex-col items-center justify-center px-4 text-center">
-      <span className="bg-surface-muted text-text-secondary rounded-card mb-5 flex size-14 items-center justify-center">
-        <Compass className="size-7" aria-hidden="true" />
-      </span>
+      <EmptyIllustration art="lost" />
 
-      <h1 className="font-display text-3xl tracking-tight">
+      <h1 className="font-display mt-2 text-3xl tracking-[-0.02em]">
         That page has moved on.
       </h1>
 
@@ -35,12 +33,9 @@ export default function NotFound() {
         deleted. Your records are where you left them.
       </p>
 
-      <Link
-        href={HOME_PATH}
-        className="bg-ink text-on-ink hoverable:bg-ink/90 rounded-control mt-7 inline-flex min-h-12 items-center px-5 text-sm font-semibold  "
-      >
-        Back to your records
-      </Link>
+      <Button asChild size="touch" className="mt-7 px-5">
+        <Link href={HOME_PATH}>Back to your records</Link>
+      </Button>
     </main>
   );
 }

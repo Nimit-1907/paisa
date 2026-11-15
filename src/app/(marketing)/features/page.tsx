@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { FEATURES } from "@/app/(marketing)/_content";
+import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -34,14 +35,22 @@ export default function FeaturesPage() {
         {FEATURES.map((feature) => {
           const Icon = feature.icon;
           return (
-            <li key={feature.title} className="bg-surface rounded-card border p-4">
-              <span className="bg-surface-muted text-text-secondary mb-3 flex size-10 items-center justify-center rounded-control">
+            <li
+              key={feature.title}
+              className="bg-surface rounded-card border p-4"
+            >
+              {/* The app's own tinted tile, so the page that describes
+                  the product looks like the product. */}
+              <span
+                className={cn(
+                  "rounded-control text-text mb-3 flex size-10 items-center justify-center",
+                  feature.tint,
+                )}
+              >
                 <Icon className="size-5" aria-hidden="true" />
               </span>
               <h2 className="text-sm font-semibold">{feature.title}</h2>
-              <p className="text-text-secondary mt-1 text-sm">
-                {feature.body}
-              </p>
+              <p className="text-text-secondary mt-1 text-sm">{feature.body}</p>
             </li>
           );
         })}
@@ -50,7 +59,7 @@ export default function FeaturesPage() {
       <p className="mt-8">
         <Link
           href="/signup"
-          className="bg-ink text-on-ink hoverable:bg-ink/90 inline-flex min-h-12 items-center gap-2 rounded-control px-5 text-sm font-semibold  "
+          className="bg-ink text-on-ink hoverable:bg-ink/90 pressable inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-semibold"
         >
           Start tracking — it&rsquo;s free
           <ArrowRight className="size-4" aria-hidden="true" />

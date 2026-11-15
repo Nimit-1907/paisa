@@ -24,14 +24,11 @@ import {
  * reordered or trimmed - silently on a type level, loudly at render.
  */
 export type FeatureId =
-  | "track"
-  | "budget"
-  | "charts"
-  | "accounts"
-  | "recurring"
-  | "offline";
+  "track" | "budget" | "charts" | "accounts" | "recurring" | "offline";
 
 export type Feature = {
+  /** A `bg-tint-*` class: the grid uses the app's own eight. */
+  tint: string;
   id: FeatureId;
   icon: LucideIcon;
   title: string;
@@ -41,36 +38,42 @@ export type Feature = {
 export const FEATURES: Feature[] = [
   {
     id: "track",
+    tint: "bg-tint-rose",
     icon: Zap,
     title: "Four taps to log a spend",
     body: "The sheet opens with the account you used last and the categories you usually pick at this hour. Type the amount, pick the category, save. It does the arithmetic too, so a split bill goes in as 840÷3.",
   },
   {
     id: "budget",
+    tint: "bg-tint-butter",
     icon: Target,
     title: "A budget per category",
     body: "Set a monthly limit and the screen leads with the number you came for: what is left, and what that is per day for the days remaining. Amber at 80%, red when it is gone.",
   },
   {
     id: "charts",
+    tint: "bg-tint-sky",
     icon: ChartPie,
     title: "Charts that agree with the list",
     body: "Spending by category, day by day, and your running balance — all added up in the database from the same rows the Records tab shows, so the chart and the list never disagree.",
   },
   {
     id: "accounts",
+    tint: "bg-tint-mint",
     icon: Wallet,
     title: "Every account in one total",
     body: "Cash, bank, cards and wallets, with transfers between them that move money without counting as income or expense.",
   },
   {
     id: "recurring",
+    tint: "bg-tint-peri",
     icon: Repeat2,
     title: "Rent that logs itself",
     body: "Set up the bills that repeat and they appear on the day they are due — including the months you did not open the app, caught up without ever duplicating a record.",
   },
   {
     id: "offline",
+    tint: "bg-tint-lilac",
     icon: WifiOff,
     title: "Works on your home screen",
     body: "Install it and it opens like an app, with the screens you have already visited still readable when you have no signal.",
@@ -82,8 +85,7 @@ export type Faq = { question: string; answer: string };
 export const FAQS: Faq[] = [
   {
     question: "Is Paisa free?",
-    answer:
-      "Yes. There is no paid tier, no advertising and nothing to unlock.",
+    answer: "Yes. There is no paid tier, no advertising and nothing to unlock.",
   },
   {
     question: "Who can see my records?",

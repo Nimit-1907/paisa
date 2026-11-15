@@ -103,7 +103,7 @@ export default function LandingPage() {
           <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href="/signup"
-              className="bg-ink text-on-ink hoverable:bg-ink/90 rounded-control inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold transition-[transform,background-color] duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)]   motion-reduce:transition-none active:scale-[0.97]"
+              className="bg-ink text-on-ink hoverable:bg-ink/90 pressable inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-semibold"
             >
               Get started free
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -240,7 +240,7 @@ export default function LandingPage() {
         </p>
         <Link
           href="/signup"
-          className="bg-ink text-on-ink hoverable:bg-ink/90 rounded-control mt-6 inline-flex min-h-12 items-center gap-2 px-5 text-sm font-semibold  "
+          className="bg-ink text-on-ink hoverable:bg-ink/90 pressable mt-6 inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-semibold"
         >
           Get started free
           <ArrowRight className="size-4" aria-hidden="true" />

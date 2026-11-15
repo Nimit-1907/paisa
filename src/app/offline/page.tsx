@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import Link from "next/link";
 
-import { CloudOff } from "lucide-react";
+import { EmptyIllustration } from "@/components/shared/empty-illustration";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Offline" };
 
@@ -21,23 +22,20 @@ export const metadata: Metadata = { title: "Offline" };
 export default function OfflinePage() {
   return (
     <main className="pt-safe pb-safe flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      <span className="bg-surface-muted text-text-secondary mb-5 flex size-14 items-center justify-center rounded-card">
-        <CloudOff className="size-7" aria-hidden="true" />
-      </span>
+      <EmptyIllustration art="lost" />
 
-      <h1 className="text-xl font-semibold tracking-tight">You are offline</h1>
+      <h1 className="font-display mt-2 text-3xl tracking-[-0.02em]">
+        You are offline
+      </h1>
 
       <p className="text-text-secondary mt-2 max-w-[42ch] text-sm">
         Paisa needs a connection to load your records. Pages you have already
         opened will still work — this one could not be reached.
       </p>
 
-      <Link
-        href="/records"
-        className="bg-ink text-on-ink mt-6 inline-flex h-11 items-center rounded-control px-5 text-sm font-semibold  "
-      >
-        Try again
-      </Link>
+      <Button asChild size="touch" className="mt-7 px-5">
+        <Link href="/records">Try again</Link>
+      </Button>
     </main>
   );
 }

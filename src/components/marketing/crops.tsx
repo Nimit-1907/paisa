@@ -1,4 +1,5 @@
-import { colorNamed } from "@/lib/colors";
+import { DynamicIcon } from "@/components/shared/dynamic-icon";
+import { cn } from "@/lib/utils";
 
 /**
  * Small slices of the real screens, for the feature blocks.
@@ -60,18 +61,43 @@ export function TrackCrop() {
     <Frame>
       <div className="space-y-1.5">
         {[
-          { name: "Groceries", account: "Paytm Wallet", amount: "400", color: colorNamed("green") },
-          { name: "Transport", account: "Metro card", amount: "60", color: colorNamed("sky") },
-          { name: "Food", account: "ICICI Credit", amount: "484", color: colorNamed("orange") },
+          {
+            name: "Groceries",
+            account: "Paytm Wallet",
+            amount: "400",
+            tint: "bg-tint-peach",
+            icon: "ShoppingBasket",
+          },
+          {
+            name: "Transport",
+            account: "Metro card",
+            amount: "60",
+            tint: "bg-tint-sky",
+            icon: "Bus",
+          },
+          {
+            name: "Food",
+            account: "ICICI Credit",
+            amount: "484",
+            tint: "bg-tint-rose",
+            icon: "UtensilsCrossed",
+          },
         ].map((row) => (
           <div
             key={row.name}
             className="bg-surface rounded-control flex items-center gap-2 border px-2 py-1.5"
           >
+            {/* The same tinted square the app draws, not a coloured dot:
+                this is a picture of the product, and a picture that does
+                not match it is an advertisement. */}
             <span
-              className="size-5 shrink-0 rounded-full"
-              style={{ backgroundColor: row.color }}
-            />
+              className={cn(
+                "text-text flex size-5 shrink-0 items-center justify-center rounded-[6px]",
+                row.tint,
+              )}
+            >
+              <DynamicIcon name={row.icon} className="size-3" />
+            </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[11px] font-semibold">
                 {row.name}
@@ -96,16 +122,40 @@ export function BudgetCrop() {
   // The amount is split from its words so the rupee mark can be the drawn
   // one; the glyph itself would pull a second font file onto this page.
   const rows = [
-    { name: "Food", before: "", amount: "2,300", after: "left", used: 62, tone: "bg-ink" },
-    { name: "Transport", before: "Over by ", amount: "400", after: "", used: 100, tone: "bg-expense" },
-    { name: "Shopping", before: "", amount: "900", after: "left", used: 84, tone: "bg-warning" },
+    {
+      name: "Food",
+      before: "",
+      amount: "2,300",
+      after: "left",
+      used: 62,
+      tone: "bg-ink",
+    },
+    {
+      name: "Transport",
+      before: "Over by ",
+      amount: "400",
+      after: "",
+      used: 100,
+      tone: "bg-expense",
+    },
+    {
+      name: "Shopping",
+      before: "",
+      amount: "900",
+      after: "left",
+      used: 84,
+      tone: "bg-warning",
+    },
   ];
 
   return (
     <Frame>
       <div className="space-y-2">
         {rows.map((row) => (
-          <div key={row.name} className="bg-surface rounded-control border px-2 py-1.5">
+          <div
+            key={row.name}
+            className="bg-surface rounded-control border px-2 py-1.5"
+          >
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-[11px] font-semibold">{row.name}</span>
               <span className="text-text-secondary amount text-[9px] font-medium">
@@ -131,9 +181,27 @@ export function BudgetCrop() {
 /** Recurring: what is due, as a date badge and an amount. */
 export function RecurringCrop() {
   const rows = [
-    { day: "01", month: "Dec", name: "Rent", every: "Every month", amount: "22,000" },
-    { day: "05", month: "Dec", name: "Internet", every: "Every month", amount: "1,199" },
-    { day: "12", month: "Dec", name: "Gym", every: "Every month", amount: "1,500" },
+    {
+      day: "01",
+      month: "Dec",
+      name: "Rent",
+      every: "Every month",
+      amount: "22,000",
+    },
+    {
+      day: "05",
+      month: "Dec",
+      name: "Internet",
+      every: "Every month",
+      amount: "1,199",
+    },
+    {
+      day: "12",
+      month: "Dec",
+      name: "Gym",
+      every: "Every month",
+      amount: "1,500",
+    },
   ];
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 
 import { passwordAdvice } from "@/lib/password-hints";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export function PasswordHints({ value }: { value: string }) {
 
   return (
     <div className="mt-2" aria-live="polite">
-      <Hint hint={required} required />
+      <Hint hint={required} />
 
       {started ? (
         <>
@@ -46,25 +46,27 @@ export function PasswordHints({ value }: { value: string }) {
   );
 }
 
-function Hint({
-  hint,
-  required = false,
-}: {
-  hint: { label: string; met: boolean };
-  required?: boolean;
-}) {
+function Hint({ hint }: { hint: { label: string; met: boolean } }) {
   return (
     <p
       className={cn(
-        "flex items-center gap-1.5 text-xs",
-        hint.met ? "text-income" : required ? "text-text-secondary" : "text-text-secondary",
+        "flex items-center gap-2 text-xs",
+        hint.met ? "text-text" : "text-text-secondary",
       )}
     >
-      {hint.met ? (
-        <Check className="size-3.5 shrink-0" aria-hidden="true" />
-      ) : (
-        <Circle className="size-3.5 shrink-0" aria-hidden="true" />
-      )}
+      {/* A mint tile with an ink tick when it is met, an empty ring when it
+          is not. The tile is what makes a met rule readable at a glance in
+          a list of four; the colour alone would not, and the sr-only words
+          below carry it for anyone the colour is lost on. */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-4 shrink-0 items-center justify-center rounded-[5px]",
+          hint.met ? "bg-tint-mint text-text" : "border-hairline border",
+        )}
+      >
+        {hint.met ? <Check className="size-3" strokeWidth={3} /> : null}
+      </span>
       {/* Said in words too: a tick is a colour and a shape, and neither is
           text a screen reader can read. */}
       <span className="sr-only">{hint.met ? "Done:" : "Not yet:"}</span>

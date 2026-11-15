@@ -206,8 +206,11 @@ prints Copy and Delete through the row for a second and a half.
 - the frosted-glass header, and the `backdrop-filter` with it
 - the separate floating "+" — the dock carries Add between its four
   destinations, and the sidebar carries it above its list
-- the sixteen-colour picker, in favour of eight tints — `ColorPicker` and
-  `ColorDot` are deleted, and `tintForName` replaced `colorForName`
+- the sixteen-colour palette entirely: `ColorPicker`, `ColorDot` and
+  `src/lib/colors.ts` are deleted, and `tintForName` replaced
+  `colorForName`. The `color` column stays in the database, because
+  removing a column a deployed client still selects is a runtime error for
+  anyone who has not reloaded — but nothing reads it
 - Instrument Serif
 - every gradient and noise texture
 - `font-heading`, which was never defined and so was never doing anything
@@ -218,5 +221,7 @@ prints Copy and Delete through the row for a second and a half.
 
 ## 6. Still to come
 
-Batch (f) — the public pages, auth, onboarding and the system screens.
-Each one lands with its screenshots and its ticks in `docs/screens.md`.
+Nothing. Screens 31 to 70 have all been through the language. What is still
+missing from the app — the category detail, the budget detail and Import —
+is listed in `docs/screens.md`, and it is missing because it has never been
+built rather than because it has not been restyled.

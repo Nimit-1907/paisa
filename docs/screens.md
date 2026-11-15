@@ -975,8 +975,59 @@ currency *rescales every stored amount* — an instant save on the keystroke
 after picking one is a migration nobody asked for. The two switches that are
 safe to save instantly already do.
 
-### Still to come
+### Public, auth, onboarding, system (batch f)
 
-| # | Screens | Batch |
+| # | Screen | Done |
 | --- | --- | --- |
-| 31–38, 66–70 | Public, auth, onboarding, system | f |
+| 31 | Landing (`/`) | ✅ |
+| 32 | Features, FAQ, Privacy | ✅ |
+| 33–35 | Login, Sign up, Forgot / Reset | ✅ |
+| 36 | Email confirmation / callback | ✅ (a route handler plus the check-your-email notice) |
+| 37 | Onboarding | ✅ |
+| 38 | Welcome screen | ✅ |
+| 66 | 404, error, offline | ✅ |
+| 67–70 | Offline pill, update toast, install card, command palette | ✅ |
+
+**The sixteen-colour palette is gone from the codebase.** `src/lib/colors.ts`
+and its tests are deleted; the landing preview and the feature crops draw
+the app's tinted squares, so the picture on the marketing page is a picture
+of the product rather than of a product that no longer exists. The `color`
+column stays in the database — removing a column a deployed client still
+selects is a runtime error for anyone who has not reloaded — but nothing
+reads it any more.
+
+**Four places were still painting in the pre-Phase-14 slate**, and none of
+them could be found by looking at the app: the browser chrome's
+`themeColor`, the PWA manifest's background, the social card, and the splash
+screen. All four are rendered where no stylesheet exists, so they are the
+one place a hex is the right answer — they were just the wrong hexes, which
+put a blue-grey bar above a warm off-white page.
+
+The auth screens are a card now. The form used to float on the page with
+nothing around it: on a phone that reads as a page, and on a laptop, where
+the same 380px sits in the middle of 1400px of empty, it reads as something
+that failed to load. The password checklist ticks are mint tiles, 404 and
+offline share a signpost drawing, and every marketing call to action is the
+ink pill the rest of the app uses.
+
+Three deviations, all recorded rather than quiet:
+
+- **31** keeps the three product crops where the brief asks for a six-card
+  icon bento. The crops show the product; six icons describe it. The six
+  tinted cards the brief wants are on `/features`, which is where somebody
+  who wants the list goes.
+- **37**'s opening balance stays a text field rather than the keypad. The
+  step has two balances on it when the bank account is open, and one keypad
+  with one plain input beside it is worse than two inputs — and 250px of
+  keypad for a number typed once pushes the Continue button off a 640px
+  phone.
+- **37**'s progress bar stays ink rather than periwinkle. Periwinkle on the
+  muted surface measures about 1.3:1; the bar is the only thing on the
+  screen that says how far along you are.
+
+### Nothing left to come
+
+Every screen the brief numbers, 31 to 70, has been through Phase 14. The two
+it names that this app has never had — **46** (category detail), **49**
+(budget detail) and **64** (Import) — are listed under "What is not done"
+above, with the queries or features each would need first.

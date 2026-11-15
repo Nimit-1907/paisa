@@ -12,7 +12,7 @@
  * is, so there is nothing here for a screen reader to gain.
  */
 export type EmptyArt =
-  "records" | "budgets" | "accounts" | "recurring" | "analysis";
+  "records" | "budgets" | "accounts" | "recurring" | "analysis" | "lost";
 
 export function EmptyIllustration({ art }: { art: EmptyArt }) {
   return (
@@ -40,6 +40,17 @@ const stroke = "stroke-muted-foreground/60";
 const accent = "stroke-primary";
 
 const ART: Record<EmptyArt, React.ReactNode> = {
+  // A signpost with one arm, pointing back the way you came. For the
+  // system screens — 404, an error, offline — where the drawing's job is
+  // to say "nothing is broken, you are just not where you meant to be".
+  lost: (
+    <g strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M60 30v50" className={stroke} />
+      <path d="M36 36h40l8 8-8 8H36V36Z" className={`${stroke} fill-card`} />
+      <path d="M46 44h18" className={accent} />
+      <circle cx="60" cy="26" r="5" className="fill-primary/20 stroke-none" />
+    </g>
+  ),
   // A receipt with a torn edge and two lines on it.
   records: (
     <g strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

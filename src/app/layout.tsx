@@ -49,9 +49,13 @@ export const viewport: Viewport = {
   // Lets the layout paint under the notch/home bar; `env(safe-area-inset-*)`
   // keeps the nav, FAB and sheets clear of them.
   viewportFit: "cover",
+  // The browser chrome around the app: the page background of each theme,
+  // written out because a meta tag cannot read a CSS variable. These were
+  // still the pre-Phase-14 slate, which put a blue-grey bar above a warm
+  // off-white page.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b1016" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f6f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#111111" },
   ],
 };
 

@@ -46,7 +46,7 @@ export default function RouteError({
         <TriangleAlert className="size-7" aria-hidden="true" />
       </span>
 
-      <h1 className="font-display text-3xl tracking-tight">
+      <h1 className="font-display text-3xl tracking-[-0.02em]">
         That did not load.
       </h1>
 
