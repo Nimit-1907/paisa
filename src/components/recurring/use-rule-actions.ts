@@ -83,7 +83,7 @@ export function useRuleActions() {
 
       return run(
         () => skipNextOccurrence({ id: rule.id, on: rule.dueOn as string }),
-        (data) => `Skipped — next on ${dayLabel(data.nextRunOn)}`,
+        (data) => `Skipped. Next on ${dayLabel(data.nextRunOn)}`,
       );
     },
     [run],
@@ -95,7 +95,7 @@ export function useRuleActions() {
         () => deleteRecurringRule({ id: rule.id, deleteTransactions }),
         (data) =>
           data.deletedTransactions === 0
-            ? "Deleted — past records kept"
+            ? "Deleted. Past records kept."
             : `Deleted, along with ${data.deletedTransactions} ${
                 data.deletedTransactions === 1 ? "record" : "records"
               }`,

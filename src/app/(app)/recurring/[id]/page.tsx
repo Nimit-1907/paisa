@@ -119,7 +119,7 @@ export default async function RecurringRulePage({
             ? rule.dueOn
               ? `Next on ${dayLabel(rule.dueOn)} · ${daysAway(rule.dueOn, today)}`
               : "Nothing left to run"
-            : "Paused — nothing is scheduled"
+            : "Paused. Nothing is scheduled"
         }
       />
 
@@ -129,9 +129,9 @@ export default async function RecurringRulePage({
             {rule.accountName}
           </Fact>
           {rule.type === "transfer" ? (
-            <Fact label="To">{rule.toAccountName ?? "—"}</Fact>
+            <Fact label="To">{rule.toAccountName ?? "None"}</Fact>
           ) : (
-            <Fact label="Category">{rule.categoryName ?? "—"}</Fact>
+            <Fact label="Category">{rule.categoryName ?? "None"}</Fact>
           )}
           <Fact label="Last created">
             {rule.lastRunOn ? dayLabel(rule.lastRunOn) : "Never"}
@@ -161,7 +161,7 @@ export default async function RecurringRulePage({
         <p className="text-text-secondary bg-surface rounded-card border border-dashed px-4 py-6 text-center text-sm">
           {rule.active
             ? "This rule has run its course."
-            : "Paused — nothing is scheduled."}
+            : "Paused. Nothing is scheduled."}
         </p>
       ) : (
         /*

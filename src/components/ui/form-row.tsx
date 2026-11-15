@@ -21,11 +21,22 @@ export function FormRow({
   action,
   error,
   hint,
+  required = false,
   className,
   children,
 }: {
   id: string;
   label: string;
+  /**
+   * Mark the field as required.
+   *
+   * The asterisk is the mark, and only required fields carry one: labelling
+   * the optional ones "Optional" instead meant the common case was the one
+   * carrying the extra word, and a form where most rows say something under
+   * them reads as a form with a lot to explain. Said in words as well as in
+   * red, because an asterisk is a colour and a shape.
+   */
+  required?: boolean;
   /**
    * A link or button on the same line as the label.
    *
@@ -41,25 +52,48 @@ export function FormRow({
     id: string;
     "aria-invalid": boolean;
     "aria-describedby": string | undefined;
+    "aria-required": true | undefined;
   }) => React.ReactNode;
 }) {
   const messageId = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+
+  /*
+   * The asterisk sits beside the label, not inside it.
+   *
+   * It is decoration: `aria-required` on the control is what a screen
+   * reader announces, and it announces it on the field rather than as part
+   * of its name. Inside the `<label>` the character would join the label's
+   * text whether or not it is `aria-hidden`, renaming the field from
+   * "Password" to "Password*" for anything that matches on label text,
+   * which is what every test and every password manager does.
+   */
+  const labelled = (
+    <span className="flex items-baseline gap-0.5">
+      <Label htmlFor={id}>{label}</Label>
+      {required ? (
+        <span aria-hidden="true" className="text-expense">
+          *
+        </span>
+      ) : null}
+    </span>
+  );
 
   return (
     <div className={cn("space-y-1.5", className)}>
       {action ? (
         <div className="flex items-baseline justify-between gap-3">
-          <Label htmlFor={id}>{label}</Label>
+          {labelled}
           {action}
         </div>
       ) : (
-        <Label htmlFor={id}>{label}</Label>
+        labelled
       )}
 
       {children({
         id,
         "aria-invalid": Boolean(error),
         "aria-describedby": messageId,
+        "aria-required": required || undefined,
       })}
 
       {error ? (

@@ -208,38 +208,5 @@ export function isExpression(text: string): boolean {
   return /[+\-×÷*/]/.test(text.trim().slice(1));
 }
 
-/**
- * Appends a keypad press to the current expression, keeping it well formed:
- * no two operators in a row, no second decimal point in one number.
- */
-export function pressKey(expression: string, key: string): string {
-  if (key === "backspace") return expression.slice(0, -1);
-  if (key === "clear") return "";
-
-  const last = expression.at(-1);
-
-  if (OPERATORS.includes(key as Operator)) {
-    if (expression === "") return key === "-" ? key : expression;
-    if (last && OPERATORS.includes(last as Operator)) {
-      return expression.slice(0, -1) + key;
-    }
-    return expression + key;
-  }
-
-  if (key === ".") {
-    const currentNumber = expression.split(/[+\-×÷]/).at(-1) ?? "";
-    if (currentNumber.includes(".")) return expression;
-    if (currentNumber === "") return `${expression}0.`;
-    return expression + key;
-  }
-
-  if (!/^\d$/.test(key)) return expression;
-
-  // No leading zeros: "0" then "5" is 5, not 05.
-  const currentNumber = expression.split(/[+\-×÷]/).at(-1) ?? "";
-  if (currentNumber === "0") return expression.slice(0, -1) + key;
-
-  return expression + key;
-}
 
 export { MoneyParseError };

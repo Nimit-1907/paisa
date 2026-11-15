@@ -70,8 +70,8 @@ export function DeleteAccountCard({ email }: { email: string }) {
       </h2>
       <p className="text-text-secondary mt-1 text-xs">
         Removes {email} and every record, account, budget and recurring rule
-        that belongs to it. This cannot be undone — export your records first
-        if you want to keep them.
+        that belongs to it. This cannot be undone. Export your records first if
+        you want to keep them.
       </p>
 
       <Button
@@ -88,14 +88,16 @@ export function DeleteAccountCard({ email }: { email: string }) {
           <DialogHeader>
             <DialogTitle>Delete everything?</DialogTitle>
             <DialogDescription>
-              This removes your account and all of its data straight away.
-              There is no undo.
+              This removes your account and all of its data straight away. There
+              is no undo.
             </DialogDescription>
           </DialogHeader>
 
           <FormRow
             id="delete-confirm"
             label={`Type ${DELETE_CONFIRMATION} to confirm`}
+
+            required
           >
             {(props) => (
               <Input

@@ -162,7 +162,7 @@ test.describe("the keyboard", () => {
     await expect(fab).toBeFocused();
   });
 
-  test("drives the amount keypad without touching it", async ({ page }) => {
+  test("drives the amount field without touching it", async ({ page }) => {
     await page.goto("/records");
     await page
       .getByRole("button", { name: /add record/i })
@@ -180,8 +180,8 @@ test.describe("the keyboard", () => {
 
     await page.getByRole("radio", { name: "Groceries" }).first().click();
 
-    // Back in the amount, Enter saves — the keypad is not inside a form, so
-    // without this the one key everybody presses would do nothing.
+    // Back in the amount, Enter saves. The sheet is not a form, so without
+    // this the one key everybody presses would do nothing.
     await page.getByLabel("Amount").focus();
     await page.keyboard.press("Enter");
 

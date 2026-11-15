@@ -111,7 +111,10 @@ export function SortableList<T>({
     void settle(next);
   }
 
-  function onPointerDown(event: React.PointerEvent<HTMLElement>, index: number) {
+  function onPointerDown(
+    event: React.PointerEvent<HTMLElement>,
+    index: number,
+  ) {
     if (disabled || event.button !== 0) return;
 
     event.preventDefault();
@@ -231,10 +234,13 @@ export function SortableList<T>({
                 role: "button",
                 tabIndex: disabled ? -1 : 0,
                 "aria-disabled": disabled || undefined,
-                "aria-label": "Reorder — use the arrow keys or drag",
+                "aria-label": "Reorder: use the arrow keys or drag",
                 style: { touchAction: "none" },
                 onPointerDown: (event) =>
-                  onPointerDown(event as React.PointerEvent<HTMLElement>, index),
+                  onPointerDown(
+                    event as React.PointerEvent<HTMLElement>,
+                    index,
+                  ),
                 onPointerMove: (event) =>
                   onPointerMove(event as React.PointerEvent<HTMLElement>),
                 onPointerUp,

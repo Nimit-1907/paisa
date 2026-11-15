@@ -37,7 +37,22 @@ const SCREENS = [
   { path: "/categories", heading: "Categories" },
   { path: "/recurring", heading: "Recurring" },
   { path: "/more", heading: "More" },
-  { path: "/settings", heading: "Settings" },
+  {
+    path: "/settings",
+    heading: "Settings",
+    /*
+     * The Appearance tiles are masked.
+     *
+     * Which of the three carries the selected ring comes from the demo
+     * account's stored theme, and that is shared mutable state: anything
+     * that saves Settings during a run changes what this screen looks like
+     * for every run after it. Masking three 90px tiles keeps the rest of
+     * the screen under the same tight pixel budget as everywhere else,
+     * rather than loosening that budget for the whole page to absorb a
+     * difference that is not a regression.
+     */
+    mask: '[role="radiogroup"][aria-label="Appearance"]',
+  },
   { path: "/export", heading: "Export" },
 ];
 
@@ -146,7 +161,9 @@ for (const size of WIDTHS) {
 
           await expect(page).toHaveScreenshot(
             `${screen.path.slice(1)}-${theme}-${size.label}.png`,
-            SHOT,
+            screen.mask
+              ? { ...SHOT, mask: [page.locator(screen.mask)] }
+              : SHOT,
           );
         }
       });

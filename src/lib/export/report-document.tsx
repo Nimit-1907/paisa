@@ -192,7 +192,7 @@ export function ReportDocument({ data }: { data: ReportData }) {
                   </Text>
                   <Text style={[styles.right, styles.muted, { flex: 2 }]}>
                     {category.budget === null ? (
-                      "—"
+                      "None"
                     ) : (
                       <Money
                         currency={currency}
@@ -203,7 +203,7 @@ export function ReportDocument({ data }: { data: ReportData }) {
                   </Text>
                   <Text style={[styles.right, { flex: 2 }]}>
                     {left === null ? (
-                      "—"
+                      "None"
                     ) : (
                       <Money currency={currency} amount={left} sign="always" />
                     )}
@@ -235,7 +235,7 @@ export function ReportDocument({ data }: { data: ReportData }) {
                 </Text>
                 <Text style={{ flex: 3 }}>
                   {row.type === "transfer"
-                    ? `${row.accountName} to ${row.toAccountName ?? "—"}`
+                    ? `${row.accountName} to ${row.toAccountName ?? "None"}`
                     : (row.categoryName ?? "Uncategorised")}
                 </Text>
                 <Text style={[styles.muted, { flex: 2.4 }]}>

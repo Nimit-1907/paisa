@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluate, isExpression, pressKey } from "./calculator";
+import { evaluate, isExpression } from "./calculator";
 
 /** Rupees: two decimal places. */
 const inr = (expression: string) => evaluate(expression, 2);
@@ -102,40 +102,3 @@ describe("isExpression", () => {
   });
 });
 
-describe("pressKey", () => {
-  it("builds up a number", () => {
-    let text = "";
-    for (const key of ["1", "2", ".", "5"]) text = pressKey(text, key);
-    expect(text).toBe("12.5");
-  });
-
-  it("keeps one decimal point per number", () => {
-    expect(pressKey("12.5", ".")).toBe("12.5");
-    expect(pressKey("12.5+3", ".")).toBe("12.5+3.");
-  });
-
-  it("starts a decimal with a zero", () => {
-    expect(pressKey("", ".")).toBe("0.");
-    expect(pressKey("12+", ".")).toBe("12+0.");
-  });
-
-  it("replaces an operator rather than stacking one", () => {
-    expect(pressKey("12+", "×")).toBe("12×");
-    expect(pressKey("12", "+")).toBe("12+");
-  });
-
-  it("allows a leading minus but not a leading plus", () => {
-    expect(pressKey("", "-")).toBe("-");
-    expect(pressKey("", "+")).toBe("");
-  });
-
-  it("does not leave a leading zero", () => {
-    expect(pressKey("0", "5")).toBe("5");
-    expect(pressKey("12+0", "5")).toBe("12+5");
-  });
-
-  it("backspaces and clears", () => {
-    expect(pressKey("12.5", "backspace")).toBe("12.");
-    expect(pressKey("12.5", "clear")).toBe("");
-  });
-});

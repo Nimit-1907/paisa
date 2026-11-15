@@ -55,7 +55,11 @@ export function DateTile({
           </span>
         </>
       ) : (
-        <span className="text-text-secondary text-[13px] font-bold">—</span>
+        // Set like the month abbreviation rather than like the day number:
+        // the word has to live in a 36px square, where 13px would not fit.
+        <span className="text-text-secondary text-[9px] font-semibold tracking-wide uppercase">
+          None
+        </span>
       )}
     </span>
   );

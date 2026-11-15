@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 import { updateRecurringRule } from "@/actions/recurring";
 import { useCurrency } from "@/components/profile-provider";
-import { AmountKeypad } from "@/components/records/amount-keypad";
+import { AmountDisplay } from "@/components/records/amount-field";
 import {
   type AccountOption,
   AccountSelect,
@@ -173,7 +173,7 @@ export function RuleSheet({
         return;
       }
 
-      toast.success("Rule saved — future occurrences updated");
+      toast.success("Rule saved. Future occurrences updated.");
       onOpenChange(false);
       router.refresh();
     } catch (thrown) {
@@ -211,7 +211,7 @@ export function RuleSheet({
           }}
         />
 
-        <AmountKeypad value={amount} onChange={setAmount} tone={type} />
+        <AmountDisplay value={amount} onChange={setAmount} tone={type} />
 
         {type === "transfer" ? (
           <>
@@ -260,7 +260,7 @@ export function RuleSheet({
               {...props}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Rent — landlord UPI"
+              placeholder="Rent to landlord"
               maxLength={500}
             />
           )}
@@ -290,6 +290,8 @@ export function RuleSheet({
                 intervalError ??
                 (errorField === "interval" ? (error ?? undefined) : undefined)
               }
+
+              required
             >
               {(props) => (
                 <Stepper

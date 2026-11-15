@@ -24,7 +24,7 @@ import type {
   QuickAdd,
 } from "@/lib/queries/accounts";
 import { useCurrency } from "@/components/profile-provider";
-import { AmountDisplay, Keypad } from "@/components/records/amount-keypad";
+import { AmountDisplay } from "@/components/records/amount-field";
 import { Amount } from "@/components/shared/amount";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -579,7 +579,7 @@ export function RecordSheet({
           "The record was saved, but the recurring rule was not. Edit it from Recurring.",
         );
       } else if (result.data.ruleSaved === true) {
-        toast.success("Saved — future occurrences updated too");
+        toast.success("Saved. Future occurrences updated too.");
       }
 
       if (andAnother) {
@@ -672,7 +672,7 @@ export function RecordSheet({
             aria-label="Note"
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Swiggy — team lunch"
+            placeholder="Lunch with the team"
             maxLength={500}
             // A native datalist rather than a combobox we built. Notes
             // repeat far more than people expect, and retyping one on a
@@ -969,7 +969,7 @@ export function RecordSheet({
 
                 {frequency !== "none" ? (
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <FormRow id="repeat-interval" label="Every">
+                    <FormRow id="repeat-interval" label="Every" required>
                       {(props) => (
                         <Input
                           {...props}
@@ -983,7 +983,7 @@ export function RecordSheet({
                       )}
                     </FormRow>
 
-                    <FormRow id="repeat-end" label="Until" hint="Optional">
+                    <FormRow id="repeat-end" label="Until">
                       {(props) => (
                         <Input
                           {...props}
@@ -1039,22 +1039,12 @@ export function RecordSheet({
         ) : null}
       </SheetBody>
 
-      {/* The keypad sits with the save button rather than in the scrolling
-          body: it is the only way to enter an amount on a phone, where the
-          field itself is visually hidden, so it cannot be somewhere you have
-          to scroll to find.
-
-          The save row is one row even at 360px: stacked, the two buttons cost
-          a whole row of categories on a short screen, and the labels are
-          short enough to share. */}
+      {/*
+        The save row is one row even at 360px: stacked, the two buttons cost
+        a whole row of categories on a short screen, and the labels are
+        short enough to share.
+      */}
       <SheetFooter className="flex-col gap-2">
-        <Keypad
-          value={amount}
-          onChange={setAmount}
-          inputRef={amountRef}
-          className="w-full"
-        />
-
         <div className="flex w-full gap-2">
           {editing ? (
             <>

@@ -157,7 +157,7 @@ export function RecordDetail({
                         aria-hidden="true"
                       />
                     }
-                    value={record.toAccountName ?? "—"}
+                    value={record.toAccountName ?? "None"}
                   />
                 </>
               ) : (
@@ -270,5 +270,5 @@ function describe(record: TransactionRow): string {
       ? `Transfer from ${record.accountName} to ${record.toAccountName}`
       : (record.categoryName ?? "Uncategorised");
 
-  return record.note ? `${what} — ${record.note}` : what;
+  return record.note ? `${what}: ${record.note}` : what;
 }

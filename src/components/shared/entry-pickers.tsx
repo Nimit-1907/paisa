@@ -6,6 +6,12 @@ import { CalendarClock, CalendarDays, MoreHorizontal } from "lucide-react";
 
 import { DynamicIcon } from "@/components/shared/dynamic-icon";
 import { FieldCard } from "@/components/shared/field-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { Tile } from "@/components/shared/tile";
 import { Label } from "@/components/ui/label";
 import { PRESSABLE } from "@/lib/motion";
@@ -240,7 +246,7 @@ export function AccountField({
 }) {
   const chosen = accounts.find((account) => account.id === value);
 
-  return (
+  const card = (
     <FieldCard
       label={label}
       invalid={invalid}
@@ -260,22 +266,23 @@ export function AccountField({
           <span className="text-text-secondary font-normal">Choose</span>
         )
       }
-      control={
-        <select
-          id={id}
-          aria-label={label}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        >
-          <option value="">Choose an account</option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name}
-            </option>
-          ))}
-        </select>
-      }
+      asTrigger
     />
+  );
+
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger asChild aria-label={label} id={id} chevron={false}>
+        {card}
+      </SelectTrigger>
+      <SelectContent>
+        {accounts.map((account) => (
+          <SelectItem key={account.id} value={account.id}>
+            {account.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 

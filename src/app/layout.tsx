@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   // resolved against this; without it Next warns and falls back to localhost.
   metadataBase: new URL(siteOrigin()),
   title: {
-    default: `${SITE.name} — ${SITE.tagline}`,
+    default: `${SITE.name}: ${SITE.tagline}`,
     template: `%s · ${SITE.name}`,
   },
   description: SITE.description,

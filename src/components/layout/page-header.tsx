@@ -148,7 +148,7 @@ export function HeaderAvatar({ name }: { name: string }) {
       // control cannot say out loud.
       aria-label={
         initials
-          ? `${initials} — your profile and settings`
+          ? `${initials}. Your profile and settings`
           : "Your profile and settings"
       }
       className="bg-tint-lilac text-text border-ink pressable flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] text-xs font-bold"

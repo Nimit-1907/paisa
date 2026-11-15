@@ -43,11 +43,17 @@ async function hydrated(page: Page) {
   });
 }
 
-/** Taps a keypad digit by digit, the way a thumb would. */
+/**
+ * Types the amount into the field.
+ *
+ * This used to tap a keypad digit by digit. There is no keypad now: the
+ * amount field raises the device keyboard instead, so typing into it is
+ * what a thumb actually does.
+ */
 async function typeAmount(page: Page, amount: string) {
-  for (const key of amount.split("")) {
-    await page.getByRole("button", { name: key, exact: true }).click();
-  }
+  const field = page.getByLabel("Amount");
+  await field.focus();
+  await field.fill(amount);
 }
 
 /** The sheet that is open, whichever shape it took. */
@@ -185,9 +191,10 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     // "From" defaults to the first account; "To" has to be chosen. Both
     // field cards list the same accounts, so the card's own label is what
     // tells them apart.
-    await sheet(page)
-      .getByLabel("To", { exact: true })
-      .selectOption({ label: "Paytm Wallet" });
+    // A listbox of our own rather than a native <select> since the UX pass,
+    // so it is opened and picked from rather than set.
+    await sheet(page).getByLabel("To", { exact: true }).click();
+    await page.getByRole("option", { name: "Paytm Wallet" }).click();
 
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
     await saveRecord(page);

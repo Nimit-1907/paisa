@@ -15,7 +15,7 @@ const POINTS = [
   {
     icon: Lock,
     title: "Your records are yours",
-    body: "Every table is scoped to your account by row level security, so a query can only ever return your own rows — not as a rule the app follows, but as one the database enforces.",
+    body: "Every table is scoped to your account by row level security, so a query can only ever return your own rows. That is a rule the database enforces, not one the app follows.",
   },
   {
     icon: Database,
@@ -32,7 +32,7 @@ const POINTS = [
 export default function AboutPage() {
   return (
     <PageShell>
-      <PageHeader title="About" description="Paisa — expense tracker" />
+      <PageHeader title="About" description="Paisa expense tracker" />
 
       <div className="space-y-4">
         <Card as="section" className="p-4">
@@ -43,7 +43,7 @@ export default function AboutPage() {
           </p>
 
           <p className="text-text-secondary mt-3 text-xs">
-            Nothing here is locked in — the{" "}
+            Nothing here is locked in. The{" "}
             <Link href="/export" className="text-text underline">
               Export
             </Link>{" "}

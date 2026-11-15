@@ -182,7 +182,7 @@ export function OnboardingFlow({
                 First, your name
               </h1>
               <p className="text-text-secondary mt-1.5 text-sm">
-                Only used to greet you — nobody else sees it.
+                Only used to greet you. Nobody else sees it.
               </p>
             </header>
 
@@ -245,7 +245,7 @@ export function OnboardingFlow({
                 </div>
               </div>
 
-              <FormRow id="accountName" label="Account name">
+              <FormRow id="accountName" label="Account name" required>
                 {(field) => (
                   <Input
                     {...field}
@@ -335,6 +335,8 @@ export function OnboardingFlow({
                   error={
                     errorField === "bankName" ? (error ?? undefined) : undefined
                   }
+
+                  required
                 >
                   {(field) => (
                     <Input

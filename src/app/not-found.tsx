@@ -11,10 +11,9 @@ export const metadata: Metadata = { title: "Page not found" };
 /**
  * 404.
  *
- * Reached by a mistyped URL, a stale bookmark, or a link to a record that has
- * since been deleted — which is the common one, and the reason this does not
- * say "the page you requested does not exist" in a tone of mild accusation.
- * Something is gone; here is the way back.
+ * Reached by a mistyped URL, a stale bookmark, or a link to a record that
+ * has since been deleted, which is the common one. Say what happened and
+ * give the way back.
  *
  * One action, and it is the same one every system screen offers: Records.
  * A 404 with a nav bar and three suggestions is a maze with a signpost in it.
@@ -25,12 +24,12 @@ export default function NotFound() {
       <EmptyIllustration art="lost" />
 
       <h1 className="font-display mt-2 text-3xl tracking-[-0.02em]">
-        That page has moved on.
+        Page not found.
       </h1>
 
       <p className="text-text-secondary mt-2 text-sm text-pretty">
-        The link might be old, or the thing it pointed at might have been
-        deleted. Your records are where you left them.
+        This link may be out of date, or the record it pointed to may have
+        been deleted. Your records are where you left them.
       </p>
 
       <Button asChild size="touch" className="mt-7 px-5">

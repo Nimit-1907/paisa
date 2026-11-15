@@ -55,7 +55,7 @@ export const FEATURES: Feature[] = [
     tint: "bg-tint-sky",
     icon: ChartPie,
     title: "Charts that agree with the list",
-    body: "Spending by category, day by day, and your running balance — all added up in the database from the same rows the Records tab shows, so the chart and the list never disagree.",
+    body: "Spending by category, day by day, and your running balance, all added up in the database from the same rows the Records tab shows, so the chart and the list never disagree.",
   },
   {
     id: "accounts",
@@ -69,7 +69,7 @@ export const FEATURES: Feature[] = [
     tint: "bg-tint-peri",
     icon: Repeat2,
     title: "Rent that logs itself",
-    body: "Set up the bills that repeat and they appear on the day they are due — including the months you did not open the app, caught up without ever duplicating a record.",
+    body: "Set up the bills that repeat and they appear on the day they are due, including the months you did not open the app. They are caught up without ever duplicating a record.",
   },
   {
     id: "offline",
@@ -90,7 +90,7 @@ export const FAQS: Faq[] = [
   {
     question: "Who can see my records?",
     answer:
-      "Only you. Every table is scoped to your account by Postgres row level security, so a query can only ever return your own rows — that is enforced by the database, not by the app remembering to ask nicely.",
+      "Only you. Every table is scoped to your account by Postgres row level security, so a query can only ever return your own rows. That is enforced by the database, not by the app.",
   },
   {
     question: "Can I get my data out?",

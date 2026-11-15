@@ -83,7 +83,7 @@ export function LoginForm({ next }: { next?: string }) {
       className="space-y-4"
       noValidate
     >
-      <FormRow id="email" label="Email" error={errors.email?.message}>
+      <FormRow id="email" label="Email" error={errors.email?.message} required>
         {(field) => (
           <Input
             {...field}
@@ -101,11 +101,12 @@ export function LoginForm({ next }: { next?: string }) {
       <FormRow
         id="password"
         label="Password"
+        required
         error={errors.password?.message}
         action={
           <Link
             href="/forgot-password"
-            className="text-text-secondary hoverable:text-text -my-2 rounded px-1 py-2 text-sm  "
+            className="text-text-secondary hoverable:text-text -my-2 rounded px-1 py-2 text-sm"
           >
             Forgot password?
           </Link>

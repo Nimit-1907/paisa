@@ -81,7 +81,7 @@ export default async function ExportPage() {
     <PageShell>
       <PageHeader
         title="Export"
-        description="Take your records with you — nothing here is locked in."
+        description="Take your records with you. Nothing here is locked in."
       />
 
       <ExportScreen

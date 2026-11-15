@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 import { SITE } from "@/lib/site";
 
-export const alt = `${SITE.name} — ${SITE.tagline}`;
+export const alt = `${SITE.name}: ${SITE.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -80,7 +80,7 @@ export default function OpengraphImage() {
           lineHeight: 1.05,
         }}
       >
-        Know where the month went.
+        Know where your money goes.
       </div>
 
       <div
@@ -92,8 +92,8 @@ export default function OpengraphImage() {
           lineHeight: 1.3,
         }}
       >
-        Log what you spend in four taps. Set a budget per category. See where it
-        actually went.
+        Log what you spend in four taps. Set a budget per category. See where
+        your money goes.
       </div>
     </div>,
     size,

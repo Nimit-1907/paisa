@@ -136,6 +136,8 @@ export function CategoryFormSheet({
                 id="category-name"
                 label="Name"
                 error={field === "name" ? (error ?? undefined) : undefined}
+
+                required
               >
                 {(props) => (
                   <Input
@@ -228,8 +230,8 @@ export function CategoryFormSheet({
                   {category.transactionCount > 0
                     ? `Used by ${category.transactionCount} ${
                         category.transactionCount === 1 ? "record" : "records"
-                      } — archive it instead to keep them.`
-                    : "Used by a budget or a recurring rule — archive it instead."}
+                      }. Archive it instead to keep them.`
+                    : "Used by a budget or a recurring rule. Archive it instead."}
                 </p>
               ) : null}
             </div>

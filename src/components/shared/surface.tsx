@@ -27,10 +27,7 @@ export function Card({
   children: React.ReactNode;
 } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <Tag
-      className={cn("bg-surface rounded-card border", className)}
-      {...rest}
-    >
+    <Tag className={cn("bg-surface rounded-card border", className)} {...rest}>
       {children}
     </Tag>
   );
@@ -68,9 +65,15 @@ export function ListCard({
  * is the point: the shadow is a second shape offset behind the first, which
  * is what makes a flat interface look deliberate rather than unfinished.
  *
- * The margin on the right and bottom is not decoration — the shadow is
- * drawn outside the element's box, and without room for it the hard edge
- * gets clipped by the page gutter at 360px.
+ * The right margin is not decoration: the shadow is drawn outside the
+ * element's box, and without room for it the hard edge gets clipped by the
+ * page gutter at 360px.
+ *
+ * There is deliberately no bottom margin. Tailwind v4 emits `space-y-*` at
+ * zero specificity, so a `mb-1` here silently beat the `space-y-4` of every
+ * stack this card sits in and the gap under the one bold card on the screen
+ * collapsed from 16px to 4px. The shadow instead sits inside the stack's own
+ * gap, which leaves 12px clear under it.
  */
 export function HeroCard({
   as: Tag = "section",
@@ -89,7 +92,7 @@ export function HeroCard({
     <Tag
       className={cn(
         "bg-surface rounded-hero p-4",
-        flat ? "border" : "accent-lg mr-1 mb-1",
+        flat ? "border" : "accent-lg mr-1",
         className,
       )}
       {...rest}

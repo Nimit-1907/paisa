@@ -13,6 +13,12 @@ import {
 import { Card } from "@/components/shared/surface";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { dayDifference } from "@/lib/recurrence";
 import { MAX_EXPORT_DAYS } from "@/lib/schemas/export";
@@ -226,18 +232,19 @@ export function ExportScreen({
         <Card className="p-4">
           <div className="space-y-1.5">
             <Label htmlFor="export-month">Month</Label>
-            <select
-              id="export-month"
-              value={month}
-              onChange={(event) => setMonth(event.target.value)}
-              className="bg-surface rounded-control h-11 w-full border px-3 text-base md:text-sm"
-            >
-              {monthOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <Select value={month} onValueChange={setMonth}>
+              <SelectTrigger id="export-month">
+                {monthOptions.find((option) => option.value === month)?.label ??
+                  "Choose a month"}
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </Card>
       )}

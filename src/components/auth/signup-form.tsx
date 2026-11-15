@@ -85,7 +85,7 @@ export function SignupForm() {
         id="displayName"
         label="Your name"
         error={errors.displayName?.message}
-        hint="Optional — you can add it during setup."
+        hint="You can add this later in Settings."
       >
         {(field) => (
           <Input
@@ -97,7 +97,7 @@ export function SignupForm() {
         )}
       </FormRow>
 
-      <FormRow id="email" label="Email" error={errors.email?.message}>
+      <FormRow id="email" label="Email" error={errors.email?.message} required>
         {(field) => (
           <Input
             {...field}
@@ -117,6 +117,8 @@ export function SignupForm() {
           id="password"
           label="Password"
           error={errors.password?.message}
+
+          required
         >
           {(field) => (
             <PasswordInput

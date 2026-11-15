@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 /** Served at /manifest.webmanifest. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Paisa — Expense tracker",
+    name: "Paisa Expense Tracker",
     short_name: "Paisa",
     description:
       "Track expenses, income and transfers across accounts, set monthly budgets and see where your money goes.",

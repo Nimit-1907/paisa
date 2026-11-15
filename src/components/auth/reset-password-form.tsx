@@ -61,6 +61,8 @@ export function ResetPasswordForm() {
         label="New password"
         error={errors.password?.message}
         hint="At least 8 characters."
+
+        required
       >
         {(field) => (
           <PasswordInput
@@ -76,6 +78,8 @@ export function ResetPasswordForm() {
         id="confirmPassword"
         label="Confirm password"
         error={errors.confirmPassword?.message}
+
+        required
       >
         {(field) => (
           <PasswordInput

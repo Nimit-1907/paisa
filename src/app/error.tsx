@@ -51,8 +51,8 @@ export default function RouteError({
       </h1>
 
       <p className="text-text-secondary mt-2 text-sm text-pretty">
-        Something went wrong at our end. Nothing you have saved is affected —
-        your records are on the server, not on this screen.
+        Something went wrong at our end. Nothing you have saved is affected.
+        Your records are on the server, not on this screen.
       </p>
 
       <div className="mt-7 flex w-full flex-col gap-2">

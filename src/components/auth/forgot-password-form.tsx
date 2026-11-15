@@ -12,10 +12,7 @@ import { CheckEmailNotice } from "@/components/auth/check-email-notice";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
-import {
-  type ResetRequestInput,
-  resetRequestSchema,
-} from "@/lib/schemas/auth";
+import { type ResetRequestInput, resetRequestSchema } from "@/lib/schemas/auth";
 
 export function ForgotPasswordForm() {
   const [sentTo, setSentTo] = React.useState<string | null>(null);
@@ -66,7 +63,7 @@ export function ForgotPasswordForm() {
       className="space-y-4"
       noValidate
     >
-      <FormRow id="email" label="Email" error={errors.email?.message}>
+      <FormRow id="email" label="Email" error={errors.email?.message} required>
         {(field) => (
           <Input
             {...field}

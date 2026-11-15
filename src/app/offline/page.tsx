@@ -30,7 +30,7 @@ export default function OfflinePage() {
 
       <p className="text-text-secondary mt-2 max-w-[42ch] text-sm">
         Paisa needs a connection to load your records. Pages you have already
-        opened will still work — this one could not be reached.
+        opened will still work. This one could not be reached.
       </p>
 
       <Button asChild size="touch" className="mt-7 px-5">

@@ -27,7 +27,7 @@ export function PreferencesCard({
       <PreferenceToggle
         icon={Vibrate}
         label="Haptic feedback"
-        description="A light buzz when a record is saved or deleted. Phones only — laptops and iPhones have no way to do it."
+        description="A light buzz when a record is saved or deleted. Phones only. Laptops and iPhones have no way to do it."
         enabled={haptics}
         onToggle={setHaptics}
         // On the way on, not on the way off: a buzz confirming that buzzing

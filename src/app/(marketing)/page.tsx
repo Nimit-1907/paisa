@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   // The brand goes last: "Know where your money went" is what a search result
   // and a shared link have room to show.
   title: {
-    absolute: `${SITE.name} — ${SITE.description.split(".")[0]}.`,
+    absolute: `${SITE.name}: ${SITE.description.split(".")[0]}.`,
   },
   description: SITE.description,
   alternates: { canonical: "/" },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: SITE.name,
-    title: `${SITE.name} — ${SITE.tagline}`,
+    title: `${SITE.name}: ${SITE.tagline}`,
     description: SITE.description,
   },
   twitter: { card: "summary_large_image" },
@@ -93,7 +93,7 @@ export default function LandingPage() {
       <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
         <div>
           <h1 className="font-display text-text text-[2.5rem] leading-[1.05] text-balance sm:text-[3.5rem]">
-            Know where the month went.
+            Know where your money goes.
           </h1>
 
           <p className="text-text-secondary mt-4 max-w-[46ch] text-base text-pretty sm:text-lg">
@@ -177,7 +177,7 @@ export default function LandingPage() {
           {[
             "No bank login, no advertising, no trackers.",
             "Your rows are isolated by the database itself, not by the app remembering to filter.",
-            "Amounts are whole paise end to end — nothing divides your money into a decimal.",
+            "Amounts are whole paise end to end. Nothing divides your money into a decimal.",
             "Export every record as a CSV, or a month as a PDF, whenever you want it.",
           ].map((point) => (
             <li key={point} className="flex gap-2.5 text-sm">

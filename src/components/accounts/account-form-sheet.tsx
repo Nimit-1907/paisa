@@ -142,7 +142,7 @@ export function AccountFormSheet({
       description={
         account
           ? "Changing the opening balance moves every balance that follows it."
-          : "Cash, a bank account, a card or a wallet — anything money sits in."
+          : "Cash, a bank account, a card or a wallet: anything money sits in."
       }
     >
       <SheetBody>

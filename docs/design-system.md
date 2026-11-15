@@ -27,7 +27,7 @@ at 2px (`accent-sm`) to say *this one is selected* — the segmented control's
 chosen segment, a chosen tile, the dock's Add button. Everything else is
 flat. The shadow is a sentence, and a page of them says nothing.
 
-**Colour identifies, ink carries meaning.** The eight tints name a category
+**Colour identifies, ink carries meaning.** The sixteen tints name a category
 or an account; they never say good or bad. The ink does the work: an icon on
 a tint is always plain ink (11:1 or better on every tint in both themes),
 which is exactly why the tints can stay this pale.
@@ -127,17 +127,20 @@ Two rows of the same tiles asking the same question read as two different
 sets. They sort to the front instead, and the grid's hint — "Usually in the
 afternoon" — says why they are there.
 
-**The keypad sits with the save button, outside the scrolling body.** The
-reference fits the whole sheet on one screen; at 390×844 with a quick-add row
-and a "More options" row it does not. The keypad is the only way to enter an
-amount on a phone (the field itself is visually hidden), so it cannot be
-something you scroll to find. The type tabs and the amount are pinned above
-for the same reason: a calculator whose display has scrolled away.
+**There is no keypad.** There was: a 4×4 grid pinned above the save button,
+because the amount field is visually hidden and an amount had to be typeable
+somewhere. It cost 210px of fixed furniture, and measured on a 360×640 phone
+that left the scrolling middle 95px for 440px of content with the category
+grid entirely below the fold: not one tile on screen, for step three of a
+four-tap flow. The field now takes the device keyboard instead, through
+`inputMode="decimal"`, and the whole sheet fits on one screen at 390×844
+with two full rows of categories showing at 640px. The cost is arithmetic:
+the field still parses "120+45", but an iOS decimal pad has no operators.
 
-**The keypad is hidden from `lg` up.** A 4×4 grid of buttons is the slower
-way to type a number where there is a real keyboard, and it was 210px of a
-dialog that the category grid needed more. The amount field takes a visible
-caret at that size so it still reads as something you can type into.
+**The amount is the label of its own field.** The display is wrapped in a
+`<label>`, so a tap anywhere on the figure puts the caret in the hidden
+input and raises the keyboard. A steady caret marks focus, since the field
+has no box of its own.
 
 **The toast sits above the dock, not under the header.** Brief item 24. Its
 Undo is an ink pill — the same shape as the primary button — because it is
@@ -153,7 +156,7 @@ is more useful than an infinite scroll through three years of groceries.
 is the same as excluding the third.
 
 **Pale fills get an ink edge, including in charts.** The brief asks for
-donut segments in the eight tints with 1px surface gaps. Measured, rose on
+donut segments in the sixteen tints with 1px surface gaps. Measured, rose on
 the surface is 1.1:1 — eight of those adjoining on a white card is a smudge
 with a hole in it. The segments keep the tints and the gap and take a 1px
 ink stroke, which is the same move the rest of this language makes and

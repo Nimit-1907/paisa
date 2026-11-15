@@ -45,9 +45,7 @@ export function MonthRecap({
   });
 
   const facts = [
-    recap.topCategory
-      ? `Most of it on ${recap.topCategory.name}`
-      : null,
+    recap.topCategory ? `Most of it on ${recap.topCategory.name}` : null,
     change === null
       ? null
       : Math.abs(change) < 5
@@ -94,7 +92,7 @@ export function MonthRecap({
      */
     <section
       aria-label={`${monthLabel} in summary`}
-      className="bg-surface rounded-hero accent-lg relative mr-1 mb-1 p-4"
+      className="bg-surface rounded-hero accent-lg relative mr-1 p-4"
     >
       <button
         type="button"

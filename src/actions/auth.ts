@@ -199,7 +199,7 @@ function authMessage(message: string): string {
     return "That email and password do not match.";
   }
   if (normalised.includes("email not confirmed")) {
-    return "Confirm your email first — check your inbox for the link.";
+    return "Confirm your email first. Check your inbox for the link.";
   }
   if (normalised.includes("same password")) {
     return "Choose a password you have not used here before.";

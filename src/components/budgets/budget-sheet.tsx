@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 import { deleteBudget, setBudget } from "@/actions/budgets";
 import { useCurrency } from "@/components/profile-provider";
-import { AmountKeypad } from "@/components/records/amount-keypad";
+import { AmountDisplay } from "@/components/records/amount-field";
 import { CategoryGrid } from "@/components/shared/entry-pickers";
 import {
   ResponsiveSheet,
@@ -247,7 +247,7 @@ export function BudgetSheet({
         {/* The same keypad the record sheet uses, for the same reason: a
             budget is often worked out rather than known — "about 7000, call
             it 7500" — and the arithmetic belongs in the field. */}
-        <AmountKeypad
+        <AmountDisplay
           value={amount}
           onChange={setAmount}
           tone="neutral"

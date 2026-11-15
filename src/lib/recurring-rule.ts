@@ -60,7 +60,7 @@ export function ruleTitle(rule: {
   if (rule.note) return rule.note;
 
   if (rule.type === "transfer") {
-    return `${rule.accountName} → ${rule.toAccountName ?? "—"}`;
+    return `${rule.accountName} → ${rule.toAccountName ?? "None"}`;
   }
 
   return rule.categoryName ?? "Recurring";

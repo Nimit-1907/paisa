@@ -43,7 +43,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             The records, accounts, categories, budgets and repeating rules you
-            create — amounts, dates, notes and which account each one touched.
+            create: amounts, dates, notes and which account each one touched.
           </li>
           <li>
             Your preferences: currency symbol and decimals, which day your week
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
           You. Every table carries the id of the account that owns the row, and
           Postgres row level security refuses any query that asks for someone
           else&rsquo;s. That is a rule the database enforces on every read and
-          write, not a filter the app has to remember to apply — which is the
+          write, not a filter the app has to remember to apply. That is the
           difference between a promise and a guarantee.
         </p>
       </section>
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
         <p className="text-text-secondary mt-2 text-sm">
           The Export screen hands you every record as a CSV for any date range,
           or a month as a PDF. Deleting your account from Settings removes the
-          login and every row that belongs to it in the same transaction — the
+          login and every row that belongs to it in the same transaction: the
           records, the accounts, the budgets and the rules. It is immediate and
           it cannot be undone, which is why it asks you to type the word first.
         </p>

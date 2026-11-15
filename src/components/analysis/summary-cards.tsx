@@ -64,7 +64,7 @@ export function SummaryCards({
           data.peak ? (
             <Amount value={BigInt(data.peak.amount)} signDisplay="never" />
           ) : (
-            "—"
+            "None"
           )
         }
         hint={
@@ -75,7 +75,7 @@ export function SummaryCards({
       <Card
         icon={Tag}
         label="Top category"
-        value={top ? top.name : "—"}
+        value={top ? top.name : "None"}
         hint={
           top
             ? formatMoney(BigInt(top.total), {
@@ -91,7 +91,7 @@ export function SummaryCards({
         label="vs previous"
         value={
           change === null
-            ? "—"
+            ? "None"
             : `${change > 0 ? "+" : ""}${change.toFixed(1)}%`
         }
         hint={

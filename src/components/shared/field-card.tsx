@@ -30,7 +30,18 @@ export function FieldCard({
   control,
   invalid = false,
   className,
+  asTrigger = false,
+  ref,
+  ...rest
 }: {
+  /**
+   * Render as a button even without an `onClick`, and forward whatever a
+   * wrapper puts on it. This is what lets a `SelectTrigger asChild` wear
+   * the card: Radix needs to attach its own handlers, `aria-expanded` and
+   * a ref to the element the user actually presses.
+   */
+  asTrigger?: boolean;
+  ref?: React.Ref<HTMLButtonElement>;
   label: string;
   icon?: React.ReactNode;
   value: React.ReactNode;
@@ -41,7 +52,7 @@ export function FieldCard({
   /** The save was refused because of this field. */
   invalid?: boolean;
   className?: string;
-}) {
+} & Omit<React.ComponentProps<"button">, "ref" | "value">) {
   const base = cn(
     "bg-surface rounded-control min-w-0 border px-3 py-2 text-left",
     invalid && "border-expense",
@@ -80,13 +91,15 @@ export function FieldCard({
     );
   }
 
-  if (!onClick) return <div className={base}>{inside}</div>;
+  if (!onClick && !asTrigger) return <div className={base}>{inside}</div>;
 
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
       className={cn(base, "pressable hoverable:bg-surface-muted")}
+      {...rest}
     >
       {inside}
     </button>

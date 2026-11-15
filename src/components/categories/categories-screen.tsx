@@ -99,7 +99,7 @@ export function CategoriesScreen({
         <EmptyState
           icon={Tags}
           title={`No ${KIND_LABELS[kind].toLowerCase()} categories`}
-          description="Categories are how the analysis screen groups your spending. Add the ones you actually use."
+          description="Categories are how the analysis screen groups your spending. Add the ones you use."
           action={
             <Button size="touch" onClick={openAdd}>
               <Plus className="size-4" aria-hidden="true" />
@@ -198,7 +198,7 @@ export function CategoriesScreen({
                           {total > 0n ? (
                             <Amount value={total} signDisplay="never" whole />
                           ) : (
-                            "—"
+                            "None"
                           )}
                         </span>
                       )}

@@ -71,7 +71,7 @@ export default function MarketingLayout({
       <footer className="pb-safe mt-8 border-t">
         <div className="text-text-secondary mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-6 text-sm">
           <p>
-            {SITE.name} — {SITE.tagline}
+            {SITE.name}: {SITE.tagline}
           </p>
           <nav aria-label="Footer" className="sm:ml-auto">
             <ul className="flex flex-wrap items-center gap-x-4">

@@ -96,6 +96,8 @@ export function ChangePasswordCard() {
             id="current-password"
             label="Current password"
             error={fieldError("currentPassword")}
+
+            required
           >
             {(props) => (
               <PasswordInput
