@@ -211,9 +211,11 @@ export function ListRow({
     "duration-[120ms] ease-[cubic-bezier(0.2,0,0,1)] transition-colors motion-reduce:transition-none",
     "active:bg-surface-muted",
     selected && "bg-surface-muted hoverable:bg-surface-muted",
-    // Fades out over a second, leading the eye to the new row without
-    // asking anything of it.
-    highlight && "bg-tint-peri duration-1000",
+    // The accent, washing out over 1.8s: it leads the eye to the new row
+    // without asking anything of it, and leaves no colour behind. A
+    // keyframe rather than a class that is later removed, because a
+    // transition only runs on the *second* render and the row is new.
+    highlight && "row-highlight motion-reduce:animate-none",
   );
 
   const interactive =
@@ -242,7 +244,15 @@ export function ListRow({
 
   const row = (
     <div className={cn("bg-surface group relative overflow-hidden", className)}>
-      {swipeRight ? (
+      {/*
+        No swipe layers behind a row that is still being saved.
+
+        A pending row is dimmed to 60%, and dimming an opaque row shows
+        whatever is painted under it — which here is Copy on one side and
+        Delete on the other, both printed through the row for as long as
+        the save takes. The row cannot be swiped while pending anyway.
+      */}
+      {swipeRight && !pending ? (
         <SwipeAction
           action={swipeRight}
           side="left"
@@ -250,7 +260,7 @@ export function ListRow({
           onDone={close}
         />
       ) : null}
-      {swipeLeft ? (
+      {swipeLeft && !pending ? (
         <SwipeAction
           action={swipeLeft}
           side="right"

@@ -317,13 +317,19 @@
   }
 }
 
-/* The new row, washed in the accent and fading back to its surface. */
+/*
+ * The new row, washed in the accent and fading back to its surface.
+ *
+ * It ends on the surface colour rather than on `transparent`: a row in a
+ * list has the swipe actions painted behind it, and fading to transparent
+ * shows Copy and Delete through the row for a second and a half.
+ */
 @keyframes paisa-highlight {
   from {
     background-color: var(--accent);
   }
   to {
-    background-color: transparent;
+    background-color: var(--surface);
   }
 }
 

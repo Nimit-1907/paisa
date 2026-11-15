@@ -75,7 +75,9 @@ function daysInMonth(year: number, month: number): number {
  * file an evening in Kolkata under the next day.
  */
 export function localToInstant(local: string, timeZone: string): Date | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(local.trim());
+  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(
+    local.trim(),
+  );
   if (!match) return null;
 
   const year = Number(match[1]);
@@ -97,7 +99,10 @@ export function localToInstant(local: string, timeZone: string): Date | null {
 }
 
 /** The inverse: an instant as the `yyyy-mm-ddThh:mm` a picker wants. */
-export function instantToLocal(instant: Date | string, timeZone: string): string {
+export function instantToLocal(
+  instant: Date | string,
+  timeZone: string,
+): string {
   const date = typeof instant === "string" ? new Date(instant) : instant;
 
   const parts = Object.fromEntries(
@@ -127,7 +132,9 @@ export function currentMonth(timeZone: string, now: Date = new Date()) {
     month: "2-digit",
   }).formatToParts(now);
 
-  const lookup = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const lookup = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
 
   return {
     year: Number(lookup.year),
@@ -245,4 +252,48 @@ export function nowLocal(timeZone: string): string {
 
   const hour = parts.hour === "24" ? "00" : parts.hour;
   return `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}`;
+}
+
+/**
+ * A local `yyyy-mm-ddThh:mm` as a person would say it: "Today, 1:30 pm".
+ *
+ * For the "When" card on the add sheet, which shows a date the way the rest
+ * of the app shows one rather than the way a browser renders
+ * `datetime-local` — that is `15/11/2026, 01:30 PM` in one browser and
+ * `11/15/2026, 1:30 PM` in the next, and neither says "today".
+ *
+ * `todayLocal` is passed in rather than read, so this is a pure function of
+ * its arguments and can be tested without pretending it is a different day.
+ */
+export function describeLocal(local: string, todayLocal: string): string {
+  const [date, time = "00:00"] = local.split("T");
+  const [today] = todayLocal.split("T");
+  if (!date || !today) return local;
+
+  const [hourText = "0", minute = "00"] = time.split(":");
+  const hour24 = Number(hourText);
+  const suffix = hour24 < 12 ? "am" : "pm";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const clock = `${hour12}:${minute} ${suffix}`;
+
+  if (date === today) return `Today, ${clock}`;
+
+  // One day back from today, in local terms: the date part has no zone, so
+  // UTC arithmetic on it cannot drift.
+  const [y = "1970", m = "01", d = "01"] = today.split("-");
+  const yesterday = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d) - 1))
+    .toISOString()
+    .slice(0, 10);
+  if (date === yesterday) return `Yesterday, ${clock}`;
+
+  const [ry = "1970", rm = "01", rd = "01"] = date.split("-");
+  const day = new Date(Date.UTC(Number(ry), Number(rm) - 1, Number(rd)));
+  const label = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: ry === y ? undefined : "numeric",
+    timeZone: "UTC",
+  }).format(day);
+
+  return `${label}, ${clock}`;
 }

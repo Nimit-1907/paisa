@@ -13,13 +13,7 @@ import { signIn } from "./sign-in";
  */
 
 /** WCAG 2.2 AA, which is what this phase commits to. */
-const TAGS = [
-  "wcag2a",
-  "wcag2aa",
-  "wcag21a",
-  "wcag21aa",
-  "wcag22aa",
-];
+const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 /** Everything reachable without an account. */
 const PUBLIC_PAGES = [
@@ -70,7 +64,9 @@ test.describe("the public pages", () => {
 
     for (const target of PUBLIC_PAGES) {
       await page.goto(target.path);
-      await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+      await expect(
+        page.getByRole("heading", { level: 1 }).first(),
+      ).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth,
@@ -168,7 +164,10 @@ test.describe("the keyboard", () => {
 
   test("drives the amount keypad without touching it", async ({ page }) => {
     await page.goto("/records");
-    await page.getByRole("button", { name: /add record/i }).first().click();
+    await page
+      .getByRole("button", { name: /add record/i })
+      .first()
+      .click();
     await expect(page.getByLabel("Amount")).toBeFocused();
 
     // What the keys on a keyboard are actually labelled.
@@ -179,7 +178,7 @@ test.describe("the keyboard", () => {
     await page.keyboard.press("Enter");
     await expect(page.getByLabel("Amount")).toHaveValue("400.00");
 
-    await page.getByRole("button", { name: "Groceries" }).first().click();
+    await page.getByRole("radio", { name: "Groceries" }).first().click();
 
     // Back in the amount, Enter saves — the keypad is not inside a form, so
     // without this the one key everybody presses would do nothing.
@@ -197,7 +196,10 @@ test.describe("the keyboard", () => {
 
   test("finds no violation inside an open sheet", async ({ page }) => {
     await page.goto("/records");
-    await page.getByRole("button", { name: /add record/i }).first().click();
+    await page
+      .getByRole("button", { name: /add record/i })
+      .first()
+      .click();
     await expect(page.getByRole("dialog")).toBeVisible();
 
     expect(await violationsOn(page), "the add record sheet").toEqual([]);

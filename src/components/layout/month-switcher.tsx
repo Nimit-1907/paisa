@@ -89,7 +89,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="text-text h-9 min-w-[8.5ch] px-2 text-sm font-medium tabular-nums"
+            className="text-text h-11 min-w-[8.5ch] px-2 text-sm font-medium tabular-nums"
             aria-label={`${MONTHS[month - 1]} ${year}. Choose a month`}
           >
             {MONTHS[month - 1]} {year}

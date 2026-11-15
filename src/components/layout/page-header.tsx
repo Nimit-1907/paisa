@@ -142,8 +142,16 @@ export function HeaderAvatar({ name }: { name: string }) {
   return (
     <Link
       href="/more"
-      aria-label="Your profile and settings"
-      className="bg-tint-lilac text-text border-ink pressable flex size-9 shrink-0 items-center justify-center rounded-full border-[1.5px] text-xs font-bold"
+      // The initials are in the name as well as on the circle. They are
+      // marked decorative, but WCAG 2.5.3 is about what is *drawn*: a label
+      // that does not contain the visible text is one somebody using voice
+      // control cannot say out loud.
+      aria-label={
+        initials
+          ? `${initials} — your profile and settings`
+          : "Your profile and settings"
+      }
+      className="bg-tint-lilac text-text border-ink pressable flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] text-xs font-bold"
     >
       {initials ? (
         <span aria-hidden="true">{initials}</span>

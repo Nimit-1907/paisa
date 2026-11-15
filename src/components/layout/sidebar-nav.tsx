@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { IndianRupee, type LucideIcon } from "lucide-react";
+import { IndianRupee, type LucideIcon, Plus } from "lucide-react";
+
+import { useRecordSheet } from "@/components/records/record-sheet-provider";
+import { Button } from "@/components/ui/button";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -31,8 +34,7 @@ function SidebarLink({
         href={href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition-colors",
-          "",
+          "rounded-control flex min-h-11 items-center gap-3 px-3 text-sm font-semibold transition-colors",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-text-secondary hoverable:bg-sidebar-accent/50 hoverable:text-sidebar-foreground",
@@ -48,6 +50,7 @@ function SidebarLink({
 /** Left sidebar shown from `lg` up, replacing the bottom tab bar. */
 export function SidebarNav() {
   const pathname = usePathname();
+  const sheet = useRecordSheet();
 
   return (
     <aside className="bg-sidebar text-sidebar-foreground fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r lg:flex">
@@ -59,6 +62,25 @@ export function SidebarNav() {
           <p className="font-semibold tracking-tight">Paisa</p>
           <p className="text-text-secondary text-xs">Expense tracker</p>
         </div>
+      </div>
+
+      {/*
+        Add, where the dock's accent button is on a phone.
+
+        The dock is `lg:hidden`, and with the separate FAB gone in Phase 14
+        the sidebar was the one layout with no way to add a record at all.
+      */}
+      <div className="px-3 pb-3">
+        <Button
+          variant="accent"
+          size="touch"
+          className="w-full"
+          onClick={() => sheet.openAdd()}
+          disabled={!sheet.ready}
+        >
+          <Plus className="size-[18px]" aria-hidden="true" />
+          Add record
+        </Button>
       </div>
 
       <nav aria-label="Main" className="flex-1 px-3">

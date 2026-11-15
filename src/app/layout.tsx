@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 
-
 import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
 import { body, display } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -113,7 +112,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster position="top-center" />
+          {/* Above the dock, where the thumb already is. */}
+          <Toaster
+            position="bottom-center"
+            offset={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom))" }}
+            mobileOffset={{
+              bottom: "calc(5.25rem + env(safe-area-inset-bottom))",
+              left: "0.75rem",
+              right: "0.75rem",
+            }}
+          />
           <ServiceWorkerUpdates />
         </ThemeProvider>
       </body>

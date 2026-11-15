@@ -124,9 +124,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
       page.getByRole("heading", { name: /You are set up/ }),
     ).toBeVisible();
 
-    await page
-      .getByRole("button", { name: "Add your first expense" })
-      .click();
+    await page.getByRole("button", { name: "Add your first expense" }).click();
 
     await page.waitForURL(/\/records/, { timeout: 60_000 });
 
@@ -158,11 +156,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
     await expect(sheet(page)).toBeVisible();
     await typeAmount(page, "250");
-    await sheet(page).getByRole("button", { name: "Food", exact: true }).click();
-
-    // The note, the date and the repeat are folded away: most records need
-    // none of them, and a shorter sheet is why a record takes four taps.
-    await sheet(page).getByRole("button", { name: "More options" }).click();
+    await sheet(page).getByRole("radio", { name: "Food", exact: true }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
     await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
@@ -189,14 +183,12 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await typeAmount(page, "500");
 
     // "From" defaults to the first account; "To" has to be chosen. Both
-    // groups list the same accounts, so the group's own name is what tells
-    // them apart.
+    // field cards list the same accounts, so the card's own label is what
+    // tells them apart.
     await sheet(page)
-      .getByRole("group", { name: "To", exact: true })
-      .getByRole("button", { name: "Paytm Wallet" })
-      .click();
+      .getByLabel("To", { exact: true })
+      .selectOption({ label: "Paytm Wallet" });
 
-    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
     await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
@@ -222,10 +214,14 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(sheet(page)).toBeVisible();
 
     await typeAmount(page, "12000");
-    await sheet(page).getByRole("button", { name: "Rent", exact: true }).click();
+    await sheet(page).getByRole("radio", { name: "Rent", exact: true }).click();
 
-    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByLabel("Note", { exact: true }).fill(RENT_NOTE);
+
+    // Repeat is the one thing still folded away since Phase 14: it turns a
+    // record into a standing instruction, which is not what the sheet is
+    // tapped for by reflex.
+    await sheet(page).getByRole("button", { name: "More options" }).click();
     await sheet(page).getByRole("radio", { name: "Monthly" }).click();
     await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
@@ -250,7 +246,9 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
       .click();
     await expect(sheet(page)).toBeVisible();
 
-    await sheet(page).getByLabel(/Monthly limit/).fill("4000");
+    await sheet(page)
+      .getByLabel(/Monthly limit/)
+      .fill("4000");
     await sheet(page).getByRole("button", { name: "Save budget" }).click();
 
     // The headings are upper-cased in CSS, so the match has to ignore case:
@@ -281,8 +279,12 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await page.goto("/analysis");
 
     // The donut's legend is the per-category breakdown.
-    await expect(page.getByRole("link", { name: /Rent/ }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /Food/ }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Rent/ }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Food/ }).first(),
+    ).toBeVisible();
 
     /*
      * ₹250 food + ₹12,000 rent, and not the ₹500 transfer.
@@ -300,7 +302,9 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
   await test.step("export the records as CSV", async () => {
     const today = new Date();
     const from = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`;
-    const to = new Date(today.getTime() + 86_400_000).toISOString().slice(0, 10);
+    const to = new Date(today.getTime() + 86_400_000)
+      .toISOString()
+      .slice(0, 10);
 
     // page.request shares the browser context's cookies, so this is the same
     // signed-in session the UI is using.

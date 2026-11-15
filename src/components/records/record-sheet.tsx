@@ -3,10 +3,12 @@
 import * as React from "react";
 
 import {
+  ArrowRight,
   ArrowUpDown,
   Check,
   ChevronDown,
   Loader2,
+  Pencil,
   Plus,
   Repeat,
   Trash2,
@@ -22,21 +24,23 @@ import type {
   QuickAdd,
 } from "@/lib/queries/accounts";
 import { useCurrency } from "@/components/profile-provider";
-import { AmountKeypad } from "@/components/records/amount-keypad";
+import { AmountDisplay, Keypad } from "@/components/records/amount-keypad";
 import { Amount } from "@/components/shared/amount";
 import { EditScopeDialog } from "@/components/records/edit-scope-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   type AccountOption,
-  AccountSelect,
+  AccountField,
   type CategoryOption,
   CategoryGrid,
   TypeTabs,
+  WhenField,
 } from "@/components/shared/entry-pickers";
 import {
   ResponsiveSheet,
   SheetBody,
   SheetFooter,
+  SheetHead,
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
@@ -49,7 +53,7 @@ import {
   type TransactionType,
 } from "@/lib/schemas/transactions";
 import { evaluate } from "@/lib/calculator";
-import { nowLocal } from "@/lib/dates";
+import { describeLocal, nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
@@ -58,15 +62,13 @@ import { Tile } from "@/components/shared/tile";
 
 export type { AccountOption, CategoryOption };
 
-/** What lives behind "More options", so an error there can open it. */
-const FOLDED_FIELDS = new Set([
-  "occurredAt",
-  "note",
-  "repeat",
-  "frequency",
-  "interval",
-  "endDate",
-]);
+/**
+ * What lives behind "More options", so an error there can open it.
+ *
+ * Three fields shorter since Phase 14: the note, the account and the date
+ * are on the sheet itself now.
+ */
+const FOLDED_FIELDS = new Set(["repeat", "frequency", "interval", "endDate"]);
 
 /** How the suggestion row introduces itself. */
 const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
@@ -187,6 +189,12 @@ export function RecordSheet({
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
   const [shaking, shake] = useShake();
+  // "Saved ✓" on the button, for the run-of-receipts path where the sheet
+  // stays open and the cleared amount is otherwise the only acknowledgement.
+  const [justSaved, setJustSaved] = React.useState(false);
+  // Shared by the amount and the keypad, which are no longer next to each
+  // other: tapping a key has to put the caret back in the field above.
+  const amountRef = React.useRef<HTMLInputElement>(null);
   const [moreOpen, setMoreOpen] = React.useState(false);
   const [discardOpen, setDiscardOpen] = React.useState(false);
 
@@ -231,16 +239,10 @@ export function RecordSheet({
     setError(null);
     setErrorField(null);
     setScopeOpen(false);
-    setMoreOpen(
-      Boolean(
-        editing &&
-        (editing.note ||
-          editing.recurringRuleId ||
-          editing.occurredAtLocal.slice(0, 10) !==
-            nowLocal(timeZone).slice(0, 10)),
-      ),
-    );
+    // Nothing but Repeat is folded now, and Repeat is never pre-set.
+    setMoreOpen(false);
     setDiscardOpen(false);
+    setJustSaved(false);
 
     // Snapshot taken from the same values that were just set, not from
     // state — state has not updated yet inside this effect.
@@ -304,6 +306,15 @@ export function RecordSheet({
     onOpenChange(false);
   }
 
+  // 1.2s, then the button goes back to naming what it will do. Not a
+  // transition on the label: the word has to change, and a word that
+  // changes is a timer either way.
+  React.useEffect(() => {
+    if (!justSaved) return;
+    const id = window.setTimeout(() => setJustSaved(false), 1200);
+    return () => window.clearTimeout(id);
+  }, [justSaved]);
+
   // A hidden field cannot be corrected. Every field inside the fold, not
   // only the date: a collapsed section with the error in it is a form that
   // refuses to save and will not say why.
@@ -335,6 +346,30 @@ export function RecordSheet({
    * caption an evening row "in the morning" on the first day of a trip.
    */
   const partOfDay = PART_OF_DAY_LABEL[entryDefaults?.partOfDay ?? "night"];
+
+  /*
+   * The grid, with the usual ones first.
+   *
+   * Phase 13 gave the suggestions a labelled chip row of their own above
+   * the grid. The reference has one grid, and two rows of the same tiles
+   * asking the same question was the thing people hesitated over in the
+   * screenshots: the second row looks like a different set. Sorting them to
+   * the front keeps the shortcut — the first four tiles are the four it
+   * would have offered — and the grid's hint says why they are there.
+   */
+  const suggestedIds = new Set(suggestions.map((category) => category.id));
+  const gridCategories =
+    suggestions.length === 0
+      ? visibleCategories
+      : [
+          ...suggestions,
+          ...visibleCategories.filter(
+            (category) => !suggestedIds.has(category.id),
+          ),
+        ];
+
+  /** "Today, 1:30 pm" — what the When card shows over its native input. */
+  const whenLabel = describeLocal(occurredAt, nowLocal(timeZone));
 
   /*
    * The result, spelled out on the button.
@@ -415,21 +450,14 @@ export function RecordSheet({
   /** Whether the field this error belongs to is on screen to show it. */
   const errorShownInline =
     errorField === "amount" ||
-    errorField === "accountId" ||
+    errorField === "occurredAt" ||
+    (errorField === "accountId" && type !== "transfer") ||
     (errorField === "toAccountId" && type === "transfer") ||
-    (errorField === "categoryId" && type !== "transfer") ||
-    (errorField === "occurredAt" && moreOpen);
+    (errorField === "categoryId" && type !== "transfer");
 
   /** What is folded away, so the row says whether it is worth opening. */
-  const moreSummary = [
-    occurredAt.slice(0, 10) === nowLocal(timeZone).slice(0, 10)
-      ? null
-      : "dated",
-    note.trim() ? "note" : null,
-    frequency === "none" ? null : "repeats",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const moreSummary =
+    frequency === "none" ? "" : `Repeats ${REPEAT_LABELS[frequency]}`;
 
   /**
    * What is still missing, in the order the sheet asks for it.
@@ -560,6 +588,7 @@ export function RecordSheet({
         setAmount("");
         setNote("");
         setError(null);
+        setJustSaved(true);
         return;
       }
 
@@ -580,7 +609,13 @@ export function RecordSheet({
       onOpenChange={requestClose}
       title={editingId ? "Edit record" : "Add record"}
     >
-      <SheetBody>
+      {/*
+        The type and the amount do not scroll.
+
+        They are what the keypad at the bottom is editing, and a keypad whose
+        display has scrolled off the top is a calculator with no screen.
+      */}
+      <SheetHead>
         <TypeTabs
           value={type}
           onChange={(next) => {
@@ -594,13 +629,77 @@ export function RecordSheet({
           }}
         />
 
+        {/*
+          The amount, the note, then what it was.
+
+          Phase 14 reorders the sheet to the reference's order, which is the
+          order the sentence comes out in: four hundred and fifty, for lunch
+          with the team, on Food, from HDFC, today. The keypad moves to the
+          bottom, below everything it is not about.
+        */}
+        <AmountDisplay
+          value={amount}
+          onChange={setAmount}
+          tone={type}
+          focusOnOpen={!editing}
+          invalid={errorField === "amount"}
+          error={errorField === "amount" ? (error ?? undefined) : undefined}
+          shaking={shaking}
+          inputRef={amountRef}
+          onEnter={() => {
+            if (saving) return;
+            void requestSave();
+          }}
+        />
+      </SheetHead>
+
+      <SheetBody fill className="space-y-3">
+        <div className="relative">
+          <Pencil
+            className="text-text-secondary pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            id="note"
+            aria-label="Note"
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Swiggy — team lunch"
+            maxLength={500}
+            // A native datalist rather than a combobox we built. Notes
+            // repeat far more than people expect, and retyping one on a
+            // phone keyboard is most of the effort of logging the record.
+            // The browser's own suggestion UI costs nothing to hydrate, is
+            // keyboard-operable everywhere, and — unlike a popup of our own
+            // — cannot cover the Save button on a short screen.
+            list={noteHints.length ? "note-hints" : undefined}
+            autoComplete="off"
+            className="h-11 pl-9"
+          />
+          {noteHints.length ? (
+            <datalist id="note-hints">
+              {noteHints.map((hint) => (
+                <option key={hint} value={hint} />
+              ))}
+            </datalist>
+          ) : null}
+        </div>
+
         {!editing && quickAdds.length > 0 && type === "expense" ? (
-          <div className="space-y-1.5">
-            <Label id="quick-add-label">Quick add</Label>
+          /*
+            No visible "Quick add" heading.
+
+            The chips say what they are — a category, an amount, one tap —
+            and at 360×800 the sheet is 24px short of showing a second row
+            of categories. A label that explains chips is worth less than a
+            row of the thing they are a shortcut to. The group keeps the
+            name for a screen reader.
+          */
+          <div>
             <div
               role="group"
-              aria-labelledby="quick-add-label"
-              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1"
+              aria-label="Quick add"
+              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:px-0"
             >
               {quickAdds.map((quick) => (
                 <button
@@ -618,7 +717,7 @@ export function RecordSheet({
                   }}
                   className={cn(
                     PRESSABLE,
-                    "hoverable:bg-surface-muted  flex h-11 shrink-0 items-center gap-2 rounded-full border pr-3 pl-1.5 text-sm  ",
+                    "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
                   )}
                 >
                   <Tile tint={quick.tint} icon={quick.icon} size="sm" />
@@ -635,39 +734,26 @@ export function RecordSheet({
           </div>
         ) : null}
 
-        <AmountKeypad
-          value={amount}
-          onChange={setAmount}
-          tone={type}
-          focusOnOpen={!editing}
-          invalid={errorField === "amount"}
-          error={errorField === "amount" ? (error ?? undefined) : undefined}
-          shaking={shaking}
-          onEnter={() => {
-            if (saving) return;
-            void requestSave();
-          }}
-        />
-
         {type === "transfer" ? (
           <>
-            <AccountSelect
-              id="from-account"
-              label="From"
-              accounts={accounts}
-              value={accountId}
-              onChange={setAccountId}
-            />
-
             {/*
-              Swap, between the two pickers it swaps.
+              From, swap, To — one row.
 
               Picking the wrong way round is the mistake people make on this
-              screen, and correcting it meant two pickers and four taps.
-              Disabled until both are chosen: swapping one account with
-              nothing is not a thing anybody means.
+              screen, and correcting it meant two pickers and four taps. The
+              swap sits between the two cards it swaps, disabled until both
+              are chosen: swapping one account with nothing is not a thing
+              anybody means.
             */}
-            <div className="-my-1 flex justify-center">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <AccountField
+                id="from-account"
+                label="From"
+                accounts={accounts}
+                value={accountId}
+                onChange={setAccountId}
+              />
+
               <Button
                 type="button"
                 variant="outline"
@@ -683,23 +769,37 @@ export function RecordSheet({
               >
                 <ArrowUpDown className="size-4" aria-hidden="true" />
               </Button>
+
+              <AccountField
+                id="to-account"
+                label="To"
+                accounts={accounts.filter(
+                  (account) => account.id !== accountId,
+                )}
+                value={toAccountId}
+                onChange={setToAccountId}
+                invalid={errorField === "toAccountId"}
+              />
             </div>
 
-            <AccountSelect
-              id="to-account"
-              label="To"
-              accounts={accounts.filter((account) => account.id !== accountId)}
-              value={toAccountId}
-              onChange={setToAccountId}
-              error={
-                errorField === "toAccountId" ? (error ?? undefined) : undefined
-              }
+            {(errorField === "toAccountId" || errorField === "occurredAt") &&
+            error ? (
+              <p role="alert" className="text-expense text-sm">
+                {error}
+              </p>
+            ) : null}
+
+            <WhenField
+              value={occurredAt}
+              onChange={setOccurredAt}
+              display={whenLabel}
+              invalid={errorField === "occurredAt"}
             />
 
             {/*
               A warning, not a block.
 
-              An account can legitimately go below zero - a credit card is
+              An account can legitimately go below zero — a credit card is
               negative by definition, and a balance can be out of date
               because a record has not been entered yet. Refusing the
               transfer would make this app argue with reality; saying so and
@@ -745,206 +845,152 @@ export function RecordSheet({
           </>
         ) : (
           <>
-            {suggestions.length > 0 ? (
-              <div className="space-y-1.5">
-                <Label id="suggested-label">Usually {partOfDay}</Label>
-                <div
-                  role="group"
-                  aria-labelledby="suggested-label"
-                  className="flex flex-wrap gap-1.5"
-                >
-                  {suggestions.map((category) => {
-                    const active = category.id === categoryId;
-                    return (
-                      <button
-                        key={category.id}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => setCategoryId(category.id)}
-                        className={cn(
-                          " flex h-11 items-center gap-2 rounded-control border px-3 text-sm font-semibold transition-colors  ",
-                          active
-                            ? "border-ink bg-surface-muted"
-                            : "text-text-secondary hoverable:bg-surface-muted",
-                        )}
-                      >
-                        <Tile
-                          tint={category.tint}
-                          icon={category.icon}
-                          size="sm"
-                        />
-                        {category.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
             <CategoryGrid
-              categories={visibleCategories}
+              categories={gridCategories}
               value={categoryId}
               onChange={setCategoryId}
+              hint={suggestions.length > 0 ? `Usually ${partOfDay}` : undefined}
               error={
                 errorField === "categoryId" ? (error ?? undefined) : undefined
               }
             />
 
-            <AccountSelect
-              id="account"
-              label="Account"
-              accounts={accounts}
-              value={accountId}
-              onChange={setAccountId}
-              error={
-                errorField === "accountId" ? (error ?? undefined) : undefined
-              }
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <AccountField
+                id="account"
+                label="Account"
+                accounts={accounts}
+                value={accountId}
+                onChange={setAccountId}
+                invalid={errorField === "accountId"}
+              />
+
+              <WhenField
+                value={occurredAt}
+                onChange={setOccurredAt}
+                display={whenLabel}
+                invalid={errorField === "occurredAt"}
+              />
+            </div>
+
+            {(errorField === "accountId" || errorField === "occurredAt") &&
+            error ? (
+              <p role="alert" className="text-expense text-sm">
+                {error}
+              </p>
+            ) : null}
           </>
         )}
 
-        <button
-          type="button"
-          aria-expanded={moreOpen}
-          aria-controls="more-options"
-          onClick={() => setMoreOpen((open) => !open)}
-          className={cn(
-            PRESSABLE,
-            "hoverable:bg-surface-muted  flex min-h-11 w-full items-center gap-2 rounded-control border px-3 text-sm font-semibold  ",
-          )}
-        >
-          <span className="flex-1 text-left">More options</span>
-          <span className="text-text-secondary truncate text-xs font-normal">
-            {moreSummary}
-          </span>
-          <ChevronDown
-            className={cn(
-              "text-text-secondary size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
-              moreOpen && "rotate-180",
-            )}
-            aria-hidden="true"
-          />
-        </button>
+        {/*
+          What is left behind the fold.
 
-        <div id="more-options" hidden={!moreOpen} className="space-y-4">
-          <FormRow
-            id="occurred-at"
-            label="When"
-            error={
-              errorField === "occurredAt" ? (error ?? undefined) : undefined
-            }
-          >
-            {(props) => (
-              <Input
-                {...props}
-                type="datetime-local"
-                value={occurredAt}
-                onChange={(event) => setOccurredAt(event.target.value)}
+          The note, the account and the date came out from under it in
+          Phase 14 — a form that hides three of its five fields is a form
+          people fill in twice. Repeat is all that stays, because it turns
+          one record into a standing instruction and belongs nowhere near
+          the thing you tap by reflex. Nothing is folded while editing, so
+          the row itself goes.
+        */}
+        {editing ? null : (
+          <>
+            <button
+              type="button"
+              aria-expanded={moreOpen}
+              aria-controls="more-options"
+              onClick={() => setMoreOpen((open) => !open)}
+              className={cn(
+                PRESSABLE,
+                "hoverable:bg-surface-muted rounded-control flex min-h-11 w-full items-center gap-2 border px-3 text-sm font-semibold",
+              )}
+            >
+              <span className="flex-1 text-left">More options</span>
+              <span className="text-text-secondary truncate text-xs font-normal">
+                {moreSummary}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "text-text-secondary size-4 shrink-0 duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-safe:transition-transform motion-reduce:transition-none",
+                  moreOpen && "rotate-180",
+                )}
+                aria-hidden="true"
               />
-            )}
-          </FormRow>
+            </button>
 
-          <FormRow id="note" label="Note" hint="Optional">
-            {(props) => (
-              <>
-                <Input
-                  {...props}
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="Swiggy — team lunch"
-                  maxLength={500}
-                  // A native datalist rather than a combobox we built.
-                  // Notes repeat far more than people expect, and retyping
-                  // one on a phone keyboard is most of the effort of
-                  // logging the record. The browser's own suggestion UI
-                  // costs nothing to hydrate, is keyboard-operable
-                  // everywhere, and - unlike a popup of our own - cannot
-                  // cover the Save button on a short screen.
-                  list={noteHints.length ? "note-hints" : undefined}
-                  autoComplete="off"
-                />
-                {noteHints.length ? (
-                  <datalist id="note-hints">
-                    {noteHints.map((hint) => (
-                      <option key={hint} value={hint} />
-                    ))}
-                  </datalist>
-                ) : null}
-              </>
-            )}
-          </FormRow>
-
-          {editing ? null : (
-            <div className="space-y-2 rounded-control border p-3">
-              <div className="flex items-center gap-2">
-                <Repeat
-                  className="text-text-secondary size-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <Label htmlFor="repeat" className="flex-1">
-                  Repeat
-                </Label>
-              </div>
-
-              <div
-                id="repeat"
-                role="radiogroup"
-                aria-label="Repeat"
-                className="flex flex-wrap gap-1"
-              >
-                {(["none", ...RECURRENCE_FREQUENCIES] as const).map((value) => {
-                  const active = frequency === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setFrequency(value)}
-                      className={cn(
-                        " h-9 rounded-lg border px-3 text-xs font-semibold transition-colors  ",
-                        active
-                          ? "border-ink bg-tint-peri text-text"
-                          : "text-text-secondary hoverable:bg-surface-muted",
-                      )}
-                    >
-                      {value === "none" ? "No" : REPEAT_LABELS[value]}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {frequency !== "none" ? (
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <FormRow id="repeat-interval" label="Every">
-                    {(props) => (
-                      <Input
-                        {...props}
-                        type="number"
-                        min={1}
-                        max={365}
-                        inputMode="numeric"
-                        value={interval}
-                        onChange={(event) => setInterval(event.target.value)}
-                      />
-                    )}
-                  </FormRow>
-
-                  <FormRow id="repeat-end" label="Until" hint="Optional">
-                    {(props) => (
-                      <Input
-                        {...props}
-                        type="date"
-                        value={endDate}
-                        onChange={(event) => setEndDate(event.target.value)}
-                      />
-                    )}
-                  </FormRow>
+            <div id="more-options" hidden={!moreOpen}>
+              <div className="space-y-2 rounded-control border p-3">
+                <div className="flex items-center gap-2">
+                  <Repeat
+                    className="text-text-secondary size-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <Label htmlFor="repeat" className="flex-1">
+                    Repeat
+                  </Label>
                 </div>
-              ) : null}
+
+                <div
+                  id="repeat"
+                  role="radiogroup"
+                  aria-label="Repeat"
+                  className="flex flex-wrap gap-1"
+                >
+                  {(["none", ...RECURRENCE_FREQUENCIES] as const).map(
+                    (value) => {
+                      const active = frequency === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          role="radio"
+                          aria-checked={active}
+                          onClick={() => setFrequency(value)}
+                          className={cn(
+                            "rounded-segment pressable flex h-9 items-center px-3 text-xs font-semibold transition-[background-color,box-shadow,border-color] duration-[120ms] motion-reduce:transition-none",
+                            active
+                              ? "accent-sm bg-surface text-text"
+                              : "text-text-secondary hoverable:bg-surface-muted border border-transparent",
+                          )}
+                        >
+                          {value === "none" ? "No" : REPEAT_LABELS[value]}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
+
+                {frequency !== "none" ? (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <FormRow id="repeat-interval" label="Every">
+                      {(props) => (
+                        <Input
+                          {...props}
+                          type="number"
+                          min={1}
+                          max={365}
+                          inputMode="numeric"
+                          value={interval}
+                          onChange={(event) => setInterval(event.target.value)}
+                        />
+                      )}
+                    </FormRow>
+
+                    <FormRow id="repeat-end" label="Until" hint="Optional">
+                      {(props) => (
+                        <Input
+                          {...props}
+                          type="date"
+                          value={endDate}
+                          onChange={(event) => setEndDate(event.target.value)}
+                        />
+                      )}
+                    </FormRow>
+                  </div>
+                ) : null}
+              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/*
           The catch-all, for any error with nowhere else to appear.
@@ -983,67 +1029,85 @@ export function RecordSheet({
         ) : null}
       </SheetBody>
 
-      {/* One row even at 360px: stacked, the two buttons cost a whole row of
-          categories on a short screen, and the labels are short enough to
-          share. */}
-      <SheetFooter className="gap-2">
-        {editing ? (
-          <>
-            <Button
-              variant="outline"
-              size="touch"
-              className="flex-1"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="touch"
-              className="flex-1"
-              onClick={requestSave}
-              disabled={saving}
-            >
-              {saving ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Check className="size-4" aria-hidden="true" />
-              )}
-              {saveLabel}
-            </Button>
-          </>
-        ) : (
-          <>
-            {/*
+      {/* The keypad sits with the save button rather than in the scrolling
+          body: it is the only way to enter an amount on a phone, where the
+          field itself is visually hidden, so it cannot be somewhere you have
+          to scroll to find.
+
+          The save row is one row even at 360px: stacked, the two buttons cost
+          a whole row of categories on a short screen, and the labels are
+          short enough to share. */}
+      <SheetFooter className="flex-col gap-2">
+        <Keypad
+          value={amount}
+          onChange={setAmount}
+          inputRef={amountRef}
+          className="w-full"
+        />
+
+        <div className="flex w-full gap-2">
+          {editing ? (
+            <>
+              <Button
+                variant="outline"
+                size="touch"
+                className="flex-1"
+                onClick={() => onOpenChange(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="touch"
+                className="flex-1"
+                onClick={requestSave}
+                disabled={saving}
+              >
+                {saveLabel}
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                )}
+              </Button>
+            </>
+          ) : (
+            <>
+              {/*
               One primary, full width, saying what it will do. The run-of-
               receipts shortcut keeps its place beside it as an icon: it is
               the rarer action, and spelling it out cost the primary button
               the room to name the amount.
             */}
-            <Button
-              variant="outline"
-              size="icon-touch"
-              aria-label="Save and add another"
-              onClick={() => void save(true)}
-              disabled={saving}
-            >
-              <Plus className="size-5" aria-hidden="true" />
-            </Button>
-            <Button
-              size="touch"
-              className="min-w-0 flex-1"
-              onClick={() => void save(false)}
-              disabled={saving}
-            >
-              {saving ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <Check className="size-4" aria-hidden="true" />
-              )}
-              <span className="truncate">{saveLabel}</span>
-            </Button>
-          </>
-        )}
+              <Button
+                variant="outline"
+                size="icon-touch"
+                aria-label="Save and add another"
+                onClick={() => void save(true)}
+                disabled={saving}
+              >
+                <Plus className="size-5" aria-hidden="true" />
+              </Button>
+              <Button
+                size="touch"
+                className="min-w-0 flex-1"
+                onClick={() => void save(false)}
+                disabled={saving}
+              >
+                <span className="truncate">
+                  {justSaved ? "Saved" : saveLabel}
+                </span>
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : justSaved ? (
+                  <Check className="size-4" aria-hidden="true" />
+                ) : (
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                )}
+              </Button>
+            </>
+          )}
+        </div>
       </SheetFooter>
 
       <EditScopeDialog

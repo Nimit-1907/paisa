@@ -745,3 +745,53 @@ Listed here rather than quietly left out.
 Carried forward from earlier phases and still true: the landing page's LCP is
 2.75s against a 2.5s target, and the app icon does not carry the bar motif
 because it is a PNG and the commit review blocks new binaries.
+
+---
+
+## Phase 14 — the restyle, screen by screen
+
+Phase 14 renumbers the screens (31–70) and restyles every one of them to
+"modern minimal with neo-brutalist accents". The language itself, and the
+decisions it forced, are in [`docs/design-system.md`](design-system.md);
+this table is only the progress.
+
+A screen is ticked when it is built in the new language, covers its states,
+and has a light and a dark baseline at 360 and 1280 in
+`e2e/visual.spec.ts-snapshots`.
+
+### Shell and Records (batch a)
+
+| # | Screen | Done |
+| --- | --- | --- |
+| 9–12 | Dock, PageHeader, MonthSwitcher, sidebar | ✅ |
+| 39 | Records (`/records`) | ✅ |
+| 40 | Add record sheet | ✅ |
+
+What batch (a) changed on 39–40, against the reference:
+
+- the sheet reads in the reference's order — type, amount, note, quick-add,
+  category, account and when, keypad, save pill naming the amount
+- the note, the account and the date came out from behind "More options",
+  which now holds Repeat alone and disappears entirely while editing
+- Account, When, From and To are `FieldCard`s over native controls
+- the category grid is seven tiles and a "More", with the hour's usual
+  categories sorted to the front
+- the keypad and the save button are pinned below the scrolling body, and
+  the type tabs and amount above it
+- the toast moved above the dock, with a mint tick tile and an ink Undo pill
+
+Three accessibility regressions from the shell commit were found by
+`e2e/polish.spec.ts` and fixed here: `outline-none` on the button base was
+swallowing the global focus ring on every `Button`; the header avatar and
+the month trigger were 36px; and the avatar's accessible name did not
+contain the initials drawn on it (WCAG 2.5.3).
+
+### Still to come
+
+| # | Screens | Batch |
+| --- | --- | --- |
+| 41–44 | Edit sheet, record detail, search, filters | b |
+| 45–50 | Analysis, Budgets | c |
+| 51–59 | Accounts, Categories, Recurring | d |
+| 60–65 | More, Settings | e |
+| 31–38, 66–70 | Public, auth, onboarding, system | f |

@@ -28,6 +28,7 @@ export function TilePicker({
   label,
   columns = 4,
   multiple = false,
+  extra,
   className,
 }: {
   options: TileOption[];
@@ -38,6 +39,8 @@ export function TilePicker({
   columns?: 3 | 4;
   /** Checkboxes rather than radios, for the filter sheet. */
   multiple?: boolean;
+  /** A last cell that is not one of the options — "More", "New category". */
+  extra?: React.ReactNode;
   className?: string;
 }) {
   const chosen = (id: string) =>
@@ -66,9 +69,7 @@ export function TilePicker({
             className={cn(
               "rounded-control pressable flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-1 py-2",
               "duration-[120ms] transition-[border-color,box-shadow] motion-reduce:transition-none",
-              active
-                ? "accent-sm bg-surface"
-                : "border border-transparent",
+              active ? "accent-sm bg-surface" : "border border-transparent",
             )}
           >
             <Tile tint={option.tint} icon={option.icon} size="md" />
@@ -78,6 +79,42 @@ export function TilePicker({
           </button>
         );
       })}
+
+      {extra}
     </div>
+  );
+}
+
+/**
+ * The cell that is not an option: "More", "New category", "New account".
+ *
+ * Same box as a tile cell so the grid stays a grid, but a neutral tile and
+ * no selected state — it opens something rather than being chosen.
+ */
+export function TileCell({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-control pressable flex min-h-[72px] flex-col items-center justify-center gap-1.5 border border-transparent px-1 py-2"
+    >
+      <span
+        aria-hidden="true"
+        className="bg-tint-neutral text-text rounded-control flex size-9 shrink-0 items-center justify-center"
+      >
+        <Icon className="size-[18px]" />
+      </span>
+      <span className="text-text w-full truncate text-center text-[11px] font-medium">
+        {label}
+      </span>
+    </button>
   );
 }

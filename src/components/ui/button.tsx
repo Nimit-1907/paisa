@@ -17,7 +17,7 @@ import { Slot } from "radix-ui";
  * controls that had quietly lost their own copy of it.
  */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center text-sm font-semibold whitespace-nowrap select-none outline-none transition-[transform,background-color,border-color,color,box-shadow] duration-[80ms] ease-out motion-reduce:transition-none active:not-aria-[haspopup]:translate-x-[2px] active:not-aria-[haspopup]:translate-y-[2px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center text-sm font-semibold whitespace-nowrap select-none transition-[transform,background-color,border-color,color,box-shadow] duration-[80ms] ease-out motion-reduce:transition-none active:not-aria-[haspopup]:translate-x-[2px] active:not-aria-[haspopup]:translate-y-[2px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

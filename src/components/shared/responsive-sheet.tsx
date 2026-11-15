@@ -9,8 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -75,16 +79,38 @@ export function ResponsiveSheet({
           className,
         )}
       >
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{title}</DrawerTitle>
-          {description ? (
-            <DrawerDescription>{description}</DrawerDescription>
-          ) : (
-            // Radix warns when a dialog has no description; an empty one that
-            // is hidden from everyone keeps the console clean without making
-            // a screen reader read filler.
-            <DrawerDescription className="sr-only">{title}</DrawerDescription>
-          )}
+        {/*
+          Title left, close right.
+
+          A centred title with no visible close is the shadcn default and
+          the thing first-time users asked about in the Phase 13 session:
+          swiping a sheet down is not obvious on a phone and is not possible
+          at all with a keyboard on desktop. The × is the third way out,
+          beside the swipe and the backdrop.
+        */}
+        <DrawerHeader className="flex-row items-start justify-between gap-2 pb-2">
+          <div className="min-w-0 text-left">
+            <DrawerTitle>{title}</DrawerTitle>
+            {description ? (
+              <DrawerDescription>{description}</DrawerDescription>
+            ) : (
+              // Radix warns when a dialog has no description; an empty one
+              // that is hidden from everyone keeps the console clean without
+              // making a screen reader read filler.
+              <DrawerDescription className="sr-only">{title}</DrawerDescription>
+            )}
+          </div>
+
+          <DrawerClose asChild>
+            <Button
+              variant="secondary"
+              size="icon-touch"
+              aria-label="Close"
+              className="-mt-1.5 -mr-2 shrink-0"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </Button>
+          </DrawerClose>
         </DrawerHeader>
         {children}
       </DrawerContent>
@@ -132,6 +158,51 @@ function useFocusReturn(open: boolean) {
  * taller than the visible area hides its own save button.
  */
 export function SheetBody({
+  fill = false,
+  className,
+  children,
+}: {
+  /**
+   * Take whatever height is left rather than a share of the window.
+   *
+   * For a sheet with something fixed below the scrolling part — the add
+   * sheet's keypad. A measured `max-h` cannot know how tall that is, and
+   * guessing is how the keypad ended up half off the bottom of a 390×844
+   * phone; `flex-1` with `min-h-0` asks the flex column instead, which
+   * does know — and the desktop dialog is the same flex column, so the
+   * keypad and the save button stay put there too.
+   */
+  fill?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "space-y-4 overflow-y-auto overscroll-contain px-4 pb-2 lg:px-0",
+        fill
+          ? "min-h-0 flex-1"
+          : // 70dvh rather than 65: on a 640px phone those five percent are
+            // the difference between the category grid being on screen and
+            // being a scroll away, and the header and footer still fit
+            // above and below.
+            "max-h-[70dvh]",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The part of a sheet that does not scroll, directly under the title.
+ *
+ * The add sheet's type tabs and its amount: the two things that must stay
+ * on screen while the categories below them are scrolled, because they are
+ * what the keypad at the bottom is editing.
+ */
+export function SheetHead({
   className,
   children,
 }: {
@@ -139,15 +210,7 @@ export function SheetBody({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn(
-        // 70dvh rather than 65: on a 640px phone those five percent are the
-        // difference between the category grid being on screen and being a
-        // scroll away, and the header and footer still fit above and below.
-        "max-h-[70dvh] space-y-4 overflow-y-auto overscroll-contain px-4 pb-2 lg:px-0",
-        className,
-      )}
-    >
+    <div className={cn("shrink-0 space-y-2 px-4 pb-2 lg:px-0", className)}>
       {children}
     </div>
   );

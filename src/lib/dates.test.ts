@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   currentMonth,
   currentMonthRange,
+  describeLocal,
   instantToLocal,
   localToInstant,
   monthRange,
@@ -164,5 +165,31 @@ describe("nextRecurrence", () => {
     expect(nextRecurrence("2026-12-15", "monthly", 1)).toBe("2027-01-15");
     expect(nextRecurrence("2026-11-14", "yearly", 1)).toBe("2027-11-14");
     expect(nextRecurrence("2028-02-29", "yearly", 1)).toBe("2029-02-28");
+  });
+});
+
+describe("describeLocal", () => {
+  const today = "2026-11-15T09:05";
+
+  it("names today and keeps the clock in 12-hour time", () => {
+    expect(describeLocal("2026-11-15T13:30", today)).toBe("Today, 1:30 pm");
+  });
+
+  it("names yesterday, across a month boundary", () => {
+    expect(describeLocal("2026-10-31T09:00", "2026-11-01T00:10")).toBe(
+      "Yesterday, 9:00 am",
+    );
+  });
+
+  it("reads midnight as 12 am and noon as 12 pm", () => {
+    expect(describeLocal("2026-11-15T00:00", today)).toBe("Today, 12:00 am");
+    expect(describeLocal("2026-11-15T12:00", today)).toBe("Today, 12:00 pm");
+  });
+
+  it("gives a date for anything further back, with the year only when it differs", () => {
+    expect(describeLocal("2026-11-02T18:45", today)).toBe("2 Nov, 6:45 pm");
+    expect(describeLocal("2025-12-31T18:45", today)).toBe(
+      "31 Dec 2025, 6:45 pm",
+    );
   });
 });

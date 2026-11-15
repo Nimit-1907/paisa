@@ -257,6 +257,9 @@ export function RecordSheetProvider({
            * last thing saved.
            */
           id: "record-saved",
+          // Long enough to notice and reach for, short enough that it is
+          // gone before the next record is typed.
+          duration: 4500,
           description:
             [...parts, repeating ? "repeating" : null]
               .filter(Boolean)
