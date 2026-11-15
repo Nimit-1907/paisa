@@ -122,7 +122,7 @@ export function PeriodBars({
 
           <Tooltip
             trigger={trigger}
-            cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+            cursor={{ fill: CHART_COLORS.muted, opacity: 0.4 }}
             wrapperStyle={{ outline: "none", zIndex: 20 }}
             content={({ active, payload }) => {
               const point = payload?.[0]?.payload as
@@ -154,13 +154,13 @@ export function PeriodBars({
           <Bar
             dataKey="income"
             fill={CHART_COLORS.income}
-            radius={[2, 2, 0, 0]}
+            radius={[3, 3, 0, 0]}
             isAnimationActive={false}
           />
           <Bar
             dataKey="expense"
             fill={CHART_COLORS.expense}
-            radius={[2, 2, 0, 0]}
+            radius={[3, 3, 0, 0]}
             isAnimationActive={false}
           />
         </BarChart>
@@ -193,12 +193,13 @@ export function PeriodBars({
   );
 }
 
+/** A 8px square, not a dot: the rest of this app identifies with squares. */
 function Swatch({ color, label }: { color: string; label: string }) {
   return (
-    <span className="flex items-center gap-1">
+    <span className="flex items-center gap-1.5">
       <span
         aria-hidden="true"
-        className="size-2 rounded-full"
+        className="size-2 rounded-[2px]"
         style={{ backgroundColor: color }}
       />
       {label}

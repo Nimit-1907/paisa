@@ -79,7 +79,20 @@ const SETTLE = 1200;
 async function settleDemoAccount(page: Page) {
   await page.goto("/records");
 
+  // Wait for the page to be there before asking what is on it. `isVisible`
+  // answers immediately, and immediately after a navigation the answer is
+  // "no" for everything — which silently skipped the dismissal and left the
+  // recap card in whichever run happened to be slower. That is a 263px
+  // difference in the height of every Records baseline.
+  await expect(
+    page.getByRole("heading", { name: "Records", exact: true }),
+  ).toBeVisible();
+
   const dismiss = page.getByRole("button", { name: /dismiss the .* summary/i });
+  await dismiss
+    .waitFor({ state: "visible", timeout: 3_000 })
+    .catch(() => undefined);
+
   if (await dismiss.isVisible().catch(() => false)) {
     await dismiss.click();
     await expect(dismiss).toBeHidden();
@@ -108,7 +121,10 @@ for (const size of WIDTHS) {
       test(`the signed-in screens in ${theme} mode`, async ({ page }) => {
         // Charts and count-ups settle instantly, so the frame being captured
         // is the finished one rather than one mid-transition.
-        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+        await page.emulateMedia({
+          colorScheme: theme,
+          reducedMotion: "reduce",
+        });
         await signIn(page);
         await settleDemoAccount(page);
 
@@ -127,7 +143,10 @@ for (const size of WIDTHS) {
       });
 
       test(`the signed-out screens in ${theme} mode`, async ({ page }) => {
-        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+        await page.emulateMedia({
+          colorScheme: theme,
+          reducedMotion: "reduce",
+        });
 
         for (const screen of PUBLIC_SCREENS) {
           await page.goto(screen.path);
@@ -150,7 +169,10 @@ for (const size of WIDTHS) {
        * props, which would snapshot a thing the app cannot actually produce.
        */
       test(`the states in ${theme} mode`, async ({ page }) => {
-        await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
+        await page.emulateMedia({
+          colorScheme: theme,
+          reducedMotion: "reduce",
+        });
         await signIn(page);
         await settleDemoAccount(page);
 
@@ -175,7 +197,10 @@ for (const size of WIDTHS) {
 
         // The add sheet, open, which is where most of the app's chrome lives.
         await page.goto("/records");
-        await page.getByRole("button", { name: /add record/i }).first().click();
+        await page
+          .getByRole("button", { name: /add record/i })
+          .first()
+          .click();
         await expect(page.getByRole("dialog")).toBeVisible();
         await page.waitForTimeout(600);
         await expect(page).toHaveScreenshot(

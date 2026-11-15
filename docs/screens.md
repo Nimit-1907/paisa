@@ -823,11 +823,69 @@ carried three dead classes (a `ring-3` with no ring colour, a stray `/50`
 from a split opacity modifier, and `dark:bg-foreground/5`, a tint that is not
 one of the eight), and the search overlay had no Escape key.
 
+### Analysis and Budgets (batch c)
+
+| # | Screen | Done |
+| --- | --- | --- |
+| 45 | Analysis (`/analysis`) | ✅ |
+| 46 | Category detail | ✖ not built |
+| 47 | Custom range picker | ✅ |
+| 48 | Budgets (`/budgets`) | ✅ |
+| 49 | Budget detail | ✖ not built |
+| 50 | Set / edit budget sheet | ✅ |
+
+Analysis was not a restyle. Three of its foundations had been quietly
+broken by the Phase 14 globals rewrite and nobody had looked at the screen
+since:
+
+- every card called a `bento` class that the rewrite deleted, so the whole
+  screen was a stack of charts floating on the page background with no
+  card, border or radius anywhere on it;
+- `CHART_COLORS` pointed at `var(--border)`, `var(--muted-foreground)` and
+  `var(--muted)`, and the donut's fallback palette at `var(--chart-1..5)`.
+  None of those raw properties exist any more — Phase 14 defines
+  `--color-border` and friends inside `@theme inline`, which is a different
+  name — and an SVG attribute given a `var()` that resolves to nothing does
+  not fall back. Every gridline, axis label and tooltip cursor had stopped
+  being drawn;
+- the donut and the balance menu were still painting from the sixteen-colour
+  hex palette, which the tint migration had already replaced everywhere else.
+
+On top of that: one bold hero carrying the period's own total and the
+insight sentence (it used to be a flat strip, with the total left to be read
+off the middle of the donut), both bespoke radiogroups replaced by the
+shared `SegmentedControl`, and the stat tiles and chart cards onto the
+shared `Card`.
+
+**47** is a real calendar now. A native `<input type="date">` is the right
+control for one date somebody already knows; a range is a shape — "the three
+weeks I was away", "since payday" — and those are chosen by looking at a
+month. `RangeCalendar` is shared, takes the user's week start, and tapping
+always moves the nearer end rather than starting over. Five preset pills sit
+above it, because most custom ranges are one of five.
+
+**48** drops the budget ring. It was a second shape competing with the
+figure beside it for the same fact, and the `ProgressBar` underneath says it
+in the width the card already has — which is also the shape every row below
+uses, so the screen reads as one idea. `budget-ring.tsx` is gone; its
+`useFirstFill` hook now drives the shared bar, which had grown a second,
+sloppier copy of the same idea.
+
+Two things this batch did **not** fix, listed rather than quietly left:
+
+- the "Day by day" chart is dominated by the salary bar. Income arrives once
+  a month and spending happens daily, so on one axis at day granularity the
+  salary will always be ten times the tallest expense. The brief asks for
+  income-versus-expense bars and that is what is there; the totals line and
+  the table underneath carry what the bars cannot.
+- **46** and **49** are the two detail screens that have never existed. They
+  were already listed under "What is not done" above, for the same reasons:
+  46 needs a six-month-per-category trend query, 49 a day-by-day pace line.
+
 ### Still to come
 
 | # | Screens | Batch |
 | --- | --- | --- |
-| 45–50 | Analysis, Budgets | c |
 | 51–59 | Accounts, Categories, Recurring | d |
 | 60–65 | More, Settings | e |
 | 31–38, 66–70 | Public, auth, onboarding, system | f |

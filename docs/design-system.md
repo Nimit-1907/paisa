@@ -152,6 +152,19 @@ is more useful than an infinite scroll through three years of groceries.
 **The filters' type is one choice, not a set.** With three types, ticking two
 is the same as excluding the third.
 
+**Pale fills get an ink edge, including in charts.** The brief asks for
+donut segments in the eight tints with 1px surface gaps. Measured, rose on
+the surface is 1.1:1 — eight of those adjoining on a white card is a smudge
+with a hole in it. The segments keep the tints and the gap and take a 1px
+ink stroke, which is the same move the rest of this language makes and
+clears 3:1 on both themes. For the same reason, today in the range calendar
+is ringed in ink rather than in periwinkle: periwinkle on the surface
+measures 1.5:1, and a ring nobody can see is not a ring.
+
+**Charts use ink for the series being read and `bar-muted` for the rest.**
+The money colours appear only where the two series *are* income and expense,
+which is the one chart that is about the difference between them.
+
 **Field cards hold a native control at zero opacity.** Account, When, From
 and To draw their value the way this app draws values (an icon, "Today, 1:30
 pm"), which no native control can be made to do, while the thing a tap, a
@@ -192,11 +205,13 @@ prints Copy and Delete through the row for a second and a half.
 - Instrument Serif
 - every gradient and noise texture
 - `font-heading`, which was never defined and so was never doing anything
+- the budget ring, and the `bento` and `raised` utilities the globals
+  rewrite had already stopped defining
 
 ---
 
 ## 6. Still to come
 
-Batches (c) to (f) — Analysis, Budgets, Accounts, Categories, Recurring,
-More, Settings, the public pages, auth, onboarding and the system screens.
+Batches (d) to (f) — Accounts, Categories, Recurring, More, Settings, the
+public pages, auth, onboarding and the system screens.
 Each one lands with its screenshots and its ticks in `docs/screens.md`.

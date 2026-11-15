@@ -100,7 +100,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
           <div className="mb-2 flex items-center justify-between">
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-touch"
               aria-label="Previous year"
               onClick={(event) => {
                 event.preventDefault();
@@ -114,7 +114,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
 
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-touch"
               aria-label="Next year"
               disabled={year >= maxYear}
               onClick={(event) => {

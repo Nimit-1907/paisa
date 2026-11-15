@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { deleteBudget, setBudget } from "@/actions/budgets";
 import { useCurrency } from "@/components/profile-provider";
+import { AmountKeypad } from "@/components/records/amount-keypad";
 import { CategoryGrid } from "@/components/shared/entry-pickers";
 import {
   ResponsiveSheet,
@@ -16,8 +17,6 @@ import {
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
-import { FormRow } from "@/components/ui/form-row";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatWith, friendlyAmount, fromMinor } from "@/lib/money";
 import { PRESSABLE } from "@/lib/motion";
@@ -91,7 +90,10 @@ export function BudgetSheet({
     if (!hint) return [];
 
     const options = [
-      { label: "last month", minor: friendlyAmount(BigInt(hint.lastMonth), currency.decimals) },
+      {
+        label: "last month",
+        minor: friendlyAmount(BigInt(hint.lastMonth), currency.decimals),
+      },
       {
         label: "3-month average",
         minor: friendlyAmount(
@@ -115,9 +117,7 @@ export function BudgetSheet({
 
     setCategoryId(draft?.categoryId ?? "");
     setAmount(
-      draft?.amount
-        ? fromMinor(BigInt(draft.amount), currency.decimals)
-        : "",
+      draft?.amount ? fromMinor(BigInt(draft.amount), currency.decimals) : "",
     );
     setApplyForward(false);
     setError(null);
@@ -222,13 +222,11 @@ export function BudgetSheet({
                   key={suggestion.label}
                   type="button"
                   onClick={() =>
-                    setAmount(
-                      fromMinor(suggestion.minor, currency.decimals),
-                    )
+                    setAmount(fromMinor(suggestion.minor, currency.decimals))
                   }
                   className={cn(
                     PRESSABLE,
-                    "hoverable:bg-surface-muted  flex h-11 items-center gap-2 rounded-full border px-3 text-sm  ",
+                    "bg-surface-muted hoverable:bg-hairline flex h-11 items-center gap-2 rounded-full px-3 text-sm",
                   )}
                 >
                   <span className="amount font-semibold">
@@ -246,24 +244,17 @@ export function BudgetSheet({
           </div>
         ) : null}
 
-        <FormRow
-          id="budget-amount"
-          label={`Monthly limit (${currency.symbol})`}
+        {/* The same keypad the record sheet uses, for the same reason: a
+            budget is often worked out rather than known — "about 7000, call
+            it 7500" — and the arithmetic belongs in the field. */}
+        <AmountKeypad
+          value={amount}
+          onChange={setAmount}
+          tone="neutral"
+          focusOnOpen
+          invalid={errorField === "amount"}
           error={errorField === "amount" ? (error ?? undefined) : undefined}
-        >
-          {(props) => (
-            <Input
-              {...props}
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              inputMode="decimal"
-              placeholder="10000"
-              className="amount text-lg"
-              // eslint-disable-next-line jsx-a11y/no-autofocus -- the sheet has just been opened; this is the field it was opened for.
-              autoFocus
-            />
-          )}
-        </FormRow>
+        />
 
         <label className="hoverable:bg-surface-muted flex min-h-11 cursor-pointer items-start gap-3 rounded-control border p-3 transition-colors">
           <input
@@ -273,7 +264,9 @@ export function BudgetSheet({
             className="accent-primary mt-0.5 size-5 shrink-0"
           />
           <span className="min-w-0">
-            <span className="text-sm font-semibold">Apply to all future months</span>
+            <span className="text-sm font-semibold">
+              Apply to all future months
+            </span>
             <span className="text-text-secondary mt-0.5 block text-xs">
               Copies this limit into the next {APPLY_FORWARD_MONTHS} months,
               stopping at any month you have already set to something else.

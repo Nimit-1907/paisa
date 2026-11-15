@@ -12,12 +12,14 @@ import { CategoryDonut } from "@/components/analysis/category-donut";
 import { PeriodBars } from "@/components/analysis/period-bars";
 import { PeriodSelector } from "@/components/analysis/period-selector";
 import { SummaryCards } from "@/components/analysis/summary-cards";
+import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
+import { HeroStat } from "@/components/shared/hero-stat";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { AddRecordButton } from "@/components/records/add-record-button";
 import { describeInsight } from "@/lib/insight";
-import type { Period } from "@/lib/period";
+import { type Period, periodLabel } from "@/lib/period";
 import type { AnalysisData } from "@/lib/queries/analysis";
-import { cn } from "@/lib/utils";
 
 /**
  * The Analysis tab.
@@ -95,33 +97,19 @@ export function AnalysisScreen({
     <div className="space-y-4">
       <PeriodSelector period={period} today={today} weekStart={weekStart} />
 
-      <div
-        role="radiogroup"
-        aria-label="Income or expense"
-        className="bg-surface-muted rounded-control grid grid-cols-2 gap-1 p-1"
-      >
-        {(["expense", "income"] as const).map((value) => {
-          const active = kind === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => chooseKind(value)}
-              className={cn(
-                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
-                "text-text-secondary",
-                active && value === "expense" && "bg-tint-rose text-expense",
-                active && value === "income" && "bg-tint-mint text-income",
-                active && "shadow-sm",
-              )}
-            >
-              {value === "expense" ? "Expense" : "Income"}
-            </button>
-          );
-        })}
-      </div>
+      {/* The shared control, not a tinted one of its own. A segment that
+          changes colour with its own value competes with the figures it is
+          filtering, which are the things the colour is actually about. */}
+      <SegmentedControl
+        className="max-w-md"
+        label="Income or expense"
+        value={kind}
+        onChange={chooseKind}
+        options={[
+          { value: "expense", label: "Expense" },
+          { value: "income", label: "Income" },
+        ]}
+      />
 
       {nothing ? (
         <EmptyState
@@ -147,11 +135,32 @@ export function AnalysisScreen({
           */}
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 grid grid-cols-2 gap-3 lg:grid-cols-6">
-              {insight ? (
-                <p className="bento col-span-2 px-4 py-3 text-sm font-semibold lg:col-span-6">
-                  {insight}
-                </p>
-              ) : null}
+              {/*
+                The one bold card on the screen, and the only figure on it
+                that is the period's own total.
+
+                Phase 13 printed the sentence in a flat strip and left the
+                total to be read off the middle of the donut, which is the
+                one place on the screen already carrying a shape. The
+                sentence is the headline; the number it is about belongs
+                above it, not inside a ring.
+              */}
+              <HeroStat
+                className="col-span-2 lg:col-span-6"
+                label={kind === "income" ? "Earned" : "Spent"}
+                value={
+                  <span
+                    className={kind === "income" ? "text-income" : undefined}
+                  >
+                    <Amount
+                      value={BigInt(data.total)}
+                      signDisplay="never"
+                      whole
+                    />
+                  </span>
+                }
+                helper={insight ?? periodLabel(period)}
+              />
 
               {data.categories.length > 0 ? (
                 <CategoryDonut

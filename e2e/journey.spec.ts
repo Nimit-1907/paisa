@@ -246,15 +246,15 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
       .click();
     await expect(sheet(page)).toBeVisible();
 
-    await sheet(page)
-      .getByLabel(/Monthly limit/)
-      .fill("4000");
+    // The budget amount takes the same keypad the record sheet does, so
+    // the figure is tapped out rather than typed into a labelled field.
+    await typeAmount(page, "4000");
     await sheet(page).getByRole("button", { name: "Save budget" }).click();
 
-    // The headings are upper-cased in CSS, so the match has to ignore case:
-    // innerText reports what is painted, not what is in the DOM.
+    // Since Phase 14 the section heading is "Budgeted" with the count
+    // beside it rather than "Budgeted · 1" in one string.
     await expect(
-      page.getByRole("heading", { name: /budgeted · 1/i }).first(),
+      page.getByRole("heading", { name: /^budgeted/i }).first(),
     ).toBeVisible();
     /*
      * ₹4,000 budget against the ₹250 expense.

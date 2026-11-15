@@ -8,16 +8,17 @@ import { ChevronRight } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import {
+  CHART_COLORS,
   ChartCard,
   ChartTooltip,
-  FALLBACK_SLICE_COLORS,
   useTooltipTrigger,
 } from "@/components/analysis/chart-shell";
 import { useCurrency } from "@/components/profile-provider";
 import { formatCompact } from "@/lib/money";
 import type { CategorySlice } from "@/lib/queries/analysis";
 import { Amount } from "@/components/shared/amount";
-import { ColorDot } from "@/components/shared/color-dot";
+import { Tile } from "@/components/shared/tile";
+import { TINT_CYCLE, tintVar } from "@/lib/tokens";
 
 /**
  * Where the money went, by category.
@@ -55,9 +56,11 @@ export function CategoryDonut({
       slices.map((slice, index) => ({
         ...slice,
         value: Number(BigInt(slice.total)),
-        fill:
-          slice.color ??
-          FALLBACK_SLICE_COLORS[index % FALLBACK_SLICE_COLORS.length],
+        // The category's own tint, or one of the seven in turn for a
+        // category that somehow has none.
+        fill: slice.tint
+          ? tintVar(slice.tint)
+          : TINT_CYCLE[index % TINT_CYCLE.length]!,
       })),
     [slices],
   );
@@ -84,8 +87,15 @@ export function CategoryDonut({
               cy="50%"
               innerRadius={62}
               outerRadius={92}
-              paddingAngle={1}
-              strokeWidth={0}
+              paddingAngle={2}
+              // An ink edge on every slice, which the brief does not ask for
+              // and the ring needs. The eight tints are pale by design —
+              // measured, rose on surface is 1.1:1 — so eight of them
+              // adjoining on a white card is a smudge with a hole in it.
+              // The outline is what the rest of this language uses to make
+              // a pale fill a shape, and it is 3:1 against both surfaces.
+              stroke={CHART_COLORS.ink}
+              strokeWidth={1}
               // No animation on the way in: the ring redraws on every period
               // change, and a half-second spin each time reads as lag.
               isAnimationActive={false}
@@ -126,10 +136,10 @@ export function CategoryDonut({
         {/* The total sits in the hole rather than in a label, which is the
             only place on a 360px ring with room for it. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className="text-text-secondary text-xs font-semibold ">
+          <span className="text-text-secondary text-xs">
             {kind === "income" ? "Earned" : "Spent"}
           </span>
-          <span className="amount max-w-[9rem] truncate text-lg font-semibold tabular-nums">
+          <span className="font-display amount-hero max-w-[9rem] truncate text-xl tracking-[-0.02em] tabular-nums">
             {formatCompact(totalMinor, {
               symbol: currency.symbol,
               decimals: currency.decimals,
@@ -145,7 +155,7 @@ export function CategoryDonut({
               href={recordsHref(slice.categoryId)}
               className="hoverable:bg-surface-muted flex min-h-11 items-center gap-2.5 px-1 py-2 transition-colors   "
             >
-              <ColorDot color={slice.fill} icon={slice.icon} size="sm" />
+              <Tile size="sm" tint={slice.tint} icon={slice.icon} />
 
               <span className="min-w-0 flex-1 truncate text-sm">
                 {slice.name}

@@ -4,6 +4,7 @@ import { CalendarDays, Tag, TrendingDown, TrendingUp } from "lucide-react";
 
 import { useFormatMoney } from "@/components/profile-provider";
 import { Amount } from "@/components/shared/amount";
+import { Card as Surface } from "@/components/shared/surface";
 import { bucketTitle } from "@/lib/period";
 import type { AnalysisData } from "@/lib/queries/analysis";
 import { cn } from "@/lib/utils";
@@ -66,7 +67,9 @@ export function SummaryCards({
             "—"
           )
         }
-        hint={data.peak ? bucketTitle(data.peak.on, data.bucket) : "nothing yet"}
+        hint={
+          data.peak ? bucketTitle(data.peak.on, data.bucket) : "nothing yet"
+        }
       />
 
       <Card
@@ -96,7 +99,9 @@ export function SummaryCards({
             ? `was ${formatMoney(previous, { signDisplay: "never", paise: "trim" })}`
             : "nothing to compare"
         }
-        tone={goodDirection === null ? undefined : goodDirection ? "good" : "bad"}
+        tone={
+          goodDirection === null ? undefined : goodDirection ? "good" : "bad"
+        }
       />
     </>
   );
@@ -119,8 +124,8 @@ function Card({
     // `justify-center` because these sit beside a tall donut in the bento and
     // stretch to its height. Content pinned to the top of a 300px card reads
     // as a mistake; centred, the empty space is margin.
-    <div className="bento flex flex-col justify-center p-3">
-      <p className="text-text-secondary text-xs flex items-center gap-1.5 font-semibold">
+    <Surface className="flex flex-col justify-center p-3">
+      <p className="text-text-secondary flex items-center gap-1.5 text-xs">
         <Icon className="size-3.5" aria-hidden={true} />
         <span className="truncate">{label}</span>
       </p>
@@ -136,6 +141,6 @@ function Card({
       </p>
 
       <p className="text-text-secondary truncate text-xs">{hint}</p>
-    </div>
+    </Surface>
   );
 }

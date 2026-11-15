@@ -44,7 +44,14 @@ type AmountProps = {
   /** The raw expression, e.g. "120+45". */
   value: string;
   onChange: (next: string) => void;
-  tone: "expense" | "income" | "transfer";
+  /**
+   * Which sign and colour the symbol takes.
+   *
+   * `neutral` is for an amount that is not a movement of money — a budget
+   * limit, a starting balance. Those have no direction, and a minus sign in
+   * front of a budget says the opposite of what a budget is.
+   */
+  tone: "expense" | "income" | "transfer" | "neutral";
 };
 
 /**
@@ -100,7 +107,9 @@ export function AmountDisplay({
       ? "text-income"
       : tone === "transfer"
         ? "text-transfer"
-        : "text-expense";
+        : tone === "neutral"
+          ? "text-text-secondary"
+          : "text-expense";
 
   return (
     <label

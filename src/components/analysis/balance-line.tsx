@@ -33,13 +33,16 @@ import { Button } from "@/components/ui/button";
 import { bucketLabel, bucketTitle } from "@/lib/period";
 import type { BalancePoint } from "@/lib/queries/analysis";
 import { cn } from "@/lib/utils";
-import { FALLBACK_COLOR } from "@/lib/colors";
+import { tintVar } from "@/lib/tokens";
 
 export type BalanceAccount = {
   id: string;
   name: string;
-  /** The dot beside the name; the menu has no room for an icon. */
+  /** Kept while the old column exists; nothing reads it since Phase 14. */
   color: string | null;
+  icon: string | null;
+  /** One of the eight tint keys — the tile beside the name in the menu. */
+  tint: string | null;
 };
 
 /**
@@ -128,7 +131,7 @@ export function BalanceLine({
                 <span
                   aria-hidden="true"
                   className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: account.color ?? FALLBACK_COLOR }}
+                  style={{ backgroundColor: tintVar(account.tint) }}
                 />
                 <span
                   className={cn(
@@ -159,12 +162,12 @@ export function BalanceLine({
             <linearGradient id="balance-fill" x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
-                stopColor={CHART_COLORS.balance}
+                stopColor={CHART_COLORS.ink}
                 stopOpacity={0.3}
               />
               <stop
                 offset="100%"
-                stopColor={CHART_COLORS.balance}
+                stopColor={CHART_COLORS.ink}
                 stopOpacity={0}
               />
             </linearGradient>
@@ -199,7 +202,7 @@ export function BalanceLine({
 
           <Tooltip
             trigger={trigger}
-            cursor={{ stroke: CHART_COLORS.axis, strokeDasharray: "3 3" }}
+            cursor={{ stroke: CHART_COLORS.ink, strokeDasharray: "3 3" }}
             wrapperStyle={{ outline: "none", zIndex: 20 }}
             content={({ active, payload }) => {
               const point = payload?.[0]?.payload as
@@ -213,7 +216,7 @@ export function BalanceLine({
                     {
                       label: "Balance",
                       value: point.balanceMinor,
-                      color: CHART_COLORS.balance,
+                      color: CHART_COLORS.ink,
                     },
                   ]}
                 />
@@ -224,7 +227,7 @@ export function BalanceLine({
           <Area
             type="monotone"
             dataKey="balance"
-            stroke={CHART_COLORS.balance}
+            stroke={CHART_COLORS.ink}
             strokeWidth={2}
             fill="url(#balance-fill)"
             isAnimationActive={false}

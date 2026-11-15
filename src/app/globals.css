@@ -281,6 +281,23 @@
  * The element moves into its own shadow, which is why the shadow is hard:
  * a blurred one would smear rather than meet it.
  */
+/*
+ * The third surface: what floats above the page and above a card.
+ *
+ * Menus, the command palette, popovers. In light mode the lift is the
+ * white surface against the warm page and a hairline around it; in dark it
+ * is a *lighter* surface than the page, because a shadow on a near-black
+ * background is invisible and a darker panel would read as a hole.
+ *
+ * It had no definition at all between the Phase 14 token rewrite and now,
+ * which left the row context menu and the command palette painting their
+ * text straight onto whatever was behind them.
+ */
+@utility raised {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
 @utility pressable {
   transition:
     transform 80ms ease,

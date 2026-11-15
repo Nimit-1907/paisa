@@ -62,7 +62,6 @@ export function OnboardingFlow({
   initialName: string;
   initialAccountName: string;
 }) {
-
   const [step, setStep] = React.useState<Step>(0);
   const [displayName, setDisplayName] = React.useState(initialName);
   const [currency, setCurrency] = React.useState<Currency>(DEFAULT_CURRENCY);
@@ -138,7 +137,8 @@ export function OnboardingFlow({
       // A dropped connection rejects the action. Without this the button
       // would sit on "Setting up…" for ever with nothing explaining why.
       console.error("[onboarding]", thrown);
-      const message = "Could not save your setup. Check your connection and try again.";
+      const message =
+        "Could not save your setup. Check your connection and try again.";
       setError(message);
       setErrorField("openingBalance");
       toast.error(message);
@@ -175,173 +175,106 @@ export function OnboardingFlow({
       </ol>
 
       <div className="flex flex-1 flex-col justify-center pb-6">
-      {step === 0 ? (
-        <section className="space-y-6">
-          <header>
-            <h1 className="font-display text-3xl tracking-tight">
-              First, your name
-            </h1>
-            <p className="text-text-secondary mt-1.5 text-sm">
-              Only used to greet you — nobody else sees it.
-            </p>
-          </header>
-
-          <FormRow
-            id="displayName"
-            label="Your name"
-            error={errorField === "displayName" ? (error ?? undefined) : undefined}
-          >
-            {(field) => (
-              <Input
-                {...field}
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                autoComplete="name"
-                // eslint-disable-next-line jsx-a11y/no-autofocus -- this step has just replaced the one before it, so focus has to land somewhere.
-                autoFocus
-                placeholder="Nimit"
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    next();
-                  }
-                }}
-              />
-            )}
-          </FormRow>
-        </section>
-      ) : null}
-
-      {step === 1 ? (
-        <CurrencyStep selected={currency} onSelect={setCurrency} />
-      ) : null}
-
-      {step === 2 ? (
-        <section className="space-y-6">
-          <header>
-            <h1 className="font-display text-3xl tracking-tight">
-              Your first account
-            </h1>
-            <p className="text-text-secondary mt-1.5 text-sm">
-              Every record is booked against an account. You can add banks,
-              cards and wallets later.
-            </p>
-          </header>
-
-          <div className="bg-surface space-y-4 rounded-card border p-4">
-            <div className="flex items-center gap-3">
-              <span className="bg-tint-peri text-text flex size-10 items-center justify-center rounded-control">
-                <Wallet className="size-5" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">Created for you at signup</p>
-                <p className="text-text-secondary text-xs">
-                  Rename it or set what is in it right now.
-                </p>
-              </div>
-            </div>
-
-            <FormRow id="accountName" label="Account name">
-              {(field) => (
-                <Input
-                  {...field}
-                  value={accountName}
-                  onChange={(event) => setAccountName(event.target.value)}
-                  placeholder="Cash"
-                />
-              )}
-            </FormRow>
+        {step === 0 ? (
+          <section className="space-y-6">
+            <header>
+              <h1 className="font-display text-3xl tracking-tight">
+                First, your name
+              </h1>
+              <p className="text-text-secondary mt-1.5 text-sm">
+                Only used to greet you — nobody else sees it.
+              </p>
+            </header>
 
             <FormRow
-              id="openingBalance"
-              label="Opening balance"
+              id="displayName"
+              label="Your name"
               error={
-                errorField === "openingBalance" ? (error ?? undefined) : undefined
-              }
-              hint={
-                openingMinor !== null
-                  ? `Starts at ${formatWith(
-                      {
-                        code: currency.code,
-                        symbol: currency.symbol,
-                        decimals: currency.decimals,
-                      },
-                      openingMinor,
-                    )}`
-                  : undefined
+                errorField === "displayName" ? (error ?? undefined) : undefined
               }
             >
               {(field) => (
-                <div className="relative">
-                  <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
-                    {currency.symbol}
-                  </span>
-                  <Input
-                    {...field}
-                    value={openingBalance}
-                    onChange={(event) => setOpeningBalance(event.target.value)}
-                    inputMode="decimal"
-                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the account name above is already filled in, so this is the one empty field on a step that has just replaced the one before it.
-                    autoFocus
-                    placeholder="0"
-                    className="amount pl-9"
-                  />
-                </div>
+                <Input
+                  {...field}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  autoComplete="name"
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- this step has just replaced the one before it, so focus has to land somewhere.
+                  autoFocus
+                  placeholder="Nimit"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      next();
+                    }
+                  }}
+                />
               )}
             </FormRow>
-          </div>
+          </section>
+        ) : null}
 
-          {/*
-            A second account, offered rather than asked for.
+        {step === 1 ? (
+          <CurrencyStep selected={currency} onSelect={setCurrency} />
+        ) : null}
 
-            Most people finish setup with one, so this is a disclosure and
-            not a fourth step - a step that exists to be skipped is a step
-            that makes setup feel longer than it is.
-          */}
-          {wantsBank ? (
-            <div className="bg-surface rounded-card space-y-4 border p-4">
+        {step === 2 ? (
+          <section className="space-y-6">
+            <header>
+              <h1 className="font-display text-3xl tracking-tight">
+                Your first account
+              </h1>
+              <p className="text-text-secondary mt-1.5 text-sm">
+                Every record is booked against an account. You can add banks,
+                cards and wallets later.
+              </p>
+            </header>
+
+            <div className="bg-surface space-y-4 rounded-card border p-4">
               <div className="flex items-center gap-3">
-                <span className="bg-tint-peri text-text rounded-control flex size-10 items-center justify-center">
-                  <Landmark className="size-5" aria-hidden="true" />
+                <span className="bg-tint-peri text-text flex size-10 items-center justify-center rounded-control">
+                  <Wallet className="size-5" aria-hidden="true" />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">Bank account</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">
+                    Created for you at signup
+                  </p>
                   <p className="text-text-secondary text-xs">
-                    Transfers between this and your cash are not spending.
+                    Rename it or set what is in it right now.
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setWantsBank(false)}
-                >
-                  Remove
-                </Button>
               </div>
 
-              <FormRow
-                id="bankName"
-                label="Account name"
-                error={errorField === "bankName" ? (error ?? undefined) : undefined}
-              >
+              <FormRow id="accountName" label="Account name">
                 {(field) => (
                   <Input
                     {...field}
-                    value={bankName}
-                    onChange={(event) => setBankName(event.target.value)}
-                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the field has just appeared in response to a tap, so focus belongs in it.
-                    autoFocus
-                    placeholder="HDFC"
+                    value={accountName}
+                    onChange={(event) => setAccountName(event.target.value)}
+                    placeholder="Cash"
                   />
                 )}
               </FormRow>
 
               <FormRow
-                id="bankBalance"
-                label="Balance right now"
+                id="openingBalance"
+                label="Opening balance"
                 error={
-                  errorField === "bankBalance" ? (error ?? undefined) : undefined
+                  errorField === "openingBalance"
+                    ? (error ?? undefined)
+                    : undefined
+                }
+                hint={
+                  openingMinor !== null
+                    ? `Starts at ${formatWith(
+                        {
+                          code: currency.code,
+                          symbol: currency.symbol,
+                          decimals: currency.decimals,
+                        },
+                        openingMinor,
+                      )}`
+                    : undefined
                 }
               >
                 {(field) => (
@@ -351,9 +284,13 @@ export function OnboardingFlow({
                     </span>
                     <Input
                       {...field}
-                      value={bankBalance}
-                      onChange={(event) => setBankBalance(event.target.value)}
+                      value={openingBalance}
+                      onChange={(event) =>
+                        setOpeningBalance(event.target.value)
+                      }
                       inputMode="decimal"
+                      // eslint-disable-next-line jsx-a11y/no-autofocus -- the account name above is already filled in, so this is the one empty field on a step that has just replaced the one before it.
+                      autoFocus
                       placeholder="0"
                       className="amount pl-9"
                     />
@@ -361,101 +298,181 @@ export function OnboardingFlow({
                 )}
               </FormRow>
             </div>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="touch"
-              className="w-full"
-              onClick={() => setWantsBank(true)}
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              Add a bank account
-            </Button>
-          )}
-        </section>
-      ) : null}
 
-      {step === 3 ? (
-        <section className="text-center">
-          <span className="bg-tint-mint text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-card">
-            <Check className="size-7" aria-hidden="true" />
-          </span>
-
-          <h2 className="font-display text-3xl tracking-tight">
-            You are set up, {displayName.trim()}.
-          </h2>
-
-          <p className="text-text-secondary mt-2 text-sm">
-            Tracking in {currency.name} ({currency.symbol}), starting with{" "}
-            {/* Both accounts named when there are two: a summary that leaves
-                one out invites a second trip to Accounts to check. */}
-            {wantsBank && bankName.trim()
-              ? `${accountName.trim() || "your first account"} and ${bankName.trim()}`
-              : accountName.trim() || "your first account"}
-            .
-          </p>
-
-          <div className="pb-safe mt-8">
             {/*
+            A second account, offered rather than asked for.
+
+            Most people finish setup with one, so this is a disclosure and
+            not a fourth step - a step that exists to be skipped is a step
+            that makes setup feel longer than it is.
+          */}
+            {wantsBank ? (
+              <div className="bg-surface rounded-card space-y-4 border p-4">
+                <div className="flex items-center gap-3">
+                  <span className="bg-tint-peri text-text rounded-control flex size-10 items-center justify-center">
+                    <Landmark className="size-5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">Bank account</p>
+                    <p className="text-text-secondary text-xs">
+                      Transfers between this and your cash are not spending.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="touch"
+                    className="px-3"
+                    onClick={() => setWantsBank(false)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+
+                <FormRow
+                  id="bankName"
+                  label="Account name"
+                  error={
+                    errorField === "bankName" ? (error ?? undefined) : undefined
+                  }
+                >
+                  {(field) => (
+                    <Input
+                      {...field}
+                      value={bankName}
+                      onChange={(event) => setBankName(event.target.value)}
+                      // eslint-disable-next-line jsx-a11y/no-autofocus -- the field has just appeared in response to a tap, so focus belongs in it.
+                      autoFocus
+                      placeholder="HDFC"
+                    />
+                  )}
+                </FormRow>
+
+                <FormRow
+                  id="bankBalance"
+                  label="Balance right now"
+                  error={
+                    errorField === "bankBalance"
+                      ? (error ?? undefined)
+                      : undefined
+                  }
+                >
+                  {(field) => (
+                    <div className="relative">
+                      <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
+                        {currency.symbol}
+                      </span>
+                      <Input
+                        {...field}
+                        value={bankBalance}
+                        onChange={(event) => setBankBalance(event.target.value)}
+                        inputMode="decimal"
+                        placeholder="0"
+                        className="amount pl-9"
+                      />
+                    </div>
+                  )}
+                </FormRow>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="touch"
+                className="w-full"
+                onClick={() => setWantsBank(true)}
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                Add a bank account
+              </Button>
+            )}
+          </section>
+        ) : null}
+
+        {step === 3 ? (
+          <section className="text-center">
+            <span className="bg-tint-mint text-income mx-auto mb-5 flex size-14 items-center justify-center rounded-card">
+              <Check className="size-7" aria-hidden="true" />
+            </span>
+
+            <h2 className="font-display text-3xl tracking-tight">
+              You are set up, {displayName.trim()}.
+            </h2>
+
+            <p className="text-text-secondary mt-2 text-sm">
+              Tracking in {currency.name} ({currency.symbol}), starting with{" "}
+              {/* Both accounts named when there are two: a summary that leaves
+                one out invites a second trip to Accounts to check. */}
+              {wantsBank && bankName.trim()
+                ? `${accountName.trim() || "your first account"} and ${bankName.trim()}`
+                : accountName.trim() || "your first account"}
+              .
+            </p>
+
+            <div className="pb-safe mt-8">
+              {/*
               A form, not an onClick: the action rebuilds the shell and
               redirects in one step, so there is no window where this page
               has been invalidated and is still on screen waiting to be
               clicked. Straight into the sheet, because the next thing to do
               is the whole point of the app.
             */}
-            <form action={startTracking}>
-              <Button type="submit" size="touch" className="w-full">
-                Add your first expense
-              </Button>
-            </form>
-          </div>
-        </section>
-      ) : null}
-
+              <form action={startTracking}>
+                <Button type="submit" size="touch" className="w-full">
+                  Add your first expense
+                </Button>
+              </form>
+            </div>
+          </section>
+        ) : null}
       </div>
 
       {step === 3 ? null : (
-      <StickyActionBar className="-mx-4 px-4">
-        {step > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="touch"
-            onClick={back}
-            disabled={saving}
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Back
-          </Button>
-        ) : null}
+        <StickyActionBar className="-mx-4 px-4">
+          {step > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="touch"
+              onClick={back}
+              disabled={saving}
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Back
+            </Button>
+          ) : null}
 
-        {step < 2 ? (
-          <Button type="button" size="touch" className="flex-1" onClick={next}>
-            Continue
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="touch"
-            className="flex-1"
-            onClick={finish}
-            disabled={saving}
-          >
-            {saving ? (
-              <>
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Setting up…
-              </>
-            ) : (
-              <>
-                <Check className="size-4" aria-hidden="true" />
-                Start tracking
-              </>
-            )}
-          </Button>
-        )}
-      </StickyActionBar>
+          {step < 2 ? (
+            <Button
+              type="button"
+              size="touch"
+              className="flex-1"
+              onClick={next}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="touch"
+              className="flex-1"
+              onClick={finish}
+              disabled={saving}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  Setting up…
+                </>
+              ) : (
+                <>
+                  <Check className="size-4" aria-hidden="true" />
+                  Start tracking
+                </>
+              )}
+            </Button>
+          )}
+        </StickyActionBar>
       )}
     </div>
   );
@@ -514,35 +531,38 @@ function CurrencyStep({
           const active = currency.code === selected.code;
 
           return (
-              <button
-                key={currency.code}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => onSelect(currency)}
-                className={cn(
-                  "hoverable:bg-surface-muted  flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors   ",
-                  active && "bg-surface-muted",
-                )}
-              >
-                <span className="amount text-text-secondary w-9 shrink-0 text-base">
-                  {currency.symbol}
+            <button
+              key={currency.code}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onSelect(currency)}
+              className={cn(
+                "hoverable:bg-surface-muted  flex min-h-14 w-full items-center gap-3 px-4 text-left transition-colors   ",
+                active && "bg-surface-muted",
+              )}
+            >
+              <span className="amount text-text-secondary w-9 shrink-0 text-base">
+                {currency.symbol}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">
+                  {currency.name}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">
-                    {currency.name}
-                  </span>
-                  <span className="text-text-secondary block text-xs">
-                    {currency.code} ·{" "}
-                    {currency.decimals === 0
-                      ? "no decimals"
-                      : `${currency.decimals} decimals`}
-                  </span>
+                <span className="text-text-secondary block text-xs">
+                  {currency.code} ·{" "}
+                  {currency.decimals === 0
+                    ? "no decimals"
+                    : `${currency.decimals} decimals`}
                 </span>
-                {active ? (
-                  <Check className="text-text size-5 shrink-0" aria-hidden="true" />
-                ) : null}
-              </button>
+              </span>
+              {active ? (
+                <Check
+                  className="text-text size-5 shrink-0"
+                  aria-hidden="true"
+                />
+              ) : null}
+            </button>
           );
         })}
 

@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useCurrency } from "@/components/profile-provider";
+import { Card } from "@/components/shared/surface";
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { formatCompact, formatWith } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -13,23 +14,28 @@ import { cn } from "@/lib/utils";
  * The colours are CSS variables rather than hex strings, so an SVG fill
  * resolves against the element's own computed style and the charts follow
  * light and dark without a theme hook or a re-render.
+ *
+ * Three of these pointed at variables that stopped existing when Phase 14
+ * rewrote the tokens: `--border`, `--muted-foreground` and `--muted` are now
+ * `--color-border` and friends, which are Tailwind theme keys rather than
+ * raw properties. An SVG attribute given a `var()` that resolves to nothing
+ * does not fall back — it paints black, or nothing at all — so every
+ * gridline and axis label on this screen had quietly stopped being drawn.
+ *
+ * `ink` is what a chart uses for the series being read, and `muted` for the
+ * ones beside it. That is the Part D rule for charts, and it is why the
+ * money colours are only used where the two series are income *and*
+ * expense, which is the one chart that is about the difference between them.
  */
 export const CHART_COLORS = {
+  ink: "var(--ink)",
+  muted: "var(--bar-muted)",
   income: "var(--income)",
   expense: "var(--expense)",
-  balance: "var(--transfer)",
-  grid: "var(--border)",
-  axis: "var(--muted-foreground)",
+  grid: "var(--hairline)",
+  axis: "var(--text-secondary)",
+  surface: "var(--surface)",
 } as const;
-
-/** The palette a donut falls back to when a category has no colour of its own. */
-export const FALLBACK_SLICE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-];
 
 /**
  * Hover on a pointer, tap on a touchscreen.
@@ -81,19 +87,25 @@ export function ChartCard({
   className?: string;
 }) {
   return (
-    <section className={cn("bento p-3 sm:p-4", className)}>
+    // The shared flat card. `bento` was a Phase 13 utility that the Phase
+    // 14 globals rewrite dropped, so every card on this screen had been
+    // rendering with no background, no border and no radius — a stack of
+    // charts floating on the page.
+    <Card as="section" className={cn("p-3 sm:p-4", className)}>
       <div className="mb-2 flex items-start justify-between gap-2 px-1">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">{title}</h2>
           {subtitle ? (
-            <p className="text-text-secondary truncate text-xs">{subtitle}</p>
+            <div className="text-text-secondary truncate text-xs">
+              {subtitle}
+            </div>
           ) : null}
         </div>
         {actions}
       </div>
 
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -122,7 +134,7 @@ export function ChartTooltip({
   const currency = useCurrency();
 
   return (
-    <div className="bg-popover text-popover-foreground rounded-control border px-3 py-2 text-xs shadow-md">
+    <div className="bg-surface text-text rounded-control border px-3 py-2 text-xs">
       <p className="font-semibold">{title}</p>
 
       <ul className="mt-1 space-y-0.5">

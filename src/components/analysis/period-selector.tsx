@@ -11,9 +11,12 @@ import {
   SheetBody,
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
+import {
+  RangeCalendar,
+  rangePresets,
+} from "@/components/shared/range-calendar";
+import { SegmentedControl } from "@/components/shared/segmented-control";
 import { Button } from "@/components/ui/button";
-import { FormRow } from "@/components/ui/form-row";
-import { Input } from "@/components/ui/input";
 import {
   MAX_RANGE_DAYS,
   type Period,
@@ -113,32 +116,19 @@ export function PeriodSelector({
 
   return (
     <div className="space-y-2">
-      <div
-        role="radiogroup"
-        aria-label="Period"
-        className="bg-surface-muted grid grid-cols-4 gap-1 rounded-control p-1"
-      >
-        {PERIOD_KINDS.map((kind) => {
-          const active = period.kind === kind;
-          return (
-            <button
-              key={kind}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => choose(kind)}
-              className={cn(
-                " h-11 rounded-lg text-sm font-semibold transition-colors  ",
-                active
-                  ? "bg-background text-text shadow-sm"
-                  : "text-text-secondary hoverable:bg-background/60",
-              )}
-            >
-              {PERIOD_LABELS[kind]}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentedControl
+        // Capped on a wide screen. A four-way control stretched across
+        // 1200px puts a centimetre of empty track between each label and
+        // reads as a navigation bar rather than as a choice.
+        className="max-w-md"
+        label="Period"
+        value={period.kind}
+        onChange={choose}
+        options={PERIOD_KINDS.map((kind) => ({
+          value: kind,
+          label: PERIOD_LABELS[kind],
+        }))}
+      />
 
       <div className="flex items-center justify-between gap-1">
         <Button
@@ -154,7 +144,7 @@ export function PeriodSelector({
         <button
           type="button"
           onClick={() => setRangeOpen(true)}
-          className=" min-h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-center text-sm font-semibold "
+          className="rounded-control hoverable:bg-surface-muted min-h-11 min-w-0 flex-1 truncate px-2 text-center text-sm font-semibold"
         >
           {periodLabel(period)}
         </button>
@@ -178,31 +168,58 @@ export function PeriodSelector({
         description="Any two dates, up to five years apart."
       >
         <SheetBody>
-          <div className="grid grid-cols-2 gap-2">
-            <FormRow id="range-from" label="From">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="date"
-                  value={from}
-                  max={today}
-                  onChange={(event) => setFrom(event.target.value)}
-                />
-              )}
-            </FormRow>
-
-            <FormRow id="range-to" label="To">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="date"
-                  value={to}
-                  max={today}
-                  onChange={(event) => setTo(event.target.value)}
-                />
-              )}
-            </FormRow>
+          {/* The ranges people ask for by name, first. Most custom ranges
+              are one of these five, and tapping one is a tap. */}
+          <div className="flex flex-wrap gap-1.5">
+            {rangePresets(today).map((preset) => {
+              const active = from === preset.from && to === preset.to;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setFrom(preset.from);
+                    setTo(preset.to);
+                  }}
+                  className={cn(
+                    "pressable flex h-9 items-center rounded-full px-3 text-[13px] font-semibold",
+                    "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
+                    active
+                      ? "accent-sm bg-surface text-text"
+                      : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
+                  )}
+                >
+                  {preset.label}
+                </button>
+              );
+            })}
           </div>
+
+          <RangeCalendar
+            from={from}
+            to={to}
+            max={today}
+            today={today}
+            weekStart={weekStart}
+            onChange={(next) => {
+              setFrom(next.from);
+              setTo(next.to);
+            }}
+          />
+
+          <p className="text-text-secondary text-xs">
+            {from && to ? (
+              <>
+                {periodLabel({ kind: "custom", from, to })} ·{" "}
+                {dayDifference(from, to) + 1} days
+              </>
+            ) : from ? (
+              "Now pick the other end."
+            ) : (
+              "Pick the first day."
+            )}
+          </p>
 
           {rangeError && from && to ? (
             <p role="alert" className="text-expense text-sm">
@@ -223,7 +240,7 @@ export function PeriodSelector({
           <Button
             size="touch"
             className="flex-1"
-            disabled={rangeError !== null}
+            disabled={rangeError !== null || !from || !to}
             onClick={() => {
               setRangeOpen(false);
               go({ kind: "custom", from, to });

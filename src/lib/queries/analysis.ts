@@ -15,7 +15,10 @@ export type CategorySlice = {
   categoryId: string;
   name: string;
   icon: string | null;
+  /** Kept while the old column exists; nothing reads it since Phase 14. */
   color: string | null;
+  /** One of the eight tint keys — the donut slice and the legend tile. */
+  tint: string | null;
   /** Minor units as text — an RSC payload cannot carry a BigInt. */
   total: string;
 };
@@ -223,7 +226,7 @@ export async function getBalanceAccounts() {
 
   const { data, error } = await supabase
     .from("accounts")
-    .select("id, name, color")
+    .select("id, name, color, icon, tint")
     .eq("archived", false)
     .order("sort_order", { ascending: true });
 

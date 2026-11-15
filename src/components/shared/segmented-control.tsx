@@ -51,7 +51,10 @@ export function SegmentedControl<T extends string>({
             aria-checked={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-segment pressable flex h-8 items-center justify-center text-[13px] font-semibold",
+              // 44px, not the 32 the reference draws. This is a control a
+              // thumb hits on the screen it is used most (the add sheet),
+              // and CLAUDE.md's floor is not negotiable against a mockup.
+              "rounded-segment pressable flex h-11 items-center justify-center text-[13px] font-semibold",
               "duration-[220ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
               active
                 ? "bg-surface accent-sm text-text"

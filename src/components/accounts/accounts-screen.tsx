@@ -155,7 +155,9 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
       router.refresh();
     } catch (thrown) {
       console.error("[accounts]", thrown);
-      toast.error("Could not delete that. Check your connection and try again.");
+      toast.error(
+        "Could not delete that. Check your connection and try again.",
+      );
     } finally {
       // In a finally so a thrown action cannot leave the dialog spinning.
       setDeleting(false);
@@ -200,8 +202,9 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         trend={
           excluded > 0 ? (
             <Button
-              variant="outline"
-              size="sm"
+              variant="secondary"
+              size="touch"
+              className="px-3"
               aria-pressed={showNetWorth}
               onClick={() => setShowNetWorth((on) => !on)}
             >
@@ -297,7 +300,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
                 <li key={account.id}>
                   <AccountRow
                     account={account}
-                        onEdit={() => openEdit(account)}
+                    onEdit={() => openEdit(account)}
                     onArchive={() => void toggleArchived(account)}
                     onDelete={() => {
                       lastDeleteName.current = account.name;

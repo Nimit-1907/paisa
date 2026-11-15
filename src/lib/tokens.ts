@@ -126,3 +126,21 @@ export function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+/**
+ * A tint as a CSS value, for somewhere a class cannot reach.
+ *
+ * Charts are the only place: recharts wants a `fill` string, not a class
+ * name. It stays a `var()` rather than a resolved hex so an SVG painted with
+ * it follows light and dark without a theme hook or a re-render — which is
+ * also why `src/lib/colors.ts`'s hexes could never have been used here
+ * safely once the palette started having two halves.
+ */
+export function tintVar(tint: string | null | undefined): string {
+  return `var(--tint-${isTint(tint ?? "") ? tint : DEFAULT_TINT})`;
+}
+
+/** The eight, in order, for a chart that has to colour things it cannot name. */
+export const TINT_CYCLE: string[] = TINT_KEYS.filter(
+  (key) => key !== "neutral",
+).map((key) => `var(--tint-${key})`);

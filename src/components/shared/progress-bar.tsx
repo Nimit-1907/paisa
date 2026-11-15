@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-
+import { useFirstFill } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,7 +12,9 @@ import { cn } from "@/lib/utils";
  * legible without colour vision — the two tints are pale by design, so on
  * their own they would be two slightly different light greys.
  *
- * Fills once on first view, 500ms. It animates from zero rather than from
+ * Fills once on first view, 500ms, and only on the way in: a bar that
+ * re-ran its fill on every render would redraw itself whenever something
+ * unrelated on the screen changed. It animates from zero rather than from
  * its last value because the figure beside it counts up at the same time,
  * and the two moving together is what makes the pair read as one fact.
  */
@@ -28,15 +29,10 @@ export function ProgressBar({
   label: string;
   className?: string;
 }) {
-  const [grown, setGrown] = React.useState(false);
-
-  React.useEffect(() => {
-    // Next frame, so the transition has a zero to start from.
-    const id = requestAnimationFrame(() => setGrown(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
   const clamped = Math.max(0, Math.min(100, percent));
+  // Zero for a frame, then the real width — and straight to it under
+  // reduced motion, with no flash of full in between. See lib/motion.ts.
+  const width = useFirstFill(clamped);
   const over = percent > 100;
   const close = percent >= 80 && percent <= 100;
 
@@ -62,7 +58,7 @@ export function ProgressBar({
               ? "bg-tint-butter border-ink border"
               : "bg-ink",
         )}
-        style={{ width: `${grown ? clamped : 0}%` }}
+        style={{ width: `${width}%` }}
       />
     </div>
   );

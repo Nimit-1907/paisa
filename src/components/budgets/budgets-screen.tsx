@@ -13,7 +13,9 @@ import {
   type BudgetDraft,
   BudgetSheet,
 } from "@/components/budgets/budget-sheet";
-import { BudgetBar, BudgetRing } from "@/components/budgets/budget-ring";
+import { Pill } from "@/components/shared/pill";
+import { ProgressBar } from "@/components/shared/progress-bar";
+import { ListCard } from "@/components/shared/surface";
 import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
 import { HeroStat } from "@/components/shared/hero-stat";
@@ -199,14 +201,22 @@ export function BudgetsScreen({
           ) : null
         }
         trend={
-          <BudgetRing percent={percent} tone={tone} size={72}>
-            <span className="amount text-sm font-semibold tabular-nums">
-              {Math.round(percent)}%
-            </span>
-          </BudgetRing>
+          // The ring is gone. It was a second shape competing with the
+          // figure beside it for the same fact, and the bar underneath says
+          // the same thing in the width it already has — which is also the
+          // shape every row below uses, so the screen reads as one idea.
+          <Pill tone={tone === "over" ? "expense" : "quiet"}>
+            {Math.round(percent)}% used
+          </Pill>
         }
       >
-        <p className="text-text-secondary mt-1 text-xs">
+        <ProgressBar
+          percent={percent}
+          label="Share of this month's budgets spent"
+          className="mt-3"
+        />
+
+        <p className="text-text-secondary mt-2 text-xs">
           <Amount value={totalSpent} signDisplay="never" /> of{" "}
           <Amount value={totalBudget} signDisplay="never" /> budgeted
         </p>
@@ -248,10 +258,11 @@ export function BudgetsScreen({
       <section>
         <SectionHeader
           className="mb-1.5 px-1"
-          title={`Budgeted · ${data.lines.length}`}
+          title="Budgeted"
+          count={data.lines.length}
         />
 
-        <ul className="bg-surface divide-hairline rounded-card divide-y overflow-hidden border">
+        <ListCard>
           {data.lines.map((line) => (
             <li key={line.categoryId}>
               <BudgetRow
@@ -260,7 +271,7 @@ export function BudgetsScreen({
               />
             </li>
           ))}
-        </ul>
+        </ListCard>
       </section>
 
       {data.unbudgeted.length > 0 ? (
@@ -279,7 +290,6 @@ function BudgetRow({
   line: BudgetMonth["lines"][number];
   onOpen: () => void;
 }) {
-
   const budget = BigInt(line.budget);
   const spent = BigInt(line.spent);
   const scheduled = BigInt(line.scheduled);
@@ -306,7 +316,11 @@ function BudgetRow({
           </span>
         </span>
 
-        <BudgetBar percent={budgetPercent(spent, budget)} tone={tone} />
+        <ProgressBar
+          percent={budgetPercent(spent, budget)}
+          label={`${line.name}: ${Math.round(budgetPercent(spent, budget))}% of the budget spent`}
+          className="mt-1.5 h-1.5"
+        />
 
         <span className="mt-1 flex items-baseline justify-between gap-2">
           {/* What is left is the answer; the scheduled note is the footnote.
@@ -314,12 +328,20 @@ function BudgetRow({
           <span
             className={cn(
               "shrink-0 text-xs whitespace-nowrap",
-              tone === "over" ? "text-expense font-semibold" : "text-text-secondary",
+              tone === "over"
+                ? "text-expense font-semibold"
+                : "text-text-secondary",
             )}
           >
-            {tone === "over"
-              ? <>Over by <Amount value={over} signDisplay="never" /></>
-              : <><Amount value={budget - spent} signDisplay="never" /> left</>}
+            {tone === "over" ? (
+              <>
+                Over by <Amount value={over} signDisplay="never" />
+              </>
+            ) : (
+              <>
+                <Amount value={budget - spent} signDisplay="never" /> left
+              </>
+            )}
           </span>
 
           {scheduled > 0n ? (
@@ -350,16 +372,20 @@ function Unbudgeted({
   lines: BudgetMonth["unbudgeted"];
   onSet: (categoryId: string) => void;
 }) {
-
   return (
     <section>
-      <h2 className="text-text-secondary mb-1.5 px-1 text-xs font-semibold ">
-        Not budgeted · {lines.length}
-      </h2>
+      <SectionHeader
+        className="mb-1.5 px-1"
+        title="Not budgeted"
+        count={lines.length}
+      />
 
-      <ul className="bg-surface divide-hairline divide-y overflow-hidden rounded-card border">
+      <ListCard>
         {lines.map((line) => (
-          <li key={line.categoryId} className="flex items-center gap-3 py-2 pl-3">
+          <li
+            key={line.categoryId}
+            className="flex items-center gap-3 py-2 pl-3"
+          >
             <Tile tint={line.tint} icon={line.icon} />
 
             <span className="min-w-0 flex-1">
@@ -372,16 +398,16 @@ function Unbudgeted({
             </span>
 
             <Button
-              variant="ghost"
+              variant="secondary"
               size="touch"
-              className="shrink-0 px-3"
+              className="mr-3 shrink-0 px-3"
               onClick={() => onSet(line.categoryId)}
             >
               Set budget
             </Button>
           </li>
         ))}
-      </ul>
+      </ListCard>
     </section>
   );
 }
