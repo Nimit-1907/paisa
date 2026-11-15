@@ -22,268 +22,216 @@
   }
 }
 
+/*
+ * ═══════════════════════════════════════════════════════════════════════
+ * Paisa — modern minimal with neo-brutalist accents (Phase 14)
+ * ═══════════════════════════════════════════════════════════════════════
+ *
+ * The rule that makes this style work is restraint: everything is flat,
+ * with a one-pixel hairline and no shadow, *except* one hero card per
+ * screen and a handful of selected states. Bold is a signal, and a signal
+ * used twice on a screen is decoration.
+ *
+ * Phase 14 replaces the Phase 11–12 surface language entirely — no glass,
+ * no backdrop blur, no grain, no gradients, no soft shadows, no serif. The
+ * sixteen-swatch colour palette becomes eight soft tints that carry
+ * identity without carrying emphasis.
+ *
+ * Every pair below is checked against WCAG AA by src/lib/tokens.test.ts.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
   /*
-   * Two families, one job each.
+   * Two families, two jobs.
    *
-   * `font-sans` is Inter: everything you read, every amount in a list, every
-   * form. `font-display` is Instrument Serif, and it appears in exactly three
-   * places — the number on the month card, page titles, and the landing
-   * headline. A serif on the figure is what makes this app look like
-   * somebody's ledger rather than another dashboard, and keeping it to three
-   * places is what stops it becoming a theme.
+   * Inter is everything you read. Bricolage Grotesque 800 is page titles
+   * and hero numbers, and nothing else — a display face used for a third
+   * thing stops being a signal.
    */
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
-  --font-heading: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-display-face), var(--font-body), ui-sans-serif, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
+  /* ── Surfaces ──────────────────────────────────────────────────────── */
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+
+  /* ── Ink ───────────────────────────────────────────────────────────── */
   /*
-   * One step below text-xs, for the labels above a number — "Left to spend",
-   * "Top category". It existed as text-[11px] in seven files, which is how a
-   * type scale stops being a scale.
+   * `ink` is the border and fill colour of anything bold: the hard shadow,
+   * an accent border, a primary button. `on-ink` is what sits on top of it.
+   * They are deliberately not `foreground`/`background`: in dark mode ink
+   * is near-white and the page is near-black, so a button filled with ink
+   * is a light button on a dark screen.
+   */
+  --color-ink: var(--ink);
+  --color-on-ink: var(--on-ink);
+
+  /* ── Text ──────────────────────────────────────────────────────────── */
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+
+  /* ── Lines ─────────────────────────────────────────────────────────── */
+  --color-hairline: var(--hairline);
+  --color-bar-muted: var(--bar-muted);
+
+  /* ── Money ─────────────────────────────────────────────────────────── */
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-transfer: var(--transfer);
+
+  /*
+   * ── Brand accent ───────────────────────────────────────────────────
+   *
+   * Periwinkle, and it appears in five places only: today's bar, the Add
+   * button, the new-row highlight, the insight strip, and the onboarding
+   * progress fill. Anywhere else and it stops meaning anything.
+   */
+  --color-accent: var(--accent);
+
+  /*
+   * ── Soft tints ─────────────────────────────────────────────────────
+   *
+   * Eight keys, carrying identity rather than emphasis. Icons and text on
+   * them are always plain ink — measured at 11:1 or better on every tint
+   * in both themes, so a tint never has to be checked again.
+   */
+  --color-tint-rose: var(--tint-rose);
+  --color-tint-peach: var(--tint-peach);
+  --color-tint-sky: var(--tint-sky);
+  --color-tint-butter: var(--tint-butter);
+  --color-tint-mint: var(--tint-mint);
+  --color-tint-lilac: var(--tint-lilac);
+  --color-tint-peri: var(--tint-peri);
+  --color-tint-neutral: var(--tint-neutral);
+
+  /* ── Shape ─────────────────────────────────────────────────────────── */
+  --radius-hero: 20px;
+  --radius-card: 16px;
+  --radius-toast: 14px;
+  --radius-control: 12px;
+  --radius-segment: 9px;
+  --radius-dock: 22px;
+  --radius-sheet: 26px;
+  --radius-dialog: 20px;
+
+  /* The shadcn scale stays for the primitives that still reference it. */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+
+  /*
+   * ── Depth ──────────────────────────────────────────────────────────
+   *
+   * Two shadows, both hard. A blur radius of zero is the whole idea: the
+   * shadow is a second shape rather than a suggestion of light, which is
+   * what stops a flat interface from looking unfinished.
+   */
+  --shadow-accent-sm: 2px 2px 0 var(--ink);
+  --shadow-accent-lg: 4px 4px 0 var(--ink);
+
+  /*
+   * One step below text-xs, for the label above a number. Sentence case —
+   * Phase 14 removes uppercase labels everywhere.
    */
   --text-label: 0.6875rem;
   --text-label--line-height: 1rem;
 
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
+  /* shadcn primitives read these; they point at the Phase 14 values. */
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--ink);
+  --color-primary-foreground: var(--on-ink);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-secondary);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--expense);
+  --color-border: var(--hairline);
+  --color-input: var(--hairline);
+  --color-ring: var(--ink);
 
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-
-  /* Money semantics: income, expense, transfer (CLAUDE.md palette rules). */
-  --color-income: var(--income);
-  --color-income-soft: var(--income-soft);
-  --color-expense: var(--expense);
-  --color-expense-soft: var(--expense-soft);
-  --color-transfer: var(--transfer);
-  --color-transfer-soft: var(--transfer-soft);
-  /* Budgets: the band between comfortable and over. */
-  --color-warning: var(--warning);
-  --color-warning-soft: var(--warning-soft);
-
-  /*
-   * Three steps of emphasis, as solid colours rather than opacity.
-   *
-   * Opacity over a coloured surface gives a different colour on the page,
-   * on a card and on a tinted row, so the same "secondary" would have three
-   * contrast ratios. These are measured once: 14.9, 6.8 and 4.6 against the
-   * page in light, 16.5, 8.9 and 6.3 in dark. Tertiary is for hints and
-   * placeholders, and it still clears AA — see the note in docs.
-   */
-  /*
-   * The dark icon for a pale circle. Not themed: the circle is the same
-   * colour in light and dark, so the thing on top of it must be too.
-   */
-  --color-dot-ink: oklch(0.2 0.02 255);
-
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-3: var(--ink-3);
-
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-
-  /*
-   * Three radii, one family: 20px for a card, 12px for a control, a full
-   * pill for a chip. The scale below stays for the shadcn primitives.
-   */
-  --radius-card: 1.25rem;
-  --radius-control: 0.75rem;
-
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-chart-1: var(--ink);
+  --color-chart-2: var(--bar-muted);
+  --color-chart-3: var(--transfer);
+  --color-chart-4: var(--income);
+  --color-chart-5: var(--expense);
 }
 
-/*
- * Paisa palette — calm finance.
- *
- * Surfaces are near-neutral with a hint of blue so the money colours carry all
- * the meaning. Income / expense / transfer lightness is tuned to clear AA
- * (>= 4.5:1) as text on --background and on their own soft backgrounds.
- */
 :root {
-  --background: oklch(0.985 0.003 247);
-  --foreground: oklch(0.21 0.02 255);
+  --background: #f6f6f4;
+  --surface: #ffffff;
+  --surface-muted: #efeeea;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.02 255);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.02 255);
+  --ink: #141414;
+  --on-ink: #ffffff;
 
-  /* Deep teal: trustworthy without the banking-blue cliché. */
-  --primary: oklch(0.47 0.09 192);
-  --primary-foreground: oklch(0.99 0.01 190);
+  --foreground: #141414;
+  --text: #141414;
+  --text-secondary: #6b6a66;
 
-  --secondary: oklch(0.955 0.008 247);
-  --secondary-foreground: oklch(0.3 0.025 255);
-  --muted: oklch(0.955 0.008 247);
-  --muted-foreground: oklch(0.5 0.018 255);
-  --accent: oklch(0.94 0.02 192);
-  --accent-foreground: oklch(0.32 0.04 200);
+  --hairline: #e4e2dd;
+  --bar-muted: #d6d4ce;
 
-  --destructive: oklch(0.52 0.19 24);
+  --income: #1e6b3a;
+  --expense: #a1302a;
+  --transfer: #1d5c8c;
 
-  --ink: oklch(0.26 0.02 255);
-  --ink-2: oklch(0.46 0.016 255);
-  --ink-3: oklch(0.555 0.013 255);
+  --accent: #c7ceff;
 
-  /*
-   * --border is a hairline between surfaces: decoration, and held light on
-   * purpose. --input is the edge of a control — a text field, the off state
-   * of a switch — which is the only thing telling you the control is there,
-   * so it carries WCAG 1.4.11's 3:1 against both the page and a card
-   * (measured: 3.22 and 3.36).
-   */
-  --border: oklch(0.915 0.008 250);
-  --input: oklch(0.64 0.012 250);
-  --ring: oklch(0.55 0.08 192);
+  --tint-rose: #fce4e1;
+  --tint-peach: #fce9d9;
+  --tint-sky: #e1edf8;
+  --tint-butter: #faf0cf;
+  --tint-mint: #e2f1e5;
+  --tint-lilac: #ece6fa;
+  --tint-peri: #e5e8fe;
+  --tint-neutral: #efeeea;
 
-  /*
-   * Money colours, a third less saturated than they were.
-   *
-   * They only ever land on an amount, an arrow or a category dot, so they do
-   * not need to carry a surface — and at the old chroma three of them in one
-   * list read as a warning rather than as information. Measured on the page:
-   * 6.2, 6.2, 6.0 and 5.2.
-   */
-  --income: oklch(0.47 0.095 157);
-  --income-soft: oklch(0.95 0.03 157);
-  --expense: oklch(0.5 0.135 22);
-  --expense-soft: oklch(0.96 0.025 22);
-  --transfer: oklch(0.49 0.105 258);
-  --transfer-soft: oklch(0.955 0.022 258);
-  --warning: oklch(0.53 0.105 68);
-  --warning-soft: oklch(0.96 0.03 68);
-
-  --chart-1: oklch(0.47 0.095 157);
-  --chart-2: oklch(0.5 0.135 22);
-  --chart-3: oklch(0.49 0.105 258);
-  --chart-4: oklch(0.56 0.105 70);
-  --chart-5: oklch(0.5 0.11 300);
-
-  --radius: 0.75rem;
-
-  /*
-   * The raised layer. In light mode a card is already white, so the lift has
-   * to come from a shadow; the border stays the hairline.
-   */
-  --raised: oklch(1 0 0);
-  --raised-border: var(--border);
-  --raised-shadow:
-    0 1px 2px oklch(0.21 0.02 255 / 6%), 0 12px 32px oklch(0.21 0.02 255 / 10%);
-
-  --sidebar: oklch(0.975 0.005 247);
-  --sidebar-foreground: oklch(0.21 0.02 255);
-  --sidebar-primary: oklch(0.47 0.09 192);
-  --sidebar-primary-foreground: oklch(0.99 0.01 190);
-  --sidebar-accent: oklch(0.94 0.02 192);
-  --sidebar-accent-foreground: oklch(0.32 0.04 200);
-  --sidebar-border: oklch(0.915 0.008 250);
-  --sidebar-ring: oklch(0.55 0.08 192);
+  --radius: 12px;
 }
 
 .dark {
-  --background: oklch(0.17 0.015 258);
-  --foreground: oklch(0.96 0.005 250);
+  --background: #111111;
+  --surface: #1a1a1a;
+  --surface-muted: #242424;
 
-  --card: oklch(0.215 0.018 258);
-  --card-foreground: oklch(0.96 0.005 250);
-  --popover: oklch(0.215 0.018 258);
-  --popover-foreground: oklch(0.96 0.005 250);
+  --ink: #ededed;
+  --on-ink: #111111;
 
-  --primary: oklch(0.78 0.11 185);
-  --primary-foreground: oklch(0.2 0.03 200);
+  --foreground: #f2f2f2;
+  --text: #f2f2f2;
+  --text-secondary: #a3a3a3;
 
-  --secondary: oklch(0.27 0.018 258);
-  --secondary-foreground: oklch(0.96 0.005 250);
-  --muted: oklch(0.27 0.018 258);
-  --muted-foreground: oklch(0.72 0.015 255);
-  --accent: oklch(0.3 0.03 195);
-  --accent-foreground: oklch(0.95 0.02 190);
+  --hairline: #2c2c2c;
+  --bar-muted: #3a3a3a;
 
-  --destructive: oklch(0.68 0.17 24);
+  --income: #8fd3a4;
+  --expense: #f2a9a3;
+  --transfer: #9cc9ec;
 
-  --ink: oklch(0.95 0.005 250);
-  --ink-2: oklch(0.76 0.012 255);
-  --ink-3: oklch(0.665 0.012 255);
+  --accent: #4a5293;
 
-  --border: oklch(1 0 0 / 12%);
-  /* 3.31 on the page, 3.33 on a card. See the note in :root. */
-  --input: oklch(1 0 0 / 36%);
-  --ring: oklch(0.6 0.08 190);
-
-  /* Softened further here: a saturated colour on a dark surface glows. */
-  --income: oklch(0.8 0.105 158);
-  --income-soft: oklch(0.3 0.04 158);
-  --expense: oklch(0.76 0.115 22);
-  --expense-soft: oklch(0.32 0.05 22);
-  --transfer: oklch(0.77 0.09 255);
-  --transfer-soft: oklch(0.31 0.042 255);
-  --warning: oklch(0.82 0.095 75);
-  --warning-soft: oklch(0.31 0.04 75);
-
-  --chart-1: oklch(0.8 0.105 158);
-  --chart-2: oklch(0.76 0.115 22);
-  --chart-3: oklch(0.77 0.09 255);
-  --chart-4: oklch(0.82 0.095 75);
-  --chart-5: oklch(0.75 0.1 300);
-
-  /*
-   * In dark mode a shadow is invisible against a near-black page, so the
-   * lift is a lighter surface plus a brighter border. Both are decoration,
-   * like --border: measured 1.21:1 for the surface step and 1.92:1 for the
-   * edge, which is what a hairline should be. Nothing here is a control
-   * boundary, so 1.4.11's 3:1 is not the bar - what identifies a sheet is
-   * its content, and --input still carries the edges that do.
-   */
-  --raised: oklch(0.255 0.019 258);
-  --raised-border: oklch(1 0 0 / 20%);
-  --raised-shadow: 0 16px 40px oklch(0 0 0 / 40%);
-
-  --sidebar: oklch(0.195 0.016 258);
-  --sidebar-foreground: oklch(0.96 0.005 250);
-  --sidebar-primary: oklch(0.78 0.11 185);
-  --sidebar-primary-foreground: oklch(0.2 0.03 200);
-  --sidebar-accent: oklch(0.3 0.03 195);
-  --sidebar-accent-foreground: oklch(0.95 0.02 190);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.6 0.08 190);
+  --tint-rose: #3a2624;
+  --tint-peach: #3a2c20;
+  --tint-sky: #1f2b37;
+  --tint-butter: #36301b;
+  --tint-mint: #1f3125;
+  --tint-lilac: #2c2539;
+  --tint-peri: #262a45;
+  --tint-neutral: #242424;
 }
 
-/* iPhone notch / home bar. Used by the bottom nav, the FAB and sheets. */
+/* iPhone notch / home bar. Used by the dock and by sheets. */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
 }
@@ -294,210 +242,113 @@
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+
 /*
- * Clearance under the fixed furniture: the 4rem bottom nav *and* the FAB,
- * which floats 4.5rem up and is 3.5rem tall. Padding for the nav alone leaves
- * the last row of a list sitting under the FAB, where its buttons cannot be
- * tapped.
+ * Clearance under the floating dock: 12px inset + 60px dock + breathing
+ * room, plus the home bar. The dock is the only fixed furniture now — the
+ * separate FAB is gone, since the Add button lives in its centre.
  */
-@utility pb-nav {
-  padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
+@utility pb-dock {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 
 /*
- * The two motions that need keyframes rather than a transition.
+ * The two bold treatments, and the only two.
  *
- * Both are transform and opacity only, both are short, and both are switched
- * off by the reduced-motion block at the end of this file. See
- * src/lib/motion.ts for the durations and the curve they share.
+ * A 1.5px border rather than the reference's 1px: the brief's text wins
+ * over the screenshots where they disagree, and at 1.5 the accent reads as
+ * deliberate at 360px rather than as a slightly darker hairline.
  */
-@keyframes paisa-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
+@utility accent-sm {
+  border: 1.5px solid var(--ink);
+  box-shadow: var(--shadow-accent-sm);
+}
+
+@utility accent-lg {
+  border: 1.5px solid var(--ink);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+/* A flat surface with a hairline: the default for everything else. */
+@utility flat {
+  background-color: var(--surface);
+  border: 1px solid var(--hairline);
+}
+
+/*
+ * Press feedback, shared by everything bold.
+ *
+ * The element moves into its own shadow, which is why the shadow is hard:
+ * a blurred one would smear rather than meet it.
+ */
+@utility pressable {
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+
+  &:active {
+    transform: translate(2px, 2px);
   }
 }
 
-@keyframes paisa-row-in {
+@utility pressable-lg {
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-accent-sm);
+  }
+}
+
+/*
+ * The motions Phase 14 asks for, as keyframes. Durations and easings are
+ * named here so a component cannot invent its own.
+ */
+@keyframes paisa-rise {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
-@utility shake {
-  animation: paisa-shake 240ms cubic-bezier(0.2, 0, 0, 1);
-}
-
-/* A row arriving in a list it was not in a moment ago. */
-@utility row-in {
-  animation: paisa-row-in 200ms cubic-bezier(0.2, 0, 0, 1);
-}
-
-/*
- * Frosted glass, for the furniture that floats over content: the bottom tab
- * bar, the sticky page header, the sticky action area in a sheet.
- *
- * Three fallbacks, because a translucent surface is only ever a nicety:
- *
- *  - no `backdrop-filter` support: a solid surface, via @supports;
- *  - prefers-reduced-transparency: a solid surface, because the setting
- *    exists for people who find translucency hard to read through;
- *  - forced-colors: the system takes the colours over entirely.
- *
- * The text on top is the same --ink as everywhere else, and the solid
- * fallback is the colour the glass averages to, so contrast is the same
- * either way.
- */
-@utility glass {
-  background-color: color-mix(in oklab, var(--background) 82%, transparent);
-  border-color: var(--border);
-
-  @supports (backdrop-filter: blur(1px)) {
-    backdrop-filter: blur(12px) saturate(1.4);
-  }
-
-  @media (prefers-reduced-transparency: reduce) {
-    background-color: var(--background);
-    backdrop-filter: none;
-  }
-
-  @media (forced-colors: active) {
-    background-color: Canvas;
-    backdrop-filter: none;
-  }
-}
-
-/*
- * The two set-back pieces of an amount.
- *
- * The currency symbol is a unit and the paise are detail: neither is the
- * number you came for, so both step down a size and lose the digits' weight.
- * The step is size and weight rather than colour because opacity over the
- * money palette measures 3.0-3.6:1 in light mode, against the 4.5 that small
- * text needs - a dimmer decimal would have been the one thing in the app
- * failing AA. Component code sets `text-ink-2` on the paise only where the
- * figure is neutral; see src/components/shared/amount.tsx.
- */
-@utility amount-unit {
-  font-size: 0.85em;
-  font-weight: 500;
-}
-
-@utility amount-minor {
-  font-size: 0.78em;
-  font-weight: 500;
-}
-
-/*
- * The third surface.
- *
- * App background -> card -> raised. "Raised" is what floats above the page
- * with its own edge: a sheet, a menu, a popover, the command palette. In
- * light mode it is the card colour with a shadow; in dark mode shadows are
- * invisible, so the lift is carried by a lighter surface and a brighter
- * border instead. One utility so a menu and a sheet can never disagree.
- */
-@utility raised {
-  background-color: var(--raised);
-  border-color: var(--raised-border);
-
-  @media not (forced-colors: active) {
-    box-shadow: var(--raised-shadow);
-  }
-}
-
-/*
- * A bento cell.
- *
- * The card anatomy every summary screen shares - Analysis, Budgets,
- * Accounts - so a stat tile and a chart card have the same edge, the same
- * radius and the same padding without each screen restating them.
- */
-@utility bento {
-  border-radius: var(--radius-card);
-  border-width: 1px;
-  border-color: var(--border);
-  background-color: var(--card);
-}
-
-/*
- * The public header, which earns its background by scrolling.
- *
- * Driven by a scroll timeline rather than a scroll listener, so the marketing
- * pages stay what they are: server-rendered markup with nothing to hydrate.
- * A client component for this would have put a React tree on the one page
- * whose whole job is painting fast.
- *
- * The keyframe has only a `from`. The implicit `to` is the element's own
- * glass, which means every way this can fail - no scroll-timeline support, a
- * reduced-motion rule collapsing the duration - fails to a header that is
- * simply always frosted. The bad outcome would be a header stuck transparent
- * over scrolled content, and there is no path to it.
- */
-@keyframes paisa-header-top {
+/* The new row, washed in the accent and fading back to its surface. */
+@keyframes paisa-highlight {
   from {
+    background-color: var(--accent);
+  }
+  to {
     background-color: transparent;
-    border-color: transparent;
-    backdrop-filter: none;
   }
 }
 
-/*
- * A plain class rather than an `@utility`, on purpose.
- *
- * A utility whose whole body is a nested at-rule has nothing to emit at the
- * top level, and relying on a build step to hoist it correctly is relying on
- * an implementation detail. Written as ordinary CSS it is the same rule with
- * one less thing that can quietly stop being generated.
- */
-@supports (animation-timeline: scroll()) {
-  .site-header {
-    animation: paisa-header-top linear both;
-    animation-timeline: scroll(root block);
-    animation-range: 0 72px;
-  }
+@utility rise-in {
+  animation: paisa-rise 400ms cubic-bezier(0.165, 0.84, 0.44, 1) both;
 }
 
-/*
- * The one gradient in the app.
- *
- * Barely there — a wash of the brand colour across a surface, so the star
- * card, a pressed primary button and the end of onboarding all feel like the
- * same hand drew them. Anywhere else it would be decoration.
- */
-@utility accent-wash {
-  background-image: linear-gradient(
-    140deg,
-    color-mix(in oklab, var(--primary) 7%, transparent),
-    transparent 60%
-  );
+@utility row-highlight {
+  animation: paisa-highlight 1800ms ease-out;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-hairline;
   }
 
   html {
     @apply font-sans;
-    /* Keep the sticky header clear of in-page anchors. */
+    /* Keep a sticky header clear of in-page anchors. */
     scroll-padding-top: 4.5rem;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-text;
     /* No horizontal scroll, ever (CLAUDE.md). */
     overflow-x: hidden;
   }
@@ -505,7 +356,6 @@
   /* Amounts line up in lists and tables. */
   .amount {
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
   }
 
   /* 16px minimum on form controls so iOS does not zoom on focus. */
@@ -514,17 +364,45 @@
   textarea {
     font-size: max(1rem, 16px);
   }
+
+  /*
+   * Focus, everywhere, as a 2px ink outline at 2px offset.
+   *
+   * One rule rather than a utility each component remembers to apply: the
+   * Phase 10 audit found three controls that had quietly lost it.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * The currency symbol, set back from the digits beside it.
+ *
+ * Roughly half the size and in secondary text, which is what the reference
+ * does and what keeps a 48px number from being read as a 48px rupee sign.
+ */
+@utility amount-unit {
+  font-size: 0.5em;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* The paise, one step down from the digits but not from the unit. */
+@utility amount-minor {
+  font-size: 0.78em;
+  font-weight: 500;
 }
 
 /*
  * Reduced motion, honoured everywhere rather than component by component.
  *
- * Tailwind's `motion-safe:` variant covers the few things this app animates on
- * purpose, but Radix and vaul ship their own keyframes: a dialog that flies in
- * and a sheet that slides up from the bottom are exactly the motion someone
- * turned off at the operating system.
+ * Radix and vaul ship their own keyframes, so a dialog that flies in and a
+ * sheet that slides up are exactly the motion somebody turned off at the
+ * operating system.
  *
- * The spinner is exempted on purpose. It is a status, not decoration, and
+ * The spinner is exempted on purpose: it is a status, not decoration, and
  * freezing it mid-turn would leave a saving button looking stuck.
  */
 @media (prefers-reduced-motion: reduce) {

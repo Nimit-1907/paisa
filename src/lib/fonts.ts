@@ -1,4 +1,4 @@
-import { Instrument_Serif, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Inter } from "next/font/google";
 
 /**
  * The two families, loaded once.
@@ -7,11 +7,13 @@ import { Instrument_Serif, Inter } from "next/font/google";
  * nobody learns what you read by loading a page here.
  *
  * Inter is everything you read: lists, forms, every amount in a row, with
- * tabular figures so columns of money line up. Instrument Serif is the
- * anchor, and it appears in three places — the figure on the month card,
- * page titles, and the landing headline. Phase 12 compared it against Space
- * Grotesk and against no anchor at all; docs/visual-identity.md has the
- * screenshots and the reasoning.
+ * tabular figures so columns of money line up.
+ *
+ * Bricolage Grotesque is the display face, and Phase 14 gives it two jobs
+ * only — page titles and hero numbers. One weight, 800, at -0.03em. It
+ * replaces Instrument Serif: the new design language is flat surfaces,
+ * hairlines and hard shadows, and a serif anchor reads as warmth from a
+ * different system. See docs/design-system.md.
  */
 export const body = Inter({
   subsets: ["latin"],
@@ -19,9 +21,13 @@ export const body = Inter({
   display: "swap",
 });
 
-export const instrumentSerif = Instrument_Serif({
+export const display = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-instrument",
+  // 800 is the only weight used. Loading the variable range would ship the
+  // whole axis for two sizes of one word.
+  weight: "800",
+  // Not `--font-display`: Tailwind's theme key of that name resolves to
+  // this variable, and a variable pointing at itself resolves to nothing.
+  variable: "--font-display-face",
   display: "swap",
 });

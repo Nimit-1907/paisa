@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 
 import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
-import { body, instrumentSerif } from "@/lib/fonts";
+import { body, display } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE, siteOrigin } from "@/lib/site";
@@ -64,7 +64,7 @@ export default function RootLayout({
     // to html in globals.css) can resolve it.
     <html
       lang="en"
-      className={`${body.variable} ${instrumentSerif.variable}`}
+      className={`${body.variable} ${display.variable}`}
       suppressHydrationWarning
     >
       <head>
