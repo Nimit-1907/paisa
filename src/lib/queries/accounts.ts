@@ -117,6 +117,8 @@ export type AccountTransaction = {
   categoryName: string | null;
   categoryIcon: string | null;
   categoryColor: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  categoryTint: string | null;
 };
 
 type TransactionJoinRow = {
@@ -127,7 +129,12 @@ type TransactionJoinRow = {
   occurred_at: string;
   account_id: string;
   to_account_id: string | null;
-  category: { name: string; icon: string | null; color: string | null } | null;
+  category: {
+    name: string;
+    icon: string | null;
+    color: string | null;
+    tint: string | null;
+  } | null;
   account: { name: string } | null;
   to_account: { name: string } | null;
 };
@@ -149,7 +156,7 @@ export async function getAccountTransactions(
     .from("transactions")
     .select(
       `id, type, amount, note, occurred_at, account_id, to_account_id,
-       category:categories(name, icon, color),
+       category:categories(name, icon, color, tint),
        account:accounts!transactions_account_id_fkey(name),
        to_account:accounts!transactions_to_account_id_fkey(name)`,
     )
@@ -182,6 +189,7 @@ export async function getAccountTransactions(
       categoryName: row.category?.name ?? null,
       categoryIcon: row.category?.icon ?? null,
       categoryColor: row.category?.color ?? null,
+    categoryTint: (row.category?.tint as string | null) ?? null,
     };
   });
 }
@@ -357,6 +365,8 @@ export type QuickAdd = {
   name: string;
   icon: string | null;
   color: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  tint: string | null;
   /** Minor units as text — an RSC payload cannot carry a BigInt. */
   amount: string;
   accountId: string;
@@ -385,6 +395,8 @@ export async function getQuickAdds(): Promise<QuickAdd[]> {
     name: row.name,
     icon: row.icon,
     color: row.color,
+    // The generator types a domain column as `unknown`.
+    tint: (row.tint as string | null) ?? null,
     amount: fromDb(row.amount).toString(),
     accountId: row.account_id,
     accountName: row.account_name,

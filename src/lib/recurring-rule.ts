@@ -27,6 +27,8 @@ export type RecurringRule = {
   categoryName: string | null;
   categoryIcon: string | null;
   categoryColor: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  categoryTint: string | null;
   frequency: Database["public"]["Enums"]["recurrence_frequency"];
   interval: number;
   startDate: string;

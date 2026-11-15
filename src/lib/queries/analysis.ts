@@ -142,6 +142,8 @@ export async function getAnalysis({
     name: row.name,
     icon: row.icon,
     color: row.color,
+    // The generator types a domain column as `unknown`.
+    tint: (row.tint as string | null) ?? null,
     total: fromDb(row.total).toString(),
   }));
 

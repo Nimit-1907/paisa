@@ -24,7 +24,7 @@ const SELECT = `
   id, type, amount, note, frequency, interval_count, start_date, anchor_day,
   end_date, next_run_on, last_run_on, skipped_dates, active,
   account_id, to_account_id, category_id,
-  category:categories(name, icon, color),
+  category:categories(name, icon, color, tint),
   account:accounts!recurring_rules_account_id_fkey(name),
   to_account:accounts!recurring_rules_to_account_id_fkey(name)
 `;
@@ -46,7 +46,12 @@ type JoinedRule = {
   account_id: string;
   to_account_id: string | null;
   category_id: string | null;
-  category: { name: string; icon: string | null; color: string | null } | null;
+  category: {
+    name: string;
+    icon: string | null;
+    color: string | null;
+    tint: string | null;
+  } | null;
   account: { name: string } | null;
   to_account: { name: string } | null;
 };
@@ -65,6 +70,7 @@ function toRule(row: JoinedRule, recordCount = 0): RecurringRule {
     categoryName: row.category?.name ?? null,
     categoryIcon: row.category?.icon ?? null,
     categoryColor: row.category?.color ?? null,
+    categoryTint: (row.category?.tint as string | null) ?? null,
     frequency: row.frequency,
     interval: row.interval_count,
     startDate: row.start_date,

@@ -11,6 +11,8 @@ export type BudgetLine = {
   name: string;
   icon: string | null;
   color: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  tint: string | null;
   /** Minor units as text — an RSC payload cannot carry a BigInt. */
   budget: string;
   spent: string;
@@ -26,6 +28,8 @@ export type UnbudgetedLine = {
   name: string;
   icon: string | null;
   color: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  tint: string | null;
   spent: string;
 };
 
@@ -48,6 +52,7 @@ type SummaryCategory = {
   name: string;
   icon: string | null;
   color: string | null;
+  tint: string | null;
   total: number | string;
 };
 
@@ -85,7 +90,7 @@ export async function getBudgetMonth({
   const [budgets, summary, previous] = await Promise.all([
     supabase
       .from("budgets")
-      .select("category_id, amount, category:categories(name, icon, color, archived)")
+      .select("category_id, amount, category:categories(name, icon, color, tint, archived)")
       .eq("month", start),
     supabase.rpc("month_summary", { p_month: start }).maybeSingle(),
     supabase
@@ -117,6 +122,7 @@ export async function getBudgetMonth({
       name: string;
       icon: string | null;
       color: string | null;
+    tint: string | null;
       archived: boolean;
     } | null;
   };
@@ -140,6 +146,7 @@ export async function getBudgetMonth({
         name: row.category?.name ?? "Category",
         icon: row.category?.icon ?? null,
         color: row.category?.color ?? null,
+        tint: (row.category?.tint as string | null) ?? null,
         budget: amount.toString(),
         spent: spent.toString(),
         scheduled: (scheduled.get(row.category_id) ?? 0n).toString(),
@@ -161,6 +168,8 @@ export async function getBudgetMonth({
       name: row.name,
       icon: row.icon,
       color: row.color,
+      // The generator types a domain column as `unknown`.
+    tint: (row.tint as string | null) ?? null,
       spent: fromDb(row.total).toString(),
     }))
     .sort((a, b) => {
@@ -237,7 +246,7 @@ export async function getBudgetableCategories() {
 
   const { data, error } = await supabase
     .from("categories")
-    .select("id, name, icon, color")
+    .select("id, name, icon, color, tint")
     .eq("kind", "expense")
     .eq("archived", false)
     .order("sort_order", { ascending: true });

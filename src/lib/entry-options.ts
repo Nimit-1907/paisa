@@ -16,6 +16,7 @@ type AccountRow = {
   name: string;
   icon: string | null;
   color: string | null;
+  tint?: string | null;
   /** Present on the full account view; absent on a bare picker row. */
   balance?: bigint | string | null;
 };
@@ -41,6 +42,7 @@ export function toAccountOptions(
     name: row.name,
     icon: row.icon,
     color: row.color,
+    tint: row.tint ?? null,
     // Normalised to text here rather than at the call site: a BigInt cannot
     // cross the RSC boundary, and `undefined` and `null` mean the same thing
     // to the one component that reads this.
@@ -57,6 +59,7 @@ export function toCategoryOptions(rows: CategoryRow[]): CategoryOption[] {
     name: row.name,
     icon: row.icon,
     color: row.color,
+    tint: row.tint ?? null,
     kind: row.kind,
   }));
 }

@@ -7,6 +7,8 @@ export type CategoryView = {
   kind: Database["public"]["Enums"]["category_kind"];
   icon: string | null;
   color: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  tint: string | null;
   archived: boolean;
   /** Transactions, budgets and rules pointing at it — zero means deletable. */
   usageCount: number;

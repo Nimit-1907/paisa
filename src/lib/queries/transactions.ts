@@ -21,6 +21,8 @@ export type TransactionRow = {
   categoryName: string | null;
   categoryIcon: string | null;
   categoryColor: string | null;
+  /** One of the eight Phase 14 tint keys. */
+  categoryTint: string | null;
   /** Set when a recurring rule created this row. */
   recurringRuleId: string | null;
 };
@@ -39,7 +41,7 @@ const UUID =
 const SELECT = `
   id, type, amount, note, occurred_at, recurring_rule_id,
   account_id, to_account_id, category_id,
-  category:categories(name, icon, color),
+  category:categories(name, icon, color, tint),
   account:accounts!transactions_account_id_fkey(name),
   to_account:accounts!transactions_to_account_id_fkey(name)
 `;
@@ -54,7 +56,12 @@ type JoinedRow = {
   account_id: string;
   to_account_id: string | null;
   category_id: string | null;
-  category: { name: string; icon: string | null; color: string | null } | null;
+  category: {
+    name: string;
+    icon: string | null;
+    color: string | null;
+    tint: string | null;
+  } | null;
   account: { name: string } | null;
   to_account: { name: string } | null;
 };
@@ -74,6 +81,7 @@ function toRow(row: JoinedRow): TransactionRow {
     categoryName: row.category?.name ?? null,
     categoryIcon: row.category?.icon ?? null,
     categoryColor: row.category?.color ?? null,
+    categoryTint: row.category?.tint ?? null,
     recurringRuleId: row.recurring_rule_id,
   };
 }
