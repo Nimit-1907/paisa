@@ -56,6 +56,39 @@ describe("buildImportRows", () => {
     expect(rows.map((row) => row.amount)).toEqual([2000n, 2000n]);
   });
 
+  it("lets Dr and Cr say the direction under either convention", () => {
+    const file = parseCsv(
+      "Date,Note,Amount\n01/11/2026,Rent,500 Dr\n02/11/2026,Refund,500 Cr\n03/11/2026,Tea,-500\n",
+    );
+
+    for (const sign of ["negative-spent", "positive-spent"] as const) {
+      const { rows } = buildImportRows(file, single, { ...options, sign });
+      expect(rows.slice(0, 2).map((row) => row.type), sign).toEqual([
+        "expense",
+        "income",
+      ]);
+    }
+
+    // An unmarked number follows the convention.
+    expect(buildImportRows(file, single, options).rows[2]?.type).toBe("expense");
+    expect(
+      buildImportRows(file, single, { ...options, sign: "positive-spent" }).rows[2]
+        ?.type,
+    ).toBe("income");
+  });
+
+  it("reads a comma decimal in a semicolon file", () => {
+    const file = parseCsv(
+      "Date;Note;Amount\n01/11/2026;Bread;-12,50\n02/11/2026;Rent;-1.234\n",
+    );
+
+    // The point is grouping there: a thousand, not one rupee and change.
+    expect(buildImportRows(file, single, options).rows.map((row) => row.amount)).toEqual([
+      1250n,
+      123400n,
+    ]);
+  });
+
   it("reads a debit and credit pair", () => {
     const file = parseCsv(
       "Date,Narration,Debit,Credit\n01/11/2026,Rent,15000,\n02/11/2026,Salary,,80000\n",

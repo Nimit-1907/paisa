@@ -71,6 +71,9 @@ export function buildImportRows(
   const formatLabel =
     DATE_FORMATS.find((format) => format.value === dateFormat)?.label ?? dateFormat;
 
+  // A `;`-separated file comes from a locale whose decimal mark is a comma.
+  const amountOptions = { decimalComma: file.delimiter === ";" };
+
   const cell = (cells: string[], column: number | null) =>
     column === null ? "" : (cells[column] ?? "");
 
@@ -83,7 +86,7 @@ export function buildImportRows(
 
     if (mapping.mode === "single") {
       const text = cell(cells, mapping.amount);
-      const read = readAmount(text, decimals);
+      const read = readAmount(text, decimals, amountOptions);
 
       if (read.kind === "blank") {
         built.notRecords += 1;
@@ -95,14 +98,17 @@ export function buildImportRows(
       }
 
       const negative = read.minor < 0n;
-      const spent = sign === "negative-spent" ? negative : !negative;
+      // A Dr, Cr or trailing minus is the bank saying which way the money
+      // went; the convention is only for numbers that do not say.
+      const spent =
+        read.marked || sign === "negative-spent" ? negative : !negative;
       type = spent ? "expense" : "income";
       amount = negative ? -read.minor : read.minor;
     } else {
       const debitText = cell(cells, mapping.debit);
       const creditText = cell(cells, mapping.credit);
-      const debit = readAmount(debitText, decimals);
-      const credit = readAmount(creditText, decimals);
+      const debit = readAmount(debitText, decimals, amountOptions);
+      const credit = readAmount(creditText, decimals, amountOptions);
 
       if (debit.kind === "error") {
         refuse(`the debit ${quote(debitText)} ${debit.reason}.`);

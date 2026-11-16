@@ -56,8 +56,15 @@ describe("readDate", () => {
     expect(readDate("32 Jan 2026", "dmy")).toBeNull();
   });
 
+  it("reads a four-digit year first in any format, since it cannot be misread", () => {
+    for (const format of ["dmy", "mdy", "ymd"] as const) {
+      expect(readDate("2026-11-05", format), format).toBe("2026-11-05");
+      expect(readDate("2026/11/05 10:30", format), format).toBe("2026-11-05");
+    }
+    expect(readDate("2026-02-30", "dmy")).toBeNull();
+  });
+
   it("refuses the wrong format rather than guessing", () => {
-    expect(readDate("2026-11-05", "dmy")).toBeNull();
     expect(readDate("05/11/2026", "ymd")).toBeNull();
     expect(readDate("11/25/2026", "dmy")).toBeNull();
   });

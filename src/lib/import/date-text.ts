@@ -2,7 +2,7 @@
  * A date as a statement prints it, into `yyyy-mm-dd`.
  *
  * Numeric dates are read in the one format the person picked, never
- * guessed: 05/11 is the 5th of November or the 11th of May, and a file of
+ * guessed (a four-digit year first is the exception, it has one reading): 05/11 is the 5th of November or the 11th of May, and a file of
  * them read the wrong way is a year of records in the wrong months. A month
  * written as a name says which it is, so those read in any format.
  *
@@ -109,12 +109,11 @@ export function readDate(input: string, format: DateFormat): string | null {
   const named = readNamed(text);
   if (named !== undefined) return named;
 
-  if (format === "ymd") {
-    const match = /^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?!\d)/.exec(text);
-    return match
-      ? build(Number(match[1]), Number(match[2]), Number(match[3]))
-      : null;
-  }
+  // A four-digit year first is year, month, day in every format anybody
+  // writes, so it is read whichever format was chosen.
+  const iso = /^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})(?!\d)/.exec(text);
+  if (iso) return build(Number(iso[1]), Number(iso[2]), Number(iso[3]));
+  if (format === "ymd") return null;
 
   const match = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})(?!\d)/.exec(
     text,
