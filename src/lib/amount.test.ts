@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cleanAmount, parseAmount } from "./amount";
+import { cleanAmount, parseAmount, pressKey } from "./amount";
 
 describe("cleanAmount", () => {
   it("keeps digits and one point", () => {
@@ -57,5 +57,62 @@ describe("parseAmount", () => {
       error: "Enter an amount.",
     });
     expect(parseAmount("99999999999999999", 2).ok).toBe(false);
+  });
+});
+
+describe("cleanAmount with negatives", () => {
+  it("keeps a leading minus only where allowed", () => {
+    expect(cleanAmount("-500", 2, "", { allowNegative: true })).toBe("-500");
+    expect(cleanAmount("\u2212500", 2, "", { allowNegative: true })).toBe(
+      "-500",
+    );
+    expect(cleanAmount("-500", 2)).toBe("500");
+    expect(cleanAmount("5-00", 2, "", { allowNegative: true })).toBe("500");
+  });
+});
+
+describe("pressKey", () => {
+  const press = (keys: string[], decimals = 2, allowNegative = false) =>
+    keys.reduce(
+      (value, key) =>
+        pressKey(value, key as Parameters<typeof pressKey>[1], decimals, {
+          allowNegative,
+        }),
+      "",
+    );
+
+  it("builds an amount digit by digit", () => {
+    expect(press(["4", "5", "0"])).toBe("450");
+    expect(press(["3", "8", ".", "9", "5"])).toBe("38.95");
+  });
+
+  it("refuses a second point and a place too many", () => {
+    expect(press(["1", ".", "5", "."])).toBe("1.5");
+    expect(press(["1", ".", "2", "3", "4"])).toBe("1.23");
+    expect(press(["1", "."], 0)).toBe("1");
+  });
+
+  it("drops leading zeros and starts a lone point at zero", () => {
+    expect(press(["0", "0", "7"])).toBe("7");
+    expect(press(["."])).toBe("0.");
+    expect(press(["0", ".", "5"])).toBe("0.5");
+  });
+
+  it("backspaces and clears", () => {
+    expect(press(["4", "5", "back"])).toBe("4");
+    expect(press(["4", "back", "back"])).toBe("");
+    expect(press(["4", "5", "clear"])).toBe("");
+  });
+
+  it("flips the sign only where allowed", () => {
+    expect(press(["5", "sign"], 2, true)).toBe("-5");
+    expect(press(["sign", "5"], 2, true)).toBe("-5");
+    expect(press(["5", "sign", "sign"], 2, true)).toBe("5");
+    expect(press(["5", "sign"])).toBe("5");
+    expect(press(["sign", "5", "back"], 2, true)).toBe("");
+  });
+
+  it("stops at thirteen whole digits", () => {
+    expect(press(Array.from({ length: 15 }, () => "9"))).toBe("9".repeat(13));
   });
 });

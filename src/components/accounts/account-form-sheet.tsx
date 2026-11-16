@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/shared/amount-input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_TINT, type TintKey, isTint } from "@/lib/tokens";
@@ -229,19 +230,14 @@ export function AccountFormSheet({
           }
         >
           {(props) => (
-            <div className="relative">
-              <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
-                {currency.symbol}
-              </span>
-              <Input
-                {...props}
-                value={initialBalance}
-                onChange={(event) => setInitialBalance(event.target.value)}
-                inputMode="decimal"
-                placeholder="0"
-                className="amount pl-9"
-              />
-            </div>
+            <AmountInput
+              {...props}
+              value={initialBalance}
+              onChange={setInitialBalance}
+              // A credit card starts below zero.
+              allowNegative
+              placeholder="0"
+            />
           )}
         </FormRow>
 

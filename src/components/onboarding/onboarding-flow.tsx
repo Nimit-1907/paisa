@@ -18,6 +18,7 @@ import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/shared/amount-input";
 import {
   type Currency,
   DEFAULT_CURRENCY,
@@ -278,23 +279,15 @@ export function OnboardingFlow({
                 }
               >
                 {(field) => (
-                  <div className="relative">
-                    <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
-                      {currency.symbol}
-                    </span>
-                    <Input
-                      {...field}
-                      value={openingBalance}
-                      onChange={(event) =>
-                        setOpeningBalance(event.target.value)
-                      }
-                      inputMode="decimal"
-                      // eslint-disable-next-line jsx-a11y/no-autofocus -- the account name above is already filled in, so this is the one empty field on a step that has just replaced the one before it.
-                      autoFocus
-                      placeholder="0"
-                      className="amount pl-9"
-                    />
-                  </div>
+                  <AmountInput
+                    {...field}
+                    value={openingBalance}
+                    onChange={setOpeningBalance}
+                    allowNegative
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- the account name above is already filled in, so this is the one empty field on a step that has just replaced the one before it.
+                    autoFocus
+                    placeholder="0"
+                  />
                 )}
               </FormRow>
             </div>
@@ -360,19 +353,13 @@ export function OnboardingFlow({
                   }
                 >
                   {(field) => (
-                    <div className="relative">
-                      <span className="text-text-secondary pointer-events-none absolute inset-y-0 left-3 flex items-center text-base">
-                        {currency.symbol}
-                      </span>
-                      <Input
-                        {...field}
-                        value={bankBalance}
-                        onChange={(event) => setBankBalance(event.target.value)}
-                        inputMode="decimal"
-                        placeholder="0"
-                        className="amount pl-9"
-                      />
-                    </div>
+                    <AmountInput
+                      {...field}
+                      value={bankBalance}
+                      onChange={setBankBalance}
+                      allowNegative
+                      placeholder="0"
+                    />
                   )}
                 </FormRow>
               </div>

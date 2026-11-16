@@ -146,8 +146,11 @@ on a loaded screen animates for longer than 1ms while the setting is on.
   `aria-hidden="true"`.
 - Errors are announced: field errors render in `role="alert"`, and the
   amount field's message line is an `aria-live="polite"` region.
-- Amount fields are `inputMode="decimal"` and at least 16px, so iOS does not
-  zoom on focus.
+- Amount fields are `inputMode="none"` and at least 16px, so iOS does not
+  zoom on focus. The in-app keypad's keys are buttons with names ("Delete
+  last digit", "Decimal point"), they do not take focus from the field, and
+  a docked pad stays open while focus is on one of its keys, so a screen
+  reader can press them.
 
 ## Reflow and zoom
 

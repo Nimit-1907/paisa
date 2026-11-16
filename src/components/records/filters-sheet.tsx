@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
+import { AmountInput } from "@/components/shared/amount-input";
 import { Label } from "@/components/ui/label";
 import { useClearFilters } from "@/components/records/use-clear-filters";
 import {
@@ -218,26 +219,24 @@ export function FiltersSheet({
         <div className="grid grid-cols-2 gap-2">
           <FormRow id="filter-min" label={`Min (${currency.symbol})`}>
             {(props) => (
-              <Input
+              <AmountInput
                 {...props}
                 value={minAmount}
-                onChange={(event) => setMinAmount(event.target.value)}
-                inputMode="decimal"
+                onChange={setMinAmount}
+                showSymbol={false}
                 placeholder="0"
-                className="amount"
               />
             )}
           </FormRow>
 
           <FormRow id="filter-max" label={`Max (${currency.symbol})`}>
             {(props) => (
-              <Input
+              <AmountInput
                 {...props}
                 value={maxAmount}
-                onChange={(event) => setMaxAmount(event.target.value)}
-                inputMode="decimal"
+                onChange={setMaxAmount}
+                showSymbol={false}
                 placeholder="Any"
-                className="amount"
               />
             )}
           </FormRow>
