@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { AuthCard } from "@/components/auth/auth-card";
 import { AuthErrorToast } from "@/components/auth/auth-error-toast";
+import { GoogleSignIn } from "@/components/auth/google-sign-in";
+import { googleSignInEnabled } from "@/lib/oauth";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -33,6 +35,9 @@ export default async function LoginPage({
     >
       <AuthErrorToast message={error} />
       <LoginForm next={next} />
+      {googleSignInEnabled(process.env.AUTH_GOOGLE) ? (
+        <GoogleSignIn next={next} />
+      ) : null}
     </AuthCard>
   );
 }

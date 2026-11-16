@@ -48,7 +48,8 @@ function checkShape(
       ctx.addIssue({
         code: "custom",
         path: ["categoryId"],
-        message: "Transfers move money between accounts, so they have no category.",
+        message:
+          "Transfers move money between accounts, so they have no category.",
       });
     }
 
@@ -132,5 +133,9 @@ export const deleteRecurringRuleSchema = z.object({
   deleteTransactions: z.boolean().default(false),
 });
 
-export type UpdateRecurringRuleInput = z.input<typeof updateRecurringRuleSchema>;
-export type CreateRecurringRuleInput = z.input<typeof createRecurringRuleSchema>;
+export type UpdateRecurringRuleInput = z.input<
+  typeof updateRecurringRuleSchema
+>;
+export type CreateRecurringRuleInput = z.input<
+  typeof createRecurringRuleSchema
+>;

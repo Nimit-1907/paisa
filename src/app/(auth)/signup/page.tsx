@@ -3,11 +3,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AuthCard } from "@/components/auth/auth-card";
+import { GoogleSignIn } from "@/components/auth/google-sign-in";
+import { googleSignInEnabled } from "@/lib/oauth";
 import { SignupForm } from "@/components/auth/signup-form";
 
 export const metadata: Metadata = { title: "Create account" };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  // Reading the request makes this page render per request, like login,
+  // so the Google flag below is read at request time on both.
+  const { next } = await searchParams;
+
   return (
     <AuthCard
       title="Start tracking"
@@ -25,6 +35,9 @@ export default function SignupPage() {
       }
     >
       <SignupForm />
+      {googleSignInEnabled(process.env.AUTH_GOOGLE) ? (
+        <GoogleSignIn next={next} />
+      ) : null}
     </AuthCard>
   );
 }

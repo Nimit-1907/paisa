@@ -9,12 +9,15 @@ import {
   type SignInInput,
   type SignUpInput,
   type UpdatePasswordInput,
+  type GoogleSignInInput,
+  googleSignInSchema,
   resetRequestSchema,
   signInSchema,
   signUpSchema,
   updatePasswordSchema,
 } from "@/lib/schemas/auth";
 import { HOME_PATH, LOGIN_PATH, safeNextPath } from "@/lib/routes";
+import { googleSignInEnabled, oauthCallbackUrl } from "@/lib/oauth";
 import { siteOrigin } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
@@ -204,7 +207,10 @@ function authMessage(message: string): string {
   if (normalised.includes("same password")) {
     return "Choose a password you have not used here before.";
   }
-  if (normalised.includes("weak password") || normalised.includes("password should")) {
+  if (
+    normalised.includes("weak password") ||
+    normalised.includes("password should")
+  ) {
     return "That password is too easy to guess. Try a longer one.";
   }
   if (normalised.includes("rate limit") || normalised.includes("too many")) {
@@ -213,4 +219,38 @@ function authMessage(message: string): string {
 
   console.error("[auth]", message);
   return "Something went wrong. Please try again.";
+}
+
+/**
+ * Start "Continue with Google": the Google URL to send the browser to.
+ *
+ * Returned rather than redirected to, so the button can say what went
+ * wrong in a toast instead of leaving the page. The PKCE verifier is kept
+ * in a cookie by the server client; /auth/callback trades the code back.
+ */
+export async function startGoogleSignIn(
+  input: GoogleSignInInput,
+): Promise<ActionResult<{ url: string }>> {
+  if (!googleSignInEnabled(process.env.AUTH_GOOGLE)) {
+    return fail("Google sign-in is not set up yet.");
+  }
+
+  // Callable by anyone, like every server action: the shape is checked
+  // here, not trusted from the type.
+  const parsed = parseInput(googleSignInSchema, input);
+  if (!parsed.ok) return parsed;
+  const { next } = parsed.data;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: oauthCallbackUrl(siteOrigin(), next) },
+  });
+
+  if (error || !data.url) {
+    console.error("[auth] google sign-in failed:", error?.message);
+    return fail("Could not reach Google. Try again in a moment.");
+  }
+
+  return ok({ url: data.url });
 }

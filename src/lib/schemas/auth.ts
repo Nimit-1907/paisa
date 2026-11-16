@@ -38,6 +38,13 @@ export const signInSchema = z.object({
   next: z.string().optional(),
 });
 
+/** Where to land after Google, checked at the action's boundary. */
+export const googleSignInSchema = z.object({
+  next: z.string().max(2048).optional(),
+});
+
+export type GoogleSignInInput = z.infer<typeof googleSignInSchema>;
+
 export const resetRequestSchema = z.object({ email: emailSchema });
 
 export const updatePasswordSchema = z

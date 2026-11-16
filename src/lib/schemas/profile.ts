@@ -28,10 +28,7 @@ export const onboardingSchema = z
       .trim()
       .min(1, "Give the account a name.")
       .max(60, "That name is a bit long."),
-    openingBalance: z
-      .string()
-      .trim()
-      .max(20, "That is a very large number."),
+    openingBalance: z.string().trim().max(20, "That is a very large number."),
     /**
      * An optional second account, for people who keep cash and a bank.
      *

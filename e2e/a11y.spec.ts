@@ -251,3 +251,17 @@ test.describe("motion", () => {
     expect(slow).toEqual([]);
   });
 });
+
+test("offers Continue with Google only when it is switched on", async ({
+  page,
+}) => {
+  // Off by default: a button that ends on a provider error is worse than
+  // none. The build under test decides which state is right.
+  const on = process.env.AUTH_GOOGLE === "true";
+  for (const path of ["/login", "/signup"]) {
+    await page.goto(path);
+    await expect(
+      page.getByRole("button", { name: "Continue with Google" }),
+    ).toHaveCount(on ? 1 : 0);
+  }
+});

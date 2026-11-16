@@ -14,7 +14,10 @@ export const categoryFormSchema = z.object({
   kind: z.enum(CATEGORY_KINDS),
   icon: z
     .string()
-    .refine((value) => (ICON_NAMES as string[]).includes(value), "Pick an icon."),
+    .refine(
+      (value) => (ICON_NAMES as string[]).includes(value),
+      "Pick an icon.",
+    ),
   /** One of the eight tints; see src/lib/schemas/accounts.ts. */
   tint: z.enum(TINT_KEYS),
 });

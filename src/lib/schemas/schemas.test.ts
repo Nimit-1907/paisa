@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { googleSignInSchema } from "@/lib/schemas/auth";
 
-import { budgetPercent, budgetTone, setBudgetSchema } from "@/lib/schemas/budgets";
+import {
+  budgetPercent,
+  budgetTone,
+  setBudgetSchema,
+} from "@/lib/schemas/budgets";
 import {
   exportRangeSchema,
   MAX_EXPORT_DAYS,
@@ -154,9 +159,9 @@ describe("transactionFiltersSchema", () => {
 
   it("caps the lists so a hand-made URL cannot ask for thousands", () => {
     const many = Array.from({ length: 60 }, (_, index) => uuid(index % 9));
-    expect(transactionFiltersSchema.safeParse({ accountIds: many }).success).toBe(
-      false,
-    );
+    expect(
+      transactionFiltersSchema.safeParse({ accountIds: many }).success,
+    ).toBe(false);
   });
 });
 
@@ -268,17 +273,18 @@ describe("updateProfileSchema", () => {
 
   it("refuses a currency the app cannot format", () => {
     expect(
-      updateProfileSchema.safeParse({ ...profile, currencyCode: "XYZ" }).success,
+      updateProfileSchema.safeParse({ ...profile, currencyCode: "XYZ" })
+        .success,
     ).toBe(false);
   });
 
   it("keeps week start inside a week", () => {
-    expect(updateProfileSchema.safeParse({ ...profile, weekStart: 7 }).success).toBe(
-      false,
-    );
-    expect(updateProfileSchema.safeParse({ ...profile, weekStart: 0 }).success).toBe(
-      true,
-    );
+    expect(
+      updateProfileSchema.safeParse({ ...profile, weekStart: 7 }).success,
+    ).toBe(false);
+    expect(
+      updateProfileSchema.safeParse({ ...profile, weekStart: 0 }).success,
+    ).toBe(true);
   });
 
   it("insists on a name", () => {
@@ -304,7 +310,9 @@ describe("changePasswordSchema", () => {
       ...passwords,
       confirmPassword: "a-better-two",
     });
-    expect(result.error?.issues[0]?.message).toBe("Those passwords do not match.");
+    expect(result.error?.issues[0]?.message).toBe(
+      "Those passwords do not match.",
+    );
   });
 
   it("refuses a password that is too short, and one that is the old one", () => {
@@ -328,12 +336,18 @@ describe("changePasswordSchema", () => {
 
 describe("deleteAccountSchema", () => {
   it("only accepts the word, in capitals", () => {
-    expect(deleteAccountSchema.safeParse({ confirm: "DELETE" }).success).toBe(true);
+    expect(deleteAccountSchema.safeParse({ confirm: "DELETE" }).success).toBe(
+      true,
+    );
     // Trimmed, because a phone keyboard adds a space after a word.
-    expect(deleteAccountSchema.safeParse({ confirm: "DELETE " }).success).toBe(true);
+    expect(deleteAccountSchema.safeParse({ confirm: "DELETE " }).success).toBe(
+      true,
+    );
 
     for (const wrong of ["delete", "Delete", "", "DELETE NOW", "yes"]) {
-      expect(deleteAccountSchema.safeParse({ confirm: wrong }).success).toBe(false);
+      expect(deleteAccountSchema.safeParse({ confirm: wrong }).success).toBe(
+        false,
+      );
     }
   });
 });
@@ -465,5 +479,21 @@ describe("onboardingSchema", () => {
         expect(issue.message).toMatch(/different name/i);
       }
     }
+  });
+});
+
+describe("googleSignInSchema", () => {
+  it("takes an optional next path", () => {
+    expect(googleSignInSchema.safeParse({}).success).toBe(true);
+    expect(googleSignInSchema.safeParse({ next: "/budgets" }).success).toBe(
+      true,
+    );
+  });
+
+  it("refuses anything but a short string for next", () => {
+    expect(googleSignInSchema.safeParse({ next: 42 }).success).toBe(false);
+    expect(
+      googleSignInSchema.safeParse({ next: `/${"a".repeat(2048)}` }).success,
+    ).toBe(false);
   });
 });

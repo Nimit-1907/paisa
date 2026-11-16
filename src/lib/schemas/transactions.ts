@@ -76,7 +76,8 @@ function checkShape(
       ctx.addIssue({
         code: "custom",
         path: ["categoryId"],
-        message: "Transfers move money between accounts, so they have no category.",
+        message:
+          "Transfers move money between accounts, so they have no category.",
       });
     }
 
@@ -137,8 +138,14 @@ export const transactionFiltersSchema = z.object({
   /** Decimal text, parsed with the user's decimal places. */
   minAmount: z.string().trim().max(20).optional(),
   maxAmount: z.string().trim().max(20).optional(),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;

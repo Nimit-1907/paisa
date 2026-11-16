@@ -24,10 +24,10 @@ export const exportRangeSchema = z
     path: ["to"],
     message: "The start is after the end.",
   })
-  .refine(
-    (value) => dayDifference(value.from, value.to) <= MAX_EXPORT_DAYS,
-    { path: ["to"], message: "Export at most three years at a time." },
-  );
+  .refine((value) => dayDifference(value.from, value.to) <= MAX_EXPORT_DAYS, {
+    path: ["to"],
+    message: "Export at most three years at a time.",
+  });
 
 export type ExportRange = z.infer<typeof exportRangeSchema>;
 
