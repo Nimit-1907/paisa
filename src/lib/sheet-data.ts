@@ -9,6 +9,7 @@ import type {
   AccountOption,
   CategoryOption,
 } from "@/components/shared/entry-pickers";
+import { NO_LAST_ACCOUNTS } from "@/lib/entry-account";
 import type { EntryDefaults, QuickAdd } from "@/lib/queries/accounts";
 
 /** What the sheet's pickers need, loaded once by the (app) layout. */
@@ -30,7 +31,11 @@ export type SheetData = {
 export const EMPTY_SHEET_DATA: SheetData = {
   accounts: [],
   categories: [],
-  entryDefaults: { suggestedCategoryIds: [], partOfDay: "night" },
+  entryDefaults: {
+    lastAccounts: NO_LAST_ACCOUNTS,
+    suggestedCategoryIds: [],
+    partOfDay: "night",
+  },
   quickAdds: [],
   noteHints: [],
   balancesKnown: false,

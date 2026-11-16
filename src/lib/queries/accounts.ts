@@ -1,5 +1,6 @@
 import "server-only";
 
+import { type LastAccounts, NO_LAST_ACCOUNTS } from "@/lib/entry-account";
 import { fromDb } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
@@ -330,6 +331,8 @@ const PARTS_OF_DAY: PartOfDay[] = [
 ];
 
 export type EntryDefaults = {
+  /** Where a new record of each type starts: see `guessAccounts`. */
+  lastAccounts: LastAccounts;
   /** Categories usually picked at this time of day, most likely first. */
   suggestedCategoryIds: string[];
   /**
@@ -358,17 +361,32 @@ export async function getEntryDefaults(): Promise<EntryDefaults> {
   // guess rather than a broken screen.
   if (error) {
     console.error("[records]", error.message);
-    return { suggestedCategoryIds: [], partOfDay: "night" };
+    return {
+      lastAccounts: NO_LAST_ACCOUNTS,
+      suggestedCategoryIds: [],
+      partOfDay: "night",
+    };
   }
 
   const value = (data ?? {}) as {
+    lastAccounts?: Partial<Record<keyof LastAccounts, unknown>>;
     suggestedCategoryIds?: string[];
     partOfDay?: string;
   };
 
+  const last = value.lastAccounts ?? {};
+  const id = (raw: unknown) =>
+    typeof raw === "string" && isUuid(raw) ? raw : null;
+
   const partOfDay = PARTS_OF_DAY.find((part) => part === value.partOfDay);
 
   return {
+    lastAccounts: {
+      expense: id(last.expense),
+      income: id(last.income),
+      transfer: id(last.transfer),
+      transferTo: id(last.transferTo),
+    },
     suggestedCategoryIds: (value.suggestedCategoryIds ?? []).filter(isUuid),
     partOfDay: partOfDay ?? "night",
   };
