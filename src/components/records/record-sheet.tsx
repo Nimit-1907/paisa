@@ -39,7 +39,11 @@ import {
 import { Button } from "@/components/ui/button";
 import type { TransactionType } from "@/lib/schemas/transactions";
 import { minorToAmountText, parseAmount } from "@/lib/amount";
-import { guessAccounts, NO_LAST_ACCOUNTS } from "@/lib/entry-account";
+import {
+  chooseFrom,
+  guessAccounts,
+  NO_LAST_ACCOUNTS,
+} from "@/lib/entry-account";
 import { nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
@@ -721,7 +725,16 @@ export function RecordSheet({
                 label="From"
                 accounts={accounts}
                 value={accountId}
-                onChange={chooseAccount}
+                onChange={(id) => {
+                  // Picking the current To as From reverses the transfer.
+                  const next = chooseFrom(
+                    id,
+                    { accountId, toAccountId },
+                    accounts.map((account) => account.id),
+                  );
+                  chooseAccount(next.accountId);
+                  setToAccountId(next.toAccountId);
+                }}
                 invalid={errorField === "accountId"}
               />
               <Button

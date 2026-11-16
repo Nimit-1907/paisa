@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  chooseFrom,
   guessAccounts,
   type LastAccounts,
   NO_LAST_ACCOUNTS,
@@ -87,5 +88,40 @@ describe("guessAccounts", () => {
 
   it("leaves an empty account list empty", () => {
     expect(guess("expense", { expense: "card" }, [])).toEqual(empty);
+  });
+});
+
+describe("chooseFrom", () => {
+  it("keeps To when the new From is a different account", () => {
+    expect(
+      chooseFrom("card", { accountId: "bank", toAccountId: "wallet" }, [
+        "bank",
+        "card",
+        "wallet",
+      ]),
+    ).toEqual({ accountId: "card", toAccountId: "wallet" });
+  });
+
+  it("swaps when the new From is the current To, reversing the transfer", () => {
+    expect(
+      chooseFrom("wallet", { accountId: "bank", toAccountId: "wallet" }, [
+        "bank",
+        "wallet",
+      ]),
+    ).toEqual({ accountId: "wallet", toAccountId: "bank" });
+  });
+
+  it("moves To to another open account when there was no From to swap in", () => {
+    expect(
+      chooseFrom("wallet", { accountId: "", toAccountId: "wallet" }, [
+        "bank",
+        "wallet",
+      ]),
+    ).toEqual({ accountId: "wallet", toAccountId: "bank" });
+    expect(
+      chooseFrom("wallet", { accountId: "", toAccountId: "wallet" }, [
+        "wallet",
+      ]),
+    ).toEqual({ accountId: "wallet", toAccountId: "" });
   });
 });

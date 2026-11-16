@@ -63,3 +63,31 @@ export function guessAccounts({
 
   return { accountId, toAccountId };
 }
+
+/**
+ * A transfer's accounts after the person picks From.
+ *
+ * With both ends pre-selected, picking the To account as the new From is
+ * how someone reverses the last transfer. Left alone, To would still hold
+ * that account while its picker hid it, and Save would refuse a transfer
+ * into itself with an error on a field that looks empty. So it swaps: the
+ * old From becomes To, or, with no From to swap in, the next open account.
+ */
+export function chooseFrom(
+  id: string,
+  current: Accounts,
+  activeAccountIds: string[],
+): Accounts {
+  if (id !== current.toAccountId) {
+    return { accountId: id, toAccountId: current.toAccountId };
+  }
+
+  const toAccountId =
+    (current.accountId && current.accountId !== id
+      ? current.accountId
+      : null) ??
+    activeAccountIds.find((other) => other !== id) ??
+    "";
+
+  return { accountId: id, toAccountId };
+}
