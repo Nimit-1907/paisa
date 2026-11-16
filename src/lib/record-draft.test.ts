@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { TransactionRow } from "@/lib/queries/transactions";
 
-import { logAgainDraft } from "./record-draft";
+import { logAgainDraft, withoutInactive } from "./record-draft";
 
 const record = {
   id: "r1",
@@ -43,8 +43,38 @@ describe("logAgainDraft", () => {
   });
 
   it("has no mode, so the sheet saves it as a new record", () => {
-    expect(logAgainDraft(record, "Asia/Kolkata", new Date())).not.toHaveProperty(
-      "mode",
-    );
+    expect(
+      logAgainDraft(record, "Asia/Kolkata", new Date()),
+    ).not.toHaveProperty("mode");
+  });
+});
+
+describe("withoutInactive", () => {
+  const draft = logAgainDraft(
+    { ...record, type: "transfer", toAccountId: "wallet", categoryId: null },
+    "Asia/Kolkata",
+    new Date(),
+  );
+
+  it("keeps accounts and a category that are still open", () => {
+    expect(
+      withoutInactive(
+        { ...draft, categoryId: "food" },
+        { accountIds: ["card", "wallet"], categoryIds: ["food"] },
+      ),
+    ).toMatchObject({
+      accountId: "card",
+      toAccountId: "wallet",
+      categoryId: "food",
+    });
+  });
+
+  it("drops an archived account, To account or category", () => {
+    expect(
+      withoutInactive(
+        { ...draft, categoryId: "old-cat" },
+        { accountIds: ["bank"], categoryIds: ["food"] },
+      ),
+    ).toMatchObject({ accountId: "", toAccountId: null, categoryId: null });
   });
 });

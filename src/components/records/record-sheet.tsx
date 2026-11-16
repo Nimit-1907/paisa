@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { TransactionType } from "@/lib/schemas/transactions";
 import { minorToAmountText, parseAmount } from "@/lib/amount";
+import { withoutInactive } from "@/lib/record-draft";
 import {
   chooseFrom,
   guessAccounts,
@@ -65,8 +66,8 @@ const PART_OF_DAY_LABEL: Record<PartOfDay, string> = {
 export type RecordDraft = {
   id: string;
   /**
-   * `edit` changes the record `id` points at; `copy` uses it as a starting
-   * point for a new one.
+   * `edit` changes the record `id` points at. Without it the draft is a
+   * prefilled add (Log again): `id` is only where it came from.
    *
    * On the draft rather than as a separate prop because it travels with the
    * data: a sheet that has the values but not the intent is one `title` away
@@ -170,11 +171,14 @@ export function RecordSheet({
    * Where a record of this type starts: the record's own accounts when it
    * has them, otherwise the account this type last used (guessAccounts).
    */
-  function startingAccounts(forType: TransactionType) {
-    if (editing?.accountId) {
+  function startingAccounts(
+    forType: TransactionType,
+    source: RecordDraft | null,
+  ) {
+    if (source?.accountId) {
       return {
-        accountId: editing.accountId,
-        toAccountId: editing.toAccountId ?? "",
+        accountId: source.accountId,
+        toAccountId: source.toAccountId ?? "",
       };
     }
     return guessAccounts({
@@ -222,6 +226,17 @@ export function RecordSheet({
   React.useEffect(() => {
     if (!open) return;
 
+    // A prefilled add (Log again) starts from an old record, whose account
+    // or category may be archived by now: those are dropped, not shown as
+    // "Choose" and saved anyway. An edit keeps its own, as it must.
+    const source =
+      editing && !editingId
+        ? withoutInactive(editing, {
+            accountIds: accounts.map((account) => account.id),
+            categoryIds: categories.map((category) => category.id),
+          })
+        : editing;
+
     setType(editing?.type ?? defaultType);
     setAmount(
       editing
@@ -232,11 +247,11 @@ export function RecordSheet({
     // used, never another type's. One account for everything put salary
     // on the credit card after a card expense, the wrong-bank guess that
     // once made this "Choose".
-    const start = startingAccounts(editing?.type ?? defaultType);
+    const start = startingAccounts(editing?.type ?? defaultType, source);
     setAccountId(start.accountId);
     setToAccountId(start.toAccountId);
-    setAccountChosen(Boolean(editing?.accountId));
-    setCategoryId(editing?.categoryId ?? "");
+    setAccountChosen(Boolean(source?.accountId));
+    setCategoryId(source?.categoryId ?? "");
     setNote(editing?.note ?? "");
     setOccurredAt(editing?.occurredAtLocal ?? nowLocal(timeZone));
     setError(null);
@@ -244,7 +259,9 @@ export function RecordSheet({
     setDiscardOpen(false);
     setDeleteOpen(false);
     setJustSaved(false);
-    setAmountPrefilled(false);
+    // Log again's amount is last time's, and today's may differ: the first
+    // key replaces it, as after a quick-add chip. An edit's is typed onto.
+    setAmountPrefilled(Boolean(editing) && !editingId);
 
     // Snapshot taken from the same values that were just set, not from
     // state, state has not updated yet inside this effect.
@@ -256,7 +273,7 @@ export function RecordSheet({
       // The guess, so a sheet opened and closed untouched is unchanged.
       accountId: start.accountId,
       toAccountId: start.toAccountId,
-      categoryId: editing?.categoryId ?? "",
+      categoryId: source?.categoryId ?? "",
       note: editing?.note ?? "",
       occurredAt: editing?.occurredAtLocal ?? nowLocal(timeZone),
     });
@@ -409,7 +426,7 @@ export function RecordSheet({
     // a transfer moved here from somewhere else never touched this balance,
     // so there is nothing to put back. See src/lib/overdraw.ts.
     const original =
-      editing && editing.accountId === accountId
+      editingId && editing && editing.accountId === accountId
         ? BigInt(editing.amount)
         : null;
 
@@ -425,7 +442,15 @@ export function RecordSheet({
     const held = original === null ? balance : balance + original;
 
     return { name: from.name, balance: held, after };
-  }, [type, accounts, accountId, amount, currency.decimals, editing]);
+  }, [
+    type,
+    accounts,
+    accountId,
+    amount,
+    currency.decimals,
+    editing,
+    editingId,
+  ]);
 
   /** The fields whose errors the line under the pickers shows. */
   const PICKER_FIELDS = [
@@ -595,7 +620,7 @@ export function RecordSheet({
       open={open}
       onOpenChange={requestClose}
       title={editingId ? `Edit ${type}` : "Add record"}
-      initialFocus={editing ? undefined : amountRef}
+      initialFocus={editingId ? undefined : amountRef}
     >
       {/*
         The reference's arrangement, in Paisa's own parts, top to bottom in

@@ -253,7 +253,7 @@ export function ListRow({
         No swipe layers behind a row that is still being saved.
 
         A pending row is dimmed to 60%, and dimming an opaque row shows
-        whatever is painted under it, which here is Copy on one side and
+        whatever is painted under it, which here is Edit and Log again on one side and
         Delete on the other, both printed through the row for as long as
         the save takes. The row cannot be swiped while pending anyway.
       */}

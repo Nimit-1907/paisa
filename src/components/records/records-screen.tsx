@@ -525,7 +525,7 @@ export function RecordsScreen({
     };
   }, [previousExpense, summary.expense, previousLabel]);
 
-  /** A record as the sheet's draft. Shared by Edit and Duplicate. */
+  /** A record as the sheet's draft. Shared by Edit and Log again. */
   const draftOf = React.useCallback(
     (record: TransactionRow) => toDraft(record, timeZone),
     [timeZone],
