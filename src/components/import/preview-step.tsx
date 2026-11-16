@@ -15,12 +15,12 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import type { DuplicateKind } from "@/lib/import/duplicates";
 import type { ImportRow, Unreadable } from "@/lib/import/rows";
 
 export type PreviewItem = {
   row: ImportRow;
-  duplicate: DuplicateKind | null;
+  /** An existing record of the account cancels this row. */
+  duplicate: boolean;
   category: ImportCategory | null;
   guessed: boolean;
 };
@@ -66,7 +66,7 @@ export function PreviewStep({
   onCategory: (line: number, id: string) => void;
 }) {
   const [shown, setShown] = React.useState(PAGE);
-  const rows = items.filter((item) => item.duplicate === null);
+  const rows = items.filter((item) => !item.duplicate);
   const typesPresent = TYPES.filter(({ type }) =>
     rows.some((item) => item.row.type === type),
   );

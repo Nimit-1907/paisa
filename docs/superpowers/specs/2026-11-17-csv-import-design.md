@@ -44,10 +44,13 @@ the person's own history with a fallback they pick.
   punctuation stripped, ≥ 3 letters, not a stop word like "upi", "pos",
   "neft", "imps", "to", "from", "payment") equals a past note's keyword.
   Pure, tested.
-- **Duplicates:** a row is a duplicate when the account already has a
-  record of the same type, amount and local date, or an earlier row in
-  the same file is identical. Checked on the server at import time, and
-  shown in the preview from a server lookup over the file's date range.
+- **Duplicates:** matched as a count, not a set. Each record the account
+  already has of the same type, amount (minor units) and local date
+  cancels exactly one matching row of the file. Identical rows within one
+  file are not duplicates of each other: two ₹50 coffees on one day are
+  two records, and re-importing that file finds two existing records and
+  imports nothing. Checked on the server at import time (authoritative),
+  and shown in the preview from a server lookup over the file's date range.
 - **Import:** one server action, zod-validated, ≤ 2000 rows, inserted in
   one batch under RLS; answers `{ imported, skipped }`; toast "Imported 182
   records, 4 skipped"; revalidates the record screens; links to Records.

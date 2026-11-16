@@ -76,6 +76,10 @@ const nextConfig: NextConfig = {
     // dock's prefetched screens open without a round trip. Mutations call
     // revalidatePath, which clears it, so a new record is never missing.
     staleTimes: { dynamic: 30 },
+    // Import sends up to 2,000 rows with notes of up to 500 characters in
+    // one action, which can pass the 1 MB default; past the limit the
+    // request fails as if the connection had dropped.
+    serverActions: { bodySizeLimit: "4mb" },
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

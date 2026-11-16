@@ -1,14 +1,13 @@
 /**
- * Never booking a row twice.
+ * Never booking a row twice, and never merging two real purchases.
  *
- * Two checks, in order. A row is a duplicate of the account's own records
- * when one has the same type, amount and local date: a statement's row
- * carries no time, so the day is as exact as the comparison can be. And a
- * row is a duplicate within the file when an earlier row is identical to it,
- * note included, which is what an export that repeats itself looks like.
+ * Matching is a count, not a set. Each record the account already has, of
+ * the same type, amount and local date, cancels exactly one row of the
+ * file: a statement's row carries no time, so the day is as exact as the
+ * comparison can be. Two identical rows in one file are two records, two
+ * ₹50 coffees on the same day, and once both are in, re-uploading the file
+ * finds two existing records and cancels both.
  */
-
-export type DuplicateKind = "existing" | "file";
 
 export type DuplicateCandidate = {
   type: "expense" | "income";
@@ -16,10 +15,9 @@ export type DuplicateCandidate = {
   amount: bigint;
   /** `yyyy-mm-dd`, the person's local date. */
   date: string;
-  note: string | null;
 };
 
-/** What the account's records are compared by. */
+/** What a row and the account's records are compared by. */
 export function duplicateKey(
   type: string,
   amount: bigint,
@@ -28,20 +26,26 @@ export function duplicateKey(
   return `${type}|${amount}|${date}`;
 }
 
+/** How many of each key there are. */
+export function countKeys(keys: Iterable<string>): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
+  return counts;
+}
+
+/** Which rows an existing record cancels, in file order. */
 export function markDuplicates(
   rows: DuplicateCandidate[],
-  existing: ReadonlySet<string>,
-): (DuplicateKind | null)[] {
-  const seen = new Set<string>();
+  existing: ReadonlyMap<string, number>,
+): boolean[] {
+  const left = new Map(existing);
 
   return rows.map((row) => {
     const key = duplicateKey(row.type, row.amount, row.date);
-    if (existing.has(key)) return "existing";
+    const count = left.get(key) ?? 0;
+    if (count === 0) return false;
 
-    const identity = `${key}|${(row.note ?? "").trim().toLowerCase()}`;
-    if (seen.has(identity)) return "file";
-
-    seen.add(identity);
-    return null;
+    left.set(key, count - 1);
+    return true;
   });
 }

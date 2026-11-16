@@ -29,7 +29,8 @@ export class TooManyExistingRecords extends Error {
 
 /**
  * What the account already has between two local days, as duplicate keys
- * (type, amount, local date). Expense and income only: an imported row is
+ * (type, amount, local date), one per record: a key appears as often as
+ * the account has records like it, because each cancels one row. Expense and income only: an imported row is
  * never a transfer, so a transfer can never be its duplicate.
  */
 export async function getExistingKeys(
@@ -40,11 +41,11 @@ export async function getExistingKeys(
     to,
     timeZone,
   }: { accountId: string; from: string; to: string; timeZone: string },
-): Promise<Set<string>> {
+): Promise<string[]> {
   const range = rangeToInstants({ from, to }, timeZone);
   if (!range) throw new Error("Could not place that range in the timezone");
 
-  const keys = new Set<string>();
+  const keys: string[] = [];
 
   for (let offset = 0; ; offset += PAGE) {
     if (offset >= MAX_EXISTING) throw new TooManyExistingRecords();
@@ -63,7 +64,7 @@ export async function getExistingKeys(
     if (error) throw new Error(error.message);
 
     for (const row of data) {
-      keys.add(
+      keys.push(
         duplicateKey(
           row.type,
           fromDb(row.amount),

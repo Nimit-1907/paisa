@@ -17,7 +17,7 @@ import { signIn } from "./sign-in";
 
 const FIXTURE = path.join(__dirname, "fixtures", "import.csv");
 const TAG = "E2E-IMPORT";
-const NOTES = [`${TAG} tea`, `${TAG} books`, `${TAG} refund`];
+const NOTES = [`${TAG} tea`, `${TAG} books`, `${TAG} refund`, `${TAG} coffee`];
 
 async function choose(page: Page, label: string, option: string) {
   await page.getByLabel(label, { exact: true }).click();
@@ -39,6 +39,10 @@ async function cleanUp(page: Page) {
       const before = await rows.count();
       await rows.first().click({ button: "right" });
       await page.getByRole("menuitem", { name: "Delete" }).click();
+      await expect(page.getByText("Record deleted")).toBeVisible();
+      // From the server, not the optimistic list: two identical rows are
+      // otherwise easy to delete one of twice while the list refreshes.
+      await page.reload();
       await expect(rows).toHaveCount(before - 1);
     }
   }
@@ -48,6 +52,8 @@ test("a CSV imports once, and a second upload finds only duplicates", async ({
   page,
 }) => {
   await signIn(page);
+  // Whatever an interrupted earlier run left, so the counts below hold.
+  await cleanUp(page);
 
   try {
     await page.goto("/import");
@@ -65,9 +71,10 @@ test("a CSV imports once, and a second upload finds only duplicates", async ({
     await choose(page, "Account", "Paytm Wallet");
 
     const hero = page.getByRole("region", { name: "To import" });
-    await expect(hero).toContainText("3 records");
+    // Two identical coffees on one day are two records, not one.
+    await expect(hero).toContainText("5 records");
     await expect(hero).toContainText("0 duplicates, 1 unreadable");
-    await expect(page.getByText('Line 5: the date "31/02/2020"')).toBeVisible();
+    await expect(page.getByText('Line 7: the date "31/02/2020"')).toBeVisible();
 
     // polish.spec sees this screen before a file is chosen; the preview is
     // most of it, so it is checked here.
@@ -77,19 +84,20 @@ test("a CSV imports once, and a second upload finds only duplicates", async ({
     expect(axe.violations.map((violation) => violation.id)).toEqual([]);
 
     // Nothing in the history says what "import" is, so the fallbacks fill in.
-    const importButton = page.getByRole("button", { name: "Import 3 records" });
+    const importButton = page.getByRole("button", { name: "Import 5 records" });
     await expect(importButton).toBeDisabled();
     await choose(page, "Fallback for spending", "Food");
     await choose(page, "Fallback for income", "Salary");
     await expect(importButton).toBeEnabled();
 
     await importButton.click();
-    await expect(page.getByText("Imported 3 records, 1 skipped")).toBeVisible();
+    await expect(page.getByText("Imported 5 records, 1 skipped")).toBeVisible();
 
     // The same file again: every row is already there.
     await upload(page);
     await expect(hero).toContainText("0 records");
-    await expect(hero).toContainText("3 duplicates, 1 unreadable");
+    // Both coffees included: each existing record cancels one row.
+    await expect(hero).toContainText("5 duplicates, 1 unreadable");
     await expect(page.getByRole("button", { name: "Nothing to import" })).toBeDisabled();
   } finally {
     await cleanUp(page);

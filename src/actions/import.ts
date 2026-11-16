@@ -12,7 +12,7 @@ import {
 import { requireUser } from "@/lib/auth-guard";
 import { localToInstant } from "@/lib/dates";
 import type { KeywordMap } from "@/lib/import/category-guess";
-import { markDuplicates } from "@/lib/import/duplicates";
+import { countKeys, markDuplicates } from "@/lib/import/duplicates";
 import { toDb } from "@/lib/money";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { getProfile } from "@/lib/profile";
@@ -90,7 +90,7 @@ export async function findExistingRecords(
       ...parsed.data,
       timeZone: await timeZoneOf(),
     });
-    return ok({ keys: [...keys] });
+    return ok({ keys });
   } catch (thrown) {
     if (thrown instanceof TooManyExistingRecords) return fail(TOO_MANY);
     console.error("[import]", thrown);
@@ -134,7 +134,7 @@ export async function getCategoryGuesses(): Promise<ActionResult<KeywordMap>> {
 
 export type ImportResult = {
   imported: number;
-  /** Rows sent that were duplicates by the time they arrived. */
+  /** Rows sent that an existing record cancelled. */
   skipped: number;
 };
 
@@ -143,8 +143,8 @@ export type ImportResult = {
  *
  * Everything the browser decided is checked again here: the account is the
  * caller's and open, every category is the caller's, open, and of the
- * row's own type, and no row is a duplicate of a record the account
- * already has or of an earlier row. RLS stands behind all of it.
+ * row's own type, and each record the account already has cancels one
+ * matching row. RLS stands behind all of it.
  */
 export async function importRecords(
   input: ImportRecordsInput,
@@ -161,7 +161,11 @@ export async function importRecords(
   const account = await openAccount(supabase, user.id, accountId);
   if (!account.ok) return account;
 
-  const categoryIds = [...new Set(rows.map((row) => row.categoryId))];
+  const categoryIds = [
+    ...new Set(
+      rows.flatMap((row) => (row.categoryId ? [row.categoryId] : [])),
+    ),
+  ];
   const { data: categories, error: categoriesError } = await supabase
     .from("categories")
     .select("id, kind")
@@ -174,7 +178,11 @@ export async function importRecords(
   }
 
   const kindById = new Map(categories.map((row) => [row.id, row.kind]));
-  if (rows.some((row) => kindById.get(row.categoryId) !== row.type)) {
+  if (
+    rows.some(
+      (row) => row.categoryId && kindById.get(row.categoryId) !== row.type,
+    )
+  ) {
     return fail(
       "A category is no longer available for its rows. Pick it again.",
       "categoryId",
@@ -185,30 +193,40 @@ export async function importRecords(
   const dates = rows.map((row) => row.date).sort();
   const candidates = rows.map((row) => ({ ...row, amount: BigInt(row.amount) }));
 
-  let existing: Set<string>;
+  let existing: Map<string, number>;
   try {
-    existing = await getExistingKeys(supabase, {
+    existing = countKeys(
+      await getExistingKeys(supabase, {
       accountId,
       from: dates[0],
       to: dates[dates.length - 1],
-      timeZone,
-    });
+        timeZone,
+      }),
+    );
   } catch (thrown) {
     if (thrown instanceof TooManyExistingRecords) return fail(TOO_MANY);
     console.error("[import]", thrown);
     return fail("Could not check for duplicates, so nothing was imported.");
   }
 
-  // rubric:allow COR-BUG the preview and this action call the same
-  // markDuplicates on the same notes (rows.ts collapses whitespace, the
-  // schema trims, the identity lowercases), and the preview sends only the
-  // rows it found fresh, so an in-file duplicate here means one the preview
-  // also saw. Any it skips is counted in `skipped` and shown in the toast.
+  // The authority on duplicates. The preview sends every row, its own
+  // duplicates included, so this count sees the whole file: each record
+  // the account has cancels one row, and identical rows are each a record.
   const duplicates = markDuplicates(candidates, existing);
-  const fresh = candidates.filter((_, index) => duplicates[index] === null);
+  const fresh = candidates.filter((_, index) => !duplicates[index]);
 
   const inserts = [];
   for (const row of fresh) {
+    // Only a row the preview took for a duplicate may come without a
+    // category; if it is not one now (that record was deleted meanwhile),
+    // it needs one before it can be booked.
+    if (!row.categoryId) {
+      return fail(
+        "A row the preview counted as a duplicate is new now. Choose the file again.",
+        "categoryId",
+      );
+    }
+
     const instant = localToInstant(`${row.date}T${IMPORTED_TIME}`, timeZone);
     if (!instant) return fail("A date could not be placed in your timezone.");
 

@@ -27,7 +27,7 @@ import { type KeywordMap, guessCategory } from "@/lib/import/category-guess";
 import { type ColumnMapping, autoMap } from "@/lib/import/columns";
 import { type ParsedCsv, parseCsv } from "@/lib/import/csv";
 import type { DateFormat } from "@/lib/import/date-text";
-import { markDuplicates } from "@/lib/import/duplicates";
+import { countKeys, markDuplicates } from "@/lib/import/duplicates";
 import {
   type SignConvention,
   buildImportRows,
@@ -39,7 +39,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
 
 type Existing =
   | { status: "loading"; key: string }
-  | { status: "ready"; key: string; keys: Set<string> }
+  | { status: "ready"; key: string; counts: Map<string, number> }
   | { status: "failed"; key: string; error: string };
 
 const plural = (count: number, one: string, many: string) =>
@@ -176,7 +176,7 @@ export function ImportScreen({
         if (!current) return;
         setExisting(
           result.ok
-            ? { status: "ready", key: lookupKey, keys: new Set(result.data.keys) }
+            ? { status: "ready", key: lookupKey, counts: countKeys(result.data.keys) }
             : { status: "failed", key: lookupKey, error: result.error },
         );
       })
@@ -202,8 +202,9 @@ export function ImportScreen({
 
   const items = React.useMemo<PreviewItem[]>(() => {
     if (!built || !keywords) return [];
-    const keys = lookup?.status === "ready" ? lookup.keys : new Set<string>();
-    const duplicates = markDuplicates(built.rows, keys);
+    const counts =
+      lookup?.status === "ready" ? lookup.counts : new Map<string, number>();
+    const duplicates = markDuplicates(built.rows, counts);
 
     return built.rows.map((row, index) => {
       const guess = guessCategory(keywords, row.type, row.note);
@@ -220,7 +221,7 @@ export function ImportScreen({
     });
   }, [built, lookup, keywords, overrides, fallback, categoryById]);
 
-  const toImport = items.filter((item) => item.duplicate === null);
+  const toImport = items.filter((item) => !item.duplicate);
   const duplicateCount = items.length - toImport.length;
   const missing = toImport.filter((item) => !item.category).length;
   const checking =
@@ -236,8 +237,8 @@ export function ImportScreen({
         ? "Choose the account these records belong to."
         : lookup?.status === "failed"
           ? lookup.error
-          : toImport.length > MAX_IMPORT_ROWS
-            ? "Import at most 2,000 records at a time. Split the file and import each part."
+          : items.length > MAX_IMPORT_ROWS
+            ? "Import at most 2,000 rows at a time. Split the file and import each part."
             : missing > 0
               ? `Choose a category for ${plural(missing, "row", "rows")}, or set a fallback.`
               : null;
@@ -249,12 +250,14 @@ export function ImportScreen({
     try {
       const result = await importRecords({
         accountId,
-        rows: toImport.map((item) => ({
+        // Every row, the preview's duplicates too: the server's count is
+        // the one that decides, and it can only count the whole file.
+        rows: items.map((item) => ({
           type: item.row.type,
           amount: item.row.amount.toString(),
           date: item.row.date,
           note: item.row.note,
-          categoryId: item.category?.id ?? "",
+          categoryId: item.category?.id ?? null,
         })),
       });
 
@@ -263,8 +266,7 @@ export function ImportScreen({
         return;
       }
 
-      const skipped =
-        result.data.skipped + duplicateCount + built.unreadable.length;
+      const skipped = result.data.skipped + built.unreadable.length;
 
       toast.success(
         `Imported ${plural(result.data.imported, "record", "records")}, ${skipped} skipped`,

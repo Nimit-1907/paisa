@@ -50,7 +50,9 @@ export const importRowSchema = z.object({
     .trim()
     .max(NOTE_MAX, "A note is longer than 500 characters.")
     .nullable(),
-  categoryId: uuid,
+  // Null only on a row the preview found a duplicate: the action refuses
+  // one it would insert without a category.
+  categoryId: uuid.nullable(),
 });
 
 export const importRecordsSchema = z.object({

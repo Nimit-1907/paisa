@@ -80,17 +80,23 @@ describe("importRecordsSchema", () => {
     }
   });
 
-  it("refuses a transfer, a missing category and a bad account", () => {
-    expect(
-      importRecordsSchema.safeParse({
-        ...valid,
-        rows: [{ ...row, type: "transfer" }],
-      }).success,
-    ).toBe(false);
+  it("lets a row arrive without a category, for the server to find a duplicate", () => {
+    // The preview sends every row, duplicates included, because only the
+    // server's count decides which rows an existing record cancels. A row
+    // that would be inserted without a category is refused by the action.
     expect(
       importRecordsSchema.safeParse({
         ...valid,
         rows: [{ ...row, categoryId: null }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("refuses a transfer and a bad account", () => {
+    expect(
+      importRecordsSchema.safeParse({
+        ...valid,
+        rows: [{ ...row, type: "transfer" }],
       }).success,
     ).toBe(false);
     expect(
