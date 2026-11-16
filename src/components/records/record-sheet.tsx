@@ -610,6 +610,16 @@ export function RecordSheet({
     }
   }
 
+  /** A tapped chip: its amount, category and account, into the form. */
+  function fillFromChip(quick: QuickAdd) {
+    setAmount(minorToAmountText(quick.amount, currency.decimals));
+    setAmountPrefilled(true);
+    setCategoryId(quick.categoryId);
+    chooseAccount(quick.accountId);
+    setError(null);
+    setErrorField(null);
+  }
+
   /**
    * A held quick-add chip: the usual spend, saved as it is, now.
    *
@@ -892,8 +902,8 @@ export function RecordSheet({
 
           {!editing && quickAdds.length > 0 && type === "expense" ? (
             /*
-            The usual ones, one tap each. They fill the form rather than
-            saving: the amount is the usual one, not necessarily today's.
+            The usual ones. A tap fills the form, because the amount is the
+            usual one and not necessarily today's; a hold saves it as it is.
           */
             <div
               role="group"
@@ -908,17 +918,13 @@ export function RecordSheet({
                     signDisplay: "never",
                     whole: true,
                   })}
-                  onFill={() => {
-                    setAmount(
-                      minorToAmountText(quick.amount, currency.decimals),
-                    );
-                    setAmountPrefilled(true);
-                    setCategoryId(quick.categoryId);
-                    chooseAccount(quick.accountId);
-                    setError(null);
-                    setErrorField(null);
-                  }}
-                  onSave={() => void quickSave(quick)}
+                  onFill={() => fillFromChip(quick)}
+                  // A hold over a half-typed record fills the form, as a
+                  // tap would, rather than saving the chip and throwing
+                  // the typed amount, note and date away unasked.
+                  onSave={() =>
+                    changed ? fillFromChip(quick) : void quickSave(quick)
+                  }
                 />
               ))}
             </div>

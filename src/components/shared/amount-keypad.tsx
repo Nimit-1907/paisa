@@ -225,7 +225,7 @@ function BackspaceKey({
       onPointerDown={(event) => {
         // Keeps focus (and the caret) in the amount field.
         event.preventDefault();
-        hold.handlers.onPointerDown();
+        hold.handlers.onPointerDown(event);
       }}
       onClick={() => {
         // The hold already cleared; the click that ends it is not a second
