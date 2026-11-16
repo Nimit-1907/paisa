@@ -6,7 +6,7 @@ type EmptyStateProps = {
   icon: LucideIcon;
   title: string;
   description: string;
-  /** Primary call to action — every empty state should offer the next step. */
+  /** Primary call to action, every empty state should offer the next step. */
   action?: React.ReactNode;
   className?: string;
 };

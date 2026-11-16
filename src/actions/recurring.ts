@@ -170,8 +170,8 @@ export async function updateRecurringRule(
 
   if (error) {
     // 42501 is check_entry_refs() refusing an account or category that is not
-    // the caller's. RLS cannot catch that one — it governs which rows you may
-    // touch, not which ids you may write into a column — so the trigger does,
+    // the caller's. RLS cannot catch that one, it governs which rows you may
+    // touch, not which ids you may write into a column, so the trigger does,
     // and this turns it into a sentence.
     if (error.code === "42501") {
       return fail("That account or category is not available any more.");
@@ -289,7 +289,7 @@ export async function payOccurrenceNow(
 
   revalidateRecurring(parsed.data.id);
 
-  // Null means the row was already there — the rule has simply caught up.
+  // Null means the row was already there, the rule has simply caught up.
   return ok({ transactionId: (data as unknown as string | null) ?? null });
 }
 

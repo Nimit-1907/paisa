@@ -169,9 +169,9 @@ export default async function RecurringRulePage({
  
           Five dates in a bordered card read as five separate facts; on a
           line they read as one thing continuing, which is what a recurring
-          rule is. The next one takes the periwinkle dot — the same accent
+          rule is. The next one takes the periwinkle dot, the same accent
           the dock's Add button and a just-saved row use for "the thing
-          about to happen" — and the rest are hairline rings.
+          about to happen", and the rest are hairline rings.
         */
         <ol className="bg-surface rounded-card border p-4 pl-5">
           {next.map((on, index) => (

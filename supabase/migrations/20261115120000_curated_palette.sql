@@ -7,7 +7,7 @@
 -- collected.
 --
 -- Old values are mapped by position, not by distance. The two lists are in
--- the same hue order, so amber stays amber and gold stays gold — nearest
+-- the same hue order, so amber stays amber and gold stays gold, nearest
 -- colour would have collapsed that pair onto one swatch and quietly made two
 -- of somebody's categories identical.
 create temporary table palette_map (old text primary key, new text) on commit drop;
@@ -30,8 +30,8 @@ insert into palette_map (old, new) values
   ('#14B8A6', '#008760'),  -- emerald
   ('#64748B', '#69737D');  -- slate
 
--- Anything that is not one of the old sixteen — written through the API, or
--- left over from an older build — goes to the nearest new swatch, compared in
+-- Anything that is not one of the old sixteen, written through the API, or
+-- left over from an older build, goes to the nearest new swatch, compared in
 -- linear light rather than on the hex digits.
 create temporary table palette_new (hex text primary key) on commit drop;
 insert into palette_new (hex) select new from palette_map;
@@ -90,7 +90,7 @@ where a.color is not null
  *
  * Without this the migration would be a one-off: existing categories would
  * move to the palette and the next person to sign up would get the old
- * sixteen back. Same names, same icons, same order — only the colours move,
+ * sixteen back. Same names, same icons, same order, only the colours move,
  * each to its own swatch within its kind.
  */
 create or replace function public.default_categories()
@@ -143,7 +143,7 @@ comment on function public.default_categories() is
  *
  * Same reason as the categories above: without it the first account of every
  * new user arrives in the old teal. The body is unchanged apart from that one
- * value — see 20261114130000_onboarding_marker.sql for why display_name stays
+ * value, see 20261114130000_onboarding_marker.sql for why display_name stays
  * null here.
  */
 create or replace function public.handle_new_user()

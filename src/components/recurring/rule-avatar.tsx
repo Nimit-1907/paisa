@@ -17,7 +17,6 @@ export function RuleAvatar({
   rule: {
     type: "income" | "expense" | "transfer";
     categoryIcon: string | null;
-    categoryColor: string | null;
     categoryTint: string | null;
   };
   size?: "md" | "lg";

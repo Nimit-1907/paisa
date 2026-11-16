@@ -15,7 +15,7 @@ const RESEND_AFTER = 30;
  * The panel both mail-sending screens end on.
  *
  * It names the address it sent to. "Check your email" is useless if you have
- * three of them, and it is the one moment somebody can still notice a typo —
+ * three of them, and it is the one moment somebody can still notice a typo,
  * seeing `nimt@…` on screen is what turns a dead end into a correction.
  *
  * Resend is offered after thirty seconds rather than immediately. Straight
@@ -23,7 +23,7 @@ const RESEND_AFTER = 30;
  * arrived yet, which spends their rate limit on a second copy of an email
  * already in flight. The countdown says when, so the wait is not a mystery.
  *
- * The Mailpit pointer only renders in development — in production there is no
+ * The Mailpit pointer only renders in development, in production there is no
  * such inbox, and telling users about one would be nonsense.
  */
 export function CheckEmailNotice({
@@ -46,8 +46,8 @@ export function CheckEmailNotice({
     if (!onResend) return;
 
     // The timer keeps running once it reaches the threshold rather than
-    // clearing itself. Stopping it would mean a second send — which resets
-    // the count to zero — had nothing left to tick it back up, leaving the
+    // clearing itself. Stopping it would mean a second send, which resets
+    // the count to zero, had nothing left to tick it back up, leaving the
     // button disabled for as long as the screen is open.
     const id = window.setInterval(() => {
       setWaited((seconds) => Math.min(seconds + 1, RESEND_AFTER));

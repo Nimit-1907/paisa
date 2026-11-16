@@ -4,7 +4,7 @@
  * The local Supabase stack sends every email to Mailpit on port 54324 instead
  * of the internet (see README). Signup confirmation is part of the journey
  * being tested, so the test reads the real email rather than switching the
- * confirmation off — a flow that is only exercised with it disabled is a flow
+ * confirmation off, a flow that is only exercised with it disabled is a flow
  * nobody has tested.
  */
 

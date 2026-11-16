@@ -37,7 +37,7 @@ export function SortableList<T>({
   getId: (item: T) => string;
   /**
    * Called with the full list of ids in their new order. If it returns a
-   * promise, the optimistic order is dropped once that settles — so a reorder
+   * promise, the optimistic order is dropped once that settles, so a reorder
    * the server rejects snaps back to what the server actually has.
    */
   onReorder: (ids: string[]) => void | Promise<unknown>;
@@ -263,7 +263,7 @@ export function SortableList<T>({
   );
 }
 
-/** The grip itself — 44px wide so a thumb can find it. */
+/** The grip itself, 44px wide so a thumb can find it. */
 export function DragHandle({
   className,
   ...props

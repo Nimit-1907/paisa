@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * The command primitive, on this app's tokens.
  *
  * shadcn's Command, with the surfaces swapped for `raised` and the item
- * heights raised to 44px — a palette is reached by keyboard almost always and
+ * heights raised to 44px, a palette is reached by keyboard almost always and
  * by thumb occasionally, and the occasional case is the one that fails if the
  * rows are 32px.
  */

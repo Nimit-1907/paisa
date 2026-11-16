@@ -17,7 +17,7 @@ import {
  *
  * Two implementations of one calendar: the database writes the rows, this
  * draws the upcoming list. If they disagree, the app promises a date it then
- * does not create — so these tests exist to pin them together, and the
+ * does not create, so these tests exist to pin them together, and the
  * numbers below are copied from the SQL file on purpose.
  */
 
@@ -128,7 +128,7 @@ describe("scheduledOnOrAfter", () => {
   });
 
   it("settles the estimate when a clamped month lands early", () => {
-    // The estimate for 1 March is February's occurrence, which is the 28th —
+    // The estimate for 1 March is February's occurrence, which is the 28th,
     // before the date asked for. Walking forward is what fixes it.
     expect(scheduledOnOrAfter(monthly31, "2026-02-27")).toBe("2026-02-28");
     expect(scheduledOnOrAfter(monthly31, "2026-03-30")).toBe("2026-03-31");

@@ -10,11 +10,11 @@
  * Grouped by category, amount and account together, because that triple is
  * what a repeat purchase actually is: "Tea ₹20 from Cash" is one habit and
  * "Tea ₹250 on the card" is a different one. Only combinations seen at least
- * three times in sixty days qualify — twice is a coincidence.
+ * three times in sixty days qualify, twice is a coincidence.
  *
  * Grouped on the exact amount, not a rounded one. Rounding to the nearest
- * whole unit would have assumed two decimal places — this app supports zero
- * to three — and it would also have offered a chip for an amount that was
+ * whole unit would have assumed two decimal places, this app supports zero
+ * to three, and it would also have offered a chip for an amount that was
  * never actually spent. A habit is a specific number: tea is ₹20, and ₹20.49
  * three times is its own habit or it is noise.
  */
@@ -84,7 +84,7 @@ grant execute on function public.quick_adds() to authenticated;
  * the client, next to the currency's decimal places.
  *
  * Takes the month so the suggestion is relative to the month being budgeted,
- * not to today — setting November's budget in December should still compare
+ * not to today, setting November's budget in December should still compare
  * against October.
  */
 create or replace function public.budget_hints(p_month date)

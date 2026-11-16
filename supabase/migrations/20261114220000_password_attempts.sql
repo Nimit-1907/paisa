@@ -5,7 +5,7 @@
 -- has got hold of a session can sit on the Settings screen and guess, and a
 -- stolen session that only reads data becomes a stolen account.
 --
--- GoTrue rate-limits by IP, which does not help here — the guesses come from
+-- GoTrue rate-limits by IP, which does not help here, the guesses come from
 -- the app server, so every user shares one budget and a single attacker
 -- would lock everyone else out. The limit has to be per user, which means it
 -- has to live next to the user.
@@ -70,7 +70,7 @@ comment on function public.claim_password_attempt() is
 -- PostgREST and the limit would be decoration.
 --
 -- A column-level REVOKE does nothing while a table-level GRANT UPDATE is
--- held — that grant already covers every column, including ones added
+-- held, that grant already covers every column, including ones added
 -- afterwards. So the table-level grant goes, and UPDATE comes back column by
 -- column. Anything not listed here is now read-only to the user: the two
 -- counters, and the id and timestamps that were never theirs to set.

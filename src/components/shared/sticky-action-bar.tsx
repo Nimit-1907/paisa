@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * Three places need the same thing: the save area of a sheet, the Continue
  * button in onboarding, and the confirm step of an import. All three have to
  * sit above the home bar, above the on-screen keyboard, and above whatever is
- * scrolling underneath — and all three had their own version of it, which is
+ * scrolling underneath, and all three had their own version of it, which is
  * three chances for the keyboard handling to be wrong in two of them.
  *
  * `variant="sheet"` lets go at `lg`, where a sheet has become a centred

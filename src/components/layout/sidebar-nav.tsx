@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { NavIcon } from "@/components/layout/link-pending";
 import { usePathname } from "next/navigation";
 
 import { IndianRupee, type LucideIcon, Plus } from "lucide-react";
@@ -34,13 +36,13 @@ function SidebarLink({
         href={href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "rounded-control flex min-h-11 items-center gap-3 px-3 text-sm font-semibold transition-colors",
+          "rounded-control relative isolate flex min-h-11 items-center gap-3 px-3 text-sm font-semibold transition-colors",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-text-secondary hoverable:bg-sidebar-accent/50 hoverable:text-sidebar-foreground",
         )}
       >
-        <Icon className="size-[18px] shrink-0" aria-hidden="true" />
+        <NavIcon icon={Icon} className="size-[18px] shrink-0" />
         {label}
       </Link>
     </li>

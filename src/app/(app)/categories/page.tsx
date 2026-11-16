@@ -29,7 +29,6 @@ export default async function CategoriesPage() {
     name: category.name,
     kind: category.kind,
     icon: category.icon,
-    color: category.color,
     tint: category.tint,
     archived: category.archived,
     usageCount: category.usageCount,

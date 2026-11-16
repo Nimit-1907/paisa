@@ -4,7 +4,7 @@ import { z } from "zod";
  * The shape rules, mirrored from the database.
  *
  * transactions_shape_check already refuses a transfer with no destination or
- * an expense with no category — but a constraint violation reaches the user
+ * an expense with no category, but a constraint violation reaches the user
  * as "new row violates check constraint". Checking the same rules here is
  * what turns that into a sentence. The database stays the authority.
  */
@@ -32,7 +32,7 @@ export const REPEAT_LABELS: Record<RecurrenceFrequency | "none", string> = {
 
 const transactionFields = {
   type: z.enum(TRANSACTION_TYPES),
-  /** What the keypad produced — parsed with the user's decimal places. */
+  /** What the keypad produced, parsed with the user's decimal places. */
   amount: z.string().trim().min(1, "Enter an amount."),
   accountId: uuid,
   toAccountId: uuid.nullable().optional(),

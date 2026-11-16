@@ -26,7 +26,6 @@ export type RecurringRule = {
   categoryId: string | null;
   categoryName: string | null;
   categoryIcon: string | null;
-  categoryColor: string | null;
   /** One of the eight Phase 14 tint keys. */
   categoryTint: string | null;
   frequency: Database["public"]["Enums"]["recurrence_frequency"];
@@ -47,8 +46,8 @@ export type RecurringRule = {
 /**
  * What to call a rule.
  *
- * The note if there is one, then the two accounts for a transfer — which has
- * no category to fall back on — then the category.
+ * The note if there is one, then the two accounts for a transfer, which has
+ * no category to fall back on, then the category.
  */
 export function ruleTitle(rule: {
   note: string | null;
@@ -92,7 +91,7 @@ export function upcomingFor(rule: RecurringRule, count = 5): string[] {
 }
 
 export type UpcomingOccurrence = {
-  /** `ruleId:date` — a scheduled item has no row of its own yet. */
+  /** `ruleId:date`, a scheduled item has no row of its own yet. */
   key: string;
   ruleId: string;
   on: string;

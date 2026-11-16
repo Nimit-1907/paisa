@@ -10,7 +10,7 @@ import * as React from "react";
  * then disappears would teach people to distrust it. The events correct it
  * within a frame of the effect running.
  *
- * `navigator.onLine` is a floor, not a promise — it is false when there is
+ * `navigator.onLine` is a floor, not a promise, it is false when there is
  * definitely no connection, and true when there might be one. That is the
  * right way round for this: the pill only ever appears when the browser is
  * certain, so it is never wrong when it is shown.

@@ -28,7 +28,7 @@ const THEMES: Theme[] = ["light", "dark"];
  * in both themes, and for any shade that fails to be adjusted.
  *
  * It is a test rather than a one-off script because the point is not that
- * the palette passed once — it is that the next person to reach for a
+ * the palette passed once, it is that the next person to reach for a
  * slightly nicer grey finds out immediately.
  */
 describe("every text colour on every surface", () => {
@@ -102,7 +102,7 @@ describe("lines and bars", () => {
   for (const theme of THEMES) {
     it(`${theme}: a hairline is visible against its surface`, () => {
       // A hairline is decoration, not a control edge, so 3:1 is not the
-      // bar — but it has to be there at all.
+      // bar, but it has to be there at all.
       const ratio = contrast(PALETTE[theme].hairline, PALETTE[theme].surface);
       expect(ratio).toBeGreaterThan(1.05);
     });
@@ -122,7 +122,7 @@ describe("lines and bars", () => {
     });
 
     /*
-     * Today's bar is periwinkle where the others are bar-muted — and in
+     * Today's bar is periwinkle where the others are bar-muted, and in
      * light mode those two are 1.03:1 apart in luminance. They differ in
      * hue, not in brightness, which means colour vision is the only way to
      * tell them apart, and WCAG 1.4.1 says colour may not be the only way.
@@ -130,7 +130,7 @@ describe("lines and bars", () => {
      * The design already answers this: today's bar carries a 1.5px ink
      * border that no other bar has. That border is what this asserts,
      * because that is what actually does the work. The fills are left
-     * alone — they are the specified tokens, and changing them would
+     * alone, they are the specified tokens, and changing them would
      * solve a problem that is already solved.
      */
     it(`${theme}: today's bar is marked by more than its colour`, () => {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { ChartPie, Plus, Receipt, Target, Wallet } from "lucide-react";
 
+import { NavIcon } from "@/components/layout/link-pending";
 import { useRecordSheet } from "@/components/records/record-sheet-provider";
 import { isNavItemActive, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
  *
  * It replaces the Phase 13 bottom tab bar *and* the separate floating "+".
  * Those were two pieces of fixed furniture stacked on each other, which on
- * a 640px phone is a fifth of the screen spent on chrome — and the FAB sat
+ * a 640px phone is a fifth of the screen spent on chrome, and the FAB sat
  * over the last row of every list.
  *
  * The active item is an ink pill with its icon and label; the others are
@@ -52,7 +53,7 @@ export function Dock() {
 
         {/*
           The one accent in the dock. 46px square at 15px radius, periwinkle,
-          with the small hard shadow — the only element here that is not
+          with the small hard shadow, the only element here that is not
           flat, because it is the only one that is not navigation.
         */}
         <button
@@ -92,7 +93,7 @@ function DockLink({ item, pathname }: { item: NavItem; pathname: string }) {
         // The active item sizes to its label and the rest share what is
         // left. Equal flex gives every item a quarter of the track, which
         // at 360px is not enough for "Accounts" and truncates it to "A...".
-        "flex h-11 items-center justify-center gap-1.5 rounded-[15px] text-[13px] font-semibold",
+        "relative isolate flex h-11 items-center justify-center gap-1.5 rounded-[15px] text-[13px] font-semibold",
         active ? "shrink-0 px-3" : "min-w-11 flex-1 px-2",
         "duration-[120ms] transition-colors motion-reduce:transition-none",
         active
@@ -100,7 +101,7 @@ function DockLink({ item, pathname }: { item: NavItem; pathname: string }) {
           : "text-text-secondary hoverable:text-text",
       )}
     >
-      <Icon className="size-[19px] shrink-0" aria-hidden="true" />
+      <NavIcon icon={Icon} className="size-[19px] shrink-0" />
       {active ? <span className="truncate">{item.label}</span> : null}
     </Link>
   );

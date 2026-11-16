@@ -34,7 +34,7 @@ import type { TransactionRow } from "@/lib/queries/transactions";
  * place to go next; the moment it starts holding a value it has to worry
  * about saving, and there is already a sheet that does that properly.
  *
- * Phase 14 makes the amount the hero — the thing you opened this to check —
+ * Phase 14 makes the amount the hero, the thing you opened this to check,
  * with the category's tile beside its name, and turns the table of rows into
  * the same field cards the add sheet uses. The facts are the same; they are
  * no longer a spreadsheet.
@@ -213,7 +213,7 @@ export function RecordDetail({
   );
 }
 
-/** "monthly", "weekly" — the pill reads "Repeats monthly". */
+/** "monthly", "weekly", the pill reads "Repeats monthly". */
 function repeatWord(frequency: TransactionRow["recurringFrequency"]): string {
   return frequency ? REPEAT_LABELS[frequency].toLowerCase() : "on a schedule";
 }

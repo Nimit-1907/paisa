@@ -10,19 +10,27 @@ import { Bricolage_Grotesque, Inter } from "next/font/google";
  * tabular figures so columns of money line up.
  *
  * Bricolage Grotesque is the display face, and Phase 14 gives it two jobs
- * only — page titles and hero numbers. One weight, 800, at -0.03em. It
+ * only, page titles and hero numbers. One weight, 800, at -0.03em. It
  * replaces Instrument Serif: the new design language is flat surfaces,
  * hairlines and hard shadows, and a serif anchor reads as warmth from a
  * different system. See docs/design-system.md.
+ *
+ * Both load `latin-ext` as well as `latin`, because the rupee sign is in
+ * it: U+20B9 sits in latin-ext's currency range, not latin's. With only
+ * latin preloaded, every screen with an amount on it found out it needed
+ * the second file after layout, fetched it late, and swapped the hero
+ * figure when it arrived. That swap was Records' largest paint, at 2.75s
+ * on a throttled phone. Listing the subset makes next/font preload it
+ * with the rest.
  */
 export const body = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-body",
   display: "swap",
 });
 
 export const display = Bricolage_Grotesque({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   // 800 is the only weight used. Loading the variable range would ship the
   // whole axis for two sizes of one word.
   weight: "800",

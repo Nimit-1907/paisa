@@ -21,6 +21,8 @@ const HapticsContext = React.createContext(true);
 const ShowPaiseContext = React.createContext(false);
 const DisplayNameContext = React.createContext("");
 const TimeZoneContext = React.createContext("Asia/Kolkata");
+/** 0 = Sunday, 1 = Monday: the first column of every calendar. */
+const WeekStartContext = React.createContext(1);
 
 /**
  * Carries the signed-in user's currency down to Client Components.
@@ -37,6 +39,7 @@ export function ProfileProvider({
   showPaise,
   displayName,
   timeZone,
+  weekStart = 1,
   children,
 }: {
   currency: CurrencySettings;
@@ -46,6 +49,8 @@ export function ProfileProvider({
   displayName: string;
   /** The profile's time zone, for anything on the client that asks "today". */
   timeZone: string;
+  /** From the profile; every calendar starts its week here. */
+  weekStart?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -54,7 +59,9 @@ export function ProfileProvider({
         <ShowPaiseContext.Provider value={showPaise}>
           <DisplayNameContext.Provider value={displayName}>
             <TimeZoneContext.Provider value={timeZone}>
-              {children}
+              <WeekStartContext.Provider value={weekStart}>
+                {children}
+              </WeekStartContext.Provider>
             </TimeZoneContext.Provider>
           </DisplayNameContext.Provider>
         </ShowPaiseContext.Provider>
@@ -66,6 +73,11 @@ export function ProfileProvider({
 /** The profile's time zone. */
 export function useTimeZone(): string {
   return React.useContext(TimeZoneContext);
+}
+
+/** The day every calendar's week starts on: 0 Sunday, 1 Monday. */
+export function useWeekStart(): number {
+  return React.useContext(WeekStartContext);
 }
 
 /** The signed-in user's display name, or "" if they have not set one. */
@@ -96,7 +108,7 @@ export function useCurrency(): CurrencySettings {
 /**
  * Whether this person asked to see ".00".
  *
- * Read by `Amount`, which is the only thing that should be consulting it —
+ * Read by `Amount`, which is the only thing that should be consulting it,
  * a screen that checks this itself is a screen that will forget to.
  */
 export function useShowPaise(): boolean {

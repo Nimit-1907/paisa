@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Three states, and the thresholds carry more than colour: under 80% the
  * fill is plain ink, 80–100% it becomes butter *with an ink border*, and
  * over 100% rose *with an ink border*. The border is what makes the warning
- * legible without colour vision — the two tints are pale by design, so on
+ * legible without colour vision, the two tints are pale by design, so on
  * their own they would be two slightly different light greys.
  *
  * Fills once on first view, 500ms, and only on the way in: a bar that
@@ -30,7 +30,7 @@ export function ProgressBar({
   className?: string;
 }) {
   const clamped = Math.max(0, Math.min(100, percent));
-  // Zero for a frame, then the real width — and straight to it under
+  // Zero for a frame, then the real width, and straight to it under
   // reduced motion, with no flash of full in between. See lib/motion.ts.
   const width = useFirstFill(clamped);
   const over = percent > 100;

@@ -37,7 +37,7 @@ const STEPS = ["Tap +", "Type the amount", "Pick the category", "Save"];
 /**
  * The three blocks, each with a crop of the screen it is about.
  *
- * Track, Budget, Recurring — the three things somebody decides between when
+ * Track, Budget, Recurring, the three things somebody decides between when
  * they are choosing one of these apps, in the order they would meet them.
  */
 const BLOCKS = [
@@ -87,7 +87,7 @@ export default function LandingPage() {
 
       {/*
         Above the fold: a headline, a sentence, one button, and the app.
-        The secondary route is a text link rather than a second button —
+        The secondary route is a text link rather than a second button,
         two buttons of equal weight is two decisions where there is one.
       */}
       <section className="grid items-center gap-8 py-6 sm:py-12 lg:grid-cols-2 lg:gap-12">
@@ -194,8 +194,8 @@ export default function LandingPage() {
       {/*
         An accordion built from <details>, not from a component.
 
-        It is an accordion in the sense that matters — one question per row,
-        answers that open and close, operable from the keyboard — and it costs
+        It is an accordion in the sense that matters, one question per row,
+        answers that open and close, operable from the keyboard, and it costs
         this page nothing to hydrate. The full FAQ at /faq leaves every answer
         open instead, because that is the page search engines read for rich
         results and a collapsed answer does not qualify.

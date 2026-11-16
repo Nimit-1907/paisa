@@ -2,7 +2,7 @@
 --
 -- Most records are not a surprise. People buy coffee in the morning from the
 -- same wallet and groceries in the evening on the same card, so the sheet can
--- open with the right account chosen and the likely categories at the top —
+-- open with the right account chosen and the likely categories at the top,
 -- which is the difference between four taps and seven.
 --
 -- Worked out from the records themselves rather than remembered on the

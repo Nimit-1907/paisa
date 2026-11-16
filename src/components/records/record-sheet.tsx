@@ -25,13 +25,13 @@ import { useCurrency } from "@/components/profile-provider";
 import { AmountDisplay } from "@/components/records/amount-field";
 import { Amount } from "@/components/shared/amount";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { DateTimePicker } from "@/components/shared/date-picker";
 import {
   type AccountOption,
   AccountField,
   type CategoryOption,
   CategoryGrid,
   TypeTabs,
-  WhenField,
 } from "@/components/shared/entry-pickers";
 import {
   ResponsiveSheet,
@@ -208,7 +208,7 @@ export function RecordSheet({
     setJustSaved(false);
 
     // Snapshot taken from the same values that were just set, not from
-    // state — state has not updated yet inside this effect.
+    // state, state has not updated yet inside this effect.
     opened.current = snapshot({
       type: editing?.type ?? defaultType,
       amount: editing
@@ -246,7 +246,7 @@ export function RecordSheet({
    * A sheet is dismissed by swiping it down or tapping the backdrop, both of
    * which are easy to do by accident on a phone and neither of which looks
    * like "throw this away". Opening is never intercepted, and nor is closing
-   * an untouched sheet — a confirmation nobody needed is how people learn to
+   * an untouched sheet, a confirmation nobody needed is how people learn to
    * dismiss confirmations without reading them.
    */
   function requestClose(next: boolean) {
@@ -304,8 +304,8 @@ export function RecordSheet({
    * the grid. The reference has one grid, and two rows of the same tiles
    * asking the same question was the thing people hesitated over in the
    * screenshots: the second row looks like a different set. Sorting them to
-   * the front keeps the shortcut — the first four tiles are the four it
-   * would have offered — and the grid's hint says why they are there.
+   * the front keeps the shortcut, the first four tiles are the four it
+   * would have offered, and the grid's hint says why they are there.
    */
   const suggestedIds = new Set(suggestions.map((category) => category.id));
   const gridCategories =
@@ -318,7 +318,7 @@ export function RecordSheet({
           ),
         ];
 
-  /** "Today, 1:30 pm" — what the When card shows over its native input. */
+  /** "Today, 1:30 pm", what the When card shows over its native input. */
   const whenLabel = describeLocal(occurredAt, nowLocal(timeZone));
 
   /*
@@ -345,7 +345,7 @@ export function RecordSheet({
    * Whether this transfer takes the From account below zero.
    *
    * Null unless there is a balance to check, an amount that parses, and a
-   * transfer to check it against — there is nothing useful to say about an
+   * transfer to check it against, there is nothing useful to say about an
    * account whose balance this screen was never given.
    */
   const overdraw = React.useMemo(() => {
@@ -447,7 +447,7 @@ export function RecordSheet({
    *
    * Editing a record that belongs to a rule asks whether the change is for
    * this one or for every future one. That question is only worth asking if
-   * the form is actually saveable — otherwise somebody answers it and then
+   * the form is actually saveable, otherwise somebody answers it and then
    * gets told the amount is missing.
    */
   function requestSave() {
@@ -540,7 +540,7 @@ export function RecordSheet({
             setType(next);
             // Both are cleared on any change of type: a category belongs to
             // one kind, so an expense category left behind when switching to
-            // Income would be submitted invisibly — the grid shows nothing
+            // Income would be submitted invisibly, the grid shows nothing
             // selected, but the value is still there.
             setCategoryId("");
             setToAccountId("");
@@ -594,8 +594,8 @@ export function RecordSheet({
             // repeat far more than people expect, and retyping one on a
             // phone keyboard is most of the effort of logging the record.
             // The browser's own suggestion UI costs nothing to hydrate, is
-            // keyboard-operable everywhere, and — unlike a popup of our own
-            // — cannot cover the Save button on a short screen.
+            // keyboard-operable everywhere, and, unlike a popup of our own,
+            // cannot cover the Save button on a short screen.
             list={noteHints.length ? "note-hints" : undefined}
             autoComplete="off"
             className="h-11 pl-9"
@@ -613,7 +613,7 @@ export function RecordSheet({
           /*
             No visible "Quick add" heading.
 
-            The chips say what they are — a category, an amount, one tap —
+            The chips say what they are, a category, an amount, one tap,
             and at 360×800 the sheet is 24px short of showing a second row
             of categories. A label that explains chips is worth less than a
             row of the thing they are a shortcut to. The group keeps the
@@ -661,7 +661,7 @@ export function RecordSheet({
         {type === "transfer" ? (
           <>
             {/*
-              From, swap, To — one row.
+              From, swap, To, one row.
 
               Picking the wrong way round is the mistake people make on this
               screen, and correcting it meant two pickers and four taps. The
@@ -712,7 +712,9 @@ export function RecordSheet({
               </p>
             ) : null}
 
-            <WhenField
+            <DateTimePicker
+              id="occurred-at"
+              label="When"
               value={occurredAt}
               onChange={setOccurredAt}
               display={whenLabel}
@@ -722,7 +724,7 @@ export function RecordSheet({
             {/*
               A warning, not a block.
 
-              An account can legitimately go below zero — a credit card is
+              An account can legitimately go below zero, a credit card is
               negative by definition, and a balance can be out of date
               because a record has not been entered yet. Refusing the
               transfer would make this app argue with reality; saying so and
@@ -788,7 +790,9 @@ export function RecordSheet({
                 invalid={errorField === "accountId"}
               />
 
-              <WhenField
+              <DateTimePicker
+                id="occurred-at"
+                label="When"
                 value={occurredAt}
                 onChange={setOccurredAt}
                 display={whenLabel}
@@ -811,8 +815,8 @@ export function RecordSheet({
           Which fields have a slot depends on what is on screen: a transfer
           has no category and an expense has no second account. Asking
           whether this error's field is
-          actually being rendered — rather than whether it is on a list of
-          fields that usually are — is what stops a save refusing silently.
+          actually being rendered, rather than whether it is on a list of
+          fields that usually are, is what stops a save refusing silently.
         */}
         {error && !errorShownInline ? (
           <p role="alert" className="text-expense text-sm">
@@ -894,7 +898,7 @@ export function RecordSheet({
                 {/*
                   Not a bare plus. The dock's plus means "add a record" and
                   this sits two thumb-widths from it meaning "save this one
-                  and start the next" — the same glyph for a different verb,
+                  and start the next", the same glyph for a different verb,
                   beside the Save button it is not. A plus on a list says it
                   adds to the run you are already keeping.
                 */}

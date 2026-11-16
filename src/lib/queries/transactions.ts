@@ -20,7 +20,6 @@ export type TransactionRow = {
   categoryId: string | null;
   categoryName: string | null;
   categoryIcon: string | null;
-  categoryColor: string | null;
   /** One of the eight Phase 14 tint keys. */
   categoryTint: string | null;
   /** Set when a recurring rule created this row. */
@@ -47,7 +46,7 @@ const UUID =
 const SELECT = `
   id, type, amount, note, occurred_at, recurring_rule_id,
   account_id, to_account_id, category_id,
-  category:categories(name, icon, color, tint),
+  category:categories(name, icon, tint),
   rule:recurring_rules(frequency),
   account:accounts!transactions_account_id_fkey(name),
   to_account:accounts!transactions_to_account_id_fkey(name)
@@ -66,7 +65,6 @@ type JoinedRow = {
   category: {
     name: string;
     icon: string | null;
-    color: string | null;
     tint: string | null;
   } | null;
   account: { name: string } | null;
@@ -90,7 +88,6 @@ function toRow(row: JoinedRow): TransactionRow {
     categoryId: row.category_id,
     categoryName: row.category?.name ?? null,
     categoryIcon: row.category?.icon ?? null,
-    categoryColor: row.category?.color ?? null,
     categoryTint: row.category?.tint ?? null,
     recurringRuleId: row.recurring_rule_id,
     recurringFrequency: row.rule?.frequency ?? null,
@@ -113,8 +110,8 @@ function dayStart(day: string, timeZone: string): string | null {
 /**
  * One page of a month's records, newest first.
  *
- * Offset paging rather than a keyset cursor: a month is a bounded set — a few
- * hundred rows at most — and a cursor built from a timestamp would have to be
+ * Offset paging rather than a keyset cursor: a month is a bounded set, a few
+ * hundred rows at most, and a cursor built from a timestamp would have to be
  * spliced into a PostgREST filter string, which is the shape that invites an
  * injection bug.
  *
@@ -163,7 +160,7 @@ export async function getMonthTransactions({
     // a PostgREST filter string, which a non-uuid could rewrite.
     const ids = filters.accountIds.filter((id) => UUID.test(id));
     if (ids.length) {
-      // Either leg — an account's history includes transfers into it.
+      // Either leg, an account's history includes transfers into it.
       query = query.or(
         `account_id.in.(${ids.join(",")}),to_account_id.in.(${ids.join(",")})`,
       );
@@ -232,7 +229,7 @@ export type SearchResult = {
  * Every record whose note matches, newest first, across every month.
  *
  * Deliberately not month-scoped, unlike {@link getMonthTransactions}. The
- * month is how this app is *read* — the switcher, the card, the totals — but
+ * month is how this app is *read*, the switcher, the card, the totals, but
  * it is not how anybody searches: "rent" within November alone is a question
  * with an obvious answer, and the one worth asking is when the rent went up.
  *
@@ -249,7 +246,7 @@ export async function searchTransactions(term: string): Promise<SearchResult> {
   const supabase = await createClient();
 
   // Escape the wildcards a user can type, so they search literally. Done
-  // once, here, and handed to the totals function as well — two copies of
+  // once, here, and handed to the totals function as well, two copies of
   // this would be two opinions about what a literal `%` means. The pg_trgm
   // GIN index on note is what keeps both halves fast.
   const pattern = trimmed.replace(/[%_\\]/g, (match) => `\\${match}`);
@@ -286,7 +283,7 @@ export async function searchTransactions(term: string): Promise<SearchResult> {
   };
 }
 
-/** Income, expense and net for a month — the summary strip. */
+/** Income, expense and net for a month, the summary strip. */
 export async function getMonthSummary(
   year: number,
   month: number,
@@ -332,7 +329,7 @@ export async function getTransaction(
  *
  * Feeds the bars on the month card. `period_series` generates a row per
  * bucket in the range, so a quiet Sunday comes back as a zero rather than as
- * a gap — which is what lets the card draw a calendar rather than a list of
+ * a gap, which is what lets the card draw a calendar rather than a list of
  * the days that happened to have something on them.
  */
 export async function getMonthDays(
@@ -366,7 +363,7 @@ export async function getMonthDays(
  *
  * All three ride `transactions_user_occurred_idx (user_id, occurred_at desc)`
  * from the initial schema: the count is an index-only scan of this user's
- * slice, and each date is the first row off one end of it — a btree reads
+ * slice, and each date is the first row off one end of it, a btree reads
  * in either direction, so the ascending one costs no sort.
  */
 // rubric:allow PERF-MISSING-INDEX the index is in 20261114120000_initial_schema.sql

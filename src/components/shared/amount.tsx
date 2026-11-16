@@ -32,8 +32,8 @@ type AmountProps = {
    * Whether to draw paise that are exactly zero.
    *
    * `preference` (the default) follows the user's "Show paise in lists"
-   * setting. A screen that must be exact — the edit sheet, a record's own
-   * detail — passes `show` and ignores the setting.
+   * setting. A screen that must be exact, the edit sheet, a record's own
+   * detail, passes `show` and ignores the setting.
    */
   paise?: "show" | "trim" | "preference";
   signDisplay?: FormatMoneyOptions["signDisplay"];
@@ -42,7 +42,7 @@ type AmountProps = {
   /**
    * Abbreviate: ₹1.2L, ₹45K.
    *
-   * For somewhere there is genuinely no room — a chart axis, a stat tile at
+   * For somewhere there is genuinely no room, a chart axis, a stat tile at
    * 360px. The exact figure stays available to a screen reader, and
    * {@link AmountProps.revealable} offers it to a thumb as well.
    */
@@ -58,7 +58,7 @@ type AmountProps = {
  * Three pieces, three weights: the digits you came for, then the currency
  * symbol a size down, then the paise smaller again. The hierarchy is carried
  * by size and weight rather than by colour, because opacity over the money
- * palette measures 3.0–3.6:1 in light mode against the 4.5 small text needs —
+ * palette measures 3.0–3.6:1 in light mode against the 4.5 small text needs,
  * so the obvious "lighter" (a dimmer colour) would have made the decimals the
  * one thing on screen that fails AA. The neutral tone does step the paise
  * down to `ink-2`, which is measured at 6.25:1 or better on every surface.

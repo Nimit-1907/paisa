@@ -89,8 +89,8 @@ export function CategoryDonut({
               outerRadius={92}
               paddingAngle={2}
               // An ink edge on every slice, which the brief does not ask for
-              // and the ring needs. The eight tints are pale by design —
-              // measured, rose on surface is 1.1:1 — so eight of them
+              // and the ring needs. The eight tints are pale by design,
+              // measured, rose on surface is 1.1:1, so eight of them
               // adjoining on a white card is a smudge with a hole in it.
               // The outline is what the rest of this language uses to make
               // a pale fill a shape, and it is 3:1 against both surfaces.

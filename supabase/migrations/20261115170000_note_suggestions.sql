@@ -1,7 +1,7 @@
 -- Paisa: the notes this person has written before.
 --
--- Notes repeat far more than people expect — "DMart run", "Chai and vada pav",
--- "Metro card top-up" — and retyping one on a phone keyboard is most of the
+-- Notes repeat far more than people expect, "DMart run", "Chai and vada pav",
+-- "Metro card top-up", and retyping one on a phone keyboard is most of the
 -- effort of logging the record. Offering them back is the cheapest speed-up
 -- available on the Add Record sheet.
 --

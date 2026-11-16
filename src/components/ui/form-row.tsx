@@ -41,7 +41,7 @@ export function FormRow({
    * A link or button on the same line as the label.
    *
    * "Forgot password?" belongs here rather than under the field. Under it,
-   * it sits between the password and the submit button — so the thing you
+   * it sits between the password and the submit button, so the thing you
    * tab to after typing your password is the way out of the form.
    */
   action?: React.ReactNode;

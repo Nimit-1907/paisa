@@ -46,7 +46,7 @@ type ListRowProps = {
   selected?: boolean;
   /** Still saving: dimmed and inert. */
   pending?: boolean;
-  /** Briefly tinted — the row that just arrived. */
+  /** Briefly tinted, the row that just arrived. */
   highlight?: boolean;
 
   /** Revealed by swiping left (sits against the right edge). */
@@ -66,13 +66,13 @@ type ListRowProps = {
  *
  * Records, accounts, categories, rules and budgets had each grown their own
  * row: different heights, different gaps, three ideas of where the second
- * line goes. This is that anatomy once — circle, title, quiet second line,
- * figure on the right — so the eye only has to learn it on the first screen.
+ * line goes. This is that anatomy once, circle, title, quiet second line,
+ * figure on the right, so the eye only has to learn it on the first screen.
  *
  * Every action on a row is reachable three ways, because each route excludes
  * somebody: a swipe (thumb), a long-press or right-click menu (thumb or
- * mouse, and the only one that announces itself), and — where the screen has
- * the width for it — buttons on hover. Nothing lives *only* behind a gesture,
+ * mouse, and the only one that announces itself), and, where the screen has
+ * the width for it, buttons on hover. Nothing lives *only* behind a gesture,
  * which is the rule that keeps the gesture a shortcut rather than a secret.
  */
 export function ListRow({
@@ -157,7 +157,7 @@ export function ListRow({
   /**
    * A cancelled pointer is not a decision.
    *
-   * The browser cancels when something else takes the gesture over — the
+   * The browser cancels when something else takes the gesture over, the
    * back-swipe at the screen edge, a scroll that won after all. Treating that
    * as a release would park a Delete button open because the user tried to go
    * back, so it returns to where the gesture started instead.
@@ -248,7 +248,7 @@ export function ListRow({
         No swipe layers behind a row that is still being saved.
 
         A pending row is dimmed to 60%, and dimming an opaque row shows
-        whatever is painted under it — which here is Copy on one side and
+        whatever is painted under it, which here is Copy on one side and
         Delete on the other, both printed through the row for as long as
         the save takes. The row cannot be swiped while pending anyway.
       */}

@@ -6,7 +6,7 @@
 -- every amount in the account by a hundred.
 --
 -- So the exponent and the rows move together, in one statement. Going to
--- fewer decimal places rounds — ₹12.50 becomes ¥13 — and that is lossy and
+-- fewer decimal places rounds, ₹12.50 becomes ¥13, and that is lossy and
 -- cannot be undone by switching back. The UI says so before it is pressed;
 -- this function's job is only to make sure the numbers and their meaning never
 -- disagree.

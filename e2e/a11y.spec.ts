@@ -9,7 +9,7 @@ import { signIn } from "./sign-in";
  * `polish.spec.ts` runs axe over the signed-in screens. This one covers what
  * a screen scan cannot see: the pages a visitor meets before signing in, a
  * sheet while it is open, and the keyboard behaviour that only exists if
- * somebody drives it — the skip link, focus coming back, Enter in the keypad.
+ * somebody drives it, the skip link, focus coming back, Enter in the keypad.
  */
 
 /** WCAG 2.2 AA, which is what this phase commits to. */
@@ -189,7 +189,7 @@ test.describe("the keyboard", () => {
 
     // Undo, straight away. This runs against the shared demo account, and a
     // test that leaves a record behind quietly rewrites the data every other
-    // test reads — the visual baselines noticed before anybody else did.
+    // test reads, the visual baselines noticed before anybody else did.
     await page.getByRole("button", { name: "Undo" }).click();
     await expect(page.getByRole("button", { name: "Undo" })).toBeHidden();
   });

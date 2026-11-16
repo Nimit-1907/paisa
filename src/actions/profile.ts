@@ -33,7 +33,7 @@ import { supabaseEnv } from "@/lib/supabase/env";
  * Finishes first-run setup: the user's name, their currency, and the opening
  * balance of the Cash account the signup trigger already created.
  *
- * Writing display_name is what marks onboarding as done — the (app) layout
+ * Writing display_name is what marks onboarding as done, the (app) layout
  * sends anyone without one back here.
  */
 export async function completeOnboarding(
@@ -193,7 +193,7 @@ export async function completeOnboarding(
    * No revalidation here, deliberately.
    *
    * Setup now ends on a welcome screen rather than a redirect, and this page
-   * sends anyone whose setup is done straight to the app — so revalidating
+   * sends anyone whose setup is done straight to the app, so revalidating
    * from inside the action tears that screen off the display a moment after
    * it appears. The button on it navigates, and the destination is rendered
    * per request anyway.
@@ -204,7 +204,7 @@ export async function completeOnboarding(
 /**
  * Saves the Settings form.
  *
- * Currency is written as a triple — code, symbol and decimal places — from
+ * Currency is written as a triple, code, symbol and decimal places, from
  * the one picked entry, because the exponent decides what every stored amount
  * *means*. Taking a symbol from the form and an exponent from somewhere else
  * is how ₹12.50 quietly becomes ₹1,250.
@@ -339,7 +339,7 @@ export async function changePassword(
  * Deletes the signed-in user and everything they own.
  *
  * The work is one SQL function that can only ever delete the caller's own
- * row — no service-role key lives in this app's environment, because a key
+ * row, no service-role key lives in this app's environment, because a key
  * that can delete anybody is a much bigger thing to protect than a function
  * that can delete exactly one person.
  */
@@ -405,7 +405,7 @@ async function setPreference(
  * Rebuilding the shell and navigating are one step on purpose. Doing them
  * separately is a race: revalidating while still on /onboarding invalidates
  * that page too, and this page sends anyone whose setup is done straight to
- * the app — so the welcome screen can be torn off the display underneath the
+ * the app, so the welcome screen can be torn off the display underneath the
  * button being pressed. As one action the order is fixed: throw away the
  * cache that predates the name and currency just chosen, then leave.
  */

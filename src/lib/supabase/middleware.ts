@@ -83,7 +83,7 @@ export async function updateSession(request: NextRequest) {
 /**
  * A redirect built from scratch would throw away the Set-Cookie headers the
  * refresh just produced, so the next request would arrive unauthenticated and
- * bounce again — the classic redirect loop.
+ * bounce again, the classic redirect loop.
  */
 function redirectKeepingCookies(target: URL, carrying: NextResponse) {
   const response = NextResponse.redirect(target);

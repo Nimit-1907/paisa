@@ -30,7 +30,6 @@ export type BudgetCategoryOption = {
   /** One of the eight Phase 14 tint keys. */
   tint: string | null;
   icon: string | null;
-  color: string | null;
 };
 
 export type BudgetDraft = {
@@ -43,7 +42,7 @@ export type BudgetDraft = {
  * Set or change one category's budget for the month on screen.
  *
  * The category grid is the same one the record sheet uses, filtered to
- * expenses — a budget on "Salary" is not a thing anyone means, and the
+ * expenses, a budget on "Salary" is not a thing anyone means, and the
  * database refuses it anyway.
  */
 export function BudgetSheet({
@@ -81,7 +80,7 @@ export function BudgetSheet({
    * Two numbers worth offering: what this category cost last month, and what
    * it has averaged over three. Rounded to something somebody would choose,
    * de-duplicated when they round to the same figure, and absent entirely
-   * for a category with no history — a suggestion of ₹500 based on nothing
+   * for a category with no history, a suggestion of ₹500 based on nothing
    * is worse than no suggestion.
    */
   const hint = hints.find((entry) => entry.categoryId === categoryId);
@@ -245,8 +244,8 @@ export function BudgetSheet({
         ) : null}
 
         {/* The same keypad the record sheet uses, for the same reason: a
-            budget is often worked out rather than known — "about 7000, call
-            it 7500" — and the arithmetic belongs in the field. */}
+            budget is often worked out rather than known, "about 7000, call
+            it 7500", and the arithmetic belongs in the field. */}
         <AmountDisplay
           value={amount}
           onChange={setAmount}

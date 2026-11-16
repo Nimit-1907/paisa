@@ -137,7 +137,6 @@ export type AccountTransaction = {
   counterparty: string | null;
   categoryName: string | null;
   categoryIcon: string | null;
-  categoryColor: string | null;
   /** One of the eight Phase 14 tint keys. */
   categoryTint: string | null;
 };
@@ -153,7 +152,6 @@ type TransactionJoinRow = {
   category: {
     name: string;
     icon: string | null;
-    color: string | null;
     tint: string | null;
   } | null;
   account: { name: string } | null;
@@ -161,7 +159,7 @@ type TransactionJoinRow = {
 };
 
 /**
- * An account's records, newest first — both legs of a transfer included.
+ * An account's records, newest first, both legs of a transfer included.
  *
  * The sign is worked out here rather than in the view: "did this account gain
  * or lose money" depends on which side of a transfer it is on.
@@ -177,7 +175,7 @@ export async function getAccountTransactions(
     .from("transactions")
     .select(
       `id, type, amount, note, occurred_at, account_id, to_account_id,
-       category:categories(name, icon, color, tint),
+       category:categories(name, icon, tint),
        account:accounts!transactions_account_id_fkey(name),
        to_account:accounts!transactions_to_account_id_fkey(name)`,
     )
@@ -209,7 +207,6 @@ export async function getAccountTransactions(
           : null,
       categoryName: row.category?.name ?? null,
       categoryIcon: row.category?.icon ?? null,
-      categoryColor: row.category?.color ?? null,
     categoryTint: (row.category?.tint as string | null) ?? null,
     };
   });
@@ -241,7 +238,7 @@ export async function getAccountMonthFlow(
 }
 
 /**
- * The accounts a picker may offer — archived ones excluded.
+ * The accounts a picker may offer, archived ones excluded.
  *
  * An archived account keeps showing on the records that already reference it;
  * it just cannot be chosen for a new one.
@@ -311,7 +308,7 @@ export async function getActiveAccounts() {
        * `initial_balance` is where the account started, which after a month
        * of records is not what it holds. Falling back to it would let the
        * transfer sheet warn about an overdraw that is not happening, or
-       * stay quiet about one that is — and print the wrong figure as what
+       * stay quiet about one that is, and print the wrong figure as what
        * the account "has". Null is the only honest answer, and the sheet
        * already reads it as "nothing to check".
        */
@@ -341,7 +338,7 @@ export type EntryDefaults = {
    * Which part of the day those categories were drawn from.
    *
    * Decided in the database, in the profile's timezone, so the label above
-   * the row cannot disagree with the row — which is what reading the
+   * the row cannot disagree with the row, which is what reading the
    * device's own clock would do the moment somebody travelled.
    */
   partOfDay: PartOfDay;
@@ -385,10 +382,9 @@ export type QuickAdd = {
   categoryId: string;
   name: string;
   icon: string | null;
-  color: string | null;
   /** One of the eight Phase 14 tint keys. */
   tint: string | null;
-  /** Minor units as text — an RSC payload cannot carry a BigInt. */
+  /** Minor units as text, an RSC payload cannot carry a BigInt. */
   amount: string;
   accountId: string;
   accountName: string;
@@ -398,7 +394,7 @@ export type QuickAdd = {
  * The handful of things this person buys over and over.
  *
  * One tap fills the sheet instead of three. Worked out in the database from
- * the last sixty days — see `quick_adds()` — and never fatal: a sheet with
+ * the last sixty days, see `quick_adds()`, and never fatal: a sheet with
  * no chips is the sheet everybody had before.
  */
 export async function getQuickAdds(): Promise<QuickAdd[]> {
@@ -415,7 +411,6 @@ export async function getQuickAdds(): Promise<QuickAdd[]> {
     categoryId: row.category_id,
     name: row.name,
     icon: row.icon,
-    color: row.color,
     // The generator types a domain column as `unknown`.
     tint: (row.tint as string | null) ?? null,
     amount: fromDb(row.amount).toString(),
@@ -429,7 +424,7 @@ export async function getQuickAdds(): Promise<QuickAdd[]> {
  *
  * Feeds the datalist on the note field. A failure here costs a convenience
  * and nothing else, so it is logged and swallowed rather than taking the
- * whole sheet down with it — the same shape as `getQuickAdds`.
+ * whole sheet down with it, the same shape as `getQuickAdds`.
  */
 export async function getNoteSuggestions(): Promise<string[]> {
   const supabase = await createClient();

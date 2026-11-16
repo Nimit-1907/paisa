@@ -61,3 +61,67 @@ export function isoToMasked(iso: string): string {
   const [, year, month, day] = match;
   return `${day}/${month}/${year}`;
 }
+
+/*
+ * Typing a time the same way: digits only, the colon drawn for you, on a
+ * twelve-hour clock with AM and PM chosen beside it. 0 1 3 0 is 01:30.
+ */
+
+export type Meridiem = "am" | "pm";
+
+/** Strips everything but digits, to at most four. */
+export function timeDigitsOf(text: string): string {
+  return text.replace(/\D/g, "").slice(0, 4);
+}
+
+/** Digits as shown while being typed: "1", "13", "13:0", "13:05". */
+export function maskTime(digits: string): string {
+  const d = timeDigitsOf(digits);
+  if (d.length <= 2) return d;
+  return `${d.slice(0, 2)}:${d.slice(2)}`;
+}
+
+/**
+ * Typed digits and a meridiem to `HH:MM` on the 24-hour clock, or null.
+ *
+ * Three digits read as h:mm ("930" is 9:30), four as hh:mm. An hour past
+ * 12 is taken as the 24-hour clock and the meridiem is ignored, so somebody
+ * who types 1830 gets 18:30 rather than an error. 00 is midnight.
+ */
+export function timeDigitsToValue(
+  digits: string,
+  meridiem: Meridiem,
+): string | null {
+  const d = timeDigitsOf(digits);
+  if (d.length < 3) return null;
+
+  const hourText = d.length === 3 ? d.slice(0, 1) : d.slice(0, 2);
+  const minuteText = d.length === 3 ? d.slice(1) : d.slice(2);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (hour > 23 || minute > 59) return null;
+
+  let hour24 = hour;
+  if (hour >= 1 && hour <= 12) {
+    if (meridiem === "am") hour24 = hour === 12 ? 0 : hour;
+    else hour24 = hour === 12 ? 12 : hour + 12;
+  }
+
+  return `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+/** `HH:MM` (24-hour) to what the field shows: "01:30" and "pm". */
+export function valueToTimeParts(value: string): {
+  text: string;
+  meridiem: Meridiem;
+} {
+  const match = /^(\d{2}):(\d{2})/.exec(value);
+  if (!match) return { text: "", meridiem: "am" };
+  const hour = Number(match[1]);
+  const meridiem: Meridiem = hour >= 12 ? "pm" : "am";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return {
+    text: `${String(hour12).padStart(2, "0")}:${match[2]}`,
+    meridiem,
+  };
+}

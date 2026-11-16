@@ -1,6 +1,6 @@
 /**
  * Reads the public Supabase env vars and fails loudly (and early) when the
- * project has not been configured yet — a missing key otherwise shows up as a
+ * project has not been configured yet, a missing key otherwise shows up as a
  * confusing "Invalid API key" at request time.
  */
 export function supabaseEnv() {

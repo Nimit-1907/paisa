@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  *
  * For "every 2 weeks" and nothing larger. A `type="number"` input here asks
  * for the on-screen number pad to set a value that is almost always 1, 2 or
- * 3 — and its native spinners are 12px tall, which is not a target. The
+ * 3, and its native spinners are 12px tall, which is not a target. The
  * field stays underneath for a keyboard and a screen reader; the buttons are
  * what a thumb uses.
  */

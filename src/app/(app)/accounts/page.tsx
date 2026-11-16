@@ -19,7 +19,6 @@ export default async function AccountsPage() {
     name: account.name,
     type: account.type,
     icon: account.icon,
-    color: account.color,
     tint: account.tint,
     initialBalance: String(account.initial_balance),
     balance: account.balance.toString(),

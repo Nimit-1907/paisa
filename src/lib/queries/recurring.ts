@@ -24,7 +24,7 @@ const SELECT = `
   id, type, amount, note, frequency, interval_count, start_date, anchor_day,
   end_date, next_run_on, last_run_on, skipped_dates, active,
   account_id, to_account_id, category_id,
-  category:categories(name, icon, color, tint),
+  category:categories(name, icon, tint),
   account:accounts!recurring_rules_account_id_fkey(name),
   to_account:accounts!recurring_rules_to_account_id_fkey(name)
 `;
@@ -49,7 +49,6 @@ type JoinedRule = {
   category: {
     name: string;
     icon: string | null;
-    color: string | null;
     tint: string | null;
   } | null;
   account: { name: string } | null;
@@ -69,7 +68,6 @@ function toRule(row: JoinedRule, recordCount = 0): RecurringRule {
     categoryId: row.category_id,
     categoryName: row.category?.name ?? null,
     categoryIcon: row.category?.icon ?? null,
-    categoryColor: row.category?.color ?? null,
     categoryTint: (row.category?.tint as string | null) ?? null,
     frequency: row.frequency,
     interval: row.interval_count,
@@ -170,7 +168,7 @@ export async function getCreatedOccurrences(
 
   // Scoped to the rules on screen, so the result is bounded by their number
   // times the length of the window and cannot quietly hit PostgREST's row
-  // cap — which would report an occurrence as uncreated when it is not.
+  // cap, which would report an occurrence as uncreated when it is not.
   const { data, error } = await supabase
     .from("transactions")
     .select("recurring_rule_id, occurred_at")

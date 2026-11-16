@@ -69,7 +69,7 @@ const RecordSheetContext = React.createContext<RecordSheetContextValue>({
  *
  * The FAB is in the (app) layout and has to work from every tab, so the sheet
  * lives here rather than in any one screen. The Records screen takes over
- * submitting while it is mounted — that is what lets a new row appear
+ * submitting while it is mounted, that is what lets a new row appear
  * optimistically instead of waiting for a round trip.
  */
 export function RecordSheetProvider({
@@ -158,7 +158,7 @@ export function RecordSheetProvider({
    *
    * This is the ending people repeat most, so it says what was saved rather
    * than that something was: "Expense saved / ₹450 · Food". Undo deletes the
-   * record it just made, with no second toast — the row leaving the list is
+   * record it just made, with no second toast, the row leaving the list is
    * the confirmation.
    */
   const submit = React.useCallback<RecordSubmit>(

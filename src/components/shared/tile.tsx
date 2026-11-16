@@ -39,7 +39,7 @@ export function Tile({
   icon: string | null;
   size?: keyof typeof SIZES;
   className?: string;
-  /** A badge pinned to the tile — the tick on a selected category. */
+  /** A badge pinned to the tile, the tick on a selected category. */
   children?: React.ReactNode;
 }) {
   const sizes = SIZES[size];

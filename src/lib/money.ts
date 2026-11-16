@@ -1,7 +1,7 @@
 /**
  * Money helpers.
  *
- * Money is stored as BIGINT minor units (paise/cents) everywhere — DB, server
+ * Money is stored as BIGINT minor units (paise/cents) everywhere, DB, server
  * actions, props. Floats never touch an amount: parsing and formatting are
  * pure string/BigInt arithmetic, so 0.1 + 0.2 problems cannot happen.
  *
@@ -44,8 +44,8 @@ export type FormatMoneyOptions = {
   /**
    * What to do with paise that are exactly zero.
    *
-   * - `show` (default): always print them — "₹450.00".
-   * - `trim`: print them only when there are some — "₹450", but "₹450.50"
+   * - `show` (default): always print them, "₹450.00".
+   * - `trim`: print them only when there are some, "₹450", but "₹450.50"
    *   stays intact.
    *
    * `trim` is not the same as {@link FormatMoneyOptions.whole}: it never
@@ -71,7 +71,7 @@ export const DEFAULT_CURRENCY_SETTINGS: CurrencySettings = {
 };
 
 /**
- * {@link formatMoney} bound to a user's currency — the form every screen
+ * {@link formatMoney} bound to a user's currency, the form every screen
  * should use, so an amount is never rendered with somebody else's symbol.
  */
 export function formatWith(
@@ -190,7 +190,7 @@ export function toMinor(
 }
 
 /**
- * Like {@link toMinor} but returns `null` instead of throwing — handy inside
+ * Like {@link toMinor} but returns `null` instead of throwing, handy inside
  * zod schemas and controlled inputs.
  */
 export function tryToMinor(
@@ -205,7 +205,7 @@ export function tryToMinor(
 }
 
 /**
- * Converts minor units back to a plain, ungrouped decimal string — the value
+ * Converts minor units back to a plain, ungrouped decimal string, the value
  * to put in an `<input inputMode="decimal">`.
  *
  * fromMinor(123450n) → "1234.50"
@@ -255,8 +255,8 @@ function groupDigits(digits: string, grouping: Grouping): string {
  * An amount broken into the pieces a screen styles separately.
  *
  * The sign, the symbol, the major digits and the paise are four different
- * kinds of thing — one is arithmetic, one is a unit, one is the number you
- * came for, and one is detail — and Phase 13 asks for the last two to be set
+ * kinds of thing, one is arithmetic, one is a unit, one is the number you
+ * came for, and one is detail, and Phase 13 asks for the last two to be set
  * back from the first. Returning parts rather than a string is what lets the
  * markup say that without any component re-deriving where the decimal point
  * fell, which is the kind of split that goes wrong on a currency with three
@@ -341,7 +341,7 @@ export function formatMoney(
  * is twelve. The scale follows the grouping the user already reads: thousand,
  * lakh and crore for ₹, thousand/million/billion otherwise.
  *
- * Only the label shortens — every number this is given has already been
+ * Only the label shortens, every number this is given has already been
  * through BigInt arithmetic, and nothing is computed from the result.
  */
 export function formatCompact(
@@ -396,7 +396,7 @@ export function formatCompact(
   return `${sign}${symbol}${groupDigits(major.toString(), grouping)}`;
 }
 
-/** `true` when the symbol groups Indian-style — exported for tests/UI copy. */
+/** `true` when the symbol groups Indian-style, exported for tests/UI copy. */
 export function usesIndianGrouping(symbol: string): boolean {
   return INDIAN_GROUPING_SYMBOLS.has(symbol);
 }
@@ -405,7 +405,7 @@ export function usesIndianGrouping(symbol: string): boolean {
  * Converts a BIGINT column as it arrives from PostgREST into minor units.
  *
  * supabase-js hands back `number` for a bigint column (JSON has no integer
- * type), which is exact up to 2^53 — about ₹90 trillion in paise — but is
+ * type), which is exact up to 2^53, about ₹90 trillion in paise, but is
  * still a float the moment anything multiplies it. Convert at the boundary and
  * keep BigInt everywhere above it.
  *
@@ -432,7 +432,7 @@ export function fromDb(value: number | string | bigint | null): bigint {
 /**
  * The counterpart to {@link fromDb}: minor units on their way into a BIGINT
  * column. supabase-js serialises to JSON, which cannot carry a BigInt, so the
- * value has to be a number — and has to still be exact when it gets there.
+ * value has to be a number, and has to still be exact when it gets there.
  *
  * @throws {MoneyParseError} when the amount is too large to survive JSON.
  */
@@ -450,8 +450,8 @@ export function toDb(minor: bigint): number {
  * The nearest number somebody would actually choose.
  *
  * A budget suggested as ₹7,842 looks like arithmetic; ₹8,000 looks like a
- * decision. Rounds up — a limit set below what was spent last month is a
- * limit that is already broken — to the nearest 500 under ₹10,000, the
+ * decision. Rounds up, a limit set below what was spent last month is a
+ * limit that is already broken, to the nearest 500 under ₹10,000, the
  * nearest 1,000 under ₹1,00,000, and the nearest 5,000 above that.
  */
 export function friendlyAmount(minor: bigint, decimals: number): bigint {
@@ -460,7 +460,7 @@ export function friendlyAmount(minor: bigint, decimals: number): bigint {
   const unit = 10n ** BigInt(decimals);
 
   // Rounded up, not truncated: a spend of one paisa divides to zero whole
-  // rupees, and a suggestion of ₹0 is below what was already spent — which
+  // rupees, and a suggestion of ₹0 is below what was already spent, which
   // is the one thing this must never produce.
   const whole = (minor + unit - 1n) / unit;
 

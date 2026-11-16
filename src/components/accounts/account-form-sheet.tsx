@@ -166,7 +166,7 @@ export function AccountFormSheet({
         <div className="space-y-1.5">
           <Label htmlFor="account-type">Type</Label>
           {/* Six options wrap to two rows, which a segmented control does
-              not do — this is a pill set, like the date presets. */}
+              not do, this is a pill set, like the date presets. */}
           <div
             id="account-type"
             role="radiogroup"

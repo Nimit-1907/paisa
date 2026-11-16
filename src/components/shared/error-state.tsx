@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 /**
  * Something did not load.
  *
- * Deliberately the same shape as {@link EmptyState} — icon, one sentence, one
- * button — because from where the user sits these are the same situation:
+ * Deliberately the same shape as {@link EmptyState}, icon, one sentence, one
+ * button, because from where the user sits these are the same situation:
  * the screen is not showing what they came for, and there is exactly one
  * thing to try. What it must never do is blame them or show a stack trace;
  * what it must always do is offer the retry, since the usual cause is a

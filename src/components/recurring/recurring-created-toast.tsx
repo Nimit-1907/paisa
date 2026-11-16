@@ -13,7 +13,7 @@ import { toast } from "sonner";
  * records query can finish before the generator has inserted anything, so
  * without this the new rows would only appear on the next navigation.
  *
- * Refreshing cannot loop — the second render finds today already stamped, so
+ * Refreshing cannot loop, the second render finds today already stamped, so
  * `created` comes back 0 and this does nothing.
  */
 export function RecurringCreatedToast({ created }: { created: number }) {

@@ -2,7 +2,7 @@
 --
 -- `category_totals` feeds the Analysis donut and its legend, and `quick_adds`
 -- feeds the chips on the Add Record sheet. Both already returned `color`, and
--- since Phase 14 every tile on screen is a tint rather than a hex — so both
+-- since Phase 14 every tile on screen is a tint rather than a hex, so both
 -- have to return it, or those two screens are the only ones left drawing
 -- grey tiles.
 --

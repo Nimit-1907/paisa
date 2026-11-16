@@ -1,6 +1,6 @@
 -- Paisa: saving the settings form in one go.
 --
--- The form changes four things at once, and one of them — the currency — can
+-- The form changes four things at once, and one of them, the currency, can
 -- rewrite every amount the user owns. Doing that as two round trips means a
 -- window where the amounts have been rescaled and the name has not, and the
 -- screen says the save failed. One function is one transaction: either the

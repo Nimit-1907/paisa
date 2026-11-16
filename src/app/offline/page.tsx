@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Offline" };
  * build time, which means it cannot read cookies, call Supabase, or render
  * anything that depends on who is signed in.
  *
- * It is honest about the limitation rather than pretending — this app's
+ * It is honest about the limitation rather than pretending, this app's
  * writes all go through Server Actions, so without a network there is nothing
  * useful to offer beyond "the pages you have already opened still work".
  */

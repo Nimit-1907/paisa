@@ -50,7 +50,7 @@ export type BudgetTone = "under" | "close" | "over";
  *
  * 80% is where the warning starts, which is early enough to change something
  * and late enough not to cry wolf every month. Exactly on budget counts as
- * close rather than over — spending the last rupee of a limit is not a
+ * close rather than over, spending the last rupee of a limit is not a
  * failure.
  */
 export function budgetTone(spent: bigint, budget: bigint): BudgetTone {

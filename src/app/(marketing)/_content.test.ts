@@ -12,7 +12,7 @@ describe("feature", () => {
     // The landing page asks for three of these by name while a Server
     // Component renders. A missing one should stop the build, not render a
     // blank card and throw on `.title` somewhere further down.
-    // @ts-expect-error — the point is what happens when the id is not one.
+    // @ts-expect-error: the point is what happens when the id is not one.
     expect(() => feature("nope")).toThrow(/No feature called/);
   });
 

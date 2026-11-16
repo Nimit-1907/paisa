@@ -21,7 +21,7 @@ import {
 /**
  * The schemas are the only thing between a Server Action and the database.
  *
- * Every one of these rules exists because the database enforces it too — a
+ * Every one of these rules exists because the database enforces it too, a
  * constraint violation reaches the user as "new row violates check
  * constraint", which tells them nothing. These tests check that the readable
  * answer comes out instead, and that nothing gets through that the database
@@ -385,7 +385,7 @@ describe("rangeToInstants", () => {
 
     // 1 November in Kolkata begins at 18:30 UTC on 31 October.
     expect(range?.startsAt).toBe("2026-10-31T18:30:00.000Z");
-    // Exclusive, at the start of 1 December — so all of the 30th is inside.
+    // Exclusive, at the start of 1 December, so all of the 30th is inside.
     expect(range?.endsAt).toBe("2026-11-30T18:30:00.000Z");
   });
 

@@ -11,7 +11,7 @@
  *
  * No score and no coloured bar. A bar turns "is this good enough?" into a
  * number nobody can act on, and the usual implementations rate `P@ssw0rd!`
- * well and `correct horse battery staple` badly — which is backwards.
+ * well and `correct horse battery staple` badly, which is backwards.
  */
 
 export const MIN_LENGTH = 8;
@@ -21,7 +21,7 @@ export const COMFORTABLE_LENGTH = 12;
 /**
  * The handful that show up at the top of every breach list.
  *
- * Not a security control — the real one is the length rule and the fact that
+ * Not a security control, the real one is the length rule and the fact that
  * these are hashed. It is here so that the one person typing "password1"
  * gets told, which is the case where a warning is worth anything at all.
  */

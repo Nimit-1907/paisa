@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  *
  * Periwinkle, which is one of the five places that colour is allowed. It
  * earns it by being the only thing on the screen that is neither a figure
- * nor a control — the tint is what says "this is a remark, not data", so
+ * nor a control, the tint is what says "this is a remark, not data", so
  * nobody reads it as another total.
  *
  * Deliberately one line and no action. An insight that opens something is a

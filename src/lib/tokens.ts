@@ -196,7 +196,7 @@ export function contrast(a: string, b: string): number {
  *
  * Charts are the only place: recharts wants a `fill` string, not a class
  * name. It stays a `var()` rather than a resolved hex so an SVG painted with
- * it follows light and dark without a theme hook or a re-render — which is
+ * it follows light and dark without a theme hook or a re-render, which is
  * also why `src/lib/colors.ts`'s hexes could never have been used here
  * safely once the palette started having two halves.
  */
@@ -214,7 +214,7 @@ export const TINT_CYCLE: string[] = TINT_KEYS.filter(
  *
  * Stable and spread: the same name always gets the same tint, and two names
  * typed one after another almost never get the same one. `neutral` is left
- * out — it is the fallback for a row with no tint at all, and handing it out
+ * out, it is the fallback for a row with no tint at all, and handing it out
  * as a default would make "no colour chosen" and "grey chosen" the same
  * thing.
  */

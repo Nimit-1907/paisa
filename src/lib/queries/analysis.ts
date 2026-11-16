@@ -16,10 +16,9 @@ export type CategorySlice = {
   name: string;
   icon: string | null;
   /** Kept while the old column exists; nothing reads it since Phase 14. */
-  color: string | null;
-  /** One of the eight tint keys — the donut slice and the legend tile. */
+  /** One of the eight tint keys, the donut slice and the legend tile. */
   tint: string | null;
-  /** Minor units as text — an RSC payload cannot carry a BigInt. */
+  /** Minor units as text, an RSC payload cannot carry a BigInt. */
   total: string;
 };
 
@@ -73,7 +72,7 @@ export type AnalysisKind = Database["public"]["Enums"]["category_kind"];
  * rows back to add them up here would mean a year of records crossing the
  * wire to produce twelve numbers.
  *
- * The previous period is fetched for one figure — the change card — so it
+ * The previous period is fetched for one figure, the change card, so it
  * asks only for the totals, not the breakdown.
  */
 export async function getAnalysis({
@@ -144,7 +143,6 @@ export async function getAnalysis({
     categoryId: row.category_id,
     name: row.name,
     icon: row.icon,
-    color: row.color,
     // The generator types a domain column as `unknown`.
     tint: (row.tint as string | null) ?? null,
     total: fromDb(row.total).toString(),
@@ -226,7 +224,7 @@ export async function getBalanceAccounts() {
 
   const { data, error } = await supabase
     .from("accounts")
-    .select("id, name, color, icon, tint")
+    .select("id, name, icon, tint")
     .eq("archived", false)
     .order("sort_order", { ascending: true });
 

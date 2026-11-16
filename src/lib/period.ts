@@ -5,7 +5,7 @@ import { addDays, dayDifference, daysInMonth, weekdayOf } from "@/lib/recurrence
  *
  * A period is two local calendar days, inclusive of both, plus enough about
  * where it came from to step it and to name it. Everything here is pure
- * `yyyy-mm-dd` string arithmetic — which instant a day starts at is
+ * `yyyy-mm-dd` string arithmetic, which instant a day starts at is
  * lib/dates.ts's business, and the RPCs do that conversion themselves.
  */
 

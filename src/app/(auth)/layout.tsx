@@ -6,7 +6,7 @@ import { AppPreview } from "@/components/marketing/app-preview";
  * The signed-out frame.
  *
  * One centred card on a phone. From `lg` up it splits: the app on the left,
- * the form on the right — because a laptop has 1,280 pixels and a form that
+ * the form on the right, because a laptop has 1,280 pixels and a form that
  * is 384 of them floating in the middle of them reads as an error page. The
  * left half is also the only place a signed-out visitor sees what they are
  * signing in to.

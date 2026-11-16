@@ -14,8 +14,8 @@ import {
  * Toasts, in the Phase 14 language.
  *
  * The variables sonner reads were pointed at `--popover` and `--radius`,
- * neither of which this app defines — `--color-popover` is the Tailwind
- * theme key, not a raw custom property — so every toast was falling back to
+ * neither of which this app defines, `--color-popover` is the Tailwind
+ * theme key, not a raw custom property, so every toast was falling back to
  * sonner's own colours and sitting outside the design language entirely.
  * They are the raw tokens now, with the 14px toast radius.
  *
@@ -57,7 +57,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast: "cn-toast text-sm",
           description: "text-text-secondary",
           // The undo in a toast is the only safety net behind a delete, so
-          // it is an ink pill rather than a link — the same shape as the
+          // it is an ink pill rather than a link, the same shape as the
           // primary button everywhere else.
           actionButton:
             "bg-ink! text-on-ink! rounded-control! h-8! px-3! text-xs! font-semibold!",

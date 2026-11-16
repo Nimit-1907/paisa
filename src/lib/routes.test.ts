@@ -59,8 +59,8 @@ describe("route groups", () => {
   });
 
   it("leaves password reset and the callback alone", () => {
-    // Both are reached with a session — the recovery link signs the user in
-    // first — so neither may be treated as an auth page to bounce away from.
+    // Both are reached with a session, the recovery link signs the user in
+    // first, so neither may be treated as an auth page to bounce away from.
     expect(isNeutralPath("/reset-password")).toBe(true);
     expect(isNeutralPath("/auth/callback")).toBe(true);
     expect(isAuthPath("/reset-password")).toBe(false);

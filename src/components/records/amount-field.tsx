@@ -38,7 +38,7 @@ type AmountProps = {
   /**
    * Which sign and colour the symbol takes.
    *
-   * `neutral` is for an amount that is not a movement of money — a budget
+   * `neutral` is for an amount that is not a movement of money, a budget
    * limit, a starting balance. Those have no direction, and a minus sign in
    * front of a budget says the opposite of what a budget is.
    */
@@ -50,11 +50,11 @@ type AmountProps = {
  *
  * Phase 14 takes it out of its grey box and sets it centred in the display
  * face at 48px, with the sign and the currency symbol in the money colour
- * and the digits in ink — which is the reference's arrangement, and the
+ * and the digits in ink, which is the reference's arrangement, and the
  * reason the sign is legible at all at that size.
  *
  * The field itself is visually hidden behind the figure, and the whole
- * display is its label — so a tap anywhere on the amount puts the caret in
+ * display is its label, so a tap anywhere on the amount puts the caret in
  * it and raises the device keyboard, which `inputMode="decimal"` makes a
  * number pad. That is the only amount entry there is now: the 4×4 grid this
  * file used to export was 210px of fixed furniture in a sheet whose

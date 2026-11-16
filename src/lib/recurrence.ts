@@ -91,7 +91,7 @@ export function dayDifference(from: string, to: string): number {
  * The nth occurrence of a schedule, counting its start date as the 0th.
  *
  * Monthly and yearly land on the anchor day, clamped to the length of the
- * month they fall in — 31 January, 28 February, 31 March, not 31 January,
+ * month they fall in, 31 January, 28 February, 31 March, not 31 January,
  * 28 February, 28 March. Stepping from the previous occurrence instead is
  * what causes that drift, and it never recovers.
  */
@@ -130,7 +130,7 @@ export function occurrenceOn(schedule: RecurrenceSchedule, n: number): string {
  * The first date on the schedule that is on or after `from`.
  *
  * The estimate is exact for daily and weekly and at most one step out for
- * monthly and yearly — a clamped month can land before the anchor — so both
+ * monthly and yearly, a clamped month can land before the anchor, so both
  * directions are walked afterwards. This is the pure schedule: it knows
  * nothing about skipped occurrences or an end date, exactly like
  * `recurrence_after()` in SQL.
@@ -186,7 +186,7 @@ export function scheduledOnOrAfter(
  * The next occurrence the user should actually expect on or after `from`:
  * on the schedule, not skipped, not past the end date.
  *
- * Null means the schedule has nothing left — it ended, or every remaining
+ * Null means the schedule has nothing left, it ended, or every remaining
  * occurrence was skipped.
  */
 export function nextOccurrence(
@@ -233,7 +233,7 @@ export function upcoming(
   return dates;
 }
 
-/** Every occurrence between two dates, inclusive — the Upcoming window. */
+/** Every occurrence between two dates, inclusive, the Upcoming window. */
 export function occurrencesBetween(
   schedule: RecurrenceSchedule,
   from: string,

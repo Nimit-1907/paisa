@@ -13,7 +13,7 @@ const AXIS_LOCK = 10;
  * Swiping across the header changes the month.
  *
  * The stepper arrows are 44px targets at the top-right of the screen, which
- * is the hardest place on a phone for a right thumb to reach — and stepping
+ * is the hardest place on a phone for a right thumb to reach, and stepping
  * back through a few months is the one thing people do over and over on this
  * screen. The swipe is the shortcut; the arrows stay exactly where they were.
  *

@@ -5,11 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * `hoverable:` — hover styles, only where there is a pointer to hover with.
+ * `hoverable:`, hover styles, only where there is a pointer to hover with.
  *
  * Tailwind's built-in variant compiles to a bare `:hover`, and a touchscreen
  * fires that on tap and then leaves it on, so a tapped row stays highlighted
- * until something else is tapped — it reads as "still selected" when it is
+ * until something else is tapped, it reads as "still selected" when it is
  * not. Tailwind will not let a built-in variant be redefined, so the app uses
  * this one instead and every hover style in it sits behind a real pointer
  * (CLAUDE.md: never rely on hover).
@@ -24,7 +24,7 @@
 
 /*
  * ═══════════════════════════════════════════════════════════════════════
- * Paisa — modern minimal with neo-brutalist accents (Phase 14)
+ * Paisa, modern minimal with neo-brutalist accents (Phase 14)
  * ═══════════════════════════════════════════════════════════════════════
  *
  * The rule that makes this style work is restraint: everything is flat,
@@ -32,7 +32,7 @@
  * screen and a handful of selected states. Bold is a signal, and a signal
  * used twice on a screen is decoration.
  *
- * Phase 14 replaces the Phase 11–12 surface language entirely — no glass,
+ * Phase 14 replaces the Phase 11–12 surface language entirely, no glass,
  * no backdrop blur, no grain, no gradients, no soft shadows, no serif. The
  * sixteen-swatch colour palette becomes eight soft tints that carry
  * identity without carrying emphasis.
@@ -47,7 +47,7 @@
    * Two families, two jobs.
    *
    * Inter is everything you read. Bricolage Grotesque 800 is page titles
-   * and hero numbers, and nothing else — a display face used for a third
+   * and hero numbers, and nothing else, a display face used for a third
    * thing stops being a signal.
    */
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
@@ -96,7 +96,7 @@
    * ── Soft tints ─────────────────────────────────────────────────────
    *
    * Eight keys, carrying identity rather than emphasis. Icons and text on
-   * them are always plain ink — measured at 11:1 or better on every tint
+   * them are always plain ink, measured at 11:1 or better on every tint
    * in both themes, so a tint never has to be checked again.
    */
   --color-tint-rose: var(--tint-rose);
@@ -153,7 +153,7 @@
   --shadow-accent-lg: 4px 4px 0 var(--ink);
 
   /*
-   * One step below text-xs, for the label above a number. Sentence case —
+   * One step below text-xs, for the label above a number. Sentence case,
    * Phase 14 removes uppercase labels everywhere.
    */
   --text-label: 0.6875rem;
@@ -224,7 +224,7 @@
    * Six values that deliberately do **not** follow the current theme: the
    * Light tile has to look light while the app is dark, which is the one
    * thing a token that follows the theme cannot do. They live here rather
-   * than in the component because colour lives here — `grep` for a hex in
+   * than in the component because colour lives here, `grep` for a hex in
    * src/components should find nothing.
    */
   --preview-light-page: #f6f6f4;
@@ -297,7 +297,7 @@
 
 /*
  * Clearance under the floating dock: 12px inset + 60px dock + breathing
- * room, plus the home bar. The dock is the only fixed furniture now — the
+ * room, plus the home bar. The dock is the only fixed furniture now, the
  * separate FAB is gone, since the Add button lives in its centre.
  */
 @utility pb-dock {

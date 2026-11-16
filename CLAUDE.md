@@ -65,11 +65,15 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   an optional one is marked with nothing. No field is labelled "Optional".
 - Selects are `src/components/ui/select.tsx`, never a native `<select>`:
   the OS list knows nothing about the radii, the hairlines or the 44px
-  floor. Dates are `DateInput` (`src/components/shared/date-input.tsx`):
-  typed as digits with the slashes drawn for you (15112026 is 15/11/2026),
-  or picked from the calendar beside it. Date cards (`DateField`,
-  `WhenField`) open the same typed field and calendar in a panel. No
-  native `type="date"` or `datetime-local` anywhere.
+  floor. Every date is chosen through `src/components/shared/date-picker.tsx`:
+  `DatePicker` (one day), `DateTimePicker` (a day and a time) and
+  `DateRangeField` (preset pills plus a From and To pair). Each is a
+  field card that opens the same panel: the date typed as digits with the
+  slashes drawn for you (15112026 is 15/11/2026), the one `Calendar`
+  (`shared/calendar.tsx`, the user's week start, a month and year view,
+  arrow keys), an optional `TimeInput` (digits plus AM/PM), and Today,
+  Clear and Done. No native `type="date"`, `type="time"` or
+  `datetime-local` anywhere, and no calendar drawn anywhere else.
 - Every screen's header is `PageHeader`, and it is the same everywhere:
   the mark (phones and tablets; the sidebar has it on desktop), the title
   with a one-line `description` (required, short enough to read whole at
@@ -131,7 +135,7 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - Screens are built from the shared components, not from fresh markup:
   `PageHeader`, `PageShell`, `HeroStat`, `SectionHeader`, `ListRow`, `Card`,
   `ListCard`, `HeroCard`, `Tile`, `TilePicker`, `TintPicker`, `FieldCard`,
-  `SegmentedControl`, `ProgressBar`, `RangeCalendar`, `DateInput`,
+  `SegmentedControl`, `ProgressBar`, `DatePicker`, `DateRangeField`,
   `Stepper`, `Pill`, `StickyActionBar`, `EmptyState`, `ErrorState`,
   `ConfirmDialog`, and the `Select` and dropdown-menu primitives. If a
   screen needs something one of these nearly does, change the shared one.

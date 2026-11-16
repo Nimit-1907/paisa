@@ -7,7 +7,7 @@
 -- mostly check the RPCs against something already trusted: month_summary for
 -- the totals, account_balances for the closing balance.
 --
--- The rest is about shape — empty buckets present, both ends of the range
+-- The rest is about shape, empty buckets present, both ends of the range
 -- included, transfers counted once or not at all.
 
 begin;

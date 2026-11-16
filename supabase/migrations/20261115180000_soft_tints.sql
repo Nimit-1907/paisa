@@ -1,7 +1,7 @@
 -- Paisa: eight soft tints, in place of sixteen free colours.
 --
 -- Phase 14 replaces the colour picker with a fixed set of eight pastel keys.
--- A tint carries identity — "this row is Food" — and deliberately carries no
+-- A tint carries identity, "this row is Food", and deliberately carries no
 -- emphasis: every one of them takes plain ink text at 11:1 or better in both
 -- themes, so a tile can never be the loudest thing on a screen.
 --
@@ -35,7 +35,7 @@ comment on column public.accounts.tint is
  *
  * Not by colour. The old hexes were a curated-but-arbitrary sixteen, and
  * mapping them to eight pastels by distance would put Food and Fuel on the
- * same tint because their oranges were adjacent — while what people actually
+ * same tint because their oranges were adjacent, while what people actually
  * remember is that Food is the pink one. The names are the meaning, so the
  * names are what is mapped; anything unrecognised gets neutral, which reads
  * as "not chosen" rather than as a wrong guess.
@@ -74,8 +74,8 @@ end;
  *
  * `color` stays in the signature and the table: dropping a column is the one
  * migration that cannot be undone by the next one, and an export written
- * before today still refers to it. The app stops reading it — see
- * src/lib/queries — and a later phase can drop it once nothing has for a
+ * before today still refers to it. The app stops reading it, see
+ * src/lib/queries, and a later phase can drop it once nothing has for a
  * while.
  */
 -- Dropped first: `create or replace` cannot change a function's return

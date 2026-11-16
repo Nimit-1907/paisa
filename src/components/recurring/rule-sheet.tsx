@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { createRecurringRule, updateRecurringRule } from "@/actions/recurring";
 import { useCurrency } from "@/components/profile-provider";
 import { AmountDisplay } from "@/components/records/amount-field";
+import { DatePicker, formatDay } from "@/components/shared/date-picker";
 import {
   type AccountOption,
   AccountSelect,
-  DateField,
   CategoryGrid,
   type CategoryOption,
   TypeTabs,
@@ -45,7 +45,7 @@ import {
  * account. A new rule whose first date is today or past posts that
  * occurrence as it saves.
  *
- * The same template a record has — type, amount, category, account, note —
+ * The same template a record has, type, amount, category, account, note,
  * plus the schedule. Nothing here touches the records the rule has already
  * created: changing the rent to ₹24,000 is a statement about next month, not
  * a correction of the last three.
@@ -338,19 +338,21 @@ export function RuleSheet({
               )}
             </FormRow>
 
-            <DateField
+            <DatePicker
               id="rule-next"
               label={rule ? "Next due" : "First on"}
+              required
               value={nextRunOn}
               onChange={setNextRunOn}
               invalid={errorField === "nextRunOn"}
             />
           </div>
 
-          <DateField
+          <DatePicker
             id="rule-end"
             label="Until"
             placeholder="No end date"
+            clearable
             value={endDate}
             onChange={setEndDate}
             min={nextRunOn || undefined}
@@ -365,7 +367,7 @@ export function RuleSheet({
 
           {preview ? (
             <p className="text-text-secondary text-xs" aria-live="polite">
-              {preview}, starting {nextRunOn}
+              {preview}, starting {formatDay(nextRunOn)}
             </p>
           ) : null}
         </div>

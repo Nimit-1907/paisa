@@ -20,7 +20,7 @@ declare const self: ServiceWorkerGlobalScope;
  *
  * That is also why the only offline affordance is the fallback page. Every
  * write in this app goes through a Server Action, so an offline queue would
- * mean reimplementing the whole write path against a local store — a real
+ * mean reimplementing the whole write path against a local store, a real
  * feature, not a polish item.
  */
 const serwist = new Serwist({

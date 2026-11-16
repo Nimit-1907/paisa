@@ -3,8 +3,8 @@
 --     supabase test db
 --
 -- The one irreversible thing in the app. It has to take everything that
--- belongs to the caller — the cascades are what do that, and a missing one
--- would leave orphaned rows nobody can reach or delete — and it has to be
+-- belongs to the caller, the cascades are what do that, and a missing one
+-- would leave orphaned rows nobody can reach or delete, and it has to be
 -- incapable of touching anyone else.
 
 begin;
@@ -96,7 +96,7 @@ select throws_ok(
   $$ select public.claim_password_attempt() $$,
   '53400',
   null,
-  'the sixth is refused — a stolen session is not a guessing machine'
+  'the sixth is refused, a stolen session is not a guessing machine'
 );
 
 -- There is no reset to call: one would be callable by the same stolen
@@ -112,7 +112,7 @@ select is(
 );
 
 -- Winding the clock back has to be done as the owner, because the column is
--- exactly the one the user may not write — which is the point.
+-- exactly the one the user may not write, which is the point.
 reset role;
 
 update public.profiles

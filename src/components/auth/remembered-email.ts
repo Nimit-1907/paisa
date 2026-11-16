@@ -6,7 +6,7 @@
  * A per-device convenience, which is exactly what `localStorage` is for: it
  * never leaves the device, it is not state the app relies on, and the screen
  * is correct without it. Everything is wrapped, because a private window or
- * blocked site data makes these accessors throw rather than return nothing —
+ * blocked site data makes these accessors throw rather than return nothing,
  * and a sign-in page that crashes because it could not remember an email is
  * a worse outcome than not remembering it.
  *

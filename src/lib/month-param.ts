@@ -16,7 +16,7 @@ export type SelectedMonth = {
 /**
  * Reads `?m=2026-11`, falling back to the month the user is currently in.
  *
- * Anything unparseable or in the future falls back too — the parameter comes
+ * Anything unparseable or in the future falls back too, the parameter comes
  * from the URL bar, and a month in 1823 is not worth a query.
  */
 export function selectedMonth(

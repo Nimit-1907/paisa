@@ -4,7 +4,7 @@ import { z } from "zod";
  * Schemas shared by the forms and the Server Actions.
  *
  * They live outside `src/actions/auth.ts` because a "use server" module may
- * only export async functions — and because the browser should reject an empty
+ * only export async functions, and because the browser should reject an empty
  * password before spending a round trip on it. The action re-validates: the
  * client-side check is a courtesy, never the gate.
  */

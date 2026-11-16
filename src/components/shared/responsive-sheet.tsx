@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
  * A bottom sheet on phones, a centred dialog from `lg` up (CLAUDE.md).
  *
  * The media query returns false on the server and on the first client render,
- * so the mobile branch is what gets rendered first — mobile-first in the
+ * so the mobile branch is what gets rendered first, mobile-first in the
  * literal sense.
  */
 export function ResponsiveSheet({
@@ -74,7 +74,7 @@ export function ResponsiveSheet({
         on screen while the amount is typed and being a scroll away.
 
         And higher again on a short phone. 64px of backdrop plus an 8% cap
-        is 115px on a 667px screen — an iPhone SE — which the add sheet does
+        is 115px on a 667px screen, an iPhone SE, which the add sheet does
         not have to give: measured there, the category grid, which is step
         three of a four-tap flow, had no row fully on screen at all. A phone
         tall enough for the grid keeps the roomier framing; one that is not
@@ -132,7 +132,7 @@ export function ResponsiveSheet({
  * Put focus back where it came from when a sheet closes.
  *
  * These sheets are opened from a context rather than from a trigger element,
- * so the dialog has nothing to hand focus back to and drops it on the body —
+ * so the dialog has nothing to hand focus back to and drops it on the body,
  * which sends a keyboard user back to the top of the page every time they
  * close one. Remembering what was focused is the only thing that can know.
  */
@@ -175,11 +175,11 @@ export function SheetBody({
   /**
    * Take whatever height is left rather than a share of the window.
    *
-   * For a sheet with something fixed below the scrolling part — the add
+   * For a sheet with something fixed below the scrolling part, the add
    * sheet's keypad. A measured `max-h` cannot know how tall that is, and
    * guessing is how the keypad ended up half off the bottom of a 390×844
    * phone; `flex-1` with `min-h-0` asks the flex column instead, which
-   * does know — and the desktop dialog is the same flex column, so the
+   * does know, and the desktop dialog is the same flex column, so the
    * keypad and the save button stay put there too.
    */
   fill?: boolean;
@@ -229,7 +229,7 @@ export function SheetHead({
 /**
  * The save area of a sheet.
  *
- * A thin naming layer over {@link StickyActionBar} — the keyboard handling
+ * A thin naming layer over {@link StickyActionBar}, the keyboard handling
  * and the surface live there now, so the sheet and the page cannot drift
  * apart.
  */

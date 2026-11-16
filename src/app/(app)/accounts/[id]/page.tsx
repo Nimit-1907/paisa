@@ -67,14 +67,13 @@ export default async function AccountDetailPage({
   ]);
 
   // The island below is a client component, so the account crosses the
-  // boundary as the same `AccountView` every other screen uses — amounts as
+  // boundary as the same `AccountView` every other screen uses, amounts as
   // minor-unit strings, because an RSC payload has no BigInt.
   const view: AccountView = {
     id: account.id,
     name: account.name,
     type: account.type,
     icon: account.icon,
-    color: account.color,
     tint: account.tint,
     initialBalance: account.initial_balance.toString(),
     balance: balance.toString(),
@@ -94,7 +93,9 @@ export default async function AccountDetailPage({
       <PageHeader
         title={account.name}
         back={{ href: "/accounts", label: "Back to accounts" }}
-        description={`${ACCOUNT_TYPE_LABELS[account.type]}${
+        // "Cash account" rather than "Cash" under a title that may already
+        // be "Cash".
+        description={`${ACCOUNT_TYPE_LABELS[account.type]} account${
           account.archived ? " · Archived" : ""
         }`}
         actions={<AccountActions account={view} />}

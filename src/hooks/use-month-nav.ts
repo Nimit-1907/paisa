@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 export type MonthBounds = {
   year: number;
   month: number;
-  /** The latest month worth offering — "today" in the user's timezone. */
+  /** The latest month worth offering, "today" in the user's timezone. */
   maxYear: number;
   maxMonth: number;
 };
@@ -15,8 +15,8 @@ export type MonthBounds = {
 /**
  * Moving between months, in one place.
  *
- * Three things change the month now — the stepper buttons, a swipe across the
- * header, and the arrow keys — and all three have to clamp at the current
+ * Three things change the month now, the stepper buttons, a swipe across the
+ * header, and the arrow keys, and all three have to clamp at the current
  * month, keep the rest of the query string, and replace rather than push. The
  * first version of this lived inside the stepper, which is why the other two
  * did not exist.

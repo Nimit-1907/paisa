@@ -4,7 +4,7 @@
  * A per-device convenience, like the remembered email: it never leaves the
  * browser, nothing depends on it, and the screen is correct without it. Every
  * accessor is wrapped, because a private window or blocked site data makes
- * them throw rather than return nothing — and a search screen that crashes
+ * them throw rather than return nothing, and a search screen that crashes
  * because it could not read a history is worse than one with no history.
  *
  * Notes can hold anything somebody typed, so these strings are rendered as
@@ -17,7 +17,7 @@ const KEY = "paisa:recent-searches";
 /** Five is a list you can read; twenty is a second screen to search. */
 export const MAX_RECENT = 5;
 
-/** The longest query worth keeping — past this it is a paste, not a search. */
+/** The longest query worth keeping, past this it is a paste, not a search. */
 const MAX_LENGTH = 80;
 
 function read(raw: string | null): string[] {

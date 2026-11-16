@@ -50,7 +50,7 @@ export async function signUp(
   // is already registered. Deliberately not surfaced: answering differently
   // here would let anyone test an address for an account, which is the same
   // leak requestPasswordReset is careful to avoid. The cost is that someone
-  // who forgot they have an account is told to check their email — the sign
+  // who forgot they have an account is told to check their email, the sign
   // in and reset links are right there on the next screen.
   return ok({
     needsEmailConfirmation: data.session === null,
@@ -108,7 +108,7 @@ export async function requestPasswordReset(
 
     // Everything else answers the same way the success path does: telling an
     // anonymous caller which addresses are registered is an
-    // account-enumeration gift. Logged, though — otherwise a broken SMTP
+    // account-enumeration gift. Logged, though, otherwise a broken SMTP
     // config looks exactly like a delivered email.
     console.error("[auth] password reset failed:", error.message);
   }
@@ -123,7 +123,7 @@ export async function requestPasswordReset(
  * {@link requestPasswordReset} does: a different answer for "no such
  * account" or "already confirmed" would let an anonymous caller test
  * addresses one at a time. The rate limit is the one thing worth saying out
- * loud, because it is the one a person can do something about — wait.
+ * loud, because it is the one a person can do something about, wait.
  */
 export async function resendConfirmation(
   input: ResetRequestInput,

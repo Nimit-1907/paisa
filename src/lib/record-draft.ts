@@ -6,7 +6,7 @@ import type { TransactionRow } from "@/lib/queries/transactions";
  * A record as the sheet's draft.
  *
  * Shared by Edit and Duplicate on the records list, by the detail sheet, and
- * by a search result — four places that all mean "open this record in the
+ * by a search result, four places that all mean "open this record in the
  * sheet", and which were one copy-paste away from disagreeing about whether
  * the recurring rule travels with it.
  */

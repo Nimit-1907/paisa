@@ -2,7 +2,7 @@
 --
 -- profiles.display_name doubles as the "has this user been through first-run
 -- setup?" flag. The original trigger copied a name out of the signup form's
--- metadata, which set the flag before onboarding had run — so anyone who
+-- metadata, which set the flag before onboarding had run, so anyone who
 -- typed their name at signup never got asked for a currency or an opening
 -- balance, and landed on an app configured entirely by defaults.
 --

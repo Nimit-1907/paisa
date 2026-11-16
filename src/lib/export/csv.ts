@@ -10,7 +10,7 @@
  * One field, quoted when it has to be.
  *
  * A leading `=`, `+`, `-`, `@`, tab or carriage return makes Excel, Sheets and
- * LibreOffice treat the cell as a formula — `=HYPERLINK(...)` in a note is a
+ * LibreOffice treat the cell as a formula, `=HYPERLINK(...)` in a note is a
  * phishing link in someone else's spreadsheet. Prefixing with an apostrophe
  * is the usual defence: the cell reads as text and the apostrophe is not
  * shown.

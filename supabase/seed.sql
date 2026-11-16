@@ -113,7 +113,6 @@ begin
   update public.accounts
   set initial_balance = 480000,  -- ₹4,800 in the wallet on day one
       icon = 'Wallet',
-      color = '#008781',
       -- Phase 14: accounts take their tint from their type.
       tint = 'mint',
       sort_order = 0
@@ -121,21 +120,21 @@ begin
   returning id into v_cash;
 
   insert into public.accounts (
-    user_id, name, type, icon, color, tint, initial_balance, sort_order
+    user_id, name, type, icon, tint, initial_balance, sort_order
   )
-  values (c_user, 'HDFC Savings', 'bank', 'Landmark', '#4671B7', 'sky', 14250000, 1)
+  values (c_user, 'HDFC Savings', 'bank', 'Landmark', 'sky', 14250000, 1)
   returning id into v_bank;
 
   insert into public.accounts (
-    user_id, name, type, icon, color, tint, initial_balance, include_in_total, sort_order
+    user_id, name, type, icon, tint, initial_balance, include_in_total, sort_order
   )
-  values (c_user, 'ICICI Credit Card', 'card', 'CreditCard', '#A65175', 'lilac', 0, true, 2)
+  values (c_user, 'ICICI Credit Card', 'card', 'CreditCard', 'lilac', 0, true, 2)
   returning id into v_card;
 
   insert into public.accounts (
-    user_id, name, type, icon, color, tint, initial_balance, sort_order
+    user_id, name, type, icon, tint, initial_balance, sort_order
   )
-  values (c_user, 'Paytm Wallet', 'wallet', 'Smartphone', '#7D5FAD', 'peach', 125000, 3)
+  values (c_user, 'Paytm Wallet', 'wallet', 'Smartphone', 'peach', 125000, 3)
   returning id into v_wallet;
 
   -- Three months of records ------------------------------------------------
@@ -149,29 +148,29 @@ begin
         values
           -- day, kind,      category,        note,                              min paise, max paise, account
           ( 1, 'income',  'Salary',        'Salary credited',                   8500000, 8500000, 'bank'),
-          ( 3, 'expense', 'Rent',          'Rent — landlord UPI',               2200000, 2200000, 'bank'),
+          ( 3, 'expense', 'Rent',          'Rent, landlord UPI',               2200000, 2200000, 'bank'),
           ( 3, 'expense', 'Bills',         'Jio postpaid',                        79900,   79900, 'card'),
           ( 4, 'expense', 'Groceries',     'BigBasket monthly stock-up',         320000,  480000, 'card'),
           ( 5, 'expense', 'Bills',         'Electricity bill',                   145000,  260000, 'bank'),
-          ( 6, 'expense', 'Food',          'Swiggy — biryani',                    32000,   52000, 'card'),
+          ( 6, 'expense', 'Food',          'Swiggy, biryani',                    32000,   52000, 'card'),
           ( 7, 'expense', 'Transport',     'Auto to office',                       6000,   12000, 'cash'),
-          ( 8, 'expense', 'Fuel',          'Petrol — Indian Oil',                 150000,  250000, 'card'),
+          ( 8, 'expense', 'Fuel',          'Petrol, Indian Oil',                 150000,  250000, 'card'),
           ( 9, 'expense', 'Food',          'Chai and vada pav',                    4000,    9000, 'cash'),
           (10, 'expense', 'Entertainment', 'Netflix',                              64900,   64900, 'card'),
           (11, 'expense', 'Groceries',     'DMart run',                           95000,  180000, 'card'),
           (12, 'expense', 'Health',        'Apollo Pharmacy',                     38000,   92000, 'wallet'),
-          (13, 'expense', 'Food',          'Zomato — team lunch',                 45000,   78000, 'card'),
+          (13, 'expense', 'Food',          'Zomato, team lunch',                 45000,   78000, 'card'),
           (14, 'expense', 'Transport',     'Metro card recharge',                 50000,   50000, 'wallet'),
-          (16, 'expense', 'Shopping',      'Amazon — household',                  120000,  340000, 'card'),
+          (16, 'expense', 'Shopping',      'Amazon, household',                  120000,  340000, 'card'),
           (17, 'expense', 'Food',          'Dinner at Barbeque Nation',           180000,  260000, 'card'),
           (18, 'expense', 'Transport',     'Ola to airport',                       45000,   85000, 'wallet'),
-          (19, 'expense', 'Bills',         'Broadband — ACT Fibernet',             99900,   99900, 'bank'),
-          (20, 'expense', 'Groceries',     'Vegetables — local market',            28000,   62000, 'cash'),
-          (21, 'expense', 'Entertainment', 'PVR — movie night',                    52000,   90000, 'card'),
+          (19, 'expense', 'Bills',         'Broadband, ACT Fibernet',             99900,   99900, 'bank'),
+          (20, 'expense', 'Groceries',     'Vegetables, local market',            28000,   62000, 'cash'),
+          (21, 'expense', 'Entertainment', 'PVR, movie night',                    52000,   90000, 'card'),
           (22, 'expense', 'Food',          'Office canteen top-up',                20000,   35000, 'wallet'),
-          (23, 'expense', 'Fuel',          'Petrol — HP',                         120000,  220000, 'card'),
+          (23, 'expense', 'Fuel',          'Petrol, HP',                         120000,  220000, 'card'),
           (24, 'expense', 'Health',        'Gym membership',                      120000,  120000, 'bank'),
-          (25, 'expense', 'Shopping',      'Myntra — kurta',                       80000,  260000, 'card'),
+          (25, 'expense', 'Shopping',      'Myntra, kurta',                       80000,  260000, 'card'),
           (26, 'expense', 'Food',          'Weekend brunch',                       60000,  120000, 'card'),
           (27, 'expense', 'Others',        'Haircut',                              25000,   40000, 'cash'),
           (28, 'expense', 'Education',     'Udemy course',                         44900,   89900, 'card')
@@ -294,7 +293,7 @@ begin
       )
       values (
         c_user, 'income', 1500000 + (v_month_offset * 250000), v_bank, v_category,
-        'Freelance — landing page build',
+        'Freelance, landing page build',
         ((v_day + time '20:10')::timestamp at time zone c_tz)
       );
     end if;
@@ -354,7 +353,7 @@ begin
     frequency, interval_count, start_date, next_run_on
   )
   values (
-    c_user, 'expense', 2200000, v_bank, v_category, 'Rent — landlord UPI',
+    c_user, 'expense', 2200000, v_bank, v_category, 'Rent, landlord UPI',
     'monthly', 1,
     -- Anchored on the 3rd, three months back, so the schedule lines up with
     -- next_run_on below.

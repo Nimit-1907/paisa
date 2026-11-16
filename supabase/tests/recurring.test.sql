@@ -6,7 +6,7 @@
 -- across February, a fortnightly rule, and 29 February carried through three
 -- common years. Then the generator itself: catching up months that were
 -- missed while the app was closed, skipping what the user skipped, stopping at
--- the end date — and, the one that matters most, running twice without
+-- the end date, and, the one that matters most, running twice without
 -- creating a second copy of anything.
 --
 -- src/lib/recurrence.test.ts asserts the same dates in TypeScript; the two
@@ -192,8 +192,8 @@ select is(
   '…and leaves the transactions exactly as they were'
 );
 
--- Even with the cursor wound back by hand — a crash between the insert and
--- the update, two tabs racing — the index refuses the second copy.
+-- Even with the cursor wound back by hand, a crash between the insert and
+-- the update, two tabs racing, the index refuses the second copy.
 update public.recurring_rules
 set next_run_on = (date_trunc('month', current_date) - interval '3 months')::date
 where id = 'd0000000-0000-4000-8000-000000000100';

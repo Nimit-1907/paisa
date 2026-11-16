@@ -75,14 +75,14 @@ export default function RootLayout({
           Written here rather than left to `metadata.manifest`, which Next
           streams into the body: Chrome only resolves <link rel="manifest">
           from inside <head>, so the streamed one leaves the app
-          uninstallable — the manifest is fetchable, and the browser never
+          uninstallable, the manifest is fetchable, and the browser never
           asks for it.
         */}
         {/*
           The theme, decided before anything paints.
 
           next-themes ships this same logic, but it renders where the provider
-          is — inside <body>, after the element carrying the background
+          is, inside <body>, after the element carrying the background
           colour. Running it here makes the first paint already the right
           theme rather than a white flash corrected a moment later. The
           provider re-applies the same value afterwards, which is a no-op.

@@ -860,9 +860,9 @@ shared `Card`.
 **47** is a real calendar now. A native `<input type="date">` is the right
 control for one date somebody already knows; a range is a shape — "the three
 weeks I was away", "since payday" — and those are chosen by looking at a
-month. `RangeCalendar` is shared, takes the user's week start, and tapping
-always moves the nearer end rather than starting over. Five preset pills sit
-above it, because most custom ranges are one of five.
+month. Five preset pills lead, because most custom ranges are one of five.
+(Since replaced: every range is now `DateRangeField`, the presets and a From
+and To pair of `DatePicker`s whose shared `Calendar` shades the range.)
 
 **48** drops the budget ring. It was a second shape competing with the
 figure beside it for the same fact, and the `ProgressBar` underneath says it
@@ -962,7 +962,7 @@ something harmless and the first place to look for it.
 
 **63** was a CSV card and a PDF card, each with its own dates and its own
 button, which asked somebody to read both before choosing either. It is a
-summary hero, a two-tile format picker, the shared `RangeCalendar` with its
+summary hero, a two-tile format picker, the shared `DateRangeField` with its
 preset pills, and one ink pill that names the file.
 
 Three more dead classes found in `ui/switch.tsx`, the same leftovers `Input`

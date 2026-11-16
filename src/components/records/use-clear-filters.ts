@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FILTER_PARAM_KEYS } from "@/lib/schemas/transactions";
 
 /**
- * Drops the filter parameters and keeps everything else — the month above
+ * Drops the filter parameters and keeps everything else, the month above
  * all. Sending someone back to today's records because they cleared a filter
  * on September would be its own small betrayal.
  *

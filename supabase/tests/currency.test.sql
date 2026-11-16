@@ -102,7 +102,7 @@ select is(
   (select amount from public.transactions
     where user_id = 'c0ffee00-0000-4000-8000-000000000001' and note = 'Round'),
   1250::bigint,
-  '$1,250.00 becomes ¥1,250 — the number a user reads stays put'
+  '$1,250.00 becomes ¥1,250, the number a user reads stays put'
 );
 
 select is(

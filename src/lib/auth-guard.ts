@@ -9,8 +9,8 @@ export type UserGuard =
 /**
  * The signed-in user, or the failure a Server Action should return.
  *
- * RLS is the real guard — rls.test.sql proves a user cannot touch another's
- * rows — but having the id lets a mutation filter on user_id as well, which
+ * RLS is the real guard, rls.test.sql proves a user cannot touch another's
+ * rows, but having the id lets a mutation filter on user_id as well, which
  * is what makes "no row matched" mean something rather than looking like
  * success.
  */

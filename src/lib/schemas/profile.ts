@@ -8,7 +8,7 @@ const CURRENCY_CODES = CURRENCIES.map((currency) => currency.code);
  * What onboarding collects.
  *
  * The opening balance stays a string all the way to the server, where
- * `toMinor` turns it into paise using the chosen currency's exponent — parsing
+ * `toMinor` turns it into paise using the chosen currency's exponent, parsing
  * it here would mean guessing the exponent twice.
  */
 export const onboardingSchema = z
@@ -120,7 +120,7 @@ export const changePasswordSchema = z
       .string()
       .min(8, "Use at least 8 characters.")
       // bcrypt truncates at 72 *bytes*, so a limit counted in characters
-      // would let a password through that is silently cut short — and the
+      // would let a password through that is silently cut short, and the
       // part past the cut would not be part of the password at all.
       .refine(
         (value) => new TextEncoder().encode(value).length <= 72,

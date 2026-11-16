@@ -13,8 +13,8 @@ export type TileOption = {
 /**
  * The four-column grid of tinted tiles: categories, accounts, icons, tints.
  *
- * One pattern for all four because they are the same question — "which of
- * these?" — and the reference answers it the same way every time: a tile, a
+ * One pattern for all four because they are the same question, "which of
+ * these?", and the reference answers it the same way every time: a tile, a
  * name under it, and an ink border with the small hard shadow on the one
  * that is chosen.
  *
@@ -39,7 +39,7 @@ export function TilePicker({
   columns?: 3 | 4;
   /** Checkboxes rather than radios, for the filter sheet. */
   multiple?: boolean;
-  /** A last cell that is not one of the options — "More", "New category". */
+  /** A last cell that is not one of the options, "More", "New category". */
   extra?: React.ReactNode;
   className?: string;
 }) {
@@ -89,7 +89,7 @@ export function TilePicker({
  * The cell that is not an option: "More", "New category", "New account".
  *
  * Same box as a tile cell so the grid stays a grid, but a neutral tile and
- * no selected state — it opens something rather than being chosen.
+ * no selected state, it opens something rather than being chosen.
  */
 export function TileCell({
   icon: Icon,

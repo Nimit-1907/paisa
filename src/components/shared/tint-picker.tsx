@@ -34,7 +34,7 @@ const TINT_LABELS: Record<TintKey, string> = {
  * close enough to be mistaken for each other at this size.
  *
  * The chosen one takes the ink border and the small hard shadow, like every
- * other selected thing in this language, and a tick — because a border on a
+ * other selected thing in this language, and a tick, because a border on a
  * pale square is a difference somebody may not see.
  */
 export function TintPicker({

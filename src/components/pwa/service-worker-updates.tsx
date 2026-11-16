@@ -5,15 +5,15 @@ import * as React from "react";
 import { toast } from "sonner";
 
 /**
- * "Update available — reload".
+ * "Update available, reload".
  *
  * The worker is configured to take over as soon as it installs, which means
  * the page can end up running last week's JavaScript against this week's
  * cache. `controllerchange` is the moment that happens, and the only honest
  * response is to offer a reload.
  *
- * The first controller a page ever gets is not an update — it is the worker
- * installing for the first time — so that one is ignored.
+ * The first controller a page ever gets is not an update, it is the worker
+ * installing for the first time, so that one is ignored.
  */
 export function ServiceWorkerUpdates() {
   React.useEffect(() => {

@@ -70,8 +70,13 @@ export default async function MorePage() {
         </div>
       </HeroCard>
 
+      {/*
+        From lg up the sidebar lists every one of these destinations and
+        carries the theme toggle, so the page keeps only what the sidebar
+        does not: who is signed in, install and sign out.
+      */}
       {GROUPS.map((group) => (
-        <section key={group.title} className="mt-5">
+        <section key={group.title} className="mt-5 lg:hidden">
           <SectionHeader className="mb-1.5 px-1" title={group.title} />
 
           <ListCard>
@@ -106,7 +111,7 @@ export default async function MorePage() {
         </section>
       ))}
 
-      <section className="mt-5">
+      <section className="mt-5 lg:hidden">
         <SectionHeader className="mb-1.5 px-1" title="Appearance" />
 
         <Card className="flex items-center justify-between gap-3 px-4 py-3">

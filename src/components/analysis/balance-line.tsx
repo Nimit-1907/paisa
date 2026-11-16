@@ -38,10 +38,9 @@ import { tintVar } from "@/lib/tokens";
 export type BalanceAccount = {
   id: string;
   name: string;
-  /** Kept while the old column exists; nothing reads it since Phase 14. */
-  color: string | null;
+  /** Carried from the accounts query; the menu draws only the tint. */
   icon: string | null;
-  /** One of the eight tint keys — the tile beside the name in the menu. */
+  /** One of the sixteen tint keys, the tile beside the name in the menu. */
   tint: string | null;
 };
 

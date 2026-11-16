@@ -19,7 +19,7 @@ import {
  * The window Analysis looks at, and the short numbers on its axes.
  *
  * Both are pure, and both are the kind of thing that is wrong by one for
- * months before anyone notices — a week that starts on the wrong day, a
+ * months before anyone notices, a week that starts on the wrong day, a
  * "previous period" that is a different length from the one it is compared
  * with, an axis that says ₹1.2K when it means ₹12K.
  */
@@ -111,7 +111,7 @@ describe("shiftPeriod", () => {
     for (const period of [week, month, custom]) {
       const before = previousPeriod(period);
       if (period.kind === "month") {
-        // Calendar months differ in length on purpose — January against
+        // Calendar months differ in length on purpose, January against
         // December, not January against "the last 31 days".
         expect(before.kind).toBe("month");
       } else {
@@ -215,7 +215,7 @@ describe("labels", () => {
     expect(bucketIsPartial(range, "2026-10-01", "month")).toBe(true);
     expect(bucketIsPartial(range, "2026-11-01", "month")).toBe(false);
     expect(bucketIsPartial(range, "2027-01-01", "month")).toBe(false);
-    // Days are never partial — a day is either in the range or it is not.
+    // Days are never partial, a day is either in the range or it is not.
     expect(bucketIsPartial(range, "2026-10-15", "day")).toBe(false);
 
     const cut: Period = { kind: "custom", from: "2026-10-01", to: "2027-01-20" };
@@ -256,7 +256,7 @@ describe("formatCompact", () => {
     expect(formatCompact(-120000n)).toBe("-₹1.2K");
     expect(formatCompact(12345n)).toBe("₹123");
     expect(formatCompact(0n)).toBe("₹0");
-    // Rounds to nothing, so it is nothing — not "-₹0".
+    // Rounds to nothing, so it is nothing, not "-₹0".
     expect(formatCompact(-50n)).toBe("₹0");
   });
 

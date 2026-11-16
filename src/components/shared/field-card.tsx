@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 /**
  * A small labelled value you can tap to change: Account, When, From, To.
  *
- * Not a text field. These hold a choice made somewhere else — a picker, a
- * date sheet — so they read as a current value rather than as an empty box
+ * Not a text field. These hold a choice made somewhere else, a picker, a
+ * date sheet, so they read as a current value rather than as an empty box
  * waiting for typing. The label sits above in secondary text at 11px and
  * the value below with its icon, which is the reference's arrangement and
  * the reason two of them fit side by side at 360px.
@@ -41,7 +41,7 @@ export function FieldCard({
    */
   asTrigger?: boolean;
   ref?: React.Ref<HTMLButtonElement>;
-  label: string;
+  label: React.ReactNode;
   icon?: React.ReactNode;
   value: React.ReactNode;
   /** Omit for a read-only fact. */

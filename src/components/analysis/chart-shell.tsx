@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  * rewrote the tokens: `--border`, `--muted-foreground` and `--muted` are now
  * `--color-border` and friends, which are Tailwind theme keys rather than
  * raw properties. An SVG attribute given a `var()` that resolves to nothing
- * does not fall back — it paints black, or nothing at all — so every
+ * does not fall back, it paints black, or nothing at all, so every
  * gridline and axis label on this screen had quietly stopped being drawn.
  *
  * `ink` is what a chart uses for the series being read, and `muted` for the
@@ -89,7 +89,7 @@ export function ChartCard({
   return (
     // The shared flat card. `bento` was a Phase 13 utility that the Phase
     // 14 globals rewrite dropped, so every card on this screen had been
-    // rendering with no background, no border and no radius — a stack of
+    // rendering with no background, no border and no radius, a stack of
     // charts floating on the page.
     <Card as="section" className={cn("p-3 sm:p-4", className)}>
       <div className="mb-2 flex items-start justify-between gap-2 px-1">
@@ -119,7 +119,7 @@ export type TooltipRow = {
 /**
  * The tooltip body, styled like the rest of the app rather than like recharts.
  *
- * Amounts are shown in full here — this is the one place with room for them,
+ * Amounts are shown in full here, this is the one place with room for them,
  * and the abbreviations on the axis are a reading aid, not the answer.
  */
 export function ChartTooltip({
@@ -166,7 +166,7 @@ export function ChartTooltip({
  * The same figures as a table, behind a disclosure.
  *
  * An SVG of a chart says nothing to a screen reader, and recharts' own
- * elements say less than nothing — a list of paths. The numbers were always
+ * elements say less than nothing, a list of paths. The numbers were always
  * there; this is the honest way to offer them, and it is useful sighted too,
  * when the question is "what exactly was it" rather than "what shape is it".
  *
@@ -183,7 +183,7 @@ export function ChartTable({
   columns: string[];
   /** One row per point: a label followed by minor-unit strings. */
   rows: { label: string; values: string[] }[];
-  /** Keep the minus sign — a balance can be negative; a total cannot. */
+  /** Keep the minus sign, a balance can be negative; a total cannot. */
   signed?: boolean;
 }) {
   const currency = useCurrency();

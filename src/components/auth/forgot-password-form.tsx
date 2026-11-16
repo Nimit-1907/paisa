@@ -56,7 +56,7 @@ export function ForgotPasswordForm() {
   return (
     <form
       // Before React hydrates, a submit falls back to the browser, which
-      // defaults to GET — and a GET puts the password in the URL, where it
+      // defaults to GET, and a GET puts the password in the URL, where it
       // lands in history and in the server log.
       method="post"
       onSubmit={onSubmit}

@@ -4,7 +4,7 @@
 --
 -- `search_totals` exists because the search screen caps its list at a
 -- hundred rows. The figure above that list is over *every* match, so the
--- two have to agree about what matches — which means the escaping, the
+-- two have to agree about what matches, which means the escaping, the
 -- transfer rule and the row-level security all have to line up.
 
 begin;
@@ -59,11 +59,11 @@ insert into public.transactions
 values
   -- Three expenses, one income, spread over three months.
   ('ffffffff-0000-4000-8000-00000000000a', 'expense', 2200000,
-   'Rent — landlord UPI', '2026-09-03T06:00:00Z',
+   'Rent, landlord UPI', '2026-09-03T06:00:00Z',
    'f0000000-0000-4000-8000-0000000000a1', null,
    'f0000000-0000-4000-8000-0000000000c1'),
   ('ffffffff-0000-4000-8000-00000000000a', 'expense', 2200000,
-   'Rent — landlord UPI', '2026-10-03T06:00:00Z',
+   'Rent, landlord UPI', '2026-10-03T06:00:00Z',
    'f0000000-0000-4000-8000-0000000000a1', null,
    'f0000000-0000-4000-8000-0000000000c1'),
   ('ffffffff-0000-4000-8000-00000000000a', 'expense', 2200000,

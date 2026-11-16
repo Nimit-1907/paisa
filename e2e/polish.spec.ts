@@ -11,13 +11,13 @@ import { signIn } from "./sign-in";
  * app claims to support, and that what a thumb is meant to hit is big enough
  * to hit (CLAUDE.md: 44px).
  *
- * It runs against the demo user, so the screens have real records on them —
+ * It runs against the demo user, so the screens have real records on them,
  * an empty screen passes everything and proves nothing.
  */
 
 /** The widths CLAUDE.md names, plus the two the layout changes at. */
 /*
- * Every width Phase 13 names, plus 320 — the reflow floor WCAG 1.4.10 asks
+ * Every width Phase 13 names, plus 320, the reflow floor WCAG 1.4.10 asks
  * for, which is narrower than any phone this app targets and is exactly why
  * it is the one worth testing.
  *

@@ -59,7 +59,7 @@ export function KeyboardShortcuts() {
       if (event.key === "/") {
         event.preventDefault();
         // Search belongs to Records, so from anywhere else this is also a
-        // navigation — and `?search=1` is what opens the field once it gets
+        // navigation, and `?search=1` is what opens the field once it gets
         // there, whichever screen the keystroke came from.
         router.push("/records?search=1");
       }

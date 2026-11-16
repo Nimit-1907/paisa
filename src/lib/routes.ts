@@ -1,5 +1,5 @@
 /**
- * Route groups are a folder convention — they never appear in the URL — so
+ * Route groups are a folder convention, they never appear in the URL, so
  * middleware cannot tell an (app) page from an (auth) one by looking at the
  * path. This is that mapping, in one place.
  */
@@ -52,7 +52,7 @@ export const isNeutralPath = (pathname: string) =>
  * Checking for a leading "/" is not enough: browsers rewrite backslashes to
  * slashes for http(s), so "/\\evil.example.com" becomes "//evil.example.com"
  * and leaves the site. Resolving against a throwaway origin and insisting the
- * origin survives catches every shape of that — another host, another scheme,
+ * origin survives catches every shape of that, another host, another scheme,
  * a protocol-relative path.
  */
 export function safeNextPath(next: string | null | undefined): string {

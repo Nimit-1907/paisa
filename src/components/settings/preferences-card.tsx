@@ -10,7 +10,7 @@ import { haptic } from "@/lib/motion";
  * The preferences that save themselves.
  *
  * No card of its own: these sit inside the screen's Preferences section,
- * beside the week start, because they are the same kind of thing — small
+ * beside the week start, because they are the same kind of thing, small
  * switches you judge by the result. They were a card at the bottom of the
  * screen, below the danger zone, which is the last place to put something
  * harmless.

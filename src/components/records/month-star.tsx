@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 export type DaySpend = {
   /** `yyyy-mm-dd`. */
   on: string;
-  /** Minor units as text — an RSC payload cannot carry a BigInt. */
+  /** Minor units as text, an RSC payload cannot carry a BigInt. */
   expense: string;
 };
 
@@ -25,7 +25,7 @@ export type DaySpend = {
  *
  * One figure in the display face, and under it a thin bar for every day,
  * taller where more went out. It is the one element in this app that is
- * meant to be recognisable — and it earns the space by being useful: the
+ * meant to be recognisable, and it earns the space by being useful: the
  * shape answers "was it one bad week or all of it?" before any chart is
  * opened, and every bar is a link to that day's records.
  *
@@ -130,8 +130,8 @@ export function MonthStar({
          * day headings in the list below, which are full width.
          *
          * Today's bar is periwinkle *and* carries an ink border. The two
-         * fills are 1.03:1 apart in light mode — they differ in hue, not
-         * brightness — so without the border, colour vision would be the
+         * fills are 1.03:1 apart in light mode, they differ in hue, not
+         * brightness, so without the border, colour vision would be the
          * only way to find today. See src/lib/tokens.test.ts.
          */
         <div aria-hidden="true" className="mt-3 flex h-10 items-end gap-[2px]">

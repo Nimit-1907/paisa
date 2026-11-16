@@ -36,7 +36,7 @@ import type { SeriesPoint } from "@/lib/queries/analysis";
  * is "did I earn more than I spent", and a stack makes that a subtraction the
  * reader has to do themselves.
  *
- * The x-axis thins its own labels — a 31-day month at 360px has about 11px
+ * The x-axis thins its own labels, a 31-day month at 360px has about 11px
  * per bar, which fits "14" and nothing else, so only every few days gets a
  * number and the tooltip carries the rest.
  */

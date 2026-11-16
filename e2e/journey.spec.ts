@@ -7,8 +7,8 @@ import { confirmationLink, uniqueEmail } from "./mailpit";
  *
  * Signup through to an export, in order, because that is how the app is
  * actually met: nothing here is set up behind the scenes, so a break anywhere
- * in the chain — a trigger that stops seeding categories, a sheet that will
- * not open on a touchscreen — fails the test rather than hiding behind a
+ * in the chain, a trigger that stops seeding categories, a sheet that will
+ * not open on a touchscreen, fails the test rather than hiding behind a
  * fixture.
  */
 
@@ -18,7 +18,7 @@ const EMAIL = uniqueEmail();
 const PASSWORD = process.env.E2E_PASSWORD ?? "test-password-e2e";
 const EXPENSE_NOTE = "Chai and samosa";
 const TRANSFER_NOTE = "Top up the wallet";
-const RENT_NOTE = "Rent — e2e";
+const RENT_NOTE = "Rent, e2e";
 
 test.describe.configure({ mode: "serial" });
 
@@ -28,7 +28,7 @@ test.describe.configure({ mode: "serial" });
  * React attaches a `__reactFiber$…` key to every DOM node it owns, so finding
  * one is the signal that hydration has happened. Without this a click can
  * land on server-rendered HTML and be handled by the browser instead of by
- * React — which on a dev server that is still compiling is easy to hit, and
+ * React, which on a dev server that is still compiling is easy to hit, and
  * which silently turns a form submit into a plain GET.
  */
 async function hydrated(page: Page) {
@@ -60,7 +60,7 @@ async function typeAmount(page: Page, amount: string) {
 /**
  * The month card on Records.
  *
- * A named region since Phase 13, labelled by the line above its figure —
+ * A named region since Phase 13, labelled by the line above its figure,
  * "Left this month", or "Overspent this month" when the month has gone the
  * other way. Matching on "this month" covers both.
  *
@@ -81,7 +81,7 @@ function sheet(page: Page) {
 /**
  * The sheet's primary button, whatever it currently says.
  *
- * It names the result — "Save expense · ₹250", "Move ₹500 to Paytm Wallet" —
+ * It names the result, "Save expense · ₹250", "Move ₹500 to Paytm Wallet",
  * so matching on the exact word "Save" stopped working the moment that
  * became true, and matching the whole string would make this test assert the
  * copy rather than the flow. The kind of record is in the pattern because
@@ -260,8 +260,8 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
      * ₹4,000 budget against the ₹250 expense.
      *
      * Scoped to Food's own row. The figure and the word are separate nodes
-     * since Phase 13 — each amount carries its exact value as text beside
-     * the trimmed one it paints — so this cannot match a single contiguous
+     * since Phase 13, each amount carries its exact value as text beside
+     * the trimmed one it paints, so this cannot match a single contiguous
      * string any more. Asserting them loose would be worse than useless:
      * "Left this month" is on Records, so a bare search for "left" passes
      * whatever this row says.

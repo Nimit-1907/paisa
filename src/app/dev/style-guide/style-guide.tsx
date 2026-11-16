@@ -22,10 +22,12 @@ import { Tile } from "@/components/shared/tile";
 import { TilePicker } from "@/components/shared/tile-picker";
 import { TintPicker } from "@/components/shared/tint-picker";
 import { DateTile } from "@/components/shared/date-tile";
+import { Calendar as DayCalendar } from "@/components/shared/calendar";
 import {
-  RangeCalendar,
-  RangePresetPills,
-} from "@/components/shared/range-calendar";
+  DatePicker,
+  DateRangeField,
+  DateTimePicker,
+} from "@/components/shared/date-picker";
 import { Stepper } from "@/components/shared/stepper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -391,6 +393,8 @@ function Pickers() {
     from: "2026-11-03",
     to: "2026-11-15",
   });
+  const [day, setDay] = React.useState("2026-11-15");
+  const [moment, setMoment] = React.useState("2026-11-15T13:30");
 
   return (
     <Group title="Pickers">
@@ -402,20 +406,34 @@ function Pickers() {
         <Stepper label="Every how many" value={every} onChange={setEvery} />
       </div>
 
-      <div className="bg-surface rounded-card border p-4">
-        <RangePresetPills
-          from={range.from}
-          to={range.to}
-          today="2026-11-15"
-          onSelect={setRange}
-          className="mb-3"
+      {/* The app's one date picker, in its three shapes, and the
+          calendar inside its panel. */}
+      <div className="grid grid-cols-2 gap-2">
+        <DatePicker id="sg-day" label="Date" value={day} onChange={setDay} />
+        <DateTimePicker
+          id="sg-moment"
+          label="When"
+          value={moment}
+          onChange={setMoment}
+          display={moment.replace("T", ", ")}
         />
-        <RangeCalendar
-          from={range.from}
-          to={range.to}
-          max="2026-11-15"
+      </div>
+
+      <DateRangeField
+        id="sg-range"
+        from={range.from}
+        to={range.to}
+        max="2026-11-15"
+        onChange={setRange}
+      />
+
+      <div className="bg-surface rounded-card w-[324px] max-w-full border p-2">
+        <DayCalendar
+          selected={range.to}
+          range={range}
           today="2026-11-15"
-          onChange={setRange}
+          max="2026-11-15"
+          onSelect={(next) => setRange({ ...range, to: next })}
         />
       </div>
     </Group>

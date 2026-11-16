@@ -70,7 +70,7 @@ function daysInMonth(year: number, month: number): number {
 /**
  * Turns a local date and time into the instant it happened.
  *
- * The picker hands over what the user sees — "2026-11-14T13:45" — and the
+ * The picker hands over what the user sees, "2026-11-14T13:45", and the
  * profile's timezone decides which moment that was. Reading it as UTC would
  * file an evening in Kolkata under the next day.
  */
@@ -185,8 +185,8 @@ export function currentMonthRange(
 /**
  * The next occurrence of a repeat, on the user's local calendar.
  *
- * Month ends are clamped the way Postgres clamps them — 31 January plus a
- * month is 28 February, and plus two months is back to 31 March — so this
+ * Month ends are clamped the way Postgres clamps them, 31 January plus a
+ * month is 28 February, and plus two months is back to 31 March, so this
  * agrees with recurrence_occurrence() in SQL. Letting a Date roll over
  * instead would turn 31 January into 3 March and drift from there.
  */
@@ -229,7 +229,7 @@ export function nextRecurrence(
  *
  * The shape a `datetime-local` input wants, and the shape the record sheet
  * carries a draft's date in. It lived inside the sheet until duplicating a
- * record needed the same answer — "the same thing again, now".
+ * record needed the same answer, "the same thing again, now".
  *
  * `en-CA` because its date order is already `yyyy-mm-dd`, and hour 24 is
  * rewritten to 00: `hour12: false` reports midnight as 24 in some
@@ -259,7 +259,7 @@ export function nowLocal(timeZone: string): string {
  *
  * For the "When" card on the add sheet, which shows a date the way the rest
  * of the app shows one rather than the way a browser renders
- * `datetime-local` — that is `15/11/2026, 01:30 PM` in one browser and
+ * `datetime-local`, that is `15/11/2026, 01:30 PM` in one browser and
  * `11/15/2026, 1:30 PM` in the next, and neither says "today".
  *
  * `todayLocal` is passed in rather than read, so this is a pure function of

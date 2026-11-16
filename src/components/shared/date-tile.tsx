@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** "Nov" — three letters, in the user's locale rather than in English. */
+/** "Nov", three letters, in the user's locale rather than in English. */
 function monthAbbrev(day: string): string {
   return new Intl.DateTimeFormat("en-IN", {
     timeZone: "UTC",
@@ -16,7 +16,7 @@ function monthAbbrev(day: string): string {
  * the one due on the 3rd; a column of day numbers can be scanned. The name
  * beside it still says which rule it is.
  *
- * Periwinkle, like the dock's Add button and the day a new record lands on —
+ * Periwinkle, like the dock's Add button and the day a new record lands on,
  * this app's one accent, used for the thing that is about to happen.
  */
 export function DateTile({

@@ -7,7 +7,7 @@
  * The balance handed in is the account's balance *now*. When a transfer is
  * being created, that balance has not felt it yet, so the answer is a plain
  * subtraction. When an existing transfer is being **edited**, the balance has
- * already had the old amount taken out of it — so subtracting the new amount
+ * already had the old amount taken out of it, so subtracting the new amount
  * as well counts the same transfer twice. Opening a transfer that emptied an
  * account and changing nothing would announce "has ₹0, this takes it to
  * −₹100", which is both wrong and alarming.
@@ -26,7 +26,7 @@ export function balanceAfterTransfer({
   amount: bigint;
   /**
    * The amount this transfer had before the edit, if it is an edit *and*
-   * the From account has not been changed. Null otherwise — a transfer moved
+   * the From account has not been changed. Null otherwise, a transfer moved
    * to a different account never touched this one's balance.
    */
   original: bigint | null;

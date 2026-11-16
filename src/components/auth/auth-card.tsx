@@ -32,7 +32,7 @@ export function AuthCard({
         it. On a phone that reads as a page; on a laptop, where the same
         380px sits in the middle of 1400px of empty, it reads as a thing
         that failed to load. The card is the app's own surface at the
-        dialog radius — the same shape every sheet opens as.
+        dialog radius, the same shape every sheet opens as.
       */}
       <div className="bg-surface rounded-dialog border p-6">
         <div className="mb-6 flex flex-col items-center text-center">

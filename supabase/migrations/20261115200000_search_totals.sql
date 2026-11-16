@@ -1,7 +1,7 @@
 -- Paisa: the totals behind a search, over every match rather than the page.
 --
 -- The search screen caps at a hundred rows, which is the right call for a
--- list — past that the term is not narrow enough. It is the wrong call for
+-- list, past that the term is not narrow enough. It is the wrong call for
 -- the figure above the list: summing the hundred rows that came back and
 -- calling it "what you have spent on rent" is wrong by however much is
 -- behind the cap, and wrong in the direction that reassures.
@@ -10,7 +10,7 @@
 -- the database over the whole match set, which is one index scan and no
 -- rows on the wire.
 --
--- `p_pattern` is already escaped by the caller — the same escaping the row
+-- `p_pattern` is already escaped by the caller, the same escaping the row
 -- query uses, done once in src/lib/queries/transactions.ts, so the two can
 -- never disagree about what a literal `%` means. It is a bound parameter,
 -- not interpolated SQL.

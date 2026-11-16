@@ -6,8 +6,8 @@ import * as React from "react";
  * The motion system.
  *
  * Two durations, one easing curve, and a single way to ask whether motion is
- * wanted at all. Everything here moves `transform` or `opacity` — the two
- * properties a browser can animate without laying the page out again — and
+ * wanted at all. Everything here moves `transform` or `opacity`, the two
+ * properties a browser can animate without laying the page out again, and
  * nothing in the app ever waits for an animation to finish before it does its
  * work.
  *
@@ -23,7 +23,7 @@ export const FAST = 120;
 /** 200ms: something arriving, leaving, or changing shape. */
 export const BASE = 200;
 
-/** 400ms: the longest anything is allowed to take — a number counting up. */
+/** 400ms: the longest anything is allowed to take, a number counting up. */
 export const COUNT_UP = 400;
 
 /**
@@ -42,7 +42,7 @@ export const PRESSABLE =
 /**
  * Whether the person has asked for less movement.
  *
- * Starts as `true` — assume reduced motion until the browser says otherwise.
+ * Starts as `true`, assume reduced motion until the browser says otherwise.
  * The opposite default would play the animation once on the first render for
  * exactly the people who turned it off.
  */
@@ -64,7 +64,7 @@ export function usePrefersReducedMotion(): boolean {
 /**
  * A number on its way to another number.
  *
- * Only for a figure that *changed while being looked at* — a month total
+ * Only for a figure that *changed while being looked at*, a month total
  * after a record is saved. It says "this is the same number as before, and it
  * moved", which is the one thing a straight swap cannot say.
  *
@@ -154,8 +154,8 @@ export function useFirstFill(value: number): number {
   /*
    * Empty until the effect has run, including on the server.
    *
-   * Reading `reduced` here instead would start full — that hook assumes
-   * reduced motion until the browser answers — and then drop to zero the
+   * Reading `reduced` here instead would start full, that hook assumes
+   * reduced motion until the browser answers, and then drop to zero the
    * moment it answered "no", giving everyone who allows motion a
    * full-empty-full flash on every mount.
    */
@@ -166,7 +166,7 @@ export function useFirstFill(value: number): number {
  * A short shake, for input that cannot be accepted.
  *
  * Returns a flag to put on the element and a function to set it off. Under
- * reduced motion it never fires — the caller shows the error outline and the
+ * reduced motion it never fires, the caller shows the error outline and the
  * message, which is the part that actually explains the problem.
  */
 export function useShake(): [boolean, () => void] {

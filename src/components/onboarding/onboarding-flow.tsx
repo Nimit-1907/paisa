@@ -42,7 +42,7 @@ type Step = 0 | 1 | 2 | 3;
  * Which step each field belongs to.
  *
  * The whole form is submitted from the last step, so the server can reject
- * something filled in two steps ago — a name past 80 characters, which
+ * something filled in two steps ago, a name past 80 characters, which
  * nothing checks client-side. Without this the message would be attached to
  * a field that is not on screen, and so shown nowhere at all.
  */

@@ -62,8 +62,8 @@ type Prepared = {
 /**
  * Turns what the sheet collected into what the row needs.
  *
- * The amount arrives as whatever the keypad holds — "120+45" is as valid as
- * "165" — and the time arrives as the wall clock the user saw, which only
+ * The amount arrives as whatever the keypad holds, "120+45" is as valid as
+ * "165", and the time arrives as the wall clock the user saw, which only
  * their timezone can place on the calendar.
  */
 async function prepare(
@@ -209,7 +209,7 @@ export async function deleteTransaction(input: {
  * Puts back a record the user has just deleted, id and all.
  *
  * Undo has to restore the same row rather than a copy: anything that
- * referenced it — a recurring rule, a link someone kept open — should still
+ * referenced it, a recurring rule, a link someone kept open, should still
  * point at the record they got back.
  */
 export async function restoreTransaction(
@@ -294,7 +294,7 @@ export type SearchPayload = {
   /** How many match in all, which can be more than `rows.length`. */
   matchCount: number;
   hasMore: boolean;
-  /** Minor units as text — a BigInt cannot cross this boundary. */
+  /** Minor units as text, a BigInt cannot cross this boundary. */
   income: string;
   expense: string;
 };

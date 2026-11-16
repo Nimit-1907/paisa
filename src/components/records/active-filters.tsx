@@ -24,8 +24,8 @@ const TYPE_LABELS = {
  * says *how many*; this says *which*, and lets each one go in a tap rather
  * than through the sheet.
  *
- * Every chip reads as a sentence fragment — "Food", "over ₹1,000",
- * "from 1 Nov" — because a bare value with no preposition is a guessing game
+ * Every chip reads as a sentence fragment, "Food", "over ₹1,000",
+ * "from 1 Nov", because a bare value with no preposition is a guessing game
  * about which field it belongs to.
  */
 export function ActiveFilters({

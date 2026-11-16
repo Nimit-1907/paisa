@@ -3,8 +3,8 @@
 --     supabase test db
 --
 -- Two users, fixed ids, every table probed from inside a real `authenticated`
--- session: user A must see exactly their own rows and must fail — not silently
--- no-op — when they reach for user B's.
+-- session: user A must see exactly their own rows and must fail, not silently
+-- no-op, when they reach for user B's.
 --
 -- Everything runs in a transaction that is rolled back, so it is safe against
 -- a seeded database.

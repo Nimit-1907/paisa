@@ -31,7 +31,7 @@ function revalidateBudgets() {
  * Sets one category's budget for a month.
  *
  * `applyForward` carries the amount into the months after this one, stopping
- * at the first month that was set to something else — the database does that
+ * at the first month that was set to something else, the database does that
  * walk in one statement, because a run of months half-written is worse than
  * one not written at all.
  */

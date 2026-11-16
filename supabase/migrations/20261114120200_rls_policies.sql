@@ -1,7 +1,7 @@
 -- Paisa: row level security.
 --
 -- One rule, applied six times: you may only touch rows that are yours.
--- Policies are written for the `authenticated` role only — anon gets nothing,
+-- Policies are written for the `authenticated` role only, anon gets nothing,
 -- and the privileged server-side role bypasses RLS by design, which is what
 -- migrations and seeds rely on.
 --

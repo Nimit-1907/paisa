@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  *
  * Reading down the reference: a small label, an optional trend pill on the
  * same line, the number in the display face, a helper line, then anything
- * the screen adds — bars, a progress track — and finally an optional split
+ * the screen adds, bars, a progress track, and finally an optional split
  * row divided by hairlines.
  *
  * The number is `font-display` at 42px, which is the one place besides the
@@ -29,7 +29,7 @@ export function HeroStat({
   className,
 }: {
   /**
-   * "Left to spend", "Total balance". Sentence case — no.
+   * "Left to spend", "Total balance". Sentence case, no.
    *
    * A node rather than a string because the record detail puts the
    * category's tile beside its name here, and that is the same line doing
@@ -38,7 +38,7 @@ export function HeroStat({
   label: React.ReactNode;
   /** Top-right pill: "12% less than Oct". */
   trend?: React.ReactNode;
-  /** The figure, already formatted — usually an `<Amount>`. */
+  /** The figure, already formatted, usually an `<Amount>`. */
   value: React.ReactNode;
   /** One quiet line under the figure. */
   helper?: React.ReactNode;
@@ -46,7 +46,7 @@ export function HeroStat({
   split?: React.ReactNode;
   /**
    * Drops the accent, for the rare screen where something else is the one
-   * bold card — the month recap on the first open of a new month.
+   * bold card, the month recap on the first open of a new month.
    */
   flat?: boolean;
   /** Bars, a progress track, anything between the helper and the split. */

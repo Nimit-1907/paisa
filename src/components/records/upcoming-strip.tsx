@@ -30,7 +30,7 @@ const MAX_SHOWN = 3;
  * These are computed, not rows: nothing is written until the day arrives (or
  * until "Pay now"), so the list is the same whether the app was opened
  * yesterday or last month. It collapses because it is a reminder, not the
- * month's record — and the chevron keeps the day's spending one glance away.
+ * month's record, and the chevron keeps the day's spending one glance away.
  */
 export function UpcomingStrip({
   items,

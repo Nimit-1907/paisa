@@ -90,7 +90,6 @@ export default async function ExportPage() {
         defaultMonth={today.slice(0, 7)}
         monthOptions={recentMonths(today)}
         today={today}
-        weekStart={profile?.week_start ?? 1}
         summary={
           span
             ? {

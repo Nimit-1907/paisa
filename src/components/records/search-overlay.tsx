@@ -52,7 +52,7 @@ type Results = {
  *
  * Searching is a mode, not a field: you stop reading the month and start
  * looking for one thing. A box tucked into a filters sheet makes that a
- * three-tap detour, and the keyboard covers the results anyway — so this
+ * three-tap detour, and the keyboard covers the results anyway, so this
  * takes the screen, opens the keyboard immediately, and puts the two things
  * worth offering under it.
  *
@@ -63,8 +63,8 @@ type Results = {
  *
  * Phase 14 answers here rather than handing the term back to the month.
  * Searching inside one month is a question with an obvious answer; the one
- * worth asking — when did the rent go up, how much have I spent on this all
- * year — needs every month at once, which is what `searchRecords` returns.
+ * worth asking, when did the rent go up, how much have I spent on this all
+ * year, needs every month at once, which is what `searchRecords` returns.
  * The results are grouped by month with the total above them, and tapping
  * one opens it in the sheet, where Edit and Delete already live.
  *
@@ -108,7 +108,7 @@ export function SearchOverlay({
    * Which search is the current one.
    *
    * Typing "rent", then "swiggy" before the first answer lands, can resolve
-   * in either order — and the slower one finishing last would leave rent's
+   * in either order, and the slower one finishing last would leave rent's
    * results under swiggy's term. Every call takes a ticket; a stale one
    * drops its answer on the floor. Closing the overlay or clearing the
    * field takes a ticket too, so a request in flight cannot repopulate
@@ -140,7 +140,7 @@ export function SearchOverlay({
    *
    * Radix handles this for the sheets; this one is hand-rolled because it
    * takes the whole screen rather than part of it, and it had never had the
-   * key bound — which on a desktop is a modal with no way out but the mouse.
+   * key bound, which on a desktop is a modal with no way out but the mouse.
    */
   const close = React.useRef(onClose);
   close.current = onClose;
@@ -151,7 +151,7 @@ export function SearchOverlay({
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape" || event.defaultPrevented) return;
 
-      // A record sheet or a confirm dialog can be stacked on top of this —
+      // A record sheet or a confirm dialog can be stacked on top of this,
       // tapping a result opens one. Escape belongs to whatever is topmost,
       // and closing the screen underneath it instead is how a user ends up
       // somewhere they did not navigate to.
@@ -319,7 +319,7 @@ export function SearchOverlay({
             <>
               {/*
                 Nothing is searched as you type, so typing over a finished
-                search leaves its results sitting there — a list headed
+                search leaves its results sitting there, a list headed
                 “Zomato” under a box that now says "coff", and, worse, a
                 "Nothing matches that" about a word the box no longer
                 holds. Saying which term the list belongs to is most of the
@@ -600,7 +600,7 @@ function SearchResults({
   );
 }
 
-/** "9 Nov" — enough to place a row inside its month. */
+/** "9 Nov", enough to place a row inside its month. */
 function dayLabel(instant: string, timeZone: string): string {
   return new Intl.DateTimeFormat("en-IN", {
     timeZone,

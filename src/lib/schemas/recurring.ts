@@ -9,8 +9,8 @@ import {
 /**
  * What the recurring screens may send.
  *
- * The shape rules are the same ones transactions obey — a transfer needs a
- * destination and no category, an income or expense needs a category — because
+ * The shape rules are the same ones transactions obey, a transfer needs a
+ * destination and no category, an income or expense needs a category, because
  * a rule is a transaction template and `recurring_rules_shape_check` holds it
  * to exactly that.
  */
@@ -93,7 +93,7 @@ const ruleFields = {
     .max(365, "That is too far apart."),
   /**
    * When it next runs. The rule is re-anchored from here, so "next due on the
-   * 31st, monthly" means the 31st of every month from then on — which is what
+   * 31st, monthly" means the 31st of every month from then on, which is what
    * someone changing this date is asking for.
    */
   nextRunOn: day,
@@ -128,7 +128,7 @@ export const payOccurrenceSchema = z.object({ id: uuid, on: day });
 
 export const deleteRecurringRuleSchema = z.object({
   id: uuid,
-  /** False — the default — leaves the records it already created in place. */
+  /** False, the default, leaves the records it already created in place. */
   deleteTransactions: z.boolean().default(false),
 });
 

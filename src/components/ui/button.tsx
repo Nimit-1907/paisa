@@ -7,13 +7,13 @@ import { Slot } from "radix-ui";
 /*
  * Buttons, in the Phase 14 language.
  *
- * Press is `translate(2px, 2px)` over 80ms — the element moves into its own
+ * Press is `translate(2px, 2px)` over 80ms, the element moves into its own
  * hard shadow. That only reads as a press because the shadow has no blur: a
  * soft one would smear rather than meet it. Variants without a shadow still
  * take the move, so pressing feels the same everywhere.
  *
  * Focus is handled globally in globals.css as a 2px ink outline at 2px
- * offset, so nothing here restates it — the Phase 10 audit found three
+ * offset, so nothing here restates it, the Phase 10 audit found three
  * controls that had quietly lost their own copy of it.
  */
 const buttonVariants = cva(
@@ -42,7 +42,7 @@ const buttonVariants = cva(
         /**
          * Destructive is expense-coloured text on a flat surface, never a
          * filled red button. A filled one reads as the primary action on a
-         * screen where it is almost never what somebody came to do — and
+         * screen where it is almost never what somebody came to do, and
          * every use of it is behind a confirmation anyway.
          */
         destructive:

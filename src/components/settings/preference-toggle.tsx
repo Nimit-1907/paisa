@@ -99,7 +99,7 @@ export function PreferenceToggle({
           {/*
             Polite, so it is announced after whatever the switch itself
             says rather than interrupting it, and it occupies no space when
-            absent — a reserved slot would shift the row every time.
+            absent, a reserved slot would shift the row every time.
           */}
           <span
             role="status"

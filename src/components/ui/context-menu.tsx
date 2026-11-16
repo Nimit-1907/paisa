@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 /**
  * Right-click on a desktop, long-press on a phone.
  *
- * Radix's context menu already carries both — it opens on `contextmenu` for a
- * mouse and on a held touch — which is why Phase 13's "long-press for a
+ * Radix's context menu already carries both, it opens on `contextmenu` for a
+ * mouse and on a held touch, which is why Phase 13's "long-press for a
  * context menu" and "right-click context menu" are one component rather than
  * two gestures wired by hand.
  *

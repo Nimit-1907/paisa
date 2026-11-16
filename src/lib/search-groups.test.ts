@@ -18,7 +18,6 @@ function row(
     categoryId: null,
     categoryName: null,
     categoryIcon: null,
-    categoryColor: null,
     categoryTint: null,
     recurringRuleId: null,
     recurringFrequency: null,

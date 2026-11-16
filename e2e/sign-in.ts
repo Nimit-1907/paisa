@@ -6,7 +6,7 @@ import type { Page } from "@playwright/test";
  * Shared by the suites that need screens with records already on them: an
  * empty screen passes every check and proves nothing.
  *
- * The wait is for hydration rather than for the network — the form renders
+ * The wait is for hydration rather than for the network, the form renders
  * on the server, so it is visible and fillable a moment before React has
  * attached anything that would submit it.
  */

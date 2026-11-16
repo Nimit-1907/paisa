@@ -475,7 +475,7 @@ function CurrencySheet({
 /**
  * A two-line sketch of what a screen looks like in that theme.
  *
- * Three words — Light, Dark, System — ask somebody to imagine the result.
+ * Three words, Light, Dark, System, ask somebody to imagine the result.
  * Thirty pixels of the actual surfaces show it, and `system` is drawn as
  * the two halves because that is what following the device means.
  */

@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
  * cover years, and the point of a download is that the browser can start
  * writing it to disk while the server is still reading.
  *
- * RLS does the authorising — the client is the caller's — but the session is
+ * RLS does the authorising, the client is the caller's, but the session is
  * checked first so an expired cookie gets a 401 rather than an empty file
  * that looks like "you have no records".
  */
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
     // One page per pull, not every page in start(): start() runs to
     // completion before the consumer has read anything, so the whole file
-    // would sit in the stream's queue — which is the opposite of streaming.
+    // would sit in the stream's queue, which is the opposite of streaming.
     async pull(controller) {
       if (finished) return;
 

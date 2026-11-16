@@ -2,7 +2,7 @@
 --
 -- Every one of these is a grouping over a date range, and every one is
 -- evaluated in the profile's timezone so a late-evening purchase lands on the
--- day the user thinks it did — the same rule month_summary follows, because a
+-- day the user thinks it did, the same rule month_summary follows, because a
 -- chart that disagrees with the record list is worse than no chart.
 --
 -- The ranges are inclusive of both ends: callers pass local calendar days,

@@ -10,7 +10,7 @@ export const contentType = "image/png";
  * The card a shared link shows.
  *
  * Drawn here rather than shipped as a PNG so the words stay in one place with
- * the rest of the copy, and built from system fonts only — fetching a webfont
+ * the rest of the copy, and built from system fonts only, fetching a webfont
  * at build time makes the build need the network to succeed.
  */
 export default function OpengraphImage() {

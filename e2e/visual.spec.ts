@@ -11,14 +11,14 @@ import { signIn } from "./sign-in";
  * card quietly falling back to Inter. A pixel diff would.
  *
  * The baselines are generated on the first run and are deliberately not in
- * git — a PNG keeps every revision of itself in history for ever, and these
+ * git, a PNG keeps every revision of itself in history for ever, and these
  * are regenerated whenever the design moves anyway. Run the suite once to
  * create them, then again to compare:
  *
  *   npm run test:e2e -- e2e/visual.spec.ts
  *
  * Motion is switched off, so two runs of the same build produce the same
- * pixels — *given the same data*. These read the shared demo account, which
+ * pixels, *given the same data*. These read the shared demo account, which
  * the other suites write to, and which the recurring catch-up adds to on the
  * first page load of a new day. Regenerate from a known state:
  *
@@ -96,7 +96,7 @@ async function settleDemoAccount(page: Page) {
 
   // Wait for the page to be there before asking what is on it. `isVisible`
   // answers immediately, and immediately after a navigation the answer is
-  // "no" for everything — which silently skipped the dismissal and left the
+  // "no" for everything, which silently skipped the dismissal and left the
   // recap card in whichever run happened to be slower. That is a 263px
   // difference in the height of every Records baseline.
   await expect(
@@ -129,7 +129,7 @@ const SHOT = {
   // and a ratio is measured against the whole page: 1% of a records screen
   // at 360px is about 10,000 pixels, which is more than a list row holds.
   // A QA pass rewrote every transfer row's title and subtitle and all 64
-  // baselines still passed — the suite could not see a change the eye spots
+  // baselines still passed, the suite could not see a change the eye spots
   // immediately. The cap is what makes a single row's worth of difference
   // count as one.
   maxDiffPixels: 600,
@@ -189,9 +189,9 @@ for (const size of WIDTHS) {
       /**
        * The states a screen goes into that a plain visit never shows.
        *
-       * Empty and error are reached honestly — a filter that matches nothing
+       * Empty and error are reached honestly, a filter that matches nothing
        * really is the empty state, and a URL with no page behind it really
-       * is the 404 — rather than by rendering the component with made-up
+       * is the 404, rather than by rendering the component with made-up
        * props, which would snapshot a thing the app cannot actually produce.
        */
       test(`the states in ${theme} mode`, async ({ page }) => {

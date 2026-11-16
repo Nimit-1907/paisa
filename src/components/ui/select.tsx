@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  *
  * The native control was doing two jobs: it held the value and the keyboard
  * semantics, and it drew the list. It is very good at the first and the
- * app has no say in the second — an iOS wheel, a Windows list, a grey
+ * app has no say in the second, an iOS wheel, a Windows list, a grey
  * Android sheet, none of which know about the radii, the hairlines, the
  * raised surface or the 44px floor everything else here is built to.
  *
@@ -31,8 +31,8 @@ export const SelectTrigger = React.forwardRef<
   { className, children, chevron = true, asChild, ...props },
   ref,
 ) {
-  // With `asChild` the caller is supplying the element to be the trigger —
-  // a FieldCard, usually — and Radix slots its props onto it. Slot takes
+  // With `asChild` the caller is supplying the element to be the trigger,
+  // a FieldCard, usually, and Radix slots its props onto it. Slot takes
   // exactly one child, so the span and the chevron this would otherwise
   // add are two children too many: pass the caller's element straight
   // through and let it draw itself.

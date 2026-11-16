@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { RotateCcw, Search } from "lucide-react";
 
 import { useCurrency } from "@/components/profile-provider";
-import { DateInput } from "@/components/shared/date-input";
+import { DateRangeField } from "@/components/shared/date-picker";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { TilePicker } from "@/components/shared/tile-picker";
 import type {
@@ -29,73 +29,12 @@ import {
   type TransactionFilters,
   type TransactionType,
 } from "@/lib/schemas/transactions";
-import { cn } from "@/lib/utils";
 
 const TYPE_LABELS: Record<TransactionType, string> = {
   expense: "Expense",
   income: "Income",
   transfer: "Transfer",
 };
-
-/** `yyyy-mm-dd` for a UTC date, which is what the date inputs want. */
-const day = (date: Date) => date.toISOString().slice(0, 10);
-
-/**
- * The date ranges people actually ask for.
- *
- * Built from today each time they are rendered rather than once at module
- * load: a tab left open overnight would otherwise offer yesterday's
- * "last 7 days".
- *
- * Computed in UTC, matching the `date` inputs beside them and the
- * `yyyy-mm-dd` the server parses. The server turns these into the user's own
- * local midnight, which is the only place a timezone belongs.
- */
-const DATE_PRESETS = [
-  {
-    label: "Last 7 days",
-    range: () => {
-      const today = new Date();
-      const start = new Date(today);
-      start.setUTCDate(start.getUTCDate() - 6);
-      return { from: day(start), to: day(today) };
-    },
-  },
-  {
-    label: "Last 30 days",
-    range: () => {
-      const today = new Date();
-      const start = new Date(today);
-      start.setUTCDate(start.getUTCDate() - 29);
-      return { from: day(start), to: day(today) };
-    },
-  },
-  {
-    label: "First half",
-    range: () => {
-      const today = new Date();
-      const year = today.getUTCFullYear();
-      const month = today.getUTCMonth();
-      return {
-        from: day(new Date(Date.UTC(year, month, 1))),
-        to: day(new Date(Date.UTC(year, month, 15))),
-      };
-    },
-  },
-  {
-    label: "Second half",
-    range: () => {
-      const today = new Date();
-      const year = today.getUTCFullYear();
-      const month = today.getUTCMonth();
-      return {
-        from: day(new Date(Date.UTC(year, month, 16))),
-        // Day 0 of the next month is the last day of this one.
-        to: day(new Date(Date.UTC(year, month + 1, 0))),
-      };
-    },
-  },
-] as const;
 
 /**
  * Search and filters.
@@ -218,7 +157,7 @@ export function FiltersSheet({
           One type or all of them, not a set.
 
           Phase 13 let you tick two of the three, which with three options
-          is the same as excluding the third — and "expense and income but
+          is the same as excluding the third, and "expense and income but
           not transfers" is not a sentence anybody arrived here to say. The
           segmented control makes the common case one tap and the rare one
           impossible, which is the right trade at three options.
@@ -305,56 +244,23 @@ export function FiltersSheet({
         </div>
 
         <div className="space-y-1.5">
-          <Label>Dates</Label>
-          <div className="flex flex-wrap gap-1.5">
-            {DATE_PRESETS.map((preset) => {
-              const range = preset.range();
-              return (
-                <Chip
-                  key={preset.label}
-                  active={from === range.from && to === range.to}
-                  onClick={() => {
-                    // A second tap on the active preset clears it, so the
-                    // chips are not a one-way door into a date range.
-                    const on = from === range.from && to === range.to;
-                    setFrom(on ? "" : range.from);
-                    setTo(on ? "" : range.to);
-                  }}
-                >
-                  {preset.label}
-                </Chip>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          {/* Typed (digits only, the slashes draw themselves) or picked
-              off the calendar behind the icon. Each end bounds the other,
-              so a range can never run backwards. */}
-          <FormRow id="filter-from" label="From">
-            {(props) => (
-              <DateInput
-                id={props.id}
-                aria-describedby={props["aria-describedby"]}
-                value={from}
-                max={to || undefined}
-                onChange={setFrom}
-              />
-            )}
-          </FormRow>
-
-          <FormRow id="filter-to" label="To">
-            {(props) => (
-              <DateInput
-                id={props.id}
-                aria-describedby={props["aria-describedby"]}
-                value={to}
-                min={from || undefined}
-                onChange={setTo}
-              />
-            )}
-          </FormRow>
+          <Label id="filter-dates-label">Dates</Label>
+          {/* The same presets and From and To pickers as Analysis and
+              Export. A second tap on the active preset clears it, so the
+              pills are not a one-way door into a date range.
+              rubric:allow COR-BUG DateRangeField bounds From by To and To by From itself (approved by the user) */}
+          <DateRangeField
+            id="filter"
+            aria-labelledby="filter-dates-label"
+            from={from}
+            to={to}
+            clearable
+            placeholder="Any"
+            onChange={(next) => {
+              setFrom(next.from);
+              setTo(next.to);
+            }}
+          />
         </div>
       </SheetBody>
 
@@ -375,32 +281,5 @@ export function FiltersSheet({
         </Button>
       </SheetFooter>
     </ResponsiveSheet>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        "pressable flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold",
-        "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
-        active
-          ? "accent-sm bg-surface text-text"
-          : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
-      )}
-    >
-      {children}
-    </button>
   );
 }

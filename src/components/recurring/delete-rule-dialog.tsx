@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
  * Keeping the records is the default and the safe answer: they are months of
  * real spending, and the rule is only the thing that made them. Deleting them
  * too is offered because a rule created by mistake leaves a trail of records
- * nobody wants to tidy by hand — but it is a deliberate second choice, and
+ * nobody wants to tidy by hand, but it is a deliberate second choice, and
  * the count is spelled out before the button is pressed.
  */
 export function DeleteRuleDialog({

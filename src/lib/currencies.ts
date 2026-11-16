@@ -3,7 +3,7 @@
  *
  * Deliberately a short, hand-kept list rather than every ISO 4217 code: these
  * are the ones a user of this app plausibly wants, and each one carries the
- * three things the money helpers need — symbol, minor-unit exponent, and a
+ * three things the money helpers need, symbol, minor-unit exponent, and a
  * name to search by.
  */
 export type Currency = {

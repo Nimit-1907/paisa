@@ -173,13 +173,15 @@ instant saves. Changing a currency rescales every stored amount, so an
 instant save on the keystroke after picking one is a migration nobody asked
 for. The switches that are safe to save instantly already do.
 
-**Field cards hold a native control at zero opacity.** Account, When, From
-and To draw their value the way this app draws values (an icon, "Today, 1:30
-pm"), which no native control can be made to do, while the thing a tap, a
-keyboard and a screen reader actually meet is a real `<select>` or
-`<input type="datetime-local">`. The card takes the focus ring on its
-behalf and hides its own text from the accessibility tree, so nothing is
-announced twice.
+**Field cards open our own pickers.** Account, When, From and To draw their
+value the way this app draws values (an icon, "Today, 1:30 pm"), and are
+real buttons. Account opens the `Select`; every date opens the one date
+panel from `date-picker.tsx`: the date typed as digits, the shared
+`Calendar` (six full weeks, a month and year view behind the caption,
+today marked with a dot, a range shaded between two ink ends, arrow keys
+and Page Up/Down), a typed `TimeInput` with AM and PM where a time is
+asked for, and Today, Clear and Done along the bottom. The card's own text
+is its accessible name, so nothing is announced twice.
 
 ---
 

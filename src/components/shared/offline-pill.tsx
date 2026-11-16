@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * A small, honest note that what you are reading came from the cache.
  *
  * The service worker keeps the last version of every screen, so going into a
- * tunnel does not empty the app — which is good, and also the problem: a
+ * tunnel does not empty the app, which is good, and also the problem: a
  * month that looks complete but is missing this morning's lunch is worse
  * than a blank page, because nothing tells you to doubt it. The pill is that
  * something.
@@ -43,7 +43,7 @@ export function OfflinePill({ className }: { className?: string }) {
  *
  * Offline, saving is turned off rather than queued. Queuing would mean a
  * record that exists on this phone and nowhere else, and two of them if the
- * user gives up and retypes it on a laptop — the honest version is to say
+ * user gives up and retypes it on a laptop, the honest version is to say
  * what is not possible and why.
  */
 export function OfflineNotice({ className }: { className?: string }) {

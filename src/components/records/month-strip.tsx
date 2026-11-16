@@ -8,7 +8,7 @@ import { useCurrency } from "@/components/profile-provider";
  *
  * Shown in the sticky header once the card itself has scrolled away. Records
  * is built around one number, and on a phone that number is off the top of
- * the screen after a single flick — so halfway down a long month you are
+ * the screen after a single flick, so halfway down a long month you are
  * reading rows with nothing to measure them against.
  *
  * It carries the same three figures in the same order as the card, so this is
@@ -35,7 +35,7 @@ export function MonthStrip({
    *
    * So past a lakh every figure is abbreviated instead. The exact three are
    * in the card this line is a condensed copy of, a flick above, and this
-   * whole strip is `aria-hidden` — nothing is lost that was not already
+   * whole strip is `aria-hidden`, nothing is lost that was not already
    * said. The threshold is in major units so it holds for any currency.
    */
   const unit = 10n ** BigInt(decimals);

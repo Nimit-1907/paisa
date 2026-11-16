@@ -82,7 +82,7 @@ describe("localToInstant / instantToLocal", () => {
   });
 
   it("keeps a late evening on its own day", () => {
-    // 23:30 IST on the 30th is 18:00 UTC on the 30th — same day either way —
+    // 23:30 IST on the 30th is 18:00 UTC on the 30th, same day either way,
     // but 00:30 IST on the 1st is 19:00 UTC on the *previous* day.
     const instant = localToInstant("2026-12-01T00:30", "Asia/Kolkata");
     expect(instant?.toISOString()).toBe("2026-11-30T19:00:00.000Z");

@@ -28,7 +28,7 @@ import { Tile } from "@/components/shared/tile";
  *
  * One month at a time, the same month the rest of the app is showing. Spent
  * comes from `month_summary`, so the numbers here are the numbers Records and
- * Analysis show — a budget screen that disagrees with the record list is
+ * Analysis show, a budget screen that disagrees with the record list is
  * worse than no budget screen.
  */
 export function BudgetsScreen({
@@ -58,7 +58,7 @@ export function BudgetsScreen({
    *
    * Only for a month that has ended: while one is running "under budget" is
    * a guess, and in a month that has not started it is meaningless. No
-   * celebration, no colour beyond the one the amounts already use — the
+   * celebration, no colour beyond the one the amounts already use, the
    * reward for keeping to a budget is the number, not applause.
    */
   const kept = data.lines.filter(
@@ -118,8 +118,8 @@ export function BudgetsScreen({
       {/*
         The sentence someone opens this screen for is "how much a day have I
         got left", so it is the caption directly under the figure rather than
-        the tail of a muted line. The ring keeps its job — the shape of the
-        month at a glance — as the hero's aside, at a weight that does not
+        the tail of a muted line. The ring keeps its job, the shape of the
+        month at a glance, as the hero's aside, at a weight that does not
         argue with the number beside it.
       */}
       {/*

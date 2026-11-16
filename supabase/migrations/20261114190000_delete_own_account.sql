@@ -9,7 +9,7 @@
 -- SECURITY DEFINER rather than a service-role key in the app's environment.
 -- The key would let the server do anything to anyone; this function can only
 -- ever delete the row belonging to whoever called it, and that is the entire
--- privilege it needs. It takes no arguments for the same reason — there is no
+-- privilege it needs. It takes no arguments for the same reason, there is no
 -- id to get wrong.
 create or replace function public.delete_own_account()
 returns void

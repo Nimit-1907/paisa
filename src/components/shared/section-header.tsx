@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 /**
  * The line that starts a group.
  *
- * "Due soon", "Not budgeted", "Today" — a label on the left, an optional
+ * "Due soon", "Not budgeted", "Today", a label on the left, an optional
  * count beside it, and at most one action on the right. Sentence case, like
  * everything else: the labels were a mix of Title Case and sentence case
  * across six screens, and the inconsistency is more noticeable than either
@@ -33,7 +33,7 @@ export function SectionHeader({
     <div className={cn("flex items-baseline justify-between gap-3", className)}>
       <div className="min-w-0">
         {/* 14px/600, sentence case. Phase 14 removes labels
-            everywhere — a row of small-caps headings reads as filing. */}
+            everywhere, a row of small-caps headings reads as filing. */}
         <h2 className="text-text flex items-baseline gap-1.5 text-sm font-semibold">
           {title}
           {count !== undefined ? (

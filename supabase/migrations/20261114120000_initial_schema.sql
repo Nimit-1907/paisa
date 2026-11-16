@@ -1,6 +1,6 @@
 -- Paisa: core schema.
 --
--- Money is BIGINT minor units (paise) everywhere — never numeric, never float.
+-- Money is BIGINT minor units (paise) everywhere, never numeric, never float.
 -- Every table carries user_id (profiles carries id = auth.users.id instead) and
 -- gets row level security in the next migration.
 

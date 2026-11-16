@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
  * Where every link Supabase mails out lands.
  *
  * Two shapes arrive here and both have to work:
- *   ?code=…                  PKCE — the signup/recovery link, exchanged for a
+ *   ?code=…                  PKCE, the signup/recovery link, exchanged for a
  *                            session using the verifier cookie set at signup
  *   ?token_hash=…&type=…     the older/template flow, verified as an OTP
  *

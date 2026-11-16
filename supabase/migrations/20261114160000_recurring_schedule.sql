@@ -42,7 +42,7 @@ comment on column public.profiles.last_recurring_check is
   'The last local date on which the app ran the recurring generator for this user.';
 
 -- The anchor follows the start day unless the caller sets it in the same
--- statement — editing "starts on the 3rd" to "starts on the 31st" should move
+-- statement, editing "starts on the 3rd" to "starts on the 31st" should move
 -- the anchor too, while an explicit anchor always wins.
 create or replace function public.set_recurrence_anchor()
 returns trigger
@@ -78,7 +78,7 @@ create trigger recurring_rules_set_anchor
 -- The day is read in UTC because an index expression must be immutable, and
 -- `occurred_at::date` depends on the session's TimeZone. Generated rows are
 -- written at midday local time, so their UTC day is a stable label for the
--- occurrence in every timezone — it is only ever compared with itself.
+-- occurrence in every timezone, it is only ever compared with itself.
 create unique index transactions_recurring_day_key
   on public.transactions (recurring_rule_id, ((occurred_at at time zone 'UTC')::date))
   where recurring_rule_id is not null;
@@ -91,7 +91,7 @@ create unique index transactions_recurring_day_key
 -- Stepping a cursor forward instead would compound the clamping: a monthly
 -- rule on the 31st would go 31 Jan, 28 Feb, 28 Mar, 28 Apr and never find its
 -- way back. Anchoring gives 31 Jan, 28 Feb, 31 Mar, 30 Apr, which is what
--- "monthly on the 31st" means — and the same trick carries 29 February
+-- "monthly on the 31st" means, and the same trick carries 29 February
 -- through three common years to the next leap one.
 create or replace function public.recurrence_occurrence(
   p_start date,
@@ -443,8 +443,8 @@ begin
   returning id into v_id;
 
   -- The cursor only moves when the occurrence paid *is* the one the rule was
-  -- waiting on. Paying something further out — the second item in a week's
-  -- list, say — must not step over an occurrence that is still owed, which
+  -- waiting on. Paying something further out, the second item in a week's
+  -- list, say, must not step over an occurrence that is still owed, which
   -- would make it disappear without ever being created or skipped. Those are
   -- left for the generator, and the unique index stops this one being made
   -- twice when it gets there.
@@ -548,7 +548,7 @@ begin
     end,
     -- Same rule as paying early: the cursor moves only when the skipped
     -- occurrence is the one the rule was waiting on. Skipping December must
-    -- not step over a November that is still owed — the skip is remembered,
+    -- not step over a November that is still owed, the skip is remembered,
     -- and the generator passes over it when it reaches that date.
     next_run_on = case when p_on = v_cursor then v_next else r.next_run_on end,
     active = case

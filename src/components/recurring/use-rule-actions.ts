@@ -18,8 +18,8 @@ import { dayLabel } from "@/lib/relative-day";
 /**
  * Everything that can be done to a rule from a button.
  *
- * The list and the detail page offer the same four actions, so the wiring —
- * which action, which arguments, which words in the toast — lives here once.
+ * The list and the detail page offer the same four actions, so the wiring,
+ * which action, which arguments, which words in the toast, lives here once.
  * Two copies would drift, and the one that drifted would be the one nobody
  * looked at.
  */
@@ -31,7 +31,7 @@ export function useRuleActions() {
     async <T>(
       work: () => Promise<ActionResult<T>>,
       success: (data: T) => string,
-      /** Runs instead of the refresh — navigating away after a delete. */
+      /** Runs instead of the refresh, navigating away after a delete. */
       after?: () => void,
     ) => {
       setPending(true);

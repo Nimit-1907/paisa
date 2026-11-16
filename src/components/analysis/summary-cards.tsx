@@ -33,7 +33,7 @@ export function SummaryCards({
   const top = data.categories[0] ?? null;
 
   // Percentage in BigInt, then once to a number for display. A previous
-  // period of zero has no percentage — everything is an increase from
+  // period of zero has no percentage, everything is an increase from
   // nothing, and "+∞%" is not a useful thing to print.
   const change =
     previous > 0n ? Number(((total - previous) * 1000n) / previous) / 10 : null;

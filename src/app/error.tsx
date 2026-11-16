@@ -15,7 +15,7 @@ import { HOME_PATH } from "@/lib/routes";
  * Two things it will not do. It will not show `error.message`: a Postgres or
  * PostgREST message names tables, columns and constraints, which is
  * frightening to read and occasionally says more about the schema than a
- * stranger should learn from a crash. And it will not blame the person —
+ * stranger should learn from a crash. And it will not blame the person,
  * whatever happened, they pressed a button.
  *
  * Two ways out, because `reset()` only helps when the failure was transient.

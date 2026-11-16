@@ -97,7 +97,7 @@ export type RecordsScreenProps = {
  * The Records tab.
  *
  * Writes go through useOptimistic, so a new row is on screen before the
- * server has answered — on a phone, waiting a round trip per receipt is the
+ * server has answered, on a phone, waiting a round trip per receipt is the
  * difference between logging the day's spending and not bothering.
  */
 export function RecordsScreen({
@@ -182,7 +182,7 @@ export function RecordsScreen({
    * The pull-to-refresh in flight, if there is one.
    *
    * `pending` is the only signal that router.refresh() has come back, and it
-   * is false both before the transition starts and after it ends — so the
+   * is false both before the transition starts and after it ends, so the
    * resolver waits for it to have been true at least once. The timer belongs
    * to this refresh alone, so a second pull cannot be ended by the first
    * one's clock.
@@ -194,8 +194,8 @@ export function RecordsScreen({
   } | null>(null);
 
   // Two keys, because a refresh means two different things. Changing month or
-  // filters is a different list: start again. Everything else — a save, a
-  // delete, an edit — is the same list with newer contents, and replacing it
+  // filters is a different list: start again. Everything else, a save, a
+  // delete, an edit, is the same list with newer contents, and replacing it
   // wholesale would throw away every page the user had scrolled through.
   const scopeKey = `${year}-${month}-${JSON.stringify(filters)}`;
   const contentKey = rows
@@ -277,7 +277,7 @@ export function RecordsScreen({
             if (result.ok) {
               // Into `loaded` as well, under the id the server gave it. The
               // merge effect watches the first page, and a record edited on
-              // a later page — or edited so it leaves the first page —
+              // a later page, or edited so it leaves the first page,
               // would otherwise snap back when the optimistic state settles.
               if (optimistic) {
                 setLoaded((current) =>
@@ -324,7 +324,7 @@ export function RecordsScreen({
         applyOptimistic({ kind: "delete", id: record.id });
         // Taken out of the loaded list too: a row from a later page would
         // otherwise come straight back when the optimistic state settles,
-        // because the first page — and so the content key — never changed.
+        // because the first page, and so the content key, never changed.
         setLoaded((current) => current.filter((row) => row.id !== record.id));
 
         // Puts the row back where it was. Without this a refused delete
@@ -454,7 +454,7 @@ export function RecordsScreen({
   /*
    * Held by id rather than by value.
    *
-   * The record behind an open detail sheet can change underneath it — an
+   * The record behind an open detail sheet can change underneath it, an
    * edit saved from the sheet, a refresh landing, the row deleted in
    * another tab. Looking it up each render means the sheet shows what is
    * true now, and closes itself when the row is gone rather than showing a
@@ -469,10 +469,10 @@ export function RecordsScreen({
    *
    * From `monthDays` rather than from a calendar: that array already has one
    * entry per day of the month the user is looking at, so this cannot
-   * disagree with the bars above it — and on a past month `today` is not in
+   * disagree with the bars above it, and on a past month `today` is not in
    * it, which is exactly when the per-day line should not appear.
    */
-  /** "Oct" — the month the trend pill compares against. */
+  /** "Oct", the month the trend pill compares against. */
   const previousLabel = React.useMemo(
     () =>
       new Intl.DateTimeFormat("en-IN", {
@@ -516,7 +516,7 @@ export function RecordsScreen({
      * number to decode: one outlier record against a quiet previous month
      * produced "247101% more than Oct", six digits of noise in a pill built
      * for four characters. A multiple is the same fact in a shape a glance
-     * can take. Only the rising side needs it — spending cannot fall by
+     * can take. Only the rising side needs it, spending cannot fall by
      * more than 100%.
      */
     if (percent > 200) {
@@ -570,7 +570,7 @@ export function RecordsScreen({
              *
              * A transition with nothing to fetch can finish before React
              * ever reports it as pending, and then the effect below has
-             * nothing to react to — so after a beat, if it never started,
+             * nothing to react to, so after a beat, if it never started,
              * the refresh is already over.
              */
             window.setTimeout(() => {
@@ -702,7 +702,7 @@ export function RecordsScreen({
                   </h2>
                   {/* Through `Amount` like every other figure, so the day's
                       total trims its paise on the same rule the rows below
-                      it do — the two disagreeing is worse than either. */}
+                      it do, the two disagreeing is worse than either. */}
                   {day.net === 0n ? null : (
                     <span
                       className={cn(
@@ -916,7 +916,7 @@ function groupByDay(rows: TransactionRow[], timeZone: string, today: string) {
     group.rows.push(row);
 
     // A transfer moves money between the user's own accounts, so it nets to
-    // nothing on the day — counting it would double the day's activity.
+    // nothing on the day, counting it would double the day's activity.
     if (row.type === "income") group.net += BigInt(row.amount);
     if (row.type === "expense") group.net -= BigInt(row.amount);
 
@@ -976,7 +976,6 @@ function toOptimisticRow(
     categoryId: values.categoryId,
     categoryName: category?.name ?? null,
     categoryIcon: category?.icon ?? null,
-    categoryColor: category?.color ?? null,
     categoryTint: category?.tint ?? null,
     // Neither is known until the server has written the row: a repeat set
     // up in the sheet creates its rule on the server, and this placeholder
@@ -990,7 +989,7 @@ function toOptimisticRow(
  * An id for a row that only exists until the server answers.
  *
  * crypto.randomUUID is only defined in a secure context, and a phone loading
- * the app over plain HTTP on the LAN is not one — which is exactly how this
+ * the app over plain HTTP on the LAN is not one, which is exactly how this
  * gets tested on a real device.
  */
 function temporaryId(): string {

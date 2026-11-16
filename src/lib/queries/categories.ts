@@ -82,7 +82,7 @@ export async function getActiveCategories(
  * the RSC boundary.
  *
  * `null` when either half fails, not an empty map. An empty map would make
- * every category read "—", which is a claim — "you spent nothing on Food" —
+ * every category read ₹0, which is a claim ("you spent nothing on Food")
  * rather than an absence. The screen drops the line entirely instead, and
  * goes back to being a grid of names, which is what it was before.
  */

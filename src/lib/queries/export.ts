@@ -56,7 +56,7 @@ export async function getExportPage({
    * Passed in rather than created here.
    *
    * The CSV route reads pages from inside a ReadableStream's `pull`, which
-   * runs after the response has detached from the request — and
+   * runs after the response has detached from the request, and
    * `createClient()` reads cookies, which are only there while the request
    * is. Building it once in the handler keeps the paging usable from the
    * stream.

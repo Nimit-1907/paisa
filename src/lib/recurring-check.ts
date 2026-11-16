@@ -19,8 +19,8 @@ export { localToday };
  * closed. README documents the pg_cron version for a deployment that wants it.
  *
  * Two things make that safe to do from a render. `process_due_recurring()` is
- * idempotent — the unique index on (recurring_rule_id, occurrence day) refuses
- * a second copy — so two tabs opening at once cannot double-charge the month.
+ * idempotent, the unique index on (recurring_rule_id, occurrence day) refuses
+ * a second copy, so two tabs opening at once cannot double-charge the month.
  * And `cache()` keeps it to one call per request however many places ask.
  *
  * The generator runs before the stamp is written, deliberately: a failure then

@@ -58,8 +58,8 @@ import {
  * unusable on a phone, and a fixed map keeps the bundle to what is listed here
  * instead of pulling the whole library.
  *
- * Icon names are stored as text in the database. Anything unrecognised — an
- * icon dropped from this list later, say — falls back rather than crashing a
+ * Icon names are stored as text in the database. Anything unrecognised, an
+ * icon dropped from this list later, say, falls back rather than crashing a
  * record list.
  */
 export const ICONS = {

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * A flat card. The default for everything that is not the hero.
  *
  * No shadow, by design. In this language depth is not a gradient of
- * elevation — it is binary, and a card that is "slightly raised" muddies
+ * elevation, it is binary, and a card that is "slightly raised" muddies
  * the one card that is raised on purpose.
  */
 export function Card({
@@ -36,7 +36,7 @@ export function Card({
 /**
  * A list card: hairline border outside, hairline dividers between rows.
  *
- * `overflow-hidden` so the first and last rows take the card's corners —
+ * `overflow-hidden` so the first and last rows take the card's corners,
  * without it a row's background squares off the radius it sits inside.
  */
 export function ListCard({

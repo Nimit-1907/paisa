@@ -12,7 +12,6 @@ export type AccountView = {
   name: string;
   type: Database["public"]["Enums"]["account_type"];
   icon: string | null;
-  color: string | null;
   /** One of the eight Phase 14 tint keys. */
   tint: string | null;
   initialBalance: string;

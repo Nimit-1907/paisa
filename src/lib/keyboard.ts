@@ -24,7 +24,7 @@ export function isTypingTarget(target: EventTarget | null): boolean {
  * True when a sheet, dialog, menu or the command palette is open.
  *
  * Asked of the DOM rather than tracked in state because the overlays come
- * from three different libraries — Radix dialogs, vaul drawers, cmdk — and
+ * from three different libraries, Radix dialogs, vaul drawers, cmdk, and
  * all three agree on this one thing: an open overlay has an element with
  * `role="dialog"` or `role="menu"` in the document. Tracking it ourselves
  * would mean every one of them remembering to report in.
@@ -38,7 +38,7 @@ export function isOverlayOpen(): boolean {
 }
 
 /**
- * Whether a keystroke is a plain one — no Ctrl, Alt or Meta.
+ * Whether a keystroke is a plain one, no Ctrl, Alt or Meta.
  *
  * Shift is allowed: "?" is Shift and "/" on most layouts, and refusing it
  * would make the search shortcut depend on the keyboard somebody owns.
@@ -47,7 +47,7 @@ export function isPlainKey(event: KeyboardEvent): boolean {
   return !event.ctrlKey && !event.altKey && !event.metaKey;
 }
 
-/** Ctrl on Windows and Linux, ⌘ on a Mac — either opens the palette. */
+/** Ctrl on Windows and Linux, ⌘ on a Mac, either opens the palette. */
 export function isPaletteKey(event: KeyboardEvent): boolean {
   return event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey);
 }

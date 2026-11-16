@@ -11,10 +11,7 @@ import {
   SheetBody,
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
-import {
-  RangeCalendar,
-  RangePresetPills,
-} from "@/components/shared/range-calendar";
+import { DateRangeField } from "@/components/shared/date-picker";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { Button } from "@/components/ui/button";
 import {
@@ -165,24 +162,13 @@ export function PeriodSelector({
         description="Any two dates, up to five years apart."
       >
         <SheetBody>
-          {/* The ranges people ask for by name, first. Most custom ranges
-              are one of these five, and tapping one is a tap. */}
-          <RangePresetPills
-            from={from}
-            to={to}
-            today={today}
-            onSelect={(next) => {
-              setFrom(next.from);
-              setTo(next.to);
-            }}
-          />
-
-          <RangeCalendar
+          {/* The presets, then From and To: the same range control as
+              the filters and Export. */}
+          <DateRangeField
+            id="analysis-range"
             from={from}
             to={to}
             max={today}
-            today={today}
-            weekStart={weekStart}
             onChange={(next) => {
               setFrom(next.from);
               setTo(next.to);
@@ -196,9 +182,9 @@ export function PeriodSelector({
                 {dayDifference(from, to) + 1} days
               </>
             ) : from ? (
-              "Now pick the other end."
+              "Now choose the end date."
             ) : (
-              "Pick the first day."
+              "Choose the start date."
             )}
           </p>
 

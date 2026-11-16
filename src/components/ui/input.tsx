@@ -6,8 +6,8 @@ import { cn } from "cn";
  *
  * Surface fill, hairline border, 12px radius; on focus the border becomes
  * ink, on top of the app-wide 2px focus outline from globals.css. Errors are
- * not drawn here — they are expense-coloured text under the field, which is
- * what `FormRow` renders — so nothing in this file needs a red ring.
+ * not drawn here, they are expense-coloured text under the field, which is
+ * what `FormRow` renders, so nothing in this file needs a red ring.
  *
  * What this replaced had three dead classes in it: a `ring-3` with no ring
  * colour, a stray `/50` left over from a split opacity modifier, and

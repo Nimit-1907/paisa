@@ -51,7 +51,7 @@ export function MonthSwitcher({ year, month, maxYear, maxMonth }: MonthBounds) {
    * Registered here rather than in a global shortcut handler because this is
    * the control they drive: on a screen with no month to change, the arrow
    * keys should go on meaning what the browser means by them. The guards are
-   * the usual two — not while typing, not while a sheet is open, where the
+   * the usual two, not while typing, not while a sheet is open, where the
    * arrows belong to whatever is on top.
    */
   React.useEffect(() => {

@@ -29,7 +29,7 @@ export function dayLabel(day: string): string {
  * The distance on its own: "today", "in 9 days", "3 days ago".
  *
  * For places that already show the date and only need to say how far off it
- * is — repeating the date there reads as a stutter.
+ * is, repeating the date there reads as a stutter.
  */
 export function daysAway(day: string, today: string): string {
   const difference = dayDifference(today, day);

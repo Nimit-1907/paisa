@@ -6,8 +6,8 @@ import { dayDifference } from "@/lib/recurrence";
 /**
  * The range an export covers.
  *
- * Both ends are local calendar days and both are inclusive — "1 to 30
- * November" means all of the 30th — and the span is capped, because an export
+ * Both ends are local calendar days and both are inclusive, "1 to 30
+ * November" means all of the 30th, and the span is capped, because an export
  * is a file somebody waits for and a request for every record since 1970 is
  * one nobody is waiting for on purpose.
  */

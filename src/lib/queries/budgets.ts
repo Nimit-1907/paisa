@@ -8,10 +8,9 @@ export type BudgetLine = {
   categoryId: string;
   name: string;
   icon: string | null;
-  color: string | null;
   /** One of the eight Phase 14 tint keys. */
   tint: string | null;
-  /** Minor units as text — an RSC payload cannot carry a BigInt. */
+  /** Minor units as text, an RSC payload cannot carry a BigInt. */
   budget: string;
   spent: string;
 };
@@ -19,7 +18,7 @@ export type BudgetLine = {
 export type BudgetMonth = {
   lines: BudgetLine[];
   totalBudget: string;
-  /** Spent in budgeted categories only — the number the top card compares. */
+  /** Spent in budgeted categories only, the number the top card compares. */
   totalSpent: string;
   /** Spent across every expense category, budgeted or not. */
   monthExpense: string;
@@ -31,7 +30,6 @@ type SummaryCategory = {
   category_id: string;
   name: string;
   icon: string | null;
-  color: string | null;
   tint: string | null;
   total: number | string;
 };
@@ -44,7 +42,7 @@ const monthStart = (year: number, month: number) =>
  *
  * Spent comes from `month_summary`, the same RPC the Records strip and
  * Analysis use, so a category's number cannot disagree with itself across two
- * screens — which is the kind of difference nobody can explain afterwards.
+ * screens, which is the kind of difference nobody can explain afterwards.
  */
 export async function getBudgetMonth({
   year,
@@ -64,7 +62,7 @@ export async function getBudgetMonth({
   const [budgets, summary] = await Promise.all([
     supabase
       .from("budgets")
-      .select("category_id, amount, category:categories(name, icon, color, tint, archived)")
+      .select("category_id, amount, category:categories(name, icon, tint, archived)")
       .eq("month", start),
     supabase.rpc("month_summary", { p_month: start }).maybeSingle(),
   ]);
@@ -84,7 +82,6 @@ export async function getBudgetMonth({
     category: {
       name: string;
       icon: string | null;
-      color: string | null;
     tint: string | null;
       archived: boolean;
     } | null;
@@ -108,7 +105,6 @@ export async function getBudgetMonth({
         categoryId: row.category_id,
         name: row.category?.name ?? "Category",
         icon: row.category?.icon ?? null,
-        color: row.category?.color ?? null,
         tint: (row.category?.tint as string | null) ?? null,
         budget: amount.toString(),
         spent: spent.toString(),
@@ -138,7 +134,7 @@ export async function getBudgetableCategories() {
 
   const { data, error } = await supabase
     .from("categories")
-    .select("id, name, icon, color, tint")
+    .select("id, name, icon, tint")
     .eq("kind", "expense")
     .eq("archived", false)
     .order("sort_order", { ascending: true });
@@ -158,7 +154,7 @@ export type BudgetHint = {
  * What this category has actually cost, for suggesting a limit.
  *
  * Last month and the three-month average, both straight from the rows. The
- * rounding to a number somebody would choose — ₹8,000 rather than ₹7,842 —
+ * rounding to a number somebody would choose, ₹8,000 rather than ₹7,842,
  * happens at the edge, next to the currency's decimal places.
  */
 export async function getBudgetHints(

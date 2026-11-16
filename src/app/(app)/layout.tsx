@@ -70,6 +70,7 @@ export default async function AppLayout({
       showPaise={profile?.show_paise ?? false}
       displayName={profile?.display_name ?? ""}
       timeZone={profile?.timezone ?? "Asia/Kolkata"}
+      weekStart={profile?.week_start ?? 1}
     >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}

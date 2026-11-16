@@ -61,7 +61,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
     .filter((account) => account.includeInTotal)
     .reduce((sum, account) => sum + BigInt(account.balance), 0n);
 
-
   function openAdd() {
     setEditing(undefined);
     setFormOpen(true);
@@ -101,7 +100,7 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
       {/*
         Two figures, one at a time.
 
-        "Total balance" is the spendable money — the accounts someone ticked
+        "Total balance" is the spendable money, the accounts someone ticked
         into their total. "Net worth" is every account including the ones
         they left out, which is usually a long-term savings pot they did not
         want counted against this month's spending. Showing both at once
@@ -267,7 +266,6 @@ export function AccountsScreen({ accounts }: { accounts: AccountView[] }) {
         onOpenChange={setFormOpen}
         account={editing}
       />
-
     </div>
   );
 }
@@ -286,8 +284,13 @@ function AccountRow({
   const balance = BigInt(account.balance);
 
   // The type, and anything unusual about the account, on one quiet line.
+  // The type is left out when the name already says it: an account called
+  // "Cash" of type Cash would otherwise read "Cash" twice.
+  const typeLabel = ACCOUNT_TYPE_LABELS[account.type];
   const subtitle = [
-    ACCOUNT_TYPE_LABELS[account.type],
+    typeLabel.toLowerCase() === account.name.trim().toLowerCase()
+      ? null
+      : typeLabel,
     account.archived ? "Archived" : null,
     !account.archived && !account.includeInTotal ? "Not in total" : null,
   ]
@@ -317,9 +320,11 @@ function AccountRow({
           <span className="text-text block truncate text-sm font-semibold">
             {account.name}
           </span>
-          <span className="text-text-secondary block truncate text-xs">
-            {subtitle}
-          </span>
+          {subtitle ? (
+            <span className="text-text-secondary block truncate text-xs">
+              {subtitle}
+            </span>
+          ) : null}
         </span>
 
         <span

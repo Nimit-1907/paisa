@@ -123,7 +123,7 @@ export function AnalysisScreen({
           {/*
             A bento grid: two columns on a phone, six from `lg`.
 
-            Six because the one card worth more room is the donut — it is
+            Six because the one card worth more room is the donut, it is
             the answer to "where did it go", and at a third of the width its
             labels collide. The four stat tiles sit two-by-two beside it,
             and the two time charts take half the width each: they are read

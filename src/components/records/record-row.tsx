@@ -11,8 +11,8 @@ import type { TransactionRow } from "@/lib/queries/transactions";
  * What colour a record's amount carries.
  *
  * All three kinds are coloured, including expense. Phase 12 had argued the
- * other way — that in a mostly-expense list the expense colour carries no
- * information — and Phase 14's reference reverses it. On these surfaces the
+ * other way, that in a mostly-expense list the expense colour carries no
+ * information, and Phase 14's reference reverses it. On these surfaces the
  * reversal holds up: the money colours are deep and the tints are pale, so
  * three coloured amounts down a column read as a key rather than as three
  * warnings. Measured at 6.5:1 or better on every surface in both themes.
@@ -31,8 +31,8 @@ const TONE_CLASS = {
  * record is here: which colour the amount takes, what a transfer's second
  * line says, and what the menu offers.
  *
- * Every action is reachable three ways — swipe, long-press or right-click
- * menu, and the edit sheet the row opens — so none of them depends on
+ * Every action is reachable three ways, swipe, long-press or right-click
+ * menu, and the edit sheet the row opens, so none of them depends on
  * knowing a gesture.
  */
 export function RecordRow({
@@ -79,7 +79,7 @@ export function RecordRow({
       /*
        * A transfer has no category, so its title slot used to hold the
        * constant word "Transfer" while the note and both account names
-       * fought over the second line — and at 360px all three lost, leaving
+       * fought over the second line, and at 360px all three lost, leaving
        * "Paytm to… · HDFC Sa… → Paytm …", which answers nothing. The icon
        * and the figure's colour already say "transfer"; the note goes in
        * the free slot, and the accounts get the whole line to themselves.
@@ -114,8 +114,8 @@ export function RecordRow({
               {/*
                 The note shrinks last. Two truncating siblings share a
                 shortfall in proportion to their width, so at 360px both got
-                cut and "Zomato — team lunch · ICICI Credit Card" came out as
-                "Zomato — tea… · ICICI Credi…" — two half-words where one
+                cut and "Zomato, team lunch · ICICI Credit Card" came out as
+                "Zomato, tea… · ICICI Credi…", two half-words where one
                 whole one would do. The note is what identifies the record;
                 the account is context. So the account gives up the room,
                 down to a floor that still reads as a name.

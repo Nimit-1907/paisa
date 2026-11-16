@@ -22,6 +22,13 @@ import { transactionFiltersSchema } from "@/lib/schemas/transactions";
 
 export const metadata: Metadata = { title: "Records" };
 
+/*
+ * No loading.tsx, on purpose. Records is where every session starts, and a
+ * Suspense boundary here held the month's hero figure back until React
+ * revealed it after hydration, which was the screen's largest paint. See
+ * `components/layout/list-screen-skeleton.tsx`.
+ */
+
 export default async function RecordsPage({
   searchParams,
 }: {

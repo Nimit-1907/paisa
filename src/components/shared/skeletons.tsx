@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * A skeleton earns its place only if the real thing lands in the same place:
  * a grey block where the hero figure will be, rows the height of real rows.
  * One that is roughly the right idea is worse than a spinner, because the
- * layout jumps when the content replaces it — which is a CLS score as well
+ * layout jumps when the content replaces it, which is a CLS score as well
  * as a flinch.
  *
  * These are the shapes; each screen's `loading.tsx` composes them in its own

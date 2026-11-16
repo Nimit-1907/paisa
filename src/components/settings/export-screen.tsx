@@ -6,10 +6,7 @@ import { ArrowRight, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { HeroStat } from "@/components/shared/hero-stat";
-import {
-  RangeCalendar,
-  RangePresetPills,
-} from "@/components/shared/range-calendar";
+import { DateRangeField } from "@/components/shared/date-picker";
 import { Card } from "@/components/shared/surface";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -42,7 +39,7 @@ const FORMATS = [
  * Downloading your records.
  *
  * Both exports are plain GETs to a route handler, so the browser's own
- * download machinery does the work — a fetch into a blob would hold the whole
+ * download machinery does the work, a fetch into a blob would hold the whole
  * file in memory first, which is the thing the streaming route exists to
  * avoid.
  *
@@ -56,7 +53,6 @@ export function ExportScreen({
   defaultMonth,
   monthOptions,
   today,
-  weekStart,
   summary,
 }: {
   defaultFrom: string;
@@ -66,12 +62,11 @@ export function ExportScreen({
   monthOptions: { value: string; label: string }[];
   /** Today where the user is, for the calendar. */
   today: string;
-  weekStart: number;
   /**
    * What there is to export, for the card at the top.
    *
    * `null` when the count could not be read. The card goes rather than
-   * showing a zero, and the format tiles lead instead — nothing else on
+   * showing a zero, and the format tiles lead instead, nothing else on
    * the screen depends on it.
    */
   summary: { count: number; span: string | null } | null;
@@ -152,7 +147,7 @@ export function ExportScreen({
         <Label>Format</Label>
 
         {/* Two tiles, not two cards. The old screen was a CSV card and a PDF
-            card, each with its own dates and its own button — which asked
+            card, each with its own dates and its own button, which asked
             somebody to read both before choosing either. */}
         <div
           role="radiogroup"
@@ -200,22 +195,11 @@ export function ExportScreen({
 
       {format === "csv" ? (
         <Card className="space-y-3 p-4">
-          <RangePresetPills
-            from={from}
-            to={to}
-            today={today}
-            onSelect={(next) => {
-              setFrom(next.from);
-              setTo(next.to);
-            }}
-          />
-
-          <RangeCalendar
+          <DateRangeField
+            id="export-range"
             from={from}
             to={to}
             max={today}
-            today={today}
-            weekStart={weekStart}
             onChange={(next) => {
               setFrom(next.from);
               setTo(next.to);

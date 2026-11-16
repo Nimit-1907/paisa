@@ -14,7 +14,7 @@ export const metadata: Metadata = {
  *
  * Its job is comparison: every token, tint and component state sitting
  * beside the reference screenshots so a difference is visible rather than
- * argued about. It is also the cheapest regression test there is — a change
+ * argued about. It is also the cheapest regression test there is, a change
  * to a shared component shows up here on every state at once, including the
  * ones no screen happens to be showing today.
  *

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { digitsOf, digitsToIso, isoToMasked, maskDate } from "./date-entry";
+import {
+  digitsOf,
+  digitsToIso,
+  isoToMasked,
+  maskDate,
+  maskTime,
+  timeDigitsToValue,
+  valueToTimeParts,
+} from "./date-entry";
 
 describe("maskDate", () => {
   it("draws the slashes itself as the digits arrive", () => {
@@ -58,5 +66,46 @@ describe("isoToMasked", () => {
   it("is empty for anything that is not yyyy-mm-dd", () => {
     expect(isoToMasked("")).toBe("");
     expect(isoToMasked("2026-11")).toBe("");
+  });
+});
+
+describe("maskTime", () => {
+  it("draws the colon once the minutes start", () => {
+    expect(maskTime("1")).toBe("1");
+    expect(maskTime("01")).toBe("01");
+    expect(maskTime("013")).toBe("01:3");
+    expect(maskTime("0130")).toBe("01:30");
+    expect(maskTime("01:30")).toBe("01:30");
+    expect(maskTime("013099")).toBe("01:30");
+  });
+});
+
+describe("timeDigitsToValue", () => {
+  it("reads twelve-hour times with their meridiem", () => {
+    expect(timeDigitsToValue("0130", "pm")).toBe("13:30");
+    expect(timeDigitsToValue("0130", "am")).toBe("01:30");
+    expect(timeDigitsToValue("1200", "am")).toBe("00:00");
+    expect(timeDigitsToValue("1200", "pm")).toBe("12:00");
+    expect(timeDigitsToValue("930", "pm")).toBe("21:30");
+  });
+
+  it("takes a 24-hour time as it is", () => {
+    expect(timeDigitsToValue("1830", "am")).toBe("18:30");
+    expect(timeDigitsToValue("0015", "pm")).toBe("00:15");
+  });
+
+  it("refuses what is not a time, and waits for enough digits", () => {
+    expect(timeDigitsToValue("2460", "am")).toBeNull();
+    expect(timeDigitsToValue("0960", "am")).toBeNull();
+    expect(timeDigitsToValue("12", "am")).toBeNull();
+  });
+});
+
+describe("valueToTimeParts", () => {
+  it("shows the 24-hour value on the twelve-hour clock", () => {
+    expect(valueToTimeParts("13:30")).toEqual({ text: "01:30", meridiem: "pm" });
+    expect(valueToTimeParts("00:05")).toEqual({ text: "12:05", meridiem: "am" });
+    expect(valueToTimeParts("12:00")).toEqual({ text: "12:00", meridiem: "pm" });
+    expect(valueToTimeParts("")).toEqual({ text: "", meridiem: "am" });
   });
 });

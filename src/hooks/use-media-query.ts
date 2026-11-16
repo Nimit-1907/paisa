@@ -23,7 +23,7 @@ export function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-/** Tailwind's `lg` breakpoint — where the bottom bar becomes a sidebar. */
+/** Tailwind's `lg` breakpoint, where the bottom bar becomes a sidebar. */
 export function useIsDesktop(): boolean {
   return useMediaQuery("(min-width: 1024px)");
 }

@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
  * A header that keeps the hero figure with you.
  *
  * Records and the account detail screen are both built around one number,
- * and on a phone that number is off the top of the screen after one flick —
+ * and on a phone that number is off the top of the screen after one flick,
  * so halfway down a long month you are reading rows with nothing to measure
  * them against. This takes the figure that scrolled away and puts a one-line
  * version of it in the sticky header.

@@ -8,7 +8,7 @@ import { siteOrigin } from "@/lib/site";
  *
  * The signed-in paths redirect to the login screen anyway, so a crawler would
  * only ever index a copy of that one page under ten URLs. The auth paths are
- * excluded for the same reason — a sign-up form is not a search result.
+ * excluded for the same reason, a sign-up form is not a search result.
  */
 export default function robots(): MetadataRoute.Robots {
   const origin = siteOrigin();

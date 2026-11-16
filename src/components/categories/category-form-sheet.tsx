@@ -46,7 +46,7 @@ export function CategoryFormSheet({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Which tab is open — the kind a new category is created in. */
+  /** Which tab is open, the kind a new category is created in. */
   kind: CategoryKind;
   category?: CategoryView;
 }) {

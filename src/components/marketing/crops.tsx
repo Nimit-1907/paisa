@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
  * Phase 13 asks each feature block to carry a crop of the screen it is
  * describing. These are drawn from the app's own tokens rather than captured
  * as images, for the same reasons the hero preview is: a PNG is heavy, soft
- * at 3x unless it is heavier, stale the moment a colour changes, and — on the
- * one page where first paint is the whole job — the largest thing the browser
+ * at 3x unless it is heavier, stale the moment a colour changes, and, on the
+ * one page where first paint is the whole job, the largest thing the browser
  * has to fetch. Three of them would have been three more render-blocking
  * requests on a page already missing its LCP target.
  *

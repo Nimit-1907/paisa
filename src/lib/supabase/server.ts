@@ -9,7 +9,7 @@ import { supabaseEnv } from "./env";
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers.
  *
- * Always create a fresh client per request — never hoist it to a module-level
+ * Always create a fresh client per request, never hoist it to a module-level
  * singleton, or requests would share another user's session.
  *
  * In a Server Component, cookies are read-only: `setAll` throws, which we
@@ -31,7 +31,7 @@ export async function createClient() {
             cookieStore.set(name, value, options);
           }
         } catch {
-          // Called from a Server Component — middleware refreshes the session.
+          // Called from a Server Component, middleware refreshes the session.
         }
       },
     },
