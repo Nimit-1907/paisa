@@ -17,6 +17,14 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#f6f6f4",
     theme_color: "#f6f6f4",
     categories: ["finance", "productivity"],
+    // Paisa in the phone's share sheet (installed, Android): a UPI SMS or a
+    // payment app's receipt shared here opens Add Record filled in.
+    // GET, because Paisa has no service worker to receive a POST.
+    share_target: {
+      action: "/share",
+      method: "GET",
+      params: { title: "title", text: "text", url: "url" },
+    },
     icons: [
       {
         src: "/icons/icon-192.png",

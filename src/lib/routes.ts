@@ -18,14 +18,12 @@ export const APP_PATHS = [
   "/about",
   "/more",
   "/onboarding",
+  // The share target: opens Add Record, so it needs a session like them.
+  "/share",
 ] as const;
 
 /** Signed-out area. A signed-in user is sent to the app instead. */
-export const AUTH_PATHS = [
-  "/login",
-  "/signup",
-  "/forgot-password",
-] as const;
+export const AUTH_PATHS = ["/login", "/signup", "/forgot-password"] as const;
 
 /**
  * Reachable either way: the recovery link signs the user in before they can

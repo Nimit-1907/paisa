@@ -72,3 +72,9 @@ describe("route groups", () => {
     expect(isAuthPath("/loginsomething")).toBe(false);
   });
 });
+
+describe("the share target", () => {
+  it("is behind sign-in, like the screens it opens over", () => {
+    expect(isAppPath("/share")).toBe(true);
+  });
+});
