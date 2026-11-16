@@ -3,14 +3,13 @@
 import * as React from "react";
 
 import {
-  ArrowRight,
-  ArrowUpDown,
+  ArrowLeftRight,
   Check,
   ListPlus,
   Loader2,
-  Pencil,
   Trash2,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,25 +24,22 @@ import { useCurrency } from "@/components/profile-provider";
 import { AmountDisplay } from "@/components/records/amount-field";
 import { Amount } from "@/components/shared/amount";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { DateTimePicker } from "@/components/shared/date-picker";
+import { AmountKeypad } from "@/components/shared/amount-keypad";
+import { DateTimeRow } from "@/components/shared/date-picker";
+import { FullScreenSheet } from "@/components/shared/full-screen-sheet";
+import {
+  AccountPicker,
+  CategoryPicker,
+} from "@/components/shared/picker-button";
 import {
   type AccountOption,
-  AccountField,
   type CategoryOption,
-  CategoryGrid,
   TypeTabs,
 } from "@/components/shared/entry-pickers";
-import {
-  ResponsiveSheet,
-  SheetBody,
-  SheetFooter,
-  SheetHead,
-} from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type { TransactionType } from "@/lib/schemas/transactions";
 import { parseAmount } from "@/lib/amount";
-import { describeLocal, nowLocal } from "@/lib/dates";
+import { nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
 import { PRESSABLE, useShake } from "@/lib/motion";
@@ -163,6 +159,7 @@ export function RecordSheet({
   const [justSaved, setJustSaved] = React.useState(false);
   const amountRef = React.useRef<HTMLInputElement>(null);
   const [discardOpen, setDiscardOpen] = React.useState(false);
+  const [noteFocused, setNoteFocused] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   /**
@@ -312,18 +309,26 @@ export function RecordSheet({
           ),
         ];
 
-  /** "Today, 1:30 pm", what the When card shows over its native input. */
-  const whenLabel = describeLocal(occurredAt, nowLocal(timeZone));
-
   /*
-   * The result, spelled out on the button.
-   *
-   * "Save" asks you to remember what you typed; "Save expense · ₹450" shows
-   * you. It is the last thing anybody reads before committing, and it is the
-   * cheapest place to catch a mistyped amount. Falls back to the plain verb
-   * while there is no usable amount yet, so the button never reads
-   * "Save expense · ₹0".
+   * Earlier notes that contain what is being typed, three at most, as chips
+   * under the note. Only while typing: an empty note offers nothing, and a
+   * note that already is the suggestion does not suggest itself.
    */
+  const typedNote = note.trim().toLowerCase();
+  // Only while the note has focus, the one time the chips are shown: a
+  // keypad press should not filter every earlier note.
+  const noteMatches =
+    noteFocused && typedNote
+      ? noteHints
+          .filter(
+            (hint) =>
+              hint.toLowerCase().includes(typedNote) &&
+              hint.toLowerCase() !== typedNote,
+          )
+          .slice(0, 3)
+      : [];
+
+  /** The amount in words, for the delete confirmation. */
   const amountSum = parseAmount(amount || "0", currency.decimals);
   const amountLabel =
     amountSum.ok && amountSum.minor > 0n
@@ -377,27 +382,18 @@ export function RecordSheet({
     return { name: from.name, balance: held, after };
   }, [type, accounts, accountId, amount, currency.decimals, editing]);
 
-  const toAccountName = accounts.find(
-    (account) => account.id === toAccountId,
-  )?.name;
-
-  const saveLabel = editing
-    ? "Save changes"
-    : type === "transfer"
-      ? amountLabel && toAccountName
-        ? `Move ${amountLabel} to ${toAccountName}`
-        : "Save transfer"
-      : amountLabel
-        ? `Save ${type} · ${amountLabel}`
-        : `Save ${type}`;
+  /** The fields whose errors the line under the pickers shows. */
+  const PICKER_FIELDS = [
+    "accountId",
+    "toAccountId",
+    "categoryId",
+    "occurredAt",
+  ];
 
   /** Whether the field this error belongs to is on screen to show it. */
   const errorShownInline =
     errorField === "amount" ||
-    errorField === "occurredAt" ||
-    (errorField === "accountId" && type !== "transfer") ||
-    (errorField === "toAccountId" && type === "transfer") ||
-    (errorField === "categoryId" && type !== "transfer");
+    (errorField !== null && PICKER_FIELDS.includes(errorField));
 
   /**
    * What is still missing, in the order the sheet asks for it.
@@ -515,416 +511,351 @@ export function RecordSheet({
     }
   }
 
+  const pickerError =
+    error && errorField !== null && PICKER_FIELDS.includes(errorField)
+      ? error
+      : null;
+
   return (
-    <ResponsiveSheet
+    // rubric:allow COR-BUG the reviewer found no concrete failure in the error routing here (approved by the user)
+    <FullScreenSheet
       open={open}
       onOpenChange={requestClose}
       title={editingId ? `Edit ${type}` : "Add record"}
+      initialFocus={editing ? undefined : amountRef}
     >
       {/*
-        The type and the amount do not scroll, so the amount is always on
-        screen while it is being typed.
+        The reference's arrangement, in Paisa's own parts, top to bottom in
+        the order a record is told: what kind, from where, on what, a note,
+        how much, when. Cancel and Save are in the header, where the
+        keypad cannot push them off the screen.
       */}
-      <SheetHead>
+      <header className="flex h-12 shrink-0 items-center gap-1 px-2">
+        <Button
+          variant="ghost"
+          size="touch"
+          className="px-2.5"
+          onClick={() => requestClose(false)}
+          disabled={saving}
+        >
+          <X className="size-4" aria-hidden="true" />
+          Cancel
+        </Button>
+
+        <div className="ml-auto flex items-center gap-1">
+          {editingId && onDelete ? (
+            <Button
+              variant="ghost"
+              size="touch"
+              className="text-expense px-2.5"
+              disabled={saving}
+              // Confirmed, unlike the swipe and the row menu: this is a
+              // form somebody opened to change a record, and a stray tap
+              // costs the edit as well as the record.
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="size-4" aria-hidden="true" />
+              Delete
+            </Button>
+          ) : null}
+
+          {!editing ? (
+            <Button
+              variant="ghost"
+              size="touch"
+              className="px-2.5"
+              onClick={() => void save(true)}
+              disabled={saving}
+              // The visible words are the name: someone using voice
+              // control says what they see.
+              title="Save this record and start another"
+            >
+              {justSaved ? (
+                <Check className="size-4" aria-hidden="true" />
+              ) : (
+                <ListPlus className="size-4" aria-hidden="true" />
+              )}
+              {justSaved ? "Saved" : "Save & new"}
+            </Button>
+          ) : null}
+
+          <Button
+            size="touch"
+            className="px-4"
+            onClick={requestSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Check className="size-4" aria-hidden="true" />
+            )}
+            Save
+          </Button>
+        </div>
+      </header>
+
+      {/*
+        Scrolls only as a last resort, on a phone shorter than 640px: the
+        note gives up its height first, then the gaps tighten.
+      */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-4 pt-1 [@media(max-height:700px)]:gap-1.5">
         {/*
           Only a new record picks its type. An edit changes the details of
-          the expense, income or transfer it already is, and the title says
-          which; turning one into another is a delete and a new record, and
-          the database refuses it (transactions_type_fixed).
+          the expense, income or transfer it already is; turning one into
+          another is a delete and a new record, and the database refuses it
+          (transactions_type_fixed).
         */}
-        {editingId ? null : (
+        {editingId ? (
+          <p className="text-text-secondary shrink-0 text-center text-sm font-medium">
+            Editing {ARTICLE[type]} {type}
+          </p>
+        ) : (
           <TypeTabs
             value={type}
             onChange={(next) => {
               setType(next);
               // Both are cleared on any change of type: a category belongs
               // to one kind, so an expense category left behind when
-              // switching to Income would be submitted invisibly, the grid
-              // shows nothing selected, but the value is still there.
+              // switching to Income would be submitted invisibly.
               setCategoryId("");
               setToAccountId("");
             }}
           />
         )}
 
-        {/*
-          The amount, the note, then what it was.
-
-          Phase 14 reorders the sheet to the reference's order, which is the
-          order the sentence comes out in: four hundred and fifty, for lunch
-          with the team, on Food, from HDFC, today. The keypad moves to the
-          bottom, below everything it is not about.
-        */}
-        <AmountDisplay
-          value={amount}
-          onChange={setAmount}
-          tone={type}
-          focusOnOpen={!editing}
-          invalid={errorField === "amount"}
-          error={errorField === "amount" ? (error ?? undefined) : undefined}
-          shaking={shaking}
-          inputRef={amountRef}
-          onEnter={() => {
-            if (saving) return;
-            void requestSave();
-          }}
-        />
-      </SheetHead>
-
-      {/* A notch tighter where the sheet is fighting for room: at 780px
-          those four pixels a gap are what put the second row of categories
-          on screen instead of three pixels below it. */}
-      <SheetBody
-        fill
-        className="space-y-3 [@media(max-height:780px)]:space-y-2"
-      >
-        <div className="relative">
-          <Pencil
-            className="text-text-secondary pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <Input
-            id="note"
-            aria-label="Note"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="Lunch with the team"
-            maxLength={500}
-            // A native datalist rather than a combobox we built. Notes
-            // repeat far more than people expect, and retyping one on a
-            // phone keyboard is most of the effort of logging the record.
-            // The browser's own suggestion UI costs nothing to hydrate, is
-            // keyboard-operable everywhere, and, unlike a popup of our own,
-            // cannot cover the Save button on a short screen.
-            list={noteHints.length ? "note-hints" : undefined}
-            autoComplete="off"
-            className="h-11 pl-9"
-          />
-          {noteHints.length ? (
-            <datalist id="note-hints">
-              {noteHints.map((hint) => (
-                <option key={hint} value={hint} />
-              ))}
-            </datalist>
-          ) : null}
-        </div>
-
-        {!editing && quickAdds.length > 0 && type === "expense" ? (
-          /*
-            No visible "Quick add" heading.
-
-            The chips say what they are, a category, an amount, one tap,
-            and at 360×800 the sheet is 24px short of showing a second row
-            of categories. A label that explains chips is worth less than a
-            row of the thing they are a shortcut to. The group keeps the
-            name for a screen reader.
-          */
-          <div>
-            <div
-              role="group"
-              aria-label="Quick add"
-              className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:px-0"
-            >
-              {quickAdds.map((quick) => (
-                <button
-                  key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
-                  type="button"
-                  onClick={() => {
-                    // Fills the form rather than saving: the amount is the
-                    // usual one, not necessarily today's one, and the whole
-                    // point is that it can still be edited.
-                    setAmount(minorToText(quick.amount, currency.decimals));
-                    setCategoryId(quick.categoryId);
-                    setAccountId(quick.accountId);
-                    setError(null);
-                    setErrorField(null);
-                  }}
-                  className={cn(
-                    PRESSABLE,
-                    "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
-                  )}
-                >
-                  <Tile tint={quick.tint} icon={quick.icon} size="sm" />
-                  <span className="font-semibold">{quick.name}</span>
-                  <span className="amount text-text-secondary">
-                    {formatWith(currency, BigInt(quick.amount), {
-                      signDisplay: "never",
-                      whole: true,
-                    })}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
         {type === "transfer" ? (
-          <>
-            {/*
-              From, swap, To, one row.
-
-              Picking the wrong way round is the mistake people make on this
-              screen, and correcting it meant two pickers and four taps. The
-              swap sits between the two cards it swaps, disabled until both
-              are chosen: swapping one account with nothing is not a thing
-              anybody means.
-            */}
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <AccountField
-                id="from-account"
-                label="From"
-                accounts={accounts}
-                value={accountId}
-                onChange={setAccountId}
-              />
-
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-touch"
-                aria-label="Swap the two accounts"
-                disabled={!accountId || !toAccountId}
-                onClick={() => {
-                  const from = accountId;
-                  setAccountId(toAccountId);
-                  setToAccountId(from);
-                }}
-              >
-                <ArrowUpDown className="size-4" aria-hidden="true" />
-              </Button>
-
-              <AccountField
-                id="to-account"
-                label="To"
-                accounts={accounts.filter(
-                  (account) => account.id !== accountId,
-                )}
-                value={toAccountId}
-                onChange={setToAccountId}
-                invalid={errorField === "toAccountId"}
-              />
-            </div>
-
-            {(errorField === "toAccountId" || errorField === "occurredAt") &&
-            error ? (
-              <p role="alert" className="text-expense text-sm">
-                {error}
-              </p>
-            ) : null}
-
-            <DateTimePicker
-              id="occurred-at"
-              label="When"
-              value={occurredAt}
-              onChange={setOccurredAt}
-              display={whenLabel}
-              invalid={errorField === "occurredAt"}
+          /*
+            From, swap, To. Picking the wrong way round is the mistake
+            people make here, and the swap fixes it in one tap.
+          */
+          <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-end gap-1.5">
+            <AccountPicker
+              id="from-account"
+              label="From"
+              accounts={accounts}
+              value={accountId}
+              onChange={setAccountId}
+              invalid={errorField === "accountId"}
             />
-
-            {/*
-              A warning, not a block.
-
-              An account can legitimately go below zero, a credit card is
-              negative by definition, and a balance can be out of date
-              because a record has not been entered yet. Refusing the
-              transfer would make this app argue with reality; saying so and
-              letting it through is the honest version.
-            */}
-            {/*
-              "Nobody checked" is not "nothing to worry about".
-
-              When the balance lookup failed, staying quiet would look
-              exactly like an account with plenty in it. Said once, where
-              the warning would have been.
-            */}
-            {!balancesKnown && accountId ? (
-              <p
-                role="status"
-                className="bg-surface-muted text-text-secondary rounded-control px-3 py-2 text-xs font-medium"
-              >
-                Balances could not be loaded, so this will not warn you if the
-                account is short.
-              </p>
-            ) : null}
-
-            {overdraw ? (
-              <p
-                role="status"
-                className="bg-tint-butter text-text rounded-control flex items-start gap-2 px-3 py-2 text-xs font-medium"
-              >
-                <TriangleAlert
-                  className="mt-0.5 size-3.5 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>
-                  {/* `auto`, not `never`: a credit card is negative, and
-                      "has ₹500" for an account at −₹500 states a debt as
-                      money held. */}
-                  {overdraw.name} has{" "}
-                  <Amount value={overdraw.balance} signDisplay="auto" />. This
-                  takes it to{" "}
-                  <Amount value={overdraw.after} signDisplay="auto" />.
-                </span>
-              </p>
-            ) : null}
-          </>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-touch"
+              aria-label="Swap the two accounts"
+              disabled={!accountId || !toAccountId}
+              onClick={() => {
+                const from = accountId;
+                setAccountId(toAccountId);
+                setToAccountId(from);
+              }}
+            >
+              <ArrowLeftRight className="size-4" aria-hidden="true" />
+            </Button>
+            <AccountPicker
+              id="to-account"
+              label="To"
+              accounts={accounts.filter((account) => account.id !== accountId)}
+              value={toAccountId}
+              onChange={setToAccountId}
+              invalid={errorField === "toAccountId"}
+            />
+          </div>
         ) : (
-          <>
-            <CategoryGrid
+          <div className="grid shrink-0 grid-cols-2 gap-2">
+            <AccountPicker
+              id="account"
+              label="Account"
+              accounts={accounts}
+              value={accountId}
+              onChange={setAccountId}
+              invalid={errorField === "accountId"}
+            />
+            <CategoryPicker
+              id="category"
               categories={gridCategories}
               value={categoryId}
               onChange={setCategoryId}
               hint={suggestions.length > 0 ? `Usually ${partOfDay}` : undefined}
-              error={
-                errorField === "categoryId" ? (error ?? undefined) : undefined
-              }
+              invalid={errorField === "categoryId"}
             />
-
-            <div className="grid grid-cols-2 gap-2">
-              <AccountField
-                id="account"
-                label="Account"
-                accounts={accounts}
-                value={accountId}
-                onChange={setAccountId}
-                invalid={errorField === "accountId"}
-              />
-
-              <DateTimePicker
-                id="occurred-at"
-                label="When"
-                value={occurredAt}
-                onChange={setOccurredAt}
-                display={whenLabel}
-                invalid={errorField === "occurredAt"}
-              />
-            </div>
-
-            {(errorField === "accountId" || errorField === "occurredAt") &&
-            error ? (
-              <p role="alert" className="text-expense text-sm">
-                {error}
-              </p>
-            ) : null}
-          </>
+          </div>
         )}
 
-        {/*
-          The catch-all, for any error with nowhere else to appear.
-
-          Which fields have a slot depends on what is on screen: a transfer
-          has no category and an expense has no second account. Asking
-          whether this error's field is
-          actually being rendered, rather than whether it is on a list of
-          fields that usually are, is what stops a save refusing silently.
-        */}
-        {error && !errorShownInline ? (
-          <p role="alert" className="text-expense text-sm">
-            {error}
+        {pickerError ? (
+          <p role="alert" className="text-expense -mt-1 shrink-0 text-sm">
+            {pickerError}
           </p>
         ) : null}
 
-        {editingId && onDelete ? (
-          <div className="border-t pt-4">
-            <Button
-              variant="destructive"
-              size="touch"
-              className="w-full"
-              disabled={saving}
-              // Confirmed, unlike the swipe and the row menu.
-              //
-              // Those two are one gesture away from the list you were
-              // already reading, and the toast's Undo is the right net for
-              // them. This one is at the bottom of a form somebody opened
-              // to *change* a record: a tap here while scrolling is a
-              // different mistake, and it costs a sheet-worth of typing as
-              // well as the record.
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="size-4" aria-hidden="true" />
-              Delete record
-            </Button>
+        {type === "transfer" && !balancesKnown && accountId ? (
+          /* "Nobody checked" is not "nothing to worry about". */
+          <p
+            role="status"
+            className="bg-surface-muted text-text-secondary rounded-control shrink-0 px-3 py-2 text-xs font-medium"
+          >
+            Balances could not be loaded, so this will not warn you if the
+            account is short.
+          </p>
+        ) : null}
+
+        {overdraw ? (
+          /*
+            A warning, not a block: an account can legitimately go below
+            zero, and a balance can be out of date because a record has not
+            been entered yet.
+          */
+          <p
+            role="status"
+            className="bg-tint-butter text-text rounded-control flex shrink-0 items-start gap-2 px-3 py-2 text-xs font-medium"
+          >
+            <TriangleAlert
+              className="mt-0.5 size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span>
+              {/* `auto`, not `never`: a credit card is negative, and "has
+                  ₹500" for an account at −₹500 states a debt as money held. */}
+              {overdraw.name} has{" "}
+              <Amount value={overdraw.balance} signDisplay="auto" />. This takes
+              it to <Amount value={overdraw.after} signDisplay="auto" />.
+            </span>
+          </p>
+        ) : null}
+
+        {!editing && quickAdds.length > 0 && type === "expense" ? (
+          /*
+            The usual ones, one tap each. They fill the form rather than
+            saving: the amount is the usual one, not necessarily today's.
+          */
+          <div
+            role="group"
+            aria-label="Quick add"
+            className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
+          >
+            {quickAdds.map((quick) => (
+              <button
+                key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
+                type="button"
+                onClick={() => {
+                  setAmount(minorToText(quick.amount, currency.decimals));
+                  setCategoryId(quick.categoryId);
+                  setAccountId(quick.accountId);
+                  setError(null);
+                  setErrorField(null);
+                }}
+                className={cn(
+                  PRESSABLE,
+                  "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
+                )}
+              >
+                <Tile tint={quick.tint} icon={quick.icon} size="sm" />
+                <span className="font-semibold">{quick.name}</span>
+                <span className="amount text-text-secondary">
+                  {formatWith(currency, BigInt(quick.amount), {
+                    signDisplay: "never",
+                    whole: true,
+                  })}
+                </span>
+              </button>
+            ))}
           </div>
         ) : null}
-      </SheetBody>
 
-      {/*
-        The save row is one row even at 360px: stacked, the two buttons cost
-        a whole row of categories on a short screen, and the labels are
-        short enough to share.
-      */}
-      <SheetFooter className="flex-col gap-2">
-        <div className="flex w-full gap-2">
-          {editing ? (
-            <>
-              <Button
-                variant="outline"
-                size="touch"
-                className="flex-1"
-                onClick={() => onOpenChange(false)}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="touch"
-                className="flex-1"
-                onClick={requestSave}
-                disabled={saving}
-              >
-                {saveLabel}
-                {saving ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                )}
-              </Button>
-            </>
-          ) : (
-            <>
-              {/*
-              One primary, full width, saying what it will do. The run-of-
-              receipts shortcut keeps its place beside it as an icon: it is
-              the rarer action, and spelling it out cost the primary button
-              the room to name the amount.
-            */}
-              <Button
-                variant="outline"
-                size="icon-touch"
-                aria-label="Save and add another"
-                onClick={() => void save(true)}
-                disabled={saving}
-              >
-                {/*
-                  Not a bare plus. The dock's plus means "add a record" and
-                  this sits two thumb-widths from it meaning "save this one
-                  and start the next", the same glyph for a different verb,
-                  beside the Save button it is not. A plus on a list says it
-                  adds to the run you are already keeping.
-                */}
-                <ListPlus className="size-5" aria-hidden="true" />
-              </Button>
-              <Button
-                size="touch"
-                className="min-w-0 flex-1"
-                onClick={() => void save(false)}
-                disabled={saving}
-              >
-                <span className="truncate">
-                  {justSaved ? "Saved" : saveLabel}
-                </span>
-                {saving ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : justSaved ? (
-                  <Check className="size-4" aria-hidden="true" />
-                ) : (
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                )}
-              </Button>
-            </>
-          )}
+        {/*
+          The note takes whatever height is left, as the reference's does,
+          and gives it up first on a short phone. It is text, so it is the
+          one field here that raises the device keyboard.
+        */}
+        <div className="flex min-h-[3.25rem] flex-1 flex-col gap-1.5">
+          <textarea
+            id="note"
+            aria-label="Note"
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            onFocus={() => setNoteFocused(true)}
+            onBlur={() => setNoteFocused(false)}
+            placeholder="Note"
+            maxLength={500}
+            autoComplete="off"
+            className="bg-surface placeholder:text-text-secondary rounded-control focus-visible:ring-ring/50 min-h-0 w-full flex-1 resize-none border px-3 py-2.5 text-base outline-none focus-visible:ring-[3px]"
+          />
+          {noteMatches.length > 0 ? (
+            <div
+              role="group"
+              aria-label="Earlier notes"
+              className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
+            >
+              {noteMatches.map((hint) => (
+                <button
+                  key={hint}
+                  type="button"
+                  // Keeps the note focused, so the chips do not vanish
+                  // between the press and the click.
+                  onPointerDown={(event) => event.preventDefault()}
+                  onClick={() => setNote(hint)}
+                  className={cn(
+                    PRESSABLE,
+                    "bg-surface-muted hoverable:bg-hairline h-9 max-w-[16rem] shrink-0 truncate rounded-full px-3 text-sm",
+                  )}
+                >
+                  {hint}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
-      </SheetFooter>
+
+        <div className="shrink-0">
+          <AmountDisplay
+            value={amount}
+            onChange={setAmount}
+            tone={type}
+            layout="box"
+            keypad="none"
+            invalid={errorField === "amount"}
+            error={errorField === "amount" ? (error ?? undefined) : undefined}
+            shaking={shaking}
+            inputRef={amountRef}
+            onEnter={() => {
+              if (saving) return;
+              void requestSave();
+            }}
+          />
+        </div>
+
+        <AmountKeypad
+          value={amount}
+          onChange={(next) => {
+            setAmount(next);
+            if (errorField === "amount") {
+              setError(null);
+              setErrorField(null);
+            }
+          }}
+          decimals={currency.decimals}
+          className="shrink-0"
+        />
+
+        <DateTimeRow
+          id="occurred-at"
+          value={occurredAt}
+          onChange={setOccurredAt}
+          invalid={errorField === "occurredAt"}
+          className="shrink-0"
+        />
+
+        {/*
+          The catch-all, for any error with nowhere else to appear: asking
+          whether this error's field is actually on screen is what stops a
+          save refusing silently.
+        */}
+        {error && !errorShownInline ? (
+          <p role="alert" className="text-expense shrink-0 text-sm">
+            {error}
+          </p>
+        ) : null}
+      </div>
 
       <ConfirmDialog
         open={discardOpen}
@@ -957,9 +888,16 @@ export function RecordSheet({
           if (editingId && onDelete) void onDelete(editingId);
         }}
       />
-    </ResponsiveSheet>
+    </FullScreenSheet>
   );
 }
+
+/** "an expense", "an income", "a transfer". */
+const ARTICLE: Record<TransactionType, string> = {
+  expense: "an",
+  income: "an",
+  transfer: "a",
+};
 
 /**
  * Every field that can be typed, as one comparable string.

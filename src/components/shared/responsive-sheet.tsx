@@ -136,7 +136,7 @@ export function ResponsiveSheet({
  * which sends a keyboard user back to the top of the page every time they
  * close one. Remembering what was focused is the only thing that can know.
  */
-function useFocusReturn(open: boolean) {
+export function useFocusReturn(open: boolean) {
   const previous = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {

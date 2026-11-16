@@ -52,7 +52,8 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - Viewport: width=device-width, initial-scale=1, viewport-fit=cover.
   Respect env(safe-area-inset-*) for the dock and sheets (iPhone notch/home bar).
 - Tap targets ≥ 44×44px. Inputs ≥ 16px font (prevents iOS zoom).
-- Use `inputMode="decimal"` for amounts; never rely on hover.
+- Amounts never raise the device keyboard (`inputMode="none"`); never rely
+  on hover.
 - Navigation: a floating dock on mobile — Records, Analysis, [Add], Budgets,
   Accounts — where the active item is an ink pill with its label and the rest
   are icons with an `aria-label`. On ≥ lg it becomes a left sidebar with an
@@ -60,9 +61,15 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   and the separate FAB: two pieces of fixed furniture stacked on each other
   cost a fifth of a 640px phone.
 - Forms open as bottom sheets (vaul) on mobile, centered dialogs on desktop.
-- Amounts are typed into the field itself, which raises the device keyboard
-  through `inputMode="decimal"`. There is no in-app keypad: it was 210px of
-  fixed furniture in the sheet whose category step needed the room.
+  Add Record is the exception: full screen on phones (`FullScreenSheet`),
+  Cancel and Save in its header, then type, Account and Category buttons
+  that open the tile pickers, quick-add chips, the note, the amount, the
+  keypad, and date and time as two buttons along the bottom.
+- Amounts are entered on the in-app keypad (`shared/amount-keypad.tsx`):
+  digits, one point and ⌫, never a sum. Add Record shows it always; every
+  other amount field (`AmountDisplay`, `AmountInput`) docks it up from the
+  bottom while focused on a touch screen, with Done. A physical keyboard
+  still types into any amount field.
 - A required field is marked with `*` on its label (and `aria-required`);
   an optional one is marked with nothing. No field is labelled "Optional".
 - Selects are `src/components/ui/select.tsx`, never a native `<select>`:

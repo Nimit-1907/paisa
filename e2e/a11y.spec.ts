@@ -174,10 +174,18 @@ test.describe("the keyboard", () => {
     await page.keyboard.type("4a00/.505");
     await expect(page.getByLabel("Amount")).toHaveValue("400.50");
 
+    // The keypad, too: ⌫ then the digit back, without moving focus.
+    const keypad = page.getByRole("group", { name: "Keypad" });
+    await keypad.getByRole("button", { name: "Delete last digit" }).click();
+    await keypad.getByRole("button", { name: "0", exact: true }).click();
+    await expect(page.getByLabel("Amount")).toHaveValue("400.50");
+    await expect(page.getByLabel("Amount")).toBeFocused();
+
+    await page.getByRole("button", { name: /^Category\b/ }).click();
     await page.getByRole("radio", { name: "Groceries" }).first().click();
     // No account is chosen for you on a new record.
-    await page.getByLabel("Account", { exact: true }).click();
-    await page.getByRole("option").first().click();
+    await page.getByRole("button", { name: /^Account\b/ }).click();
+    await page.getByRole("radio").first().click();
 
     // Back in the amount, Enter saves. The sheet is not a form, so without
     // this the one key everybody presses would do nothing.

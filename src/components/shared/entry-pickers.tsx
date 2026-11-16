@@ -114,6 +114,8 @@ export function CategoryGrid({
   onChange,
   hint,
   error,
+  fold = true,
+  showLabel = true,
 }: {
   categories: CategoryOption[];
   value: string;
@@ -121,8 +123,12 @@ export function CategoryGrid({
   /** Why these are in this order, "Usually in the afternoon". */
   hint?: string;
   error?: string;
+  /** Fold past seven behind "More". Off in a picker sheet, which has room. */
+  fold?: boolean;
+  /** Off in a picker sheet, whose title already says "Choose a category". */
+  showLabel?: boolean;
 }) {
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(!fold);
 
   // Folding away one tile to show a "More" that reveals it would be a worse
   // grid than just showing it.
@@ -143,8 +149,17 @@ export function CategoryGrid({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between gap-2">
-        <Label id="category-grid-label">Category</Label>
+      <div
+        className={cn(
+          "flex items-baseline justify-between gap-2",
+          !showLabel && !hint && "hidden",
+        )}
+      >
+        {showLabel ? (
+          <Label id="category-grid-label">Category</Label>
+        ) : (
+          <span />
+        )}
         {hint ? (
           <span className="text-text-secondary truncate text-[11px]">
             {hint}

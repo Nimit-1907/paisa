@@ -127,19 +127,22 @@ Two rows of the same tiles asking the same question read as two different
 sets. They sort to the front instead, and the grid's hint — "Usually in the
 afternoon" — says why they are there.
 
-**There is no keypad.** There was: a 4×4 grid pinned above the save button,
-because the amount field is visually hidden and an amount had to be typeable
-somewhere. It cost 210px of fixed furniture, and measured on a 360×640 phone
-that left the scrolling middle 95px for 440px of content with the category
-grid entirely below the fold: not one tile on screen, for step three of a
-four-tap flow. The field now takes the device keyboard instead, through
-`inputMode="decimal"`, and the whole sheet fits on one screen at 390×844
-with two full rows of categories showing at 640px. The field takes an
-amount and nothing else, digits and one point; it no longer works sums out.
+**The keypad is back, and the category grid moved out of its way.** A
+4×4 pad was taken out once because it cost 210px in a sheet whose
+category grid was step three of the flow. The fix that kept it is the
+reference's: Account and Category are two buttons that open the tile
+pickers in a sheet, so the screen has room for the pad, and Add Record is
+full screen on a phone rather than a sheet with a backdrop strip above it.
+The device keyboard never rises for an amount (`inputMode="none"`): it
+covered half the form to type ten digits, and an iOS decimal pad has no
+Done. The pad takes digits, one point and ⌫ (held, it clears), and
+refuses a key that would make the amount unparseable. Elsewhere it docks
+up from the bottom while an amount field has focus, the way a phone
+keyboard does, and the field scrolls above it.
 
 **The amount is the label of its own field.** The display is wrapped in a
 `<label>`, so a tap anywhere on the figure puts the caret in the hidden
-input and raises the keyboard. A steady caret marks focus, since the field
+input. A steady caret marks focus, since the field
 has no box of its own.
 
 **The toast sits above the dock, not under the header.** Brief item 24. Its

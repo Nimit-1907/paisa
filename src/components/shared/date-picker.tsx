@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { CalendarClock, CalendarDays } from "lucide-react";
+import { CalendarClock, CalendarDays, Clock } from "lucide-react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
 import { useTimeZone } from "@/components/profile-provider";
@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
  *
  *  - `DatePicker`: one day, on a field card that opens the date panel.
  *  - `DateTimePicker`: the same, with a time under the calendar.
+ *  - `DateTimeRow`: a moment as two plain buttons, date and time, for the
+ *    bottom of the Add Record screen.
  *  - `DateRangeField`: the preset pills and a From and To pair of
  *    `DatePicker`s, for the filters, Analysis and Export.
  *
@@ -596,6 +598,174 @@ export function DateTimePicker({
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>
+  );
+}
+
+/** "Today, 16 Nov", "Yesterday, 15 Nov" or "Mon, 9 Nov 2026". */
+function dayButtonLabel(day: string, today: string): string {
+  const [y = "1970", m = "01", d = "01"] = day.split("-");
+  const date = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+  const short = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(date);
+
+  if (day === today) return `Today, ${short}`;
+
+  const [ty = "1970", tm = "01", td = "01"] = today.split("-");
+  const yesterday = new Date(
+    Date.UTC(Number(ty), Number(tm) - 1, Number(td) - 1),
+  )
+    .toISOString()
+    .slice(0, 10);
+  if (day === yesterday) return `Yesterday, ${short}`;
+
+  return new Intl.DateTimeFormat("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+/** "10:12 pm" from "22:12". */
+function clockLabel(time: string): string {
+  const parts = valueToTimeParts(time);
+  return parts.text
+    ? `${parts.text.replace(/^0/, "")} ${parts.meridiem}`
+    : time;
+}
+
+const ROW_BUTTON = cn(
+  "text-text hoverable:bg-surface-muted rounded-control flex h-12 min-w-0 items-center justify-center gap-2 px-2 text-sm font-semibold",
+  "focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px]",
+);
+
+/**
+ * A moment as two plain buttons, date and time, side by side.
+ *
+ * The bottom row of the Add Record screen. Each opens the same panel the
+ * rest of the app uses: the date one the date panel (picking a day closes
+ * it), the time one the typed time with AM and PM.
+ */
+export function DateTimeRow({
+  id,
+  value,
+  onChange,
+  invalid = false,
+  className,
+}: {
+  id: string;
+  /** Local `yyyy-mm-ddThh:mm`. */
+  value: string;
+  onChange: (next: string) => void;
+  invalid?: boolean;
+  className?: string;
+}) {
+  const [dateOpen, setDateOpen] = React.useState(false);
+  const [timeOpen, setTimeOpen] = React.useState(false);
+  const today = useToday();
+  const [rawDay = "", rawTime = ""] = value.split("T");
+  const day = rawDay || today;
+  const time = rawTime.slice(0, 5) || "00:00";
+  const dayLabel = dayButtonLabel(day, today);
+  const timeLabel = clockLabel(time);
+
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-[1fr_auto_1fr] items-center",
+        invalid && "ring-expense rounded-control ring-2",
+        className,
+      )}
+    >
+      <PopoverPrimitive.Root open={dateOpen} onOpenChange={setDateOpen}>
+        <PopoverPrimitive.Trigger asChild>
+          <button
+            type="button"
+            id={id}
+            aria-label={`Date, ${dayLabel}`}
+            className={ROW_BUTTON}
+          >
+            <CalendarDays
+              className="text-text-secondary size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{dayLabel}</span>
+          </button>
+        </PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            side="top"
+            align="start"
+            sideOffset={6}
+            collisionPadding={8}
+            onOpenAutoFocus={focusCalendar}
+            aria-label="Date"
+            className={PANEL}
+          >
+            <DatePanel
+              id={`${id}-date`}
+              label="Date"
+              value={day}
+              clearable={false}
+              onDate={(next, picked) => {
+                onChange(`${next}T${time}`);
+                if (picked) setDateOpen(false);
+              }}
+              onClear={() => undefined}
+              onDone={() => setDateOpen(false)}
+            />
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+
+      <span aria-hidden="true" className="bg-hairline h-6 w-px" />
+
+      <PopoverPrimitive.Root open={timeOpen} onOpenChange={setTimeOpen}>
+        <PopoverPrimitive.Trigger asChild>
+          <button
+            type="button"
+            aria-label={`Time, ${timeLabel}`}
+            className={ROW_BUTTON}
+          >
+            <Clock
+              className="text-text-secondary size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="truncate">{timeLabel}</span>
+          </button>
+        </PopoverPrimitive.Trigger>
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            side="top"
+            align="end"
+            sideOffset={6}
+            collisionPadding={8}
+            aria-label="Time"
+            className={cn(PANEL, "w-[300px] space-y-2")}
+          >
+            <TimeInput
+              id={`${id}-time`}
+              value={time}
+              onChange={(next) => onChange(`${day}T${next}`)}
+            />
+            <div className="flex justify-end border-t pt-2">
+              <Button
+                type="button"
+                size="touch"
+                className="px-5"
+                onClick={() => setTimeOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </div>
   );
 }
 

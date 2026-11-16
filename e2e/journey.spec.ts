@@ -44,16 +44,30 @@ async function hydrated(page: Page) {
 }
 
 /**
- * Types the amount into the field.
- *
- * This used to tap a keypad digit by digit. There is no keypad now: the
- * amount field raises the device keyboard instead, so typing into it is
- * what a thumb actually does.
+ * Types the amount into the field, as a physical keyboard does. The in-app
+ * keypad is driven on its own in a11y.spec.ts.
  */
 async function typeAmount(page: Page, amount: string) {
   const field = page.getByLabel("Amount");
   await field.focus();
   await field.fill(amount);
+  await closeDockedKeypad(page);
+}
+
+/**
+ * On a phone, a form's amount field docks the keypad over the bottom of
+ * the screen, its Save included; Done puts it away, as a thumb would. Add
+ * Record's keypad is part of the screen and has no Done, so this is a
+ * no-op there.
+ */
+async function closeDockedKeypad(page: Page) {
+  const done = page
+    .locator("[data-docked-keypad]")
+    .getByRole("button", { name: "Done", exact: true });
+  if (await done.isVisible()) {
+    await done.click();
+    await expect(done).toBeHidden();
+  }
 }
 
 /** The sheet that is open, whichever shape it took. */
@@ -69,12 +83,16 @@ async function typeAmount(page: Page, amount: string) {
  * the month total did.
  */
 /**
- * Picks an account from an account card's list. A listbox of our own
- * rather than a native <select>, so it is opened and picked from.
+ * Chooses on the Add Record screen: taps the labelled button (Account,
+ * Category, From, To), then the tile in the sheet it opens.
  */
+async function pick(page: Page, label: string, name: string) {
+  await page.getByRole("button", { name: new RegExp(`^${label}\\b`) }).click();
+  await page.getByRole("radio", { name, exact: true }).click();
+}
+
 async function chooseAccount(page: Page, label: string, name = "Cash") {
-  await sheet(page).getByLabel(label, { exact: true }).click();
-  await page.getByRole("option", { name }).click();
+  await pick(page, label, name);
 }
 
 function monthCard(page: Page) {
@@ -87,19 +105,9 @@ function sheet(page: Page) {
   );
 }
 
-/**
- * The sheet's primary button, whatever it currently says.
- *
- * It names the result, "Save expense · ₹250", "Move ₹500 to Paytm Wallet",
- * so matching on the exact word "Save" stopped working the moment that
- * became true, and matching the whole string would make this test assert the
- * copy rather than the flow. The kind of record is in the pattern because
- * "Save and add another" sits beside it and would otherwise match too.
- */
+/** The Add Record screen's Save, in its header. */
 async function saveRecord(page: Page) {
-  await sheet(page)
-    .getByRole("button", { name: /^(Save (expense|income|changes)|Move) / })
-    .click();
+  await sheet(page).getByRole("button", { name: "Save", exact: true }).click();
 }
 
 test("signup, onboarding, records, budget, recurring, analysis, export", async ({
@@ -131,6 +139,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
     await page.getByLabel("Account name").fill("Cash");
     await page.getByLabel("Opening balance").fill("5000");
+    await closeDockedKeypad(page);
     await page.getByRole("button", { name: "Start tracking" }).click();
 
     // Setup ends on a welcome screen rather than a redirect, so the last
@@ -171,7 +180,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
 
     await expect(sheet(page)).toBeVisible();
     await typeAmount(page, "250");
-    await sheet(page).getByRole("radio", { name: "Food", exact: true }).click();
+    await pick(page, "Category", "Food");
     // No account is chosen for you on a new record.
     await chooseAccount(page, "Account");
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
@@ -202,8 +211,7 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     // Neither end is chosen for you. Both field cards list the same
     // accounts, so the card's own label is what tells them apart.
     await chooseAccount(page, "From");
-    await sheet(page).getByLabel("To", { exact: true }).click();
-    await page.getByRole("option", { name: "Paytm Wallet" }).click();
+    await pick(page, "To", "Paytm Wallet");
 
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
     await saveRecord(page);
