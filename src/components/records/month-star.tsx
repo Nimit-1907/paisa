@@ -105,7 +105,12 @@ export function MonthStar({
             label="Income"
             value={
               <span className="text-income">
-                +<Amount value={BigInt(summary.income)} signDisplay="never" whole />
+                +
+                <Amount
+                  value={BigInt(summary.income)}
+                  signDisplay="never"
+                  whole
+                />
               </span>
             }
           />
@@ -115,7 +120,12 @@ export function MonthStar({
             label="Spent"
             value={
               <span className="text-expense">
-                −<Amount value={BigInt(summary.expense)} signDisplay="never" whole />
+                −
+                <Amount
+                  value={BigInt(summary.expense)}
+                  signDisplay="never"
+                  whole
+                />
               </span>
             }
           />
@@ -157,7 +167,6 @@ export function MonthStar({
     </HeroStat>
   );
 }
-
 
 /**
  * The busiest ordinary day: the 85th percentile of the days with spending.

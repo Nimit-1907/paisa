@@ -122,7 +122,10 @@ export function PullToRefresh({
           height: showing ? pull : 0,
           // While the finger is down the indicator tracks it exactly; the
           // spring back is the only part that is animated.
-          transition: drag.current || reduced ? undefined : "height 200ms cubic-bezier(0.2,0,0,1)",
+          transition:
+            drag.current || reduced
+              ? undefined
+              : "height 200ms cubic-bezier(0.2,0,0,1)",
         }}
       >
         <span

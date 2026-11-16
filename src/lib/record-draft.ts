@@ -26,3 +26,23 @@ export function draftOf(
     recurringRuleId: record.recurringRuleId,
   };
 }
+
+/**
+ * A record as the start of a new one: "Log again".
+ *
+ * Everything it was, dated `now` in the profile's timezone, and not part of
+ * its recurring rule: a rule's occurrences are made by the rule. No `mode`,
+ * which is how the sheet knows to save it as a new record rather than over
+ * this one.
+ */
+export function logAgainDraft(
+  record: TransactionRow,
+  timeZone: string,
+  now: Date,
+): Omit<RecordDraft, "mode"> {
+  return {
+    ...draftOf(record, timeZone),
+    occurredAtLocal: instantToLocal(now, timeZone),
+    recurringRuleId: null,
+  };
+}

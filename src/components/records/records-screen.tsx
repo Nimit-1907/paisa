@@ -6,12 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import {
-  ChevronRight,
-  Plus,
-  Receipt,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ChevronRight, Plus, Receipt, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -52,7 +47,7 @@ import {
   useRemoveFilter,
 } from "@/components/records/use-clear-filters";
 import { ActiveFilters } from "@/components/records/active-filters";
-import { draftOf as toDraft } from "@/lib/record-draft";
+import { logAgainDraft, draftOf as toDraft } from "@/lib/record-draft";
 import { RecordDetail } from "@/components/records/record-detail";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
@@ -726,6 +721,11 @@ export function RecordsScreen({
                         // fast path for people who know it is there.
                         onOpen={() => setDetailId(record.id)}
                         onEdit={() => sheet.openEdit(draftOf(record))}
+                        onLogAgain={() =>
+                          sheet.openLogAgain(
+                            logAgainDraft(record, timeZone, new Date()),
+                          )
+                        }
                         onDelete={() => remove(record)}
                       />
                     </li>
@@ -750,6 +750,11 @@ export function RecordsScreen({
             if (!detail) return;
             setDetailId(null);
             sheet.openEdit(draftOf(detail));
+          }}
+          onLogAgain={() => {
+            if (!detail) return;
+            setDetailId(null);
+            sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
           }}
           onDelete={() => {
             if (!detail) return;

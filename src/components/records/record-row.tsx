@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Pencil, Repeat, Trash2 } from "lucide-react";
+import { ArrowRight, CopyPlus, Pencil, Repeat, Trash2 } from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
 import { Tile } from "@/components/shared/tile";
@@ -42,6 +42,7 @@ export function RecordRow({
   selected = false,
   onOpen,
   onEdit,
+  onLogAgain,
   onDelete,
 }: {
   record: TransactionRow;
@@ -55,6 +56,8 @@ export function RecordRow({
   onOpen: () => void;
   /** The menu's Edit, which skips the detail. */
   onEdit: () => void;
+  /** A new record from this one, dated now. */
+  onLogAgain: () => void;
   onDelete: () => void;
 }) {
   const amount = BigInt(record.amount);
@@ -141,7 +144,11 @@ export function RecordRow({
         // The sign and the figure share one coloured wrapper. Colouring only
         // the figure would leave a green amount behind an ink-coloured plus.
         <span className={TONE_CLASS[tone]}>
-          {record.type === "income" ? "+" : record.type === "expense" ? "−" : ""}
+          {record.type === "income"
+            ? "+"
+            : record.type === "expense"
+              ? "−"
+              : ""}
           <Amount value={amount} signDisplay="never" />
         </span>
       }
@@ -151,13 +158,17 @@ export function RecordRow({
         tone: "destructive",
         onAction: onDelete,
       }}
-      // Two actions, each reachable three ways: swipe, the long-press
-      // menu, and the buttons on the record's own sheet. Duplicate and
-      // "Show similar" used to sit beside them; they are gone rather than
-      // left behind a gesture, where nothing should live alone.
-      swipeRight={{ label: "Edit", icon: Pencil, onAction: onEdit }}
+      // Three actions, each reachable three ways: swipe, the long-press
+      // menu, and the buttons on the record's own sheet. A swipe right
+      // uncovers two, Edit and Log again, side by side, so Log again is
+      // not left behind a menu alone.
+      swipeRight={[
+        { label: "Edit", icon: Pencil, onAction: onEdit },
+        { label: "Log again", icon: CopyPlus, onAction: onLogAgain },
+      ]}
       menu={[
         { label: "Edit", icon: Pencil, onAction: onEdit },
+        { label: "Log again", icon: CopyPlus, onAction: onLogAgain },
         {
           label: "Delete",
           icon: Trash2,

@@ -148,10 +148,7 @@ export function UpcomingStrip({
                   </Link>
                   <span className="text-text-secondary block truncate text-xs">
                     {relativeDay(item.on, today)} ·{" "}
-                    <Amount
-                      value={BigInt(rule.amount)}
-                      signDisplay="never"
-                    />
+                    <Amount value={BigInt(rule.amount)} signDisplay="never" />
                   </span>
                 </span>
 
@@ -163,7 +160,10 @@ export function UpcomingStrip({
                   onClick={() => void pay(item)}
                 >
                   {paying === item.key ? (
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    <Loader2
+                      className="size-4 animate-spin"
+                      aria-hidden="true"
+                    />
                   ) : null}
                   Pay now
                 </Button>

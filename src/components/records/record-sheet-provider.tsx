@@ -38,6 +38,11 @@ type RecordSheetContextValue = {
   openAdd: (type?: TransactionType) => void;
   openEdit: (draft: RecordDraft) => void;
   /**
+   * Opens Add Record prefilled from a record: "Log again". The draft has no
+   * `mode`, so Save creates a new record and never touches the original.
+   */
+  openLogAgain: (draft: Omit<RecordDraft, "mode">) => void;
+  /**
    * Lets the screen showing the records take over saving, so the row can
    * appear before the server answers. Returns the undo function.
    */
@@ -57,6 +62,7 @@ type RecordSheetContextValue = {
 const RecordSheetContext = React.createContext<RecordSheetContextValue>({
   openAdd: () => {},
   openEdit: () => {},
+  openLogAgain: () => {},
   setSubmitHandler: () => () => {},
   setDeleteHandler: () => () => {},
   lastSavedId: null,
@@ -130,6 +136,10 @@ export function RecordSheetProvider({
       },
       openEdit: (next) => {
         setDraft({ ...next, mode: "edit" });
+        setOpen(true);
+      },
+      openLogAgain: (next) => {
+        setDraft(next);
         setOpen(true);
       },
       setSubmitHandler: (handler) => {

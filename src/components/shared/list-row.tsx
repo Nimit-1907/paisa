@@ -12,6 +12,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { settleSwipe, SWIPE_ACTION_WIDTH } from "@/lib/swipe";
 import { cn } from "@/lib/utils";
 
 /** One thing a row can do to itself. */
@@ -22,8 +23,6 @@ export type RowAction = {
   tone?: "default" | "destructive";
 };
 
-/** How far a row slides to park an action open. */
-const REVEAL = 88;
 /** Pixels of movement before the gesture decides which axis it is on. */
 const AXIS_LOCK = 8;
 
@@ -49,10 +48,13 @@ type ListRowProps = {
   /** Briefly tinted, the row that just arrived. */
   highlight?: boolean;
 
-  /** Revealed by swiping left (sits against the right edge). */
-  swipeLeft?: RowAction;
+  /**
+   * Revealed by swiping left (sits against the right edge). One action, or
+   * several side by side, the first nearest the edge.
+   */
+  swipeLeft?: RowAction | RowAction[];
   /** Revealed by swiping right (sits against the left edge). */
-  swipeRight?: RowAction;
+  swipeRight?: RowAction | RowAction[];
   /** Right-click and long-press menu. */
   menu?: RowAction[];
   /** Shown on hover where there is a real pointer. Never the only route. */
@@ -101,7 +103,12 @@ export function ListRow({
     base: number;
   } | null>(null);
 
-  const parked = offset <= -REVEAL / 2 || offset >= REVEAL / 2;
+  const leftActions = toList(swipeRight);
+  const rightActions = toList(swipeLeft);
+  const counts = { left: leftActions.length, right: rightActions.length };
+  const leftOpen = settleSwipe(offset, counts) > 0;
+  const rightOpen = settleSwipe(offset, counts) < 0;
+  const parked = leftOpen || rightOpen;
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     // A mouse has the hover buttons and the right-click menu; the gesture is
@@ -117,7 +124,7 @@ export function ListRow({
       startX: event.clientX,
       startY: event.clientY,
       axis: "none",
-      base: offset <= -REVEAL / 2 ? -REVEAL : offset >= REVEAL / 2 ? REVEAL : 0,
+      base: settleSwipe(offset, counts),
     };
   }
 
@@ -141,17 +148,15 @@ export function ListRow({
     }
 
     // A row only travels in a direction that has something to show.
-    const min = swipeLeft ? -REVEAL - 24 : 0;
-    const max = swipeRight ? REVEAL + 24 : 0;
+    const min = -counts.right * SWIPE_ACTION_WIDTH - (counts.right ? 24 : 0);
+    const max = counts.left * SWIPE_ACTION_WIDTH + (counts.left ? 24 : 0);
     setOffset(Math.max(min, Math.min(max, state.base + dx)));
   }
 
   function onPointerUp() {
     if (!drag.current) return;
     drag.current = null;
-    setOffset((current) =>
-      current <= -REVEAL / 2 ? -REVEAL : current >= REVEAL / 2 ? REVEAL : 0,
-    );
+    setOffset((current) => settleSwipe(current, counts));
   }
 
   /**
@@ -252,19 +257,19 @@ export function ListRow({
         Delete on the other, both printed through the row for as long as
         the save takes. The row cannot be swiped while pending anyway.
       */}
-      {swipeRight && !pending ? (
-        <SwipeAction
-          action={swipeRight}
+      {leftActions.length > 0 && !pending ? (
+        <SwipeActions
+          actions={leftActions}
           side="left"
-          open={offset >= REVEAL / 2}
+          open={leftOpen}
           onDone={close}
         />
       ) : null}
-      {swipeLeft && !pending ? (
-        <SwipeAction
-          action={swipeLeft}
+      {rightActions.length > 0 && !pending ? (
+        <SwipeActions
+          actions={rightActions}
           side="right"
-          open={offset <= -REVEAL / 2}
+          open={rightOpen}
           onDone={close}
         />
       ) : null}
@@ -317,15 +322,52 @@ export function ListRow({
   );
 }
 
-/** The button a swipe uncovers, parked against one edge. */
-function SwipeAction({
-  action,
+function toList(actions: RowAction | RowAction[] | undefined): RowAction[] {
+  if (!actions) return [];
+  return Array.isArray(actions) ? actions : [actions];
+}
+
+/**
+ * The buttons a swipe uncovers, parked against one edge, the first action
+ * nearest it.
+ */
+function SwipeActions({
+  actions,
   side,
   open,
   onDone,
 }: {
-  action: RowAction;
+  actions: RowAction[];
   side: "left" | "right";
+  open: boolean;
+  onDone: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute inset-y-0 flex",
+        side === "left" ? "left-0" : "right-0 flex-row-reverse",
+      )}
+    >
+      {actions.map((action) => (
+        <SwipeAction
+          key={action.label}
+          action={action}
+          open={open}
+          onDone={onDone}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** One uncovered button. */
+function SwipeAction({
+  action,
+  open,
+  onDone,
+}: {
+  action: RowAction;
   open: boolean;
   onDone: () => void;
 }) {
@@ -341,8 +383,7 @@ function SwipeAction({
         action.onAction();
       }}
       className={cn(
-        "absolute inset-y-0 flex w-[88px] flex-col items-center justify-center gap-0.5 text-xs font-semibold",
-        side === "left" ? "left-0" : "right-0",
+        "flex w-[88px] flex-col items-center justify-center gap-0.5 text-xs font-semibold",
         action.tone === "destructive"
           ? "bg-tint-rose text-expense"
           : "bg-accent text-text",

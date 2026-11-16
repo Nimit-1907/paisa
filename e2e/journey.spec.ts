@@ -200,6 +200,26 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(monthCard(page)).toContainText("₹250.00");
   });
 
+  await test.step("log the expense again", async () => {
+    // From the row's menu (right-click here; long-press on a phone). The
+    // sheet opens prefilled and saves a second record, not over the first.
+    await page.getByText(EXPENSE_NOTE).first().click({ button: "right" });
+    await page.getByRole("menuitem", { name: "Log again" }).click();
+    await expect(sheet(page)).toBeVisible();
+    await expect(page.getByLabel("Amount")).toHaveValue("250");
+    await expect(sheet(page).getByLabel("Note", { exact: true })).toHaveValue(
+      EXPENSE_NOTE,
+    );
+    await saveRecord(page);
+    await expect(sheet(page)).toBeHidden();
+    await expect(page.getByText(EXPENSE_NOTE)).toHaveCount(2);
+
+    // Delete the copy, so the month's figures below are the journey's own.
+    await page.getByText(EXPENSE_NOTE).first().click({ button: "right" });
+    await page.getByRole("menuitem", { name: "Delete" }).click();
+    await expect(page.getByText(EXPENSE_NOTE)).toHaveCount(1);
+  });
+
   await test.step("an untouched sheet closes without asking", async () => {
     // The account is pre-selected now; opening and cancelling must still
     // count as no change, or every look at the sheet asks to discard.

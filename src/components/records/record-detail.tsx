@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarClock,
+  CopyPlus,
   Pencil,
   Repeat,
   Trash2,
@@ -44,6 +45,7 @@ export function RecordDetail({
   timeZone,
   onOpenChange,
   onEdit,
+  onLogAgain,
   onDelete,
 }: {
   /** Null closes the sheet; the row that opened it may have been deleted. */
@@ -51,6 +53,8 @@ export function RecordDetail({
   timeZone: string;
   onOpenChange: (open: boolean) => void;
   onEdit: () => void;
+  /** A new record from this one, dated now. */
+  onLogAgain: () => void;
   onDelete: () => void;
 }) {
   const transfer = record?.type === "transfer";
@@ -187,11 +191,10 @@ export function RecordDetail({
                 />
               ) : null}
             </div>
-
           </SheetBody>
 
-          {/* Edit and Delete, and nothing else: the record's two actions,
-              side by side and the same size, so neither is hiding. */}
+          {/* The record's three actions, side by side and the same size, so
+              none is hiding: Delete, Log again, Edit. */}
           <SheetFooter className="flex-row gap-2">
             <Button
               variant="destructive"
@@ -201,6 +204,15 @@ export function RecordDetail({
             >
               <Trash2 className="size-4" aria-hidden="true" />
               Delete
+            </Button>
+            <Button
+              variant="outline"
+              size="touch"
+              className="flex-1"
+              onClick={onLogAgain}
+            >
+              <CopyPlus className="size-4" aria-hidden="true" />
+              Log again
             </Button>
             <Button size="touch" className="flex-1" onClick={onEdit}>
               <Pencil className="size-4" aria-hidden="true" />
