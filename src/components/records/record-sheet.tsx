@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import type { TransactionType } from "@/lib/schemas/transactions";
 import { minorToAmountText, parseAmount } from "@/lib/amount";
 import { withoutInactive } from "@/lib/record-draft";
+import { useHold } from "@/hooks/use-hold";
 import {
   chooseFrom,
   guessAccounts,
@@ -609,6 +610,43 @@ export function RecordSheet({
     }
   }
 
+  /**
+   * A held quick-add chip: the usual spend, saved as it is, now.
+   *
+   * Through the same onSubmit as Save, so it gets the same toast with Undo
+   * and the same optimistic row, and the same guard against a second save.
+   */
+  async function quickSave(quick: QuickAdd) {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const result = await onSubmit(
+        {
+          type: "expense",
+          amount: minorToAmountText(quick.amount, currency.decimals),
+          accountId: quick.accountId,
+          toAccountId: null,
+          categoryId: quick.categoryId,
+          note: null,
+          occurredAt: nowLocal(timeZone),
+        },
+        { editingId: null },
+      );
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      onOpenChange(false);
+    } catch (thrown) {
+      console.error("[records]", thrown);
+      toast.error("Could not save. Check your connection and try again.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  }
+
   const pickerError =
     error && errorField !== null && PICKER_FIELDS.includes(errorField)
       ? error
@@ -863,10 +901,14 @@ export function RecordSheet({
               className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
             >
               {quickAdds.map((quick) => (
-                <button
+                <QuickAddChip
                   key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
-                  type="button"
-                  onClick={() => {
+                  quick={quick}
+                  label={formatWith(currency, BigInt(quick.amount), {
+                    signDisplay: "never",
+                    whole: true,
+                  })}
+                  onFill={() => {
                     setAmount(
                       minorToAmountText(quick.amount, currency.decimals),
                     );
@@ -876,20 +918,8 @@ export function RecordSheet({
                     setError(null);
                     setErrorField(null);
                   }}
-                  className={cn(
-                    PRESSABLE,
-                    "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
-                  )}
-                >
-                  <Tile tint={quick.tint} icon={quick.icon} size="sm" />
-                  <span className="font-semibold">{quick.name}</span>
-                  <span className="amount text-text-secondary">
-                    {formatWith(currency, BigInt(quick.amount), {
-                      signDisplay: "never",
-                      whole: true,
-                    })}
-                  </span>
-                </button>
+                  onSave={() => void quickSave(quick)}
+                />
               ))}
             </div>
           ) : null}
@@ -1061,3 +1091,44 @@ const FIELD_TARGETS: Record<string, (type: TransactionType) => string> = {
   categoryId: () => "category",
   occurredAt: () => "occurred-at",
 };
+
+/**
+ * One usual spend: a tap fills the form, a hold saves it as it is.
+ *
+ * The hold is a shortcut, never the only way: tap and Save do the same.
+ */
+function QuickAddChip({
+  quick,
+  label,
+  onFill,
+  onSave,
+}: {
+  quick: QuickAdd;
+  label: string;
+  onFill: () => void;
+  onSave: () => void;
+}) {
+  const hold = useHold(onSave);
+
+  return (
+    <button
+      type="button"
+      title="Tap to fill, hold to save"
+      {...hold.handlers}
+      // A held finger would otherwise raise the text-selection callout.
+      onContextMenu={(event) => event.preventDefault()}
+      onClick={() => {
+        if (hold.wasHeld()) return;
+        onFill();
+      }}
+      className={cn(
+        PRESSABLE,
+        "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm select-none [-webkit-touch-callout:none]",
+      )}
+    >
+      <Tile tint={quick.tint} icon={quick.icon} size="sm" />
+      <span className="font-semibold">{quick.name}</span>
+      <span className="amount text-text-secondary">{label}</span>
+    </button>
+  );
+}

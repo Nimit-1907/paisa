@@ -7,6 +7,7 @@ import { Delete } from "lucide-react";
 import { useHaptic } from "@/components/profile-provider";
 import { type AmountKey, pressKey } from "@/lib/amount";
 import { PRESSABLE } from "@/lib/motion";
+import { useHold } from "@/hooks/use-hold";
 import { cn } from "@/lib/utils";
 
 /**
@@ -213,40 +214,23 @@ function BackspaceKey({
   onPress: () => void;
   onHold: () => void;
 }) {
-  const timer = React.useRef<number | null>(null);
-  const held = React.useRef(false);
-
-  function stop() {
-    if (timer.current !== null) window.clearTimeout(timer.current);
-    timer.current = null;
-  }
-
-  React.useEffect(() => stop, []);
+  const hold = useHold(onHold);
 
   return (
     <button
       type="button"
       aria-label="Delete last digit"
       title="Delete (hold to clear)"
+      {...hold.handlers}
       onPointerDown={(event) => {
+        // Keeps focus (and the caret) in the amount field.
         event.preventDefault();
-        held.current = false;
-        stop();
-        timer.current = window.setTimeout(() => {
-          held.current = true;
-          onHold();
-        }, 500);
+        hold.handlers.onPointerDown();
       }}
-      onPointerUp={stop}
-      onPointerLeave={stop}
-      onPointerCancel={stop}
       onClick={() => {
         // The hold already cleared; the click that ends it is not a second
         // delete.
-        if (held.current) {
-          held.current = false;
-          return;
-        }
+        if (hold.wasHeld()) return;
         onPress();
       }}
       className={cn(KEY, "bg-surface-muted text-text")}
