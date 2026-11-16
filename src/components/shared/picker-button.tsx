@@ -30,12 +30,15 @@ export function PickerButton({
   label,
   chosen,
   invalid = false,
+  required = false,
   onClick,
 }: {
   id: string;
   label: string;
   chosen: { name: string; icon: string | null; tint: string | null } | null;
   invalid?: boolean;
+  /** Marked with `*`, as every required field is; said as "required". */
+  required?: boolean;
   onClick: () => void;
 }) {
   const labelId = `${id}-label`;
@@ -48,13 +51,14 @@ export function PickerButton({
         className="text-text-secondary block text-center text-xs font-medium"
       >
         {label}
+        {required ? <span className="text-expense">*</span> : null}
       </span>
       <button
         type="button"
         id={id}
         // "Account: Cash", "Category: Choose": the label first, then what
         // is chosen, which is what the screen shows read top to bottom.
-        aria-label={`${label}: ${chosen ? chosen.name : "Choose"}`}
+        aria-label={`${label}${required ? ", required" : ""}: ${chosen ? chosen.name : "Choose"}`}
         aria-haspopup="dialog"
         onClick={onClick}
         className={cn(
@@ -109,6 +113,7 @@ export function AccountPicker({
         label={label}
         chosen={chosen}
         invalid={invalid}
+        required
         onClick={() => setOpen(true)}
       />
       <ResponsiveSheet
@@ -164,6 +169,7 @@ export function CategoryPicker({
         label="Category"
         chosen={chosen}
         invalid={invalid}
+        required
         onClick={() => setOpen(true)}
       />
       <ResponsiveSheet

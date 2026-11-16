@@ -19,8 +19,10 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        // 44px tall on phones (CLAUDE.md tap targets), compact from md up.
-        "bg-surface rounded-control h-11 w-full min-w-0 border px-3 py-1 text-base md:h-9 md:text-sm",
+        // 44px and 16px at every width. "Compact from md up" made every
+        // field on an iPad, a touch screen, 36px tall and 14px, which iOS
+        // zooms the page into on focus.
+        "bg-surface rounded-control h-11 w-full min-w-0 border px-3 py-1 text-base",
         "placeholder:text-text-secondary transition-colors focus-visible:border-ink",
         "file:text-text file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-semibold",
         "disabled:bg-surface-muted disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",

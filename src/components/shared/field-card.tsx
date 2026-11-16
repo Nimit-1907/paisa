@@ -58,7 +58,7 @@ export function FieldCard({
 
   const inside = (
     <>
-      <span className="text-text-secondary block text-[11px]">{label}</span>
+      <span className="text-text-secondary block text-xs">{label}</span>
       <span className="text-text mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold">
         {icon}
         <span className="truncate">{value}</span>

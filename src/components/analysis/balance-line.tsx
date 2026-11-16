@@ -106,7 +106,11 @@ export function BalanceLine({
       actions={
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="touch" className="min-w-11 shrink-0 px-2.5">
+            <Button
+              variant="outline"
+              size="touch"
+              className="min-w-11 shrink-0 px-2.5"
+            >
               {selected ? selected.name : "All"}
             </Button>
           </DropdownMenuTrigger>
@@ -149,92 +153,92 @@ export function BalanceLine({
       {/* The table below carries these numbers; recharts' own SVG would
           read out as a list of paths. */}
       <div aria-hidden="true">
-      <ResponsiveContainer width="100%" height={180}>
-        <AreaChart
-          data={data}
-          margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-          // See period-bars: the surface is focusable by default, and this
-          // one is hidden in favour of the table underneath it.
-          tabIndex={-1}
-        >
-          <defs>
-            <linearGradient id="balance-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="0%"
-                stopColor={CHART_COLORS.ink}
-                stopOpacity={0.3}
-              />
-              <stop
-                offset="100%"
-                stopColor={CHART_COLORS.ink}
-                stopOpacity={0}
-              />
-            </linearGradient>
-          </defs>
-
-          <CartesianGrid
-            vertical={false}
-            stroke={CHART_COLORS.grid}
-            strokeDasharray="3 3"
-          />
-          <XAxis
-            dataKey="label"
-            interval={axisInterval(data.length)}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11, fill: CHART_COLORS.axis }}
-            height={18}
-          />
-          <YAxis
-            width={56}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 11, fill: CHART_COLORS.axis }}
-            // Not forced to zero, and the domain is padded a little so the
-            // line never sits on the top or bottom edge of the plot.
-            domain={[
-              (min: number) => Math.floor(min - Math.abs(min) * 0.05),
-              (max: number) => Math.ceil(max + Math.abs(max) * 0.05),
-            ]}
-            tickFormatter={(value: number) => compact(Math.round(value))}
-          />
-
-          <Tooltip
-            trigger={trigger}
-            cursor={{ stroke: CHART_COLORS.ink, strokeDasharray: "3 3" }}
-            wrapperStyle={{ outline: "none", zIndex: 20 }}
-            content={({ active, payload }) => {
-              const point = payload?.[0]?.payload as
-                (typeof data)[number] | undefined;
-              if (!active || !point) return null;
-
-              return (
-                <ChartTooltip
-                  title={bucketTitle(point.on, bucket)}
-                  rows={[
-                    {
-                      label: "Balance",
-                      value: point.balanceMinor,
-                      color: CHART_COLORS.ink,
-                    },
-                  ]}
+        <ResponsiveContainer width="100%" height={180}>
+          <AreaChart
+            data={data}
+            margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+            // See period-bars: the surface is focusable by default, and this
+            // one is hidden in favour of the table underneath it.
+            tabIndex={-1}
+          >
+            <defs>
+              <linearGradient id="balance-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor={CHART_COLORS.ink}
+                  stopOpacity={0.3}
                 />
-              );
-            }}
-          />
+                <stop
+                  offset="100%"
+                  stopColor={CHART_COLORS.ink}
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
 
-          <Area
-            type="monotone"
-            dataKey="balance"
-            stroke={CHART_COLORS.ink}
-            strokeWidth={2}
-            fill="url(#balance-fill)"
-            isAnimationActive={false}
-            dot={false}
-            activeDot={{ r: 4 }}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+            <CartesianGrid
+              vertical={false}
+              stroke={CHART_COLORS.grid}
+              strokeDasharray="3 3"
+            />
+            <XAxis
+              dataKey="label"
+              interval={axisInterval(data.length)}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
+              height={18}
+            />
+            <YAxis
+              width={56}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
+              // Not forced to zero, and the domain is padded a little so the
+              // line never sits on the top or bottom edge of the plot.
+              domain={[
+                (min: number) => Math.floor(min - Math.abs(min) * 0.05),
+                (max: number) => Math.ceil(max + Math.abs(max) * 0.05),
+              ]}
+              tickFormatter={(value: number) => compact(Math.round(value))}
+            />
+
+            <Tooltip
+              trigger={trigger}
+              cursor={{ stroke: CHART_COLORS.ink, strokeDasharray: "3 3" }}
+              wrapperStyle={{ outline: "none", zIndex: 20 }}
+              content={({ active, payload }) => {
+                const point = payload?.[0]?.payload as
+                  (typeof data)[number] | undefined;
+                if (!active || !point) return null;
+
+                return (
+                  <ChartTooltip
+                    title={bucketTitle(point.on, bucket)}
+                    rows={[
+                      {
+                        label: "Balance",
+                        value: point.balanceMinor,
+                        color: CHART_COLORS.ink,
+                      },
+                    ]}
+                  />
+                );
+              }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="balance"
+              stroke={CHART_COLORS.ink}
+              strokeWidth={2}
+              fill="url(#balance-fill)"
+              isAnimationActive={false}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
       {negative ? (

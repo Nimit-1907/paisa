@@ -68,7 +68,10 @@ export function MonthStar({
   return (
     <HeroStat
       flat={flat}
-      label={net < 0n ? "Overspent this month" : "Left to spend"}
+      // Not "Left to spend": that is the Budgets figure, what is left of
+      // the limits. This one is income less spending, a different number,
+      // and the two screens disagreeing under one name read as a bug.
+      label={net < 0n ? "Overspent this month" : "Left this month"}
       trend={
         trend ? (
           <Pill tone={trend.better ? "income" : "expense"}>

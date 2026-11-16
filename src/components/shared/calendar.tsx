@@ -323,7 +323,7 @@ export function Calendar({
                   key={long}
                   scope="col"
                   abbr={long}
-                  className="text-text-secondary h-8 text-center text-[11px] font-semibold"
+                  className="text-text-secondary h-8 text-center text-xs font-semibold"
                 >
                   {short}
                 </th>

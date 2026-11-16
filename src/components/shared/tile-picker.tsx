@@ -73,7 +73,7 @@ export function TilePicker({
             )}
           >
             <Tile tint={option.tint} icon={option.icon} size="md" />
-            <span className="text-text w-full truncate text-center text-[11px] font-medium">
+            <span className="text-text w-full truncate text-center text-xs font-medium">
               {option.name}
             </span>
           </button>
@@ -112,7 +112,7 @@ export function TileCell({
       >
         <Icon className="size-[18px]" />
       </span>
-      <span className="text-text w-full truncate text-center text-[11px] font-medium">
+      <span className="text-text w-full truncate text-center text-xs font-medium">
         {label}
       </span>
     </button>

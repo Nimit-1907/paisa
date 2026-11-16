@@ -121,19 +121,20 @@ export function AnalysisScreen({
       ) : (
         <>
           {/*
-            A bento grid: two columns on a phone, six from `lg`.
+            A bento grid: two columns on a phone, twelve from `lg`.
 
-            Six because the one card worth more room is the donut, it is
-            the answer to "where did it go", and at a third of the width its
-            labels collide. The four stat tiles sit two-by-two beside it,
-            and the two time charts take half the width each: they are read
-            left to right, so they want length more than height.
+            The four stat tiles run in one strip under the headline, at
+            their own height. They used to sit two-by-two beside the donut
+            and stretch to its height, four 340px cards holding one line
+            each. The donut and its list take the full width, the way
+            Budgets lists its categories, and the two time charts take half
+            each: they are read left to right, so they want length.
 
             On a phone it is a stack, in the order the questions come: the
             sentence, then how much a day, then where, then when.
           */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 grid grid-cols-2 gap-3 lg:grid-cols-6">
+            <div className="col-span-2 grid grid-cols-2 gap-3 lg:grid-cols-12">
               {/*
                 The one bold card on the screen, and the only figure on it
                 that is the period's own total.
@@ -145,7 +146,7 @@ export function AnalysisScreen({
                 above it, not inside a ring.
               */}
               <HeroStat
-                className="col-span-2 lg:col-span-6"
+                className="col-span-2 lg:col-span-12"
                 label={kind === "income" ? "Earned" : "Spent"}
                 value={
                   <span
@@ -161,17 +162,17 @@ export function AnalysisScreen({
                 helper={insight ?? periodLabel(period)}
               />
 
+              <SummaryCards data={data} kind={kind} />
+
               {data.categories.length > 0 ? (
                 <CategoryDonut
                   slices={data.categories}
                   total={data.total}
                   kind={kind}
                   recordsHref={recordsHref}
-                  className="col-span-2 lg:col-span-4 lg:row-span-2"
+                  className="col-span-2 lg:col-span-12"
                 />
               ) : null}
-
-              <SummaryCards data={data} kind={kind} />
 
               <PeriodBars
                 period={period}
@@ -179,7 +180,8 @@ export function AnalysisScreen({
                 bucket={data.bucket}
                 incomeTotal={data.incomeTotal}
                 expenseTotal={data.expenseTotal}
-                className="col-span-2 lg:col-span-3"
+                kind={kind}
+                className="col-span-2 lg:col-span-6"
               />
 
               <BalanceLine
@@ -187,7 +189,7 @@ export function AnalysisScreen({
                 bucket={data.bucket}
                 accounts={accounts}
                 accountId={accountId}
-                className="col-span-2 lg:col-span-3"
+                className="col-span-2 lg:col-span-6"
               />
             </div>
           </div>

@@ -95,7 +95,7 @@ export function PageHeader({
             >
               {title}
             </h1>
-            <p className="text-text-secondary truncate text-xs sm:text-sm">
+            <p className="text-text-secondary line-clamp-2 text-xs sm:text-sm">
               {description}
             </p>
           </div>

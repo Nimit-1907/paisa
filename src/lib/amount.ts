@@ -77,8 +77,23 @@ export function pressKey(
   value: string,
   key: AmountKey,
   decimals: number,
-  { allowNegative = false }: { allowNegative?: boolean } = {},
+  {
+    allowNegative = false,
+    replace = false,
+  }: {
+    allowNegative?: boolean;
+    /**
+     * The amount was filled in for the person (a quick-add chip), so the
+     * first key starts a new one rather than adding to it, the way typing
+     * over selected text does. Without it, "250" and a 7 is "2507".
+     */
+    replace?: boolean;
+  } = {},
 ): string {
+  if (replace && key !== "sign") {
+    return key === "back" || key === "clear" ? "" : pressKey("", key, decimals);
+  }
+
   const negative = value.startsWith("-");
   const body = negative ? value.slice(1) : value;
   const sign = (next: string) => (negative ? `-${next}` : next);
@@ -106,6 +121,79 @@ export function pressKey(
       return sign(`${whole}${key}`);
     }
   }
+}
+
+/**
+ * The keypad key a physical key stands for, or null to leave it alone.
+ *
+ * The amount field routes these through `pressKey` rather than letting the
+ * browser edit the hidden input: the caret in a field nobody can see sits
+ * wherever a tap left it, and a 7 typed in front of "250" books ₹7,250.
+ */
+export function amountKeyFor(key: string): AmountKey | null {
+  if (/^[0-9]$/.test(key)) return key as AmountKey;
+  if (key === ".") return ".";
+  if (key === "Backspace") return "back";
+  if (key === "Delete") return "clear";
+  return null;
+}
+
+/**
+ * Minor units as the text an amount field holds: "250", "250.5", "250.05".
+ *
+ * No zero paise padded on. "250.00" already has both its places, so the
+ * keypad would refuse every digit pressed after it.
+ */
+export function minorToAmountText(
+  minor: string | bigint,
+  decimals: number,
+  {
+    keepSign = false,
+  }: {
+    /** For an amount that can be below zero, an opening balance. */
+    keepSign?: boolean;
+  } = {},
+): string {
+  const value = BigInt(minor);
+  const abs = value < 0n ? -value : value;
+  const sign = keepSign && value < 0n ? "-" : "";
+
+  if (decimals === 0) return `${sign}${abs}`;
+
+  const factor = 10n ** BigInt(decimals);
+  const whole = abs / factor;
+  const fraction = (abs % factor)
+    .toString()
+    .padStart(decimals, "0")
+    .replace(/0+$/, "");
+
+  return `${sign}${fraction ? `${whole}.${fraction}` : whole}`;
+}
+
+/**
+ * An amount being typed, with its grouping commas: "12302" reads "12,302".
+ *
+ * The text itself stays ungrouped; this is only how the figure is drawn.
+ * `indian` groups in lakhs and crores (12,34,567), as the rest of the app
+ * does for the rupee.
+ */
+export function groupAmountText(text: string, indian: boolean): string {
+  const point = text.indexOf(".");
+  const whole = point === -1 ? text : text.slice(0, point);
+  const rest = point === -1 ? "" : text.slice(point);
+
+  if (whole.length <= 3) return text;
+
+  const last = whole.slice(-3);
+  const head = whole.slice(0, -3);
+  const size = indian ? 2 : 3;
+  const groups: string[] = [];
+
+  for (let end = head.length; end > 0; end -= size) {
+    groups.unshift(head.slice(Math.max(0, end - size), end));
+  }
+
+  return `${[...groups, last].join(",")}${rest}`;
 }
 
 /** "1234.5" into minor units, or why not. Never a sum. */

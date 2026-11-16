@@ -31,8 +31,13 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-/** Four taps, named, because the claim in the hero has to be checkable. */
-const STEPS = ["Tap +", "Type the amount", "Pick the category", "Save"];
+/** The steps, named, because the claim in the hero has to be checkable. */
+const STEPS = [
+  "Tap +",
+  "Pick the account and category",
+  "Type the amount",
+  "Save",
+];
 
 /**
  * The three blocks, each with a crop of the screen it is about.
@@ -126,8 +131,9 @@ export default function LandingPage() {
           Logging an expense, in full
         </h2>
         <p className="text-text-secondary mt-1 text-sm">
-          Four taps, because the account and the date are already filled in and
-          the categories you use at this time of day are at the top.
+          The date is already filled in and the categories you use at this
+          time of day come first. A spend you repeat is one chip that fills in
+          the account, the category and the amount: tap +, tap it, save.
         </p>
 
         <ol className="mt-4 grid gap-2 sm:grid-cols-4">
@@ -235,7 +241,7 @@ export default function LandingPage() {
           Start with today&rsquo;s first expense.
         </h2>
         <p className="text-text-secondary mx-auto mt-2 max-w-[46ch] text-sm">
-          It takes a minute to set up and four taps after that. Nothing to pay,
+          It takes a minute to set up and seconds after that. Nothing to pay,
           nothing to connect.
         </p>
         <Link

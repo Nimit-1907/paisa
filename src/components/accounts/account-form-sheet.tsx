@@ -26,7 +26,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_TINT, type TintKey, isTint } from "@/lib/tokens";
 import { ACCOUNT_TYPE_ICONS, DEFAULT_ACCOUNT_ICON } from "@/lib/icons";
-import { fromMinor, tryToMinor } from "@/lib/money";
+import { minorToAmountText } from "@/lib/amount";
+import { tryToMinor } from "@/lib/money";
 import {
   ACCOUNT_TYPES,
   ACCOUNT_TYPE_LABELS,
@@ -81,7 +82,9 @@ export function AccountFormSheet({
     );
     setInitialBalance(
       account
-        ? fromMinor(BigInt(account.initialBalance), currency.decimals)
+        ? minorToAmountText(account.initialBalance, currency.decimals, {
+            keepSign: true,
+          })
         : "",
     );
     setIncludeInTotal(account?.includeInTotal ?? true);

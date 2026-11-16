@@ -92,7 +92,7 @@ export default function OpengraphImage() {
           lineHeight: 1.3,
         }}
       >
-        Log what you spend in four taps. Set a budget per category. See where
+        Log a spend in seconds. Set a budget per category. See where
         your money goes.
       </div>
     </div>,

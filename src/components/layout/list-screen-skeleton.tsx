@@ -26,7 +26,7 @@ export function ListScreenSkeleton() {
       <div className="space-y-4 pt-4" aria-hidden="true">
         <div className="flex items-center justify-between gap-2">
           <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-11 w-36 rounded-lg" />
+          <Skeleton className="h-11 w-36 rounded-control" />
         </div>
 
         {/* The summary card: label, the month's number, the two figures. */}
@@ -38,7 +38,7 @@ export function ListScreenSkeleton() {
 
         <div className="flex items-center justify-between gap-2">
           <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-11 w-24 rounded-lg" />
+          <Skeleton className="h-11 w-24 rounded-control" />
         </div>
 
         {[0, 1].map((group) => (

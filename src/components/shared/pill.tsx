@@ -33,7 +33,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-[3px] text-[11px] font-semibold",
+        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-[3px] text-xs font-semibold",
         TONE[tone] ?? TONE.quiet,
         className,
       )}
@@ -55,7 +55,7 @@ export function TintPill({
   return (
     <span
       className={cn(
-        "text-text inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-[3px] text-[11px] font-semibold",
+        "text-text inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-[3px] text-xs font-semibold",
         TINT_BG[tint],
         className,
       )}

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { updateProfile } from "@/actions/profile";
 import { ChangePasswordCard } from "@/components/settings/change-password-card";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import {
   ResponsiveSheet,
@@ -349,6 +350,10 @@ export function SettingsScreen({
       <section>
         <SectionHeader className="mb-1.5 px-1" title="Security" />
         <ChangePasswordCard />
+        {/* Above the danger zone, not under it: the everyday way out of
+            the account should not be reached by scrolling past the
+            permanent one. */}
+        <SignOutButton className="mt-3 w-full" />
       </section>
 
       <section>

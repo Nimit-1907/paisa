@@ -272,7 +272,7 @@ export function DragHandle({
     <span
       {...props}
       className={cn(
-        "text-text-secondary hoverable:text-text  flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg active:cursor-grabbing  ",
+        "text-text-secondary hoverable:text-text  flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-control active:cursor-grabbing  ",
         className,
       )}
     >

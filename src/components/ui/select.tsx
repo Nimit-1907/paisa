@@ -49,7 +49,7 @@ export const SelectTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         "bg-surface rounded-control flex h-11 w-full min-w-0 items-center",
-        "justify-between gap-2 border px-3 text-left text-base md:text-sm",
+        "justify-between gap-2 border px-3 text-left text-base",
         "pressable hoverable:bg-surface-muted",
         "data-[placeholder]:text-text-secondary",
         className,

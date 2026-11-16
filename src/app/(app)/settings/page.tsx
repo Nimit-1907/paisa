@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { redirect } from "next/navigation";
 
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { PreferencesCard } from "@/components/settings/preferences-card";
@@ -43,8 +42,6 @@ export default async function SettingsPage() {
           />
         }
       />
-
-      <SignOutButton className="mt-5 w-full" />
     </PageShell>
   );
 }

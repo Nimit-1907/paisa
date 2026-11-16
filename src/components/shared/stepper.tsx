@@ -58,7 +58,7 @@ export function Stepper({
         aria-label={label}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="bg-surface rounded-control h-11 min-w-0 flex-1 border px-2 text-center text-base font-semibold tabular-nums focus-visible:border-ink md:text-sm"
+        className="bg-surface rounded-control h-11 min-w-0 flex-1 border px-2 text-center text-base font-semibold tabular-nums focus-visible:border-ink"
       />
 
       <Button

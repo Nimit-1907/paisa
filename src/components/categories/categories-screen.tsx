@@ -183,7 +183,7 @@ export function CategoriesScreen({
                       className="bg-surface hoverable:bg-surface-muted rounded-card pressable flex w-full flex-col items-center gap-1.5 border px-1 py-3 transition-colors"
                     >
                       <CategoryBadge category={category} size="lg" />
-                      <span className="w-full truncate text-center text-[11px] font-semibold">
+                      <span className="w-full truncate text-center text-xs font-semibold">
                         {category.name}
                       </span>
                       {/* This month, under the name. A grid of names answers
@@ -194,7 +194,7 @@ export function CategoriesScreen({
                           a dash there would say "you spent nothing", which
                           a failed query has not earned. */}
                       {total === null ? null : (
-                        <span className="text-text-secondary w-full truncate text-center text-[11px]">
+                        <span className="text-text-secondary w-full truncate text-center text-xs">
                           {/* ₹0 rather than a word: an amount slot that
                               changes kind for one value is the
                               inconsistency the eye catches first. */}
@@ -227,7 +227,7 @@ export function CategoriesScreen({
             type="button"
             onClick={() => setShowArchived((open) => !open)}
             aria-expanded={showArchived}
-            className="text-text-secondary hoverable:text-text flex min-h-11 w-full items-center gap-1.5 rounded-lg px-1 text-sm font-semibold  "
+            className="text-text-secondary hoverable:text-text flex min-h-11 w-full items-center gap-1.5 rounded-control px-1 text-sm font-semibold  "
           >
             {showArchived ? (
               <ChevronDown className="size-4" aria-hidden="true" />

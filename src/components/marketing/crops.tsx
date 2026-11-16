@@ -212,7 +212,7 @@ export function RecurringCrop() {
             key={row.name}
             className="bg-surface rounded-control flex items-center gap-2 border px-2 py-1.5"
           >
-            <span className="bg-surface-muted flex size-7 shrink-0 flex-col items-center justify-center rounded-md leading-none">
+            <span className="bg-surface-muted flex size-7 shrink-0 flex-col items-center justify-center rounded-control leading-none">
               <span className="text-[10px] font-semibold tabular-nums">
                 {row.day}
               </span>

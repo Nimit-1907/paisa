@@ -36,7 +36,7 @@ export default function AuthLayout({
           <AppPreview />
 
           <p className="text-text-secondary max-w-[34ch] text-center text-sm text-balance">
-            Four taps to log a spend. No bank login, no ads, and your records
+            A spend in seconds. No bank login, no ads, and your records
             stay yours.
           </p>
         </aside>

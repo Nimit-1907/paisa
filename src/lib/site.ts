@@ -17,6 +17,6 @@ export const SITE = {
   tagline: "Expense tracker",
   /** The one sentence that has to work as a page title, an OG card and a pitch. */
   description:
-    "A fast, private expense tracker for your phone. Log what you spend in four taps, set a budget for each category, and see where your money goes.",
+    "A fast, private expense tracker for your phone. Log a spend in seconds, set a budget for each category, and see where your money goes.",
 } as const;
 

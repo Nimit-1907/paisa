@@ -38,3 +38,23 @@ export function forgetEmail(): void {
     // As above.
   }
 }
+
+/**
+ * The address to fill in, or null to leave the field as it is.
+ *
+ * The restore runs once the page has hydrated, which on a slow phone is
+ * seconds after the field appeared. Somebody may have started typing by
+ * then, and filling the field under them merged the two addresses.
+ */
+export function emailToRestore({
+  remembered,
+  current,
+  typing,
+}: {
+  remembered: string;
+  current: string;
+  typing: boolean;
+}): string | null {
+  if (!remembered || current !== "" || typing) return null;
+  return remembered;
+}

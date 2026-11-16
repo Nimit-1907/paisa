@@ -11,7 +11,14 @@ import {
   useKeepAboveKeypad,
   useTouchKeypad,
 } from "@/components/shared/amount-keypad";
-import { cleanAmount, parseAmount, pressKey } from "@/lib/amount";
+import {
+  amountKeyFor,
+  cleanAmount,
+  groupAmountText,
+  parseAmount,
+  pressKey,
+} from "@/lib/amount";
+import { usesIndianGrouping } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type AmountProps = {
@@ -59,6 +66,7 @@ export function AmountDisplay({
   shaking = false,
   onEnter,
   inputRef,
+  replaceNext = false,
 }: AmountProps & {
   layout?: "hero" | "box";
   /** `dock`: a pad slides up while focused (touch only). `none`: the caller draws one. */
@@ -75,6 +83,11 @@ export function AmountDisplay({
   onEnter?: () => void;
   /** Lets a parent put the caret back after it changes the value. */
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  /**
+   * The amount was filled in for the person (a quick-add chip): it is drawn
+   * as selected, and the next key replaces it rather than adding to it.
+   */
+  replaceNext?: boolean;
 }) {
   const currency = useCurrency();
   const ownRef = React.useRef<HTMLInputElement>(null);
@@ -118,11 +131,26 @@ export function AmountDisplay({
         onChange(cleanAmount(event.target.value, currency.decimals, value))
       }
       onKeyDown={(event) => {
-        if (event.key !== "Enter") return;
-        // The sheet is not a form, so Enter would otherwise do nothing on
-        // the one screen a desktop user types the most into.
+        if (event.key === "Enter") {
+          // The sheet is not a form, so Enter would otherwise do nothing on
+          // the one screen a desktop user types the most into.
+          event.preventDefault();
+          onEnter?.();
+          return;
+        }
+
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+        // Digits, the point and the delete keys go through the keypad's
+        // own rules rather than the browser's: the caret in a field nobody
+        // can see sits wherever a tap left it, and a 7 typed in front of
+        // "250" would book 7,250. Paste still arrives through onChange.
+        const key = amountKeyFor(event.key);
+        if (!key) return;
         event.preventDefault();
-        onEnter?.();
+        onChange(
+          pressKey(value, key, currency.decimals, { replace: replaceNext }),
+        );
       }}
       className="peer sr-only"
     />
@@ -146,7 +174,16 @@ export function AmountDisplay({
         {tone === "income" ? "+" : tone === "expense" ? "−" : ""}
         {currency.symbol}
       </span>
-      {value || "0"}
+      <span
+        className={cn(
+          // Drawn as selected text is: the next key types over it.
+          replaceNext && value && "bg-tint-sky rounded-segment px-1",
+        )}
+      >
+        {value
+          ? groupAmountText(value, usesIndianGrouping(currency.symbol))
+          : "0"}
+      </span>
     </p>
   );
 
@@ -181,7 +218,13 @@ export function AmountDisplay({
             type="button"
             aria-label="Delete last digit"
             onPointerDown={(event) => event.preventDefault()}
-            onClick={() => onChange(pressKey(value, "back", currency.decimals))}
+            onClick={() =>
+              onChange(
+                pressKey(value, "back", currency.decimals, {
+                  replace: replaceNext,
+                }),
+              )
+            }
             disabled={!value}
             className="text-text-secondary hoverable:bg-surface-muted rounded-control flex size-11 shrink-0 items-center justify-center disabled:opacity-40"
           >

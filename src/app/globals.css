@@ -153,10 +153,11 @@
   --shadow-accent-lg: 4px 4px 0 var(--ink);
 
   /*
-   * One step below text-xs, for the label above a number. Sentence case,
+   * The label above a number, the size of text-xs: 11px read as fine print
+   * on a 360px phone. Sentence case,
    * Phase 14 removes uppercase labels everywhere.
    */
-  --text-label: 0.6875rem;
+  --text-label: 0.75rem;
   --text-label--line-height: 1rem;
 
   /* shadcn primitives read these; they point at the Phase 14 values. */

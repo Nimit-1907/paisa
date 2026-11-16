@@ -31,7 +31,7 @@ export default function MarketingLayout({
         <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-4 py-3">
           <Link
             href="/"
-            className=" flex min-h-11 items-center gap-2 rounded-lg "
+            className=" flex min-h-11 items-center gap-2 rounded-control "
           >
             <span className="bg-ink text-on-ink flex size-8 items-center justify-center rounded-control">
               <IndianRupee className="size-4" aria-hidden="true" />
@@ -45,7 +45,7 @@ export default function MarketingLayout({
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-text-secondary hoverable:text-text flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold  "
+                    className="text-text-secondary hoverable:text-text flex min-h-11 items-center rounded-control px-3 text-sm font-semibold  "
                   >
                     {link.label}
                   </Link>

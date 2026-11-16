@@ -50,14 +50,14 @@ export function DateTile({
           <span className="text-[13px] font-bold">
             {Number(day.slice(8, 10))}
           </span>
-          <span className="mt-0.5 text-[8px] font-semibold tracking-wide uppercase">
+          <span className="mt-0.5 text-[10px] font-semibold tracking-wide uppercase">
             {monthAbbrev(day)}
           </span>
         </>
       ) : (
         // Set like the month abbreviation rather than like the day number:
         // the word has to live in a 36px square, where 13px would not fit.
-        <span className="text-text-secondary text-[9px] font-semibold tracking-wide uppercase">
+        <span className="text-text-secondary text-[10px] font-semibold tracking-wide uppercase">
           None
         </span>
       )}

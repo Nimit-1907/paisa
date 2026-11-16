@@ -87,7 +87,7 @@ export function RecordDetail({
                   // buried in a table row was never found.
                   <Link
                     href={`/recurring/${record.recurringRuleId}`}
-                    className="bg-tint-peri text-text rounded-full px-2 py-[3px] text-[11px] font-semibold"
+                    className="bg-tint-peri text-text rounded-full px-2 py-[3px] text-xs font-semibold"
                   >
                     <Repeat
                       className="mr-1 inline size-3 align-[-1px]"

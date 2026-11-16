@@ -31,6 +31,7 @@ export function AmountKeypad({
   onChange,
   decimals,
   allowNegative = false,
+  replace = false,
   variant = "inline",
   onDone,
   className,
@@ -40,6 +41,8 @@ export function AmountKeypad({
   decimals: number;
   /** Adds ±, for an opening balance that can be below zero. */
   allowNegative?: boolean;
+  /** The amount was filled in for the person: the next key starts over. */
+  replace?: boolean;
   variant?: "inline" | "dock";
   /** The docked pad's Done key. */
   onDone?: () => void;
@@ -48,10 +51,12 @@ export function AmountKeypad({
   const tap = useHaptic();
 
   function press(key: AmountKey) {
-    const next = pressKey(value, key, decimals, { allowNegative });
+    const next = pressKey(value, key, decimals, { allowNegative, replace });
     // A key that changes nothing still says it was pressed, once, quietly.
     tap(next === value ? 4 : 8);
-    if (next !== value) onChange(next);
+    // Replacing reports even an unchanged value ("7" over "7"), so the
+    // caller knows the prefilled amount has been taken over.
+    if (next !== value || replace) onChange(next);
   }
 
   const point = decimals > 0 ? "." : null;

@@ -29,6 +29,7 @@ import { Stepper } from "@/components/shared/stepper";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { minorToAmountText } from "@/lib/amount";
 import { describeSchedule } from "@/lib/recurrence";
 import type { RecurringRule } from "@/lib/recurring-rule";
 import {
@@ -111,7 +112,7 @@ export function RuleSheet({
     }
 
     setType(rule.type);
-    setAmount(minorToText(rule.amount, currency.decimals));
+    setAmount(minorToAmountText(rule.amount, currency.decimals));
     setAccountId(rule.accountId);
     setToAccountId(rule.toAccountId ?? "");
     setCategoryId(rule.categoryId ?? "");
@@ -405,18 +406,4 @@ export function RuleSheet({
       </SheetFooter>
     </ResponsiveSheet>
   );
-}
-
-/** Minor units back into something the keypad can show and edit. */
-function minorToText(minor: string, decimals: number): string {
-  const value = BigInt(minor);
-  const abs = value < 0n ? -value : value;
-
-  if (decimals === 0) return abs.toString();
-
-  const factor = 10n ** BigInt(decimals);
-  const whole = abs / factor;
-  const fraction = (abs % factor).toString().padStart(decimals, "0");
-
-  return `${whole}.${fraction}`;
 }

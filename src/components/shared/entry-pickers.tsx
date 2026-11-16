@@ -161,7 +161,7 @@ export function CategoryGrid({
           <span />
         )}
         {hint ? (
-          <span className="text-text-secondary truncate text-[11px]">
+          <span className="text-text-secondary truncate text-xs">
             {hint}
           </span>
         ) : null}

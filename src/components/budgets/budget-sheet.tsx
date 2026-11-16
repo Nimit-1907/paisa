@@ -18,7 +18,8 @@ import {
 } from "@/components/shared/responsive-sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { formatWith, friendlyAmount, fromMinor } from "@/lib/money";
+import { minorToAmountText } from "@/lib/amount";
+import { formatWith, friendlyAmount } from "@/lib/money";
 import { PRESSABLE } from "@/lib/motion";
 import type { BudgetHint } from "@/lib/queries/budgets";
 import { cn } from "@/lib/utils";
@@ -116,7 +117,7 @@ export function BudgetSheet({
 
     setCategoryId(draft?.categoryId ?? "");
     setAmount(
-      draft?.amount ? fromMinor(BigInt(draft.amount), currency.decimals) : "",
+      draft?.amount ? minorToAmountText(draft.amount, currency.decimals) : "",
     );
     setApplyForward(false);
     setError(null);
@@ -221,7 +222,7 @@ export function BudgetSheet({
                   key={suggestion.label}
                   type="button"
                   onClick={() =>
-                    setAmount(fromMinor(suggestion.minor, currency.decimals))
+                    setAmount(minorToAmountText(suggestion.minor, currency.decimals))
                   }
                   className={cn(
                     PRESSABLE,

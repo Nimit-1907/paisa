@@ -40,8 +40,8 @@ export const FEATURES: Feature[] = [
     id: "track",
     tint: "bg-tint-rose",
     icon: Zap,
-    title: "Four taps to log a spend",
-    body: "The sheet opens with the account you used last and the categories you usually pick at this hour. Type the amount, pick the category, save. It does the arithmetic too, so a split bill goes in as 840÷3.",
+    title: "A spend in seconds",
+    body: "Pick the account and the category, type the amount on the keypad, save. The categories you usually pick at this hour come first, and the spends you repeat sit on one-tap chips that fill in all three.",
   },
   {
     id: "budget",

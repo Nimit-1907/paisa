@@ -38,7 +38,7 @@ import {
 } from "@/components/shared/entry-pickers";
 import { Button } from "@/components/ui/button";
 import type { TransactionType } from "@/lib/schemas/transactions";
-import { parseAmount } from "@/lib/amount";
+import { minorToAmountText, parseAmount } from "@/lib/amount";
 import { nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
@@ -151,6 +151,11 @@ export function RecordSheet({
   const [note, setNote] = React.useState("");
   const [occurredAt, setOccurredAt] = React.useState("");
   const [saving, setSaving] = React.useState(false);
+  // State lags a render behind, so two Enter presses in one frame both read
+  // `saving` as false and both save. The ref is set before the await.
+  const savingRef = React.useRef(false);
+  // A quick-add chip filled the amount in: the next key replaces it.
+  const [amountPrefilled, setAmountPrefilled] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
   const [shaking, shake] = useShake();
@@ -185,7 +190,7 @@ export function RecordSheet({
     setType(editing?.type ?? defaultType);
     setAmount(
       editing
-        ? minorToText(editing.amount, currency.decimals)
+        ? minorToAmountText(editing.amount, currency.decimals)
         : defaultAmountText,
     );
     // No account is chosen for you on a new record. The last one used is
@@ -201,13 +206,14 @@ export function RecordSheet({
     setDiscardOpen(false);
     setDeleteOpen(false);
     setJustSaved(false);
+    setAmountPrefilled(false);
 
     // Snapshot taken from the same values that were just set, not from
     // state, state has not updated yet inside this effect.
     opened.current = snapshot({
       type: editing?.type ?? defaultType,
       amount: editing
-        ? minorToText(editing.amount, currency.decimals)
+        ? minorToAmountText(editing.amount, currency.decimals)
         : defaultAmountText,
       accountId: editing?.accountId ?? "",
       toAccountId: editing?.toAccountId ?? "",
@@ -440,13 +446,40 @@ export function RecordSheet({
    * the form is actually saveable, otherwise somebody answers it and then
    * gets told the amount is missing.
    */
+  /**
+   * Say what is missing, and put focus where it is fixed.
+   *
+   * Focus used to stay on Save, so a desktop user who was told to enter an
+   * amount typed it into nothing.
+   */
+  function showProblem(problem: { field: string; message: string }) {
+    setError(problem.message);
+    setErrorField(problem.field);
+    if (problem.field === "amount") {
+      shake();
+      amountRef.current?.focus();
+      return;
+    }
+    const target = FIELD_TARGETS[problem.field]?.(type);
+    if (target) document.getElementById(target)?.focus();
+  }
+
+  /** Clears the amount's own error as soon as the amount changes. */
+  function changeAmount(next: string) {
+    setAmount(next);
+    setAmountPrefilled(false);
+    if (errorField === "amount") {
+      setError(null);
+      setErrorField(null);
+    }
+  }
+
   function requestSave() {
+    if (savingRef.current) return;
     const problem = firstProblem();
 
     if (problem) {
-      setError(problem.message);
-      setErrorField(problem.field);
-      if (problem.field === "amount") shake();
+      showProblem(problem);
       return;
     }
 
@@ -454,15 +487,15 @@ export function RecordSheet({
   }
 
   async function save(andAnother: boolean) {
+    if (savingRef.current) return;
     const problem = firstProblem();
 
     if (problem) {
-      setError(problem.message);
-      setErrorField(problem.field);
-      if (problem.field === "amount") shake();
+      showProblem(problem);
       return;
     }
 
+    savingRef.current = true;
     setSaving(true);
     setError(null);
     setErrorField(null);
@@ -507,6 +540,7 @@ export function RecordSheet({
       setError(message);
       toast.error(message);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -599,262 +633,273 @@ export function RecordSheet({
         Scrolls only as a last resort, on a phone shorter than 640px: the
         note gives up its height first, then the gaps tighten.
       */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-4 pt-1 [@media(max-height:700px)]:gap-1.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-4 pt-1 [@media(max-height:700px)]:gap-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:flex-row [@media(orientation:landscape)_and_(max-height:500px)]:gap-4 [@media(orientation:landscape)_and_(max-height:500px)]:overflow-hidden">
         {/*
+          A phone on its side is 360px tall: stacked, the amount and the
+          keypad were below the fold. There the screen splits, what the
+          record is on the left, how much and when on the right. Upright,
+          both wrappers are `contents` and the stack is unchanged.
+        */}
+        <div className="contents [@media(orientation:landscape)_and_(max-height:500px)]:flex [@media(orientation:landscape)_and_(max-height:500px)]:min-h-0 [@media(orientation:landscape)_and_(max-height:500px)]:flex-1 [@media(orientation:landscape)_and_(max-height:500px)]:flex-col [@media(orientation:landscape)_and_(max-height:500px)]:gap-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:overflow-x-hidden [@media(orientation:landscape)_and_(max-height:500px)]:overflow-y-auto">
+          {/*
           Only a new record picks its type. An edit changes the details of
           the expense, income or transfer it already is; turning one into
           another is a delete and a new record, and the database refuses it
           (transactions_type_fixed).
         */}
-        {editingId ? (
-          <p className="text-text-secondary shrink-0 text-center text-sm font-medium">
-            Editing {ARTICLE[type]} {type}
-          </p>
-        ) : (
-          <TypeTabs
-            value={type}
-            onChange={(next) => {
-              setType(next);
-              // Both are cleared on any change of type: a category belongs
-              // to one kind, so an expense category left behind when
-              // switching to Income would be submitted invisibly.
-              setCategoryId("");
-              setToAccountId("");
-            }}
-          />
-        )}
+          {editingId ? (
+            <p className="text-text-secondary shrink-0 text-center text-sm font-medium">
+              Editing {ARTICLE[type]} {type}
+            </p>
+          ) : (
+            <TypeTabs
+              value={type}
+              onChange={(next) => {
+                setType(next);
+                // Both are cleared on any change of type: a category belongs
+                // to one kind, so an expense category left behind when
+                // switching to Income would be submitted invisibly.
+                setCategoryId("");
+                setToAccountId("");
+              }}
+            />
+          )}
 
-        {type === "transfer" ? (
-          /*
+          {type === "transfer" ? (
+            /*
             From, swap, To. Picking the wrong way round is the mistake
             people make here, and the swap fixes it in one tap.
           */
-          <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-end gap-1.5">
-            <AccountPicker
-              id="from-account"
-              label="From"
-              accounts={accounts}
-              value={accountId}
-              onChange={setAccountId}
-              invalid={errorField === "accountId"}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-touch"
-              aria-label="Swap the two accounts"
-              disabled={!accountId || !toAccountId}
-              onClick={() => {
-                const from = accountId;
-                setAccountId(toAccountId);
-                setToAccountId(from);
-              }}
+            <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-end gap-1.5">
+              <AccountPicker
+                id="from-account"
+                label="From"
+                accounts={accounts}
+                value={accountId}
+                onChange={setAccountId}
+                invalid={errorField === "accountId"}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-touch"
+                aria-label="Swap the two accounts"
+                disabled={!accountId || !toAccountId}
+                onClick={() => {
+                  const from = accountId;
+                  setAccountId(toAccountId);
+                  setToAccountId(from);
+                }}
+              >
+                <ArrowLeftRight className="size-4" aria-hidden="true" />
+              </Button>
+              <AccountPicker
+                id="to-account"
+                label="To"
+                accounts={accounts.filter(
+                  (account) => account.id !== accountId,
+                )}
+                value={toAccountId}
+                onChange={setToAccountId}
+                invalid={errorField === "toAccountId"}
+              />
+            </div>
+          ) : (
+            <div className="grid shrink-0 grid-cols-2 gap-2">
+              <AccountPicker
+                id="account"
+                label="Account"
+                accounts={accounts}
+                value={accountId}
+                onChange={setAccountId}
+                invalid={errorField === "accountId"}
+              />
+              <CategoryPicker
+                id="category"
+                categories={gridCategories}
+                value={categoryId}
+                onChange={setCategoryId}
+                hint={
+                  suggestions.length > 0 ? `Usually ${partOfDay}` : undefined
+                }
+                invalid={errorField === "categoryId"}
+              />
+            </div>
+          )}
+
+          {pickerError ? (
+            <p role="alert" className="text-expense -mt-1 shrink-0 text-sm">
+              {pickerError}
+            </p>
+          ) : null}
+
+          {type === "transfer" && !balancesKnown && accountId ? (
+            /* "Nobody checked" is not "nothing to worry about". */
+            <p
+              role="status"
+              className="bg-surface-muted text-text-secondary rounded-control shrink-0 px-3 py-2 text-xs font-medium"
             >
-              <ArrowLeftRight className="size-4" aria-hidden="true" />
-            </Button>
-            <AccountPicker
-              id="to-account"
-              label="To"
-              accounts={accounts.filter((account) => account.id !== accountId)}
-              value={toAccountId}
-              onChange={setToAccountId}
-              invalid={errorField === "toAccountId"}
-            />
-          </div>
-        ) : (
-          <div className="grid shrink-0 grid-cols-2 gap-2">
-            <AccountPicker
-              id="account"
-              label="Account"
-              accounts={accounts}
-              value={accountId}
-              onChange={setAccountId}
-              invalid={errorField === "accountId"}
-            />
-            <CategoryPicker
-              id="category"
-              categories={gridCategories}
-              value={categoryId}
-              onChange={setCategoryId}
-              hint={suggestions.length > 0 ? `Usually ${partOfDay}` : undefined}
-              invalid={errorField === "categoryId"}
-            />
-          </div>
-        )}
+              Balances could not be loaded, so this will not warn you if the
+              account is short.
+            </p>
+          ) : null}
 
-        {pickerError ? (
-          <p role="alert" className="text-expense -mt-1 shrink-0 text-sm">
-            {pickerError}
-          </p>
-        ) : null}
-
-        {type === "transfer" && !balancesKnown && accountId ? (
-          /* "Nobody checked" is not "nothing to worry about". */
-          <p
-            role="status"
-            className="bg-surface-muted text-text-secondary rounded-control shrink-0 px-3 py-2 text-xs font-medium"
-          >
-            Balances could not be loaded, so this will not warn you if the
-            account is short.
-          </p>
-        ) : null}
-
-        {overdraw ? (
-          /*
+          {overdraw ? (
+            /*
             A warning, not a block: an account can legitimately go below
             zero, and a balance can be out of date because a record has not
             been entered yet.
           */
-          <p
-            role="status"
-            className="bg-tint-butter text-text rounded-control flex shrink-0 items-start gap-2 px-3 py-2 text-xs font-medium"
-          >
-            <TriangleAlert
-              className="mt-0.5 size-3.5 shrink-0"
-              aria-hidden="true"
-            />
-            <span>
-              {/* `auto`, not `never`: a credit card is negative, and "has
+            <p
+              role="status"
+              className="bg-tint-butter text-text rounded-control flex shrink-0 items-start gap-2 px-3 py-2 text-xs font-medium"
+            >
+              <TriangleAlert
+                className="mt-0.5 size-3.5 shrink-0"
+                aria-hidden="true"
+              />
+              <span>
+                {/* `auto`, not `never`: a credit card is negative, and "has
                   ₹500" for an account at −₹500 states a debt as money held. */}
-              {overdraw.name} has{" "}
-              <Amount value={overdraw.balance} signDisplay="auto" />. This takes
-              it to <Amount value={overdraw.after} signDisplay="auto" />.
-            </span>
-          </p>
-        ) : null}
+                {overdraw.name} has{" "}
+                <Amount value={overdraw.balance} signDisplay="auto" />. This
+                takes it to <Amount value={overdraw.after} signDisplay="auto" />
+                .
+              </span>
+            </p>
+          ) : null}
 
-        {!editing && quickAdds.length > 0 && type === "expense" ? (
-          /*
+          {!editing && quickAdds.length > 0 && type === "expense" ? (
+            /*
             The usual ones, one tap each. They fill the form rather than
             saving: the amount is the usual one, not necessarily today's.
           */
-          <div
-            role="group"
-            aria-label="Quick add"
-            className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
-          >
-            {quickAdds.map((quick) => (
-              <button
-                key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
-                type="button"
-                onClick={() => {
-                  setAmount(minorToText(quick.amount, currency.decimals));
-                  setCategoryId(quick.categoryId);
-                  setAccountId(quick.accountId);
-                  setError(null);
-                  setErrorField(null);
-                }}
-                className={cn(
-                  PRESSABLE,
-                  "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
-                )}
-              >
-                <Tile tint={quick.tint} icon={quick.icon} size="sm" />
-                <span className="font-semibold">{quick.name}</span>
-                <span className="amount text-text-secondary">
-                  {formatWith(currency, BigInt(quick.amount), {
-                    signDisplay: "never",
-                    whole: true,
-                  })}
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        {/*
-          The note takes whatever height is left, as the reference's does,
-          and gives it up first on a short phone. It is text, so it is the
-          one field here that raises the device keyboard.
-        */}
-        <div className="flex min-h-[3.25rem] flex-1 flex-col gap-1.5">
-          <textarea
-            id="note"
-            aria-label="Note"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            onFocus={() => setNoteFocused(true)}
-            onBlur={() => setNoteFocused(false)}
-            placeholder="Note"
-            maxLength={500}
-            autoComplete="off"
-            className="bg-surface placeholder:text-text-secondary rounded-control focus-visible:ring-ring/50 min-h-0 w-full flex-1 resize-none border px-3 py-2.5 text-base outline-none focus-visible:ring-[3px]"
-          />
-          {noteMatches.length > 0 ? (
             <div
               role="group"
-              aria-label="Earlier notes"
+              aria-label="Quick add"
               className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
             >
-              {noteMatches.map((hint) => (
+              {quickAdds.map((quick) => (
                 <button
-                  key={hint}
+                  key={`${quick.categoryId}-${quick.amount}-${quick.accountId}`}
                   type="button"
-                  // Keeps the note focused, so the chips do not vanish
-                  // between the press and the click.
-                  onPointerDown={(event) => event.preventDefault()}
-                  onClick={() => setNote(hint)}
+                  onClick={() => {
+                    setAmount(
+                      minorToAmountText(quick.amount, currency.decimals),
+                    );
+                    setAmountPrefilled(true);
+                    setCategoryId(quick.categoryId);
+                    setAccountId(quick.accountId);
+                    setError(null);
+                    setErrorField(null);
+                  }}
                   className={cn(
                     PRESSABLE,
-                    "bg-surface-muted hoverable:bg-hairline h-9 max-w-[16rem] shrink-0 truncate rounded-full px-3 text-sm",
+                    "bg-surface-muted hoverable:bg-hairline flex h-11 shrink-0 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm",
                   )}
                 >
-                  {hint}
+                  <Tile tint={quick.tint} icon={quick.icon} size="sm" />
+                  <span className="font-semibold">{quick.name}</span>
+                  <span className="amount text-text-secondary">
+                    {formatWith(currency, BigInt(quick.amount), {
+                      signDisplay: "never",
+                      whole: true,
+                    })}
+                  </span>
                 </button>
               ))}
             </div>
           ) : null}
+
+          {/*
+          The note takes whatever height is left, as the reference's does,
+          and gives it up first on a short phone. It is text, so it is the
+          one field here that raises the device keyboard.
+        */}
+          <div className="flex min-h-[3.25rem] flex-1 flex-col gap-1.5">
+            <textarea
+              id="note"
+              aria-label="Note"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              onFocus={() => setNoteFocused(true)}
+              onBlur={() => setNoteFocused(false)}
+              placeholder="Note"
+              maxLength={500}
+              autoComplete="off"
+              className="bg-surface placeholder:text-text-secondary rounded-control focus-visible:ring-ring/50 min-h-0 w-full flex-1 resize-none border px-3 py-2.5 text-base outline-none focus-visible:ring-[3px]"
+            />
+            {noteMatches.length > 0 ? (
+              <div
+                role="group"
+                aria-label="Earlier notes"
+                className="-mx-4 flex shrink-0 gap-1.5 overflow-x-auto px-4"
+              >
+                {noteMatches.map((hint) => (
+                  <button
+                    key={hint}
+                    type="button"
+                    // Keeps the note focused, so the chips do not vanish
+                    // between the press and the click.
+                    onPointerDown={(event) => event.preventDefault()}
+                    onClick={() => setNote(hint)}
+                    className={cn(
+                      PRESSABLE,
+                      "bg-surface-muted hoverable:bg-hairline h-9 max-w-[16rem] shrink-0 truncate rounded-full px-3 text-sm",
+                    )}
+                  >
+                    {hint}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <div className="shrink-0">
-          <AmountDisplay
+        <div className="contents [@media(orientation:landscape)_and_(max-height:500px)]:flex [@media(orientation:landscape)_and_(max-height:500px)]:min-h-0 [@media(orientation:landscape)_and_(max-height:500px)]:w-[min(22rem,48%)] [@media(orientation:landscape)_and_(max-height:500px)]:flex-none [@media(orientation:landscape)_and_(max-height:500px)]:pr-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:pb-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:flex-col [@media(orientation:landscape)_and_(max-height:500px)]:gap-1.5 [@media(orientation:landscape)_and_(max-height:500px)]:overflow-x-hidden [@media(orientation:landscape)_and_(max-height:500px)]:overflow-y-auto">
+          <div className="shrink-0">
+            <AmountDisplay
+              value={amount}
+              onChange={changeAmount}
+              replaceNext={amountPrefilled}
+              tone={type}
+              layout="box"
+              keypad="none"
+              invalid={errorField === "amount"}
+              error={errorField === "amount" ? (error ?? undefined) : undefined}
+              shaking={shaking}
+              inputRef={amountRef}
+              onEnter={requestSave}
+            />
+          </div>
+
+          <AmountKeypad
             value={amount}
-            onChange={setAmount}
-            tone={type}
-            layout="box"
-            keypad="none"
-            invalid={errorField === "amount"}
-            error={errorField === "amount" ? (error ?? undefined) : undefined}
-            shaking={shaking}
-            inputRef={amountRef}
-            onEnter={() => {
-              if (saving) return;
-              void requestSave();
-            }}
+            onChange={changeAmount}
+            replace={amountPrefilled}
+            decimals={currency.decimals}
+            className="shrink-0"
           />
-        </div>
 
-        <AmountKeypad
-          value={amount}
-          onChange={(next) => {
-            setAmount(next);
-            if (errorField === "amount") {
-              setError(null);
-              setErrorField(null);
-            }
-          }}
-          decimals={currency.decimals}
-          className="shrink-0"
-        />
+          <DateTimeRow
+            id="occurred-at"
+            value={occurredAt}
+            onChange={setOccurredAt}
+            invalid={errorField === "occurredAt"}
+            className="shrink-0"
+          />
 
-        <DateTimeRow
-          id="occurred-at"
-          value={occurredAt}
-          onChange={setOccurredAt}
-          invalid={errorField === "occurredAt"}
-          className="shrink-0"
-        />
-
-        {/*
+          {/*
           The catch-all, for any error with nowhere else to appear: asking
           whether this error's field is actually on screen is what stops a
           save refusing silently.
         */}
-        {error && !errorShownInline ? (
-          <p role="alert" className="text-expense shrink-0 text-sm">
-            {error}
-          </p>
-        ) : null}
+          {error && !errorShownInline ? (
+            <p role="alert" className="text-expense shrink-0 text-sm">
+              {error}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <ConfirmDialog
@@ -926,17 +971,10 @@ function snapshot(values: {
   ].join("\u0000");
 }
 
-/** Minor units back into something the keypad can show and edit. */
-function minorToText(minor: string, decimals: number): string {
-  const value = BigInt(minor);
-  const negative = value < 0n;
-  const abs = negative ? -value : value;
-
-  if (decimals === 0) return abs.toString();
-
-  const factor = 10n ** BigInt(decimals);
-  const whole = abs / factor;
-  const fraction = (abs % factor).toString().padStart(decimals, "0");
-
-  return `${whole}.${fraction}`;
-}
+/** The control that fixes each field's error, by the id it renders with. */
+const FIELD_TARGETS: Record<string, (type: TransactionType) => string> = {
+  accountId: (type) => (type === "transfer" ? "from-account" : "account"),
+  toAccountId: () => "to-account",
+  categoryId: () => "category",
+  occurredAt: () => "occurred-at",
+};

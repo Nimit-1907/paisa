@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { cleanAmount, parseAmount, pressKey } from "./amount";
+import {
+  amountKeyFor,
+  cleanAmount,
+  groupAmountText,
+  minorToAmountText,
+  parseAmount,
+  pressKey,
+} from "./amount";
 
 describe("cleanAmount", () => {
   it("keeps digits and one point", () => {
@@ -114,5 +121,75 @@ describe("pressKey", () => {
 
   it("stops at thirteen whole digits", () => {
     expect(press(Array.from({ length: 15 }, () => "9"))).toBe("9".repeat(13));
+  });
+});
+
+describe("minorToAmountText", () => {
+  it("drops paise that are zero, so the keypad can keep typing", () => {
+    expect(minorToAmountText("25000", 2)).toBe("250");
+  });
+
+  it("keeps paise that are not zero, without a padded zero", () => {
+    expect(minorToAmountText("25050", 2)).toBe("250.5");
+    expect(minorToAmountText("25005", 2)).toBe("250.05");
+  });
+
+  it("drops the sign: a record's direction is in its type", () => {
+    expect(minorToAmountText("-1500", 2)).toBe("15");
+  });
+
+  it("keeps a minus for an amount that can be below zero", () => {
+    expect(minorToAmountText(-150000n, 2, { keepSign: true })).toBe("-1500");
+  });
+
+  it("handles a currency with no decimals and a bigint input", () => {
+    expect(minorToAmountText(1200n, 0)).toBe("1200");
+  });
+});
+
+describe("pressKey replacing a prefilled amount", () => {
+  it("starts over on the first digit", () => {
+    expect(pressKey("250", "7", 2, { replace: true })).toBe("7");
+  });
+
+  it("starts over on a point", () => {
+    expect(pressKey("250", ".", 2, { replace: true })).toBe("0.");
+  });
+
+  it("clears on backspace", () => {
+    expect(pressKey("250", "back", 2, { replace: true })).toBe("");
+  });
+});
+
+describe("amountKeyFor", () => {
+  it("maps digits, the point and the editing keys", () => {
+    expect(amountKeyFor("7")).toBe("7");
+    expect(amountKeyFor(".")).toBe(".");
+    expect(amountKeyFor("Backspace")).toBe("back");
+    expect(amountKeyFor("Delete")).toBe("clear");
+  });
+
+  it("leaves every other key to the browser", () => {
+    expect(amountKeyFor("a")).toBeNull();
+    expect(amountKeyFor("Tab")).toBeNull();
+    expect(amountKeyFor("Enter")).toBeNull();
+  });
+});
+
+describe("groupAmountText", () => {
+  it("groups the whole part as it is typed", () => {
+    expect(groupAmountText("12302", false)).toBe("12,302");
+    expect(groupAmountText("1234567.5", false)).toBe("1,234,567.5");
+  });
+
+  it("groups in lakhs and crores for the rupee", () => {
+    expect(groupAmountText("1234567.5", true)).toBe("12,34,567.5");
+    expect(groupAmountText("12302", true)).toBe("12,302");
+  });
+
+  it("keeps a trailing point and a short amount as typed", () => {
+    expect(groupAmountText("450.", true)).toBe("450.");
+    expect(groupAmountText("0.", true)).toBe("0.");
+    expect(groupAmountText("", true)).toBe("");
   });
 });

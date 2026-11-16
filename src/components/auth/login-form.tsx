@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { signIn } from "@/actions/auth";
 import {
   rememberEmail,
+  emailToRestore,
   rememberedEmail,
 } from "@/components/auth/remembered-email";
 import { FormRow, PasswordInput } from "@/components/ui/form-row";
@@ -47,10 +48,17 @@ export function LoginForm({ next }: { next?: string }) {
    * which is the field that person was going to fill in either way.
    */
   React.useEffect(() => {
-    const remembered = rememberedEmail();
-    if (!remembered) return;
+    const field = document.getElementById("email");
+    const restore = emailToRestore({
+      remembered: rememberedEmail(),
+      // Read from the DOM, not the form: before hydration the browser took
+      // the keystrokes and react-hook-form has not seen them.
+      current: field instanceof HTMLInputElement ? field.value : "",
+      typing: document.activeElement === field,
+    });
+    if (!restore) return;
 
-    setValue("email", remembered);
+    setValue("email", restore);
     setFocus("password");
   }, [setFocus, setValue]);
 

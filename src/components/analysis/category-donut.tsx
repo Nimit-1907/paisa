@@ -66,9 +66,7 @@ export function CategoryDonut({
   );
 
   const share = (amount: bigint) =>
-    totalMinor === 0n
-      ? 0
-      : Number((amount * 1000n) / totalMinor) / 10;
+    totalMinor === 0n ? 0 : Number((amount * 1000n) / totalMinor) / 10;
 
   return (
     <ChartCard
@@ -111,8 +109,7 @@ export function CategoryDonut({
               wrapperStyle={{ outline: "none", zIndex: 20 }}
               content={({ active, payload }) => {
                 const slice = payload?.[0]?.payload as
-                  | (CategorySlice & { fill: string })
-                  | undefined;
+                  (CategorySlice & { fill: string }) | undefined;
                 if (!active || !slice) return null;
 
                 return (

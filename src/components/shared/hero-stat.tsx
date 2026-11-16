@@ -125,7 +125,7 @@ export function HeroSplit({
       </span>
 
       <span className="min-w-0">
-        <span className="text-text-secondary block text-[11px]">{label}</span>
+        <span className="text-text-secondary block text-xs">{label}</span>
         <span className="block truncate text-[13px] font-semibold">
           {value}
         </span>
