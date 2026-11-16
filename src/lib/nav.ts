@@ -9,6 +9,7 @@ import {
   Settings,
   Tags,
   Target,
+  Upload,
   Wallet,
 } from "lucide-react";
 
@@ -30,7 +31,14 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/more",
     label: "More",
     icon: Ellipsis,
-    owns: ["/about", "/categories", "/export", "/recurring", "/settings"],
+    owns: [
+      "/about",
+      "/categories",
+      "/export",
+      "/import",
+      "/recurring",
+      "/settings",
+    ],
   },
 ];
 
@@ -53,6 +61,12 @@ export const MORE_ITEMS = [
     label: "Settings",
     description: "Name, currency, week start, theme and password",
     icon: Settings,
+  },
+  {
+    href: "/import",
+    label: "Import",
+    description: "Bring in records from a bank or another app's CSV",
+    icon: Upload,
   },
   {
     href: "/export",

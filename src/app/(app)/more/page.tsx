@@ -20,9 +20,7 @@ export const metadata: Metadata = { title: "More" };
  * The destinations, in the four groups the brief names.
  *
  * Built from `MORE_ITEMS` rather than beside it, so the sidebar and this
- * screen cannot drift apart about what a screen is called. Import is not in
- * Data because Import has never been built; a group with one row in it is
- * still a group, and an empty promise is not.
+ * screen cannot drift apart about what a screen is called.
  */
 type MoreItem = (typeof MORE_ITEMS)[number];
 
@@ -32,7 +30,7 @@ const BY_HREF = new Map<string, MoreItem>(
 
 const GROUPS: { title: string; items: MoreItem[] }[] = [
   { title: "Manage", hrefs: ["/categories", "/recurring"] },
-  { title: "Data", hrefs: ["/export"] },
+  { title: "Data", hrefs: ["/import", "/export"] },
   { title: "App", hrefs: ["/settings", "/about"] },
 ].map((group) => ({
   title: group.title,

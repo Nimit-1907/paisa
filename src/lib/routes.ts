@@ -13,6 +13,7 @@ export const APP_PATHS = [
   "/categories",
   "/recurring",
   "/settings",
+  "/import",
   "/export",
   "/about",
   "/more",

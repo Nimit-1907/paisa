@@ -19,6 +19,7 @@ import {
   Sun,
   Tags,
   Target,
+  Upload,
   Wallet,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -107,6 +108,7 @@ export function CommandPalette({
             { href: "/accounts", label: "Accounts", icon: Wallet },
             { href: "/categories", label: "Categories", icon: Tags },
             { href: "/recurring", label: "Recurring", icon: Repeat },
+            { href: "/import", label: "Import", icon: Upload },
             { href: "/export", label: "Export", icon: Download },
             { href: "/settings", label: "Settings", icon: Settings },
             { href: "/about", label: "About", icon: Info },

@@ -1,0 +1,5 @@
+Date,Description,Amount
+05/01/2020,E2E-IMPORT tea,-123.45
+06/01/2020,E2E-IMPORT books,"-1,234.56"
+07/01/2020,E2E-IMPORT refund,678.91
+31/02/2020,E2E-IMPORT bad date,-10

@@ -35,6 +35,7 @@ const SCREENS = [
   { path: "/categories", ready: "Categories" },
   { path: "/more", ready: "More" },
   { path: "/settings", ready: "Settings" },
+  { path: "/import", ready: "Import" },
   { path: "/export", ready: "Export" },
   { path: "/about", ready: "About" },
 ];
