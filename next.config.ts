@@ -1,4 +1,3 @@
-import withSerwistInit from "@serwist/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -9,12 +8,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withSerwist = withSerwistInit({
-  swSrc: "src/app/sw.ts",
-  swDest: "public/sw.js",
-  // A service worker in dev caches aggressively and hides code changes.
-  disable: process.env.NODE_ENV === "development",
-  reloadOnOnline: true,
-});
-
-export default withSerwist(nextConfig);
+export default nextConfig;

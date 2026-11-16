@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-import { ServiceWorkerUpdates } from "@/components/pwa/service-worker-updates";
+import { RemoveServiceWorker } from "@/components/pwa/remove-service-worker";
 import { body, display } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -126,7 +126,7 @@ export default function RootLayout({
               right: "0.75rem",
             }}
           />
-          <ServiceWorkerUpdates />
+          <RemoveServiceWorker />
         </ThemeProvider>
       </body>
     </html>

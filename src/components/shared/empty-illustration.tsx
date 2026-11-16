@@ -1,5 +1,5 @@
 /**
- * The drawing on the system screens: 404 and offline.
+ * The drawing on the system screens: 404.
  *
  * In-app empty states use the icon tile in EmptyState, one style for all of
  * them; this is for the full-page "you are not where you meant to be"
@@ -36,7 +36,7 @@ const accent = "stroke-primary";
 
 const ART: Record<EmptyArt, React.ReactNode> = {
   // A signpost with one arm, pointing back the way you came. For the
-  // system screens, 404, an error, offline, where the drawing's job is
+  // system screens, 404 and an error, where the drawing's job is
   // to say "nothing is broken, you are just not where you meant to be".
   lost: (
     <g strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

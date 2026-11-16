@@ -3,7 +3,7 @@ import {
   Repeat2,
   Target,
   Wallet,
-  WifiOff,
+  Smartphone,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -24,7 +24,7 @@ import {
  * reordered or trimmed - silently on a type level, loudly at render.
  */
 export type FeatureId =
-  "track" | "budget" | "charts" | "accounts" | "recurring" | "offline";
+  "track" | "budget" | "charts" | "accounts" | "recurring" | "install";
 
 export type Feature = {
   /** A `bg-tint-*` class: the grid uses the app's own eight. */
@@ -72,11 +72,11 @@ export const FEATURES: Feature[] = [
     body: "Set up the bills that repeat and they appear on the day they are due, including the months you did not open the app. They are caught up without ever duplicating a record.",
   },
   {
-    id: "offline",
+    id: "install",
     tint: "bg-tint-lilac",
-    icon: WifiOff,
+    icon: Smartphone,
     title: "Works on your home screen",
-    body: "Install it and it opens like an app, with the screens you have already visited still readable when you have no signal.",
+    body: "Install it and it opens like an app, full screen, with no app store and nothing to update.",
   },
 ];
 
@@ -110,7 +110,7 @@ export const FAQS: Faq[] = [
   {
     question: "Does it work offline?",
     answer:
-      "The app installs to your home screen and the screens you have already opened stay readable without a connection. Saving a new record needs a connection, so nothing is ever held in a queue you cannot see.",
+      "No. Paisa needs a connection, so every screen shows what is saved in your account right now and nothing is ever held on one phone waiting to sync.",
   },
   {
     question: "Can I use it on a computer?",

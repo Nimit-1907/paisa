@@ -24,7 +24,6 @@
   "dependencies": {
     "@hookform/resolvers": "^7.0.6",
     "@react-pdf/renderer": "^4.9.0",
-    "@serwist/next": "^9.5.13",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "class-variance-authority": "^0.7.1",
@@ -57,7 +56,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "serwist": "^9.5.13",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7"

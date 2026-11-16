@@ -22,7 +22,9 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   because a serif beside hard-edged shadows is two eras in one screen. See
   docs/design-system.md. `font-sans` and `font-display` are the only two font
   utilities any component should use.
-- @serwist/next (PWA service worker), sonner (toasts)
+- sonner (toasts). No service worker: Paisa is online only. The manifest
+  keeps it installable; `public/sw.js` only removes the worker older
+  versions installed.
 - @react-pdf/renderer (PDF export)
 
 ## Engineering rules
@@ -84,7 +86,7 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
 - The currency symbol takes the figure's own colour and weight at 0.8 of
   its size, everywhere: `amount-unit` in globals.css, nothing per screen.
 - Empty states are `EmptyState` with an icon tile and, wherever there is a
-  next step, one action. Illustrations are for 404 and offline only.
+  next step, one action. Illustrations are for 404 only.
 - Repeating records are made and managed on Recurring alone, through
   `RuleSheet` and `createRecurringRule`. Add Record takes one record and
   has no repeat option, and editing a record never edits its rule. A rule

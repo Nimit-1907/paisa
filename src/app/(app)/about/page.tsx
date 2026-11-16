@@ -25,7 +25,7 @@ const POINTS = [
   {
     icon: Smartphone,
     title: "Built for a phone first",
-    body: "Designed at 360px and widened from there. Add it to your home screen and it opens like an app, including the pages you have already visited when you are offline.",
+    body: "Designed at 360px and widened from there. Add it to your home screen and it opens like an app.",
   },
 ];
 

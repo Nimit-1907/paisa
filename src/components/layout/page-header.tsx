@@ -9,7 +9,6 @@ import {
 } from "@/components/layout/header-chrome";
 import { MonthSwipe } from "@/components/layout/month-swipe";
 import { MonthSwitcher } from "@/components/layout/month-switcher";
-import { OfflinePill } from "@/components/shared/offline-pill";
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
@@ -100,8 +99,6 @@ export function PageHeader({
               {description}
             </p>
           </div>
-
-          <OfflinePill className="ml-1" />
         </div>
 
         <div className="flex shrink-0 items-center gap-1">

@@ -41,8 +41,6 @@ Phrases that recur, fixed so they read the same everywhere:
 - **"Over by ₹400"** — past a budget. Not "exceeded", not "-₹400".
 - **"Not enough data yet"** — an insight that cannot be computed honestly
   from a few days. Not "N/A", not a zero.
-- **"You are offline"** — the connection is gone. Not "no internet",
-  not "connection error".
 - Verbs name the object: **"Save expense"**, **"Move ₹2,000 to HDFC"**,
   **"Set budget"** — never a bare "Save", "Submit" or "OK".
 
@@ -58,7 +56,6 @@ says so and why, rather than leaving a gap.
 | **Loading** | A skeleton in the shape of what arrives — `RowSkeleton`, `HeroSkeleton`, `CardSkeleton`. Never a spinner where a layout is known. |
 | **Empty** | Illustration or icon, one sentence, one button. `EmptyState`. |
 | **Error** | What happened in our words, and a retry. `ErrorState`. Never a database message. |
-| **Offline** | Cached screen with an `Offline` pill in the header; writes disabled with a sentence saying why. |
 | **Success** | The Phase 11 ending: haptic, one toast that names what happened, Undo where undoing is safe. |
 | **Partial data** | "Not enough data yet" rather than a number computed from three days. |
 
@@ -629,8 +626,8 @@ if the route is broken every time, retrying forever is a trap. The digest is
 shown small and last: it is the one string connecting what somebody saw to
 what the server logged, and it identifies the error, not the user.
 
-**Offline page, the update-available toast and the install prompt** were built
-in Phase 9 and carry the same anatomy; the token sweep brought their surfaces
+**The install prompt** was built
+in Phase 9 and carries the same anatomy; the token sweep brought its surfaces
 and text in line with everything else.
 
 **Screenshots.** `system-390-404`.

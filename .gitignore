@@ -48,9 +48,6 @@ next-env.d.ts
 !.env.example
 
 # serwist / generated service worker
-/public/sw.js
-/public/sw.js.map
-/public/swe-worker-*.js
 
 # playwright / browser automation scratch output
 /.playwright-mcp
