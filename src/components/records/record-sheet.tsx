@@ -42,7 +42,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { TransactionType } from "@/lib/schemas/transactions";
-import { evaluate } from "@/lib/calculator";
+import { parseAmount } from "@/lib/amount";
 import { describeLocal, nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
@@ -191,12 +191,10 @@ export function RecordSheet({
         ? minorToText(editing.amount, currency.decimals)
         : defaultAmountText,
     );
-    setAccountId(
-      editing?.accountId ??
-        entryDefaults?.lastAccountId ??
-        accounts[0]?.id ??
-        "",
-    );
+    // No account is chosen for you on a new record. The last one used is
+    // a guess, and a wrong guess books the money against the wrong bank
+    // without anybody noticing; "Choose" makes it a decision.
+    setAccountId(editing?.accountId ?? "");
     setToAccountId(editing?.toAccountId ?? "");
     setCategoryId(editing?.categoryId ?? "");
     setNote(editing?.note ?? "");
@@ -214,11 +212,7 @@ export function RecordSheet({
       amount: editing
         ? minorToText(editing.amount, currency.decimals)
         : defaultAmountText,
-      accountId:
-        editing?.accountId ??
-        entryDefaults?.lastAccountId ??
-        accounts[0]?.id ??
-        "",
+      accountId: editing?.accountId ?? "",
       toAccountId: editing?.toAccountId ?? "",
       categoryId: editing?.categoryId ?? "",
       note: editing?.note ?? "",
@@ -330,7 +324,7 @@ export function RecordSheet({
    * while there is no usable amount yet, so the button never reads
    * "Save expense · ₹0".
    */
-  const amountSum = evaluate(amount || "0", currency.decimals);
+  const amountSum = parseAmount(amount || "0", currency.decimals);
   const amountLabel =
     amountSum.ok && amountSum.minor > 0n
       ? formatWith(currency, amountSum.minor, {
@@ -356,7 +350,7 @@ export function RecordSheet({
       return null;
     }
 
-    const sum = evaluate(amount || "0", currency.decimals);
+    const sum = parseAmount(amount || "0", currency.decimals);
     if (!sum.ok || sum.minor <= 0n) return null;
 
     const balance = BigInt(from.balance);
@@ -413,7 +407,7 @@ export function RecordSheet({
    * live now, and pressing it points at the first thing that is not ready.
    */
   function firstProblem(): { field: string; message: string } | null {
-    const sum = evaluate(amount || "0", currency.decimals);
+    const sum = parseAmount(amount || "0", currency.decimals);
 
     if (amount.trim() === "" || (sum.ok && sum.minor <= 0n)) {
       return { field: "amount", message: "Enter an amount first." };
@@ -525,27 +519,33 @@ export function RecordSheet({
     <ResponsiveSheet
       open={open}
       onOpenChange={requestClose}
-      title={editingId ? "Edit record" : "Add record"}
+      title={editingId ? `Edit ${type}` : "Add record"}
     >
       {/*
-        The type and the amount do not scroll.
-
-        They are what the keypad at the bottom is editing, and a keypad whose
-        display has scrolled off the top is a calculator with no screen.
+        The type and the amount do not scroll, so the amount is always on
+        screen while it is being typed.
       */}
       <SheetHead>
-        <TypeTabs
-          value={type}
-          onChange={(next) => {
-            setType(next);
-            // Both are cleared on any change of type: a category belongs to
-            // one kind, so an expense category left behind when switching to
-            // Income would be submitted invisibly, the grid shows nothing
-            // selected, but the value is still there.
-            setCategoryId("");
-            setToAccountId("");
-          }}
-        />
+        {/*
+          Only a new record picks its type. An edit changes the details of
+          the expense, income or transfer it already is, and the title says
+          which; turning one into another is a delete and a new record, and
+          the database refuses it (transactions_type_fixed).
+        */}
+        {editingId ? null : (
+          <TypeTabs
+            value={type}
+            onChange={(next) => {
+              setType(next);
+              // Both are cleared on any change of type: a category belongs
+              // to one kind, so an expense category left behind when
+              // switching to Income would be submitted invisibly, the grid
+              // shows nothing selected, but the value is still there.
+              setCategoryId("");
+              setToAccountId("");
+            }}
+          />
+        )}
 
         {/*
           The amount, the note, then what it was.

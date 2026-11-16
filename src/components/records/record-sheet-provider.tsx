@@ -17,11 +17,9 @@ import {
   useFormatMoney,
   useHaptic,
 } from "@/components/profile-provider";
-import { evaluate } from "@/lib/calculator";
-import type { EntryDefaults, QuickAdd } from "@/lib/queries/accounts";
+import { parseAmount } from "@/lib/amount";
+import { EMPTY_SHEET_DATA, type SheetData } from "@/lib/sheet-data";
 import {
-  type AccountOption,
-  type CategoryOption,
   type RecordDraft,
   RecordSheet,
   type RecordSubmit,
@@ -52,6 +50,7 @@ type RecordSheetContextValue = {
    * "this one is selected".
    */
   lastSavedId: string | null;
+  /** False when there is no account to book a record to. */
   ready: boolean;
 };
 
@@ -73,26 +72,18 @@ const RecordSheetContext = React.createContext<RecordSheetContextValue>({
  * optimistically instead of waiting for a round trip.
  */
 export function RecordSheetProvider({
-  accounts,
-  categories,
+  data,
   timeZone,
-  entryDefaults,
-  quickAdds,
-  noteHints,
-  balancesKnown,
   firstRecordSeen,
   children,
 }: {
-  accounts: AccountOption[];
-  categories: CategoryOption[];
+  /**
+   * Streamed rather than awaited by the layout, so no page waits for the
+   * pickers of a sheet that is not open. Read with use() below, inside a
+   * Suspense boundary of its own.
+   */
+  data: Promise<SheetData>;
   timeZone: string;
-  entryDefaults: EntryDefaults;
-  /** The things this person buys over and over, as one-tap chips. */
-  quickAdds: QuickAdd[];
-  /** Notes written before, offered as you type. */
-  noteHints: string[];
-  /** False when the balance lookup failed, so the sheet can say so. */
-  balancesKnown: boolean;
   /** False until the "first record" note has been shown once. */
   firstRecordSeen: boolean;
   children: React.ReactNode;
@@ -102,6 +93,12 @@ export function RecordSheetProvider({
   const formatMoney = useFormatMoney();
   const tap = useHaptic();
   const [open, setOpen] = React.useState(false);
+  // The resolved sheet data, lifted out of the Suspense boundary below for
+  // the two things outside it that need it: whether Add is ready, and the
+  // category name in the saved toast.
+  const [loaded, setLoaded] = React.useState<SheetData | null>(null);
+  const accounts = loaded?.accounts ?? EMPTY_SHEET_DATA.accounts;
+  const categories = loaded?.categories ?? EMPTY_SHEET_DATA.categories;
   const [lastSavedId, setLastSavedId] = React.useState<string | null>(null);
   // Within this page's lifetime the profile prop is stale the moment the
   // first record is saved, so the ref stops a second celebration.
@@ -148,9 +145,12 @@ export function RecordSheetProvider({
         };
       },
       lastSavedId,
-      ready: accounts.length > 0,
+      // Ready while the pickers are still loading: a tap in those few
+      // milliseconds opens the sheet, which appears as soon as they land.
+      // Not ready only once it is known there is no account to book to.
+      ready: loaded === null || accounts.length > 0,
     }),
-    [accounts.length, lastSavedId],
+    [loaded, accounts.length, lastSavedId],
   );
 
   /**
@@ -180,7 +180,7 @@ export function RecordSheetProvider({
       const saved = result.data.id;
       setLastSavedId(saved);
 
-      const sum = evaluate(values.amount || "0", currency.decimals);
+      const sum = parseAmount(values.amount || "0", currency.decimals);
       const category = categories.find(
         (option) => option.id === values.categoryId,
       );
@@ -261,6 +261,23 @@ export function RecordSheetProvider({
     ],
   );
 
+  // A sheet opened while the pickers loaded, which then came back with no
+  // account to book to: close it rather than leave an empty form open.
+  React.useEffect(() => {
+    if (!loaded || loaded.accounts.length > 0) return;
+    setOpen(false);
+
+    // Said rather than only disabled: a dead Add button explains nothing.
+    // Refreshing re-runs the layout, which hands over a new promise.
+    if (loaded.failed) {
+      toast.error("Could not load your accounts.", {
+        id: "sheet-data-failed",
+        description: "Adding a record needs them.",
+        action: { label: "Retry", onClick: () => router.refresh() },
+      });
+    }
+  }, [loaded, router]);
+
   // Long enough to notice the new row, short enough not to read as a state.
   React.useEffect(() => {
     if (!lastSavedId) return;
@@ -305,23 +322,43 @@ export function RecordSheetProvider({
     <RecordSheetContext.Provider value={value}>
       {children}
 
-      <RecordSheet
-        open={open}
-        onOpenChange={setOpen}
-        accounts={accounts}
-        categories={categories}
-        draft={draft}
-        defaultType={addType}
-        onSubmit={submit}
-        onDelete={remove}
-        timeZone={timeZone}
-        entryDefaults={entryDefaults}
-        quickAdds={quickAdds}
-        noteHints={noteHints}
-        balancesKnown={balancesKnown}
-      />
+      {/*
+        Its own boundary, with nothing as the fallback: the sheet is closed
+        until somebody taps Add, which stays disabled until this resolves.
+      */}
+      <React.Suspense fallback={null}>
+        <LoadedSheet
+          data={data}
+          onLoaded={setLoaded}
+          open={open}
+          onOpenChange={setOpen}
+          draft={draft}
+          defaultType={addType}
+          onSubmit={submit}
+          onDelete={remove}
+          timeZone={timeZone}
+        />
+      </React.Suspense>
     </RecordSheetContext.Provider>
   );
+}
+
+/** The sheet, once the layout's promise of its pickers has resolved. */
+function LoadedSheet({
+  data,
+  onLoaded,
+  ...sheet
+}: {
+  data: Promise<SheetData>;
+  onLoaded: (data: SheetData) => void;
+} & Omit<React.ComponentProps<typeof RecordSheet>, keyof SheetData>) {
+  const resolved = React.use(data);
+
+  React.useEffect(() => {
+    onLoaded(resolved);
+  }, [resolved, onLoaded]);
+
+  return <RecordSheet {...sheet} {...resolved} />;
 }
 
 export function useRecordSheet() {

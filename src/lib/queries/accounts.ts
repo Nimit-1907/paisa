@@ -330,8 +330,6 @@ const PARTS_OF_DAY: PartOfDay[] = [
 ];
 
 export type EntryDefaults = {
-  /** The account the last record was booked against, if it still exists. */
-  lastAccountId: string | null;
   /** Categories usually picked at this time of day, most likely first. */
   suggestedCategoryIds: string[];
   /**
@@ -360,11 +358,10 @@ export async function getEntryDefaults(): Promise<EntryDefaults> {
   // guess rather than a broken screen.
   if (error) {
     console.error("[records]", error.message);
-    return { lastAccountId: null, suggestedCategoryIds: [], partOfDay: "night" };
+    return { suggestedCategoryIds: [], partOfDay: "night" };
   }
 
   const value = (data ?? {}) as {
-    lastAccountId?: string | null;
     suggestedCategoryIds?: string[];
     partOfDay?: string;
   };
@@ -372,7 +369,6 @@ export async function getEntryDefaults(): Promise<EntryDefaults> {
   const partOfDay = PARTS_OF_DAY.find((part) => part === value.partOfDay);
 
   return {
-    lastAccountId: value.lastAccountId ?? null,
     suggestedCategoryIds: (value.suggestedCategoryIds ?? []).filter(isUuid),
     partOfDay: partOfDay ?? "night",
   };

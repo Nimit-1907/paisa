@@ -10,7 +10,7 @@ import {
   parseInput,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
-import { evaluate } from "@/lib/calculator";
+import { parseAmount } from "@/lib/amount";
 import { toDb } from "@/lib/money";
 import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
 import { currencyOf, getProfile } from "@/lib/profile";
@@ -55,7 +55,7 @@ export async function createRecurringRule(
 
   const profile = await getProfile();
   const currency = currencyOf(profile);
-  const calculated = evaluate(parsed.data.amount, currency.decimals);
+  const calculated = parseAmount(parsed.data.amount, currency.decimals);
   if (!calculated.ok) return fail(calculated.error, "amount");
   if (calculated.minor <= 0n) {
     return fail("An amount has to be more than zero.", "amount");
@@ -130,7 +130,7 @@ export async function updateRecurringRule(
   if (!parsed.ok) return parsed;
 
   const currency = currencyOf(await getProfile());
-  const calculated = evaluate(parsed.data.amount, currency.decimals);
+  const calculated = parseAmount(parsed.data.amount, currency.decimals);
   if (!calculated.ok) return fail(calculated.error, "amount");
   if (calculated.minor <= 0n) {
     return fail("An amount has to be more than zero.", "amount");

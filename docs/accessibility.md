@@ -65,9 +65,8 @@ Driven by tests, not by assertion:
   dropping it on `<body>` — `useFocusReturn` in `responsive-sheet.tsx`
   remembers what was focused and puts it back, unless that element has since
   been removed (deleting a record takes its row's buttons with it).
-- **The keypad takes a physical keyboard.** Digits and `.` type into it,
-  `/` and `*` become `÷` and `×`, Backspace deletes, and Enter works a sum out
-  and then saves.
+- **The amount takes a physical keyboard.** Digits and one `.` type into
+  it and nothing else lands, Backspace deletes, and Enter saves.
 - **Every focus stop paints something.** A test walks the first fifteen stops
   and fails on any that has neither an outline nor a ring, in both themes.
 
@@ -146,7 +145,7 @@ on a loaded screen animates for longer than 1ms while the setting is on.
 - Icon-only buttons carry `aria-label`; decorative icons carry
   `aria-hidden="true"`.
 - Errors are announced: field errors render in `role="alert"`, and the
-  keypad's running total is an `aria-live="polite"` region.
+  amount field's message line is an `aria-live="polite"` region.
 - Amount fields are `inputMode="decimal"` and at least 16px, so iOS does not
   zoom on focus.
 

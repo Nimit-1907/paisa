@@ -22,6 +22,7 @@ import {
 } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import { runDueRecurring } from "@/lib/recurring-check";
+import { EMPTY_SHEET_DATA, type SheetData } from "@/lib/sheet-data";
 import { LOGIN_PATH, ONBOARDING_PATH } from "@/lib/routes";
 
 /**
@@ -47,21 +48,40 @@ export default async function AppLayout({
     redirect(ONBOARDING_PATH);
   }
 
-  // Loaded once for the whole shell: the Add Record sheet opens from every
-  // tab, and it needs something to put in its pickers wherever it is opened.
+  // The Add Record sheet's pickers, for every tab, started here and not
+  // awaited: the page renders now and the sheet reads the promise with
+  // use() when it arrives (RecordSheetProvider). Nobody opens the sheet in
+  // the first 40ms, and every page used to wait those 40ms for it.
   //
-  // The recurring catch-up rides along here because this layout is the one
-  // thing every signed-in page renders through, and it only does any work on
-  // the first page of a new day.
-  const [accountData, categories, created, entryDefaults, quickAdds, noteHints] =
-    await Promise.all([
-      getActiveAccounts(),
-      getActiveCategories(),
-      runDueRecurring(),
-      getEntryDefaults(),
-      getQuickAdds(),
-      getNoteSuggestions(),
-    ]);
+  // A failure resolves, marked failed, rather than rejecting: Add says it
+  // could not load and offers a retry, instead of the whole screen
+  // becoming an error page over a picker.
+  const sheetData: Promise<SheetData> = Promise.all([
+    getActiveAccounts(),
+    getActiveCategories(),
+    getEntryDefaults(),
+    getQuickAdds(),
+    getNoteSuggestions(),
+  ])
+    .then(([accountData, categories, entryDefaults, quickAdds, noteHints]) => ({
+      // With balances: this is the list the transfer sheet picks From
+      // from, and it warns when an account cannot cover the amount.
+      accounts: toAccountOptions(accountData.rows, { withBalances: true }),
+      balancesKnown: accountData.balancesKnown,
+      categories: toCategoryOptions(categories),
+      entryDefaults,
+      quickAdds,
+      noteHints,
+    }))
+    .catch((thrown: unknown) => {
+      console.error("[layout]", thrown);
+      return { ...EMPTY_SHEET_DATA, failed: true };
+    });
+
+  // Still awaited: it is the one thing here that writes, it does nothing
+  // (2ms) on any page but the first of a new day, and its toast says what
+  // it posted.
+  const created = await runDueRecurring();
 
   return (
     <ProfileProvider
@@ -74,14 +94,7 @@ export default async function AppLayout({
     >
       <RecordSheetProvider
         timeZone={profile?.timezone ?? "Asia/Kolkata"}
-        // With balances: this is the list the transfer sheet picks From
-        // from, and it warns when an account cannot cover the amount.
-        accounts={toAccountOptions(accountData.rows, { withBalances: true })}
-        balancesKnown={accountData.balancesKnown}
-        categories={toCategoryOptions(categories)}
-        entryDefaults={entryDefaults}
-        quickAdds={quickAdds}
-        noteHints={noteHints}
+        data={sheetData}
         firstRecordSeen={profile?.first_record_seen ?? true}
       >
         <div className="min-h-dvh">

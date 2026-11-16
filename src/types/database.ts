@@ -734,6 +734,10 @@ export type Database = {
           match_count: number
         }[]
       }
+      session_is_active: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       set_budget: {
         Args: {
           p_amount: number

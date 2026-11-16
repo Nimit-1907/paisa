@@ -2,37 +2,12 @@
 
 import * as React from "react";
 
-import { useCurrency, useFormatMoney } from "@/components/profile-provider";
-import { evaluate, isExpression } from "@/lib/calculator";
+import { useCurrency } from "@/components/profile-provider";
+import { cleanAmount, parseAmount } from "@/lib/amount";
 import { cn } from "@/lib/utils";
 
-/**
- * What a physical keyboard types, in the characters the parser knows.
- *
- * `*` and `/` are what the keys are actually labelled, and the sum they make
- * is the same sum; rejecting them would have shown "Not a number" to someone
- * typing `1200/3` perfectly reasonably.
- */
-function fromKeyboard(text: string): string {
-  return text
-    .replace(/[*x]/gi, "×")
-    .replace(/\//g, "÷")
-    .replace(/[^\d.+\-×÷]/g, "");
-}
-
-/** Minor units back to the text the field holds, the way a calculator does. */
-function resolved(minor: bigint, decimals: number): string {
-  const factor = 10n ** BigInt(decimals);
-  const whole = minor / factor;
-
-  if (decimals === 0) return whole.toString();
-
-  const fraction = (minor % factor).toString().padStart(decimals, "0");
-  return `${whole}.${fraction}`;
-}
-
 type AmountProps = {
-  /** The raw expression, e.g. "120+45". */
+  /** What is typed, digits and one point: "450" or "450.50". */
   value: string;
   onChange: (next: string) => void;
   /**
@@ -60,8 +35,7 @@ type AmountProps = {
  * file used to export was 210px of fixed furniture in a sheet whose
  * category step needed the room more, and a phone already has a keypad.
  *
- * It still holds an expression rather than a number, so "120+45" works
- * wherever the keyboard offers the operators.
+ * It takes an amount and nothing else: digits and one point, never a sum.
  */
 export function AmountDisplay({
   value,
@@ -88,12 +62,12 @@ export function AmountDisplay({
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   const currency = useCurrency();
-  const formatMoney = useFormatMoney();
   const ownRef = React.useRef<HTMLInputElement>(null);
   const ref = inputRef ?? ownRef;
 
-  const result = evaluate(value || "0", currency.decimals);
-  const showsSum = isExpression(value);
+  // A lone point is an amount being typed, not a wrong one.
+  const result =
+    value && value !== "." ? parseAmount(value, currency.decimals) : null;
 
   const toneClass =
     tone === "income"
@@ -118,7 +92,8 @@ export function AmountDisplay({
       <input
         id="amount-field"
         ref={ref}
-        // Not a number input: it has to hold "120+45" as well as "165".
+        // Text with a decimal keypad, not type="number": a number input
+        // takes "e" and "-", and spins on a mouse wheel.
         type="text"
         inputMode="decimal"
         autoComplete="off"
@@ -126,16 +101,14 @@ export function AmountDisplay({
         autoFocus={focusOnOpen}
         aria-label="Amount"
         value={value}
-        onChange={(event) => onChange(fromKeyboard(event.target.value))}
+        onChange={(event) =>
+          onChange(cleanAmount(event.target.value, currency.decimals, value))
+        }
         onKeyDown={(event) => {
           if (event.key !== "Enter") return;
           // The sheet is not a form, so Enter would otherwise do nothing
           // on the one screen a desktop user types the most into.
           event.preventDefault();
-          if (isExpression(value) && result.ok) {
-            onChange(resolved(result.minor, currency.decimals));
-            return;
-          }
           onEnter?.();
         }}
         className="peer sr-only"
@@ -160,20 +133,8 @@ export function AmountDisplay({
         {value || "0"}
       </p>
 
-      <p
-        aria-live="polite"
-        className={cn(
-          "mt-1 h-4 text-xs",
-          result.ok && !invalid ? "text-text-secondary" : "text-expense",
-        )}
-      >
-        {error
-          ? error
-          : !result.ok
-            ? result.error
-            : showsSum
-              ? `= ${formatMoney(result.minor)}`
-              : " "}
+      <p aria-live="polite" className={cn("mt-1 h-4 text-xs", "text-expense")}>
+        {error ?? (result && !result.ok ? result.error : " ")}
       </p>
     </label>
   );

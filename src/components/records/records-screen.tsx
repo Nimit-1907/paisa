@@ -41,7 +41,7 @@ import { useRecordSheet } from "@/components/records/record-sheet-provider";
 import { RecordRow } from "@/components/records/record-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { evaluate } from "@/lib/calculator";
+import { parseAmount } from "@/lib/amount";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import { dayDifference } from "@/lib/recurrence";
@@ -960,7 +960,7 @@ function toOptimisticRow(
 
   // The same evaluation the server will do, so the placeholder row shows the
   // amount that is about to be saved rather than an approximation of it.
-  const calculated = evaluate(values.amount, decimals);
+  const calculated = parseAmount(values.amount, decimals);
   if (!calculated.ok) return null;
 
   return {

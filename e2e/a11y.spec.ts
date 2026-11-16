@@ -170,15 +170,14 @@ test.describe("the keyboard", () => {
       .click();
     await expect(page.getByLabel("Amount")).toBeFocused();
 
-    // What the keys on a keyboard are actually labelled.
-    await page.keyboard.type("1200/3");
-    await expect(page.getByLabel("Amount")).toHaveValue("1200÷3");
-
-    // Enter on a sum works it out rather than saving a half-typed amount.
-    await page.keyboard.press("Enter");
-    await expect(page.getByLabel("Amount")).toHaveValue("400.00");
+    // An amount and nothing else: the operator and the letter never land.
+    await page.keyboard.type("4a00/.505");
+    await expect(page.getByLabel("Amount")).toHaveValue("400.50");
 
     await page.getByRole("radio", { name: "Groceries" }).first().click();
+    // No account is chosen for you on a new record.
+    await page.getByLabel("Account", { exact: true }).click();
+    await page.getByRole("option").first().click();
 
     // Back in the amount, Enter saves. The sheet is not a form, so without
     // this the one key everybody presses would do nothing.

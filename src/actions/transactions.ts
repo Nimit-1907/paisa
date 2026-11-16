@@ -13,7 +13,7 @@ import {
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth-guard";
 import { localToInstant } from "@/lib/dates";
-import { evaluate } from "@/lib/calculator";
+import { parseAmount } from "@/lib/amount";
 import { toDb } from "@/lib/money";
 import { currencyOf, getProfile } from "@/lib/profile";
 import {
@@ -62,8 +62,8 @@ type Prepared = {
 /**
  * Turns what the sheet collected into what the row needs.
  *
- * The amount arrives as whatever the keypad holds, "120+45" is as valid as
- * "165", and the time arrives as the wall clock the user saw, which only
+ * The amount arrives as the digits the field holds, "450" or "450.50", and
+ * the time arrives as the wall clock the user saw, which only
  * their timezone can place on the calendar.
  */
 async function prepare(
@@ -76,7 +76,7 @@ async function prepare(
   const currency = currencyOf(profile);
   const timeZone = profile?.timezone ?? "Asia/Kolkata";
 
-  const calculated = evaluate(amountText, currency.decimals);
+  const calculated = parseAmount(amountText, currency.decimals);
   if (!calculated.ok) {
     return { ok: false, error: calculated.error, field: "amount" };
   }
@@ -173,6 +173,16 @@ export async function updateTransaction(
     .select("id")
     .maybeSingle();
 
+  // The type is still sent, and the database refuses it if it differs
+  // (transactions_type_fixed): the edit sheet does not offer the change,
+  // so this only fires for a request that did not come from it.
+  if (error?.message.includes("type cannot be changed")) {
+    console.error("[db]", error.message);
+    return fail(
+      "A record's type cannot be changed. Delete it and add a new one.",
+      "type",
+    );
+  }
   if (error) return failFromDb(error, "Could not save the record.");
   if (!data) return fail("That record no longer exists.");
 

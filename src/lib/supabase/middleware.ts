@@ -12,6 +12,7 @@ import {
 import type { Database } from "@/types/database";
 
 import { supabaseEnv } from "./env";
+import { getVerifiedUser } from "./verify";
 
 /**
  * Refreshes the Supabase session on every matched request, keeps the auth
@@ -46,9 +47,10 @@ export async function updateSession(request: NextRequest) {
 
   // Do not run code between createServerClient and getUser(): this call is
   // what refreshes the token and writes the cookies above.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verified locally rather than with getUser(): see ./verify.ts. Called
+  // here, through a client that can write cookies, so an expired token is
+  // refreshed before the page reads it.
+  const user = await getVerifiedUser(supabase);
 
   const { pathname, search } = request.nextUrl;
 

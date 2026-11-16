@@ -134,8 +134,8 @@ that left the scrolling middle 95px for 440px of content with the category
 grid entirely below the fold: not one tile on screen, for step three of a
 four-tap flow. The field now takes the device keyboard instead, through
 `inputMode="decimal"`, and the whole sheet fits on one screen at 390×844
-with two full rows of categories showing at 640px. The cost is arithmetic:
-the field still parses "120+45", but an iOS decimal pad has no operators.
+with two full rows of categories showing at 640px. The field takes an
+amount and nothing else, digits and one point; it no longer works sums out.
 
 **The amount is the label of its own field.** The display is wrapped in a
 `<label>`, so a tap anywhere on the figure puts the caret in the hidden

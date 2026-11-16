@@ -68,6 +68,15 @@ async function typeAmount(page: Page, amount: string) {
  * just added shows the same amount, so a page-wide check would pass whatever
  * the month total did.
  */
+/**
+ * Picks an account from an account card's list. A listbox of our own
+ * rather than a native <select>, so it is opened and picked from.
+ */
+async function chooseAccount(page: Page, label: string, name = "Cash") {
+  await sheet(page).getByLabel(label, { exact: true }).click();
+  await page.getByRole("option", { name }).click();
+}
+
 function monthCard(page: Page) {
   return page.getByRole("region", { name: /this month/i });
 }
@@ -163,6 +172,8 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(sheet(page)).toBeVisible();
     await typeAmount(page, "250");
     await sheet(page).getByRole("radio", { name: "Food", exact: true }).click();
+    // No account is chosen for you on a new record.
+    await chooseAccount(page, "Account");
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
     await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
@@ -188,11 +199,9 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await sheet(page).getByRole("radio", { name: "Transfer" }).click();
     await typeAmount(page, "500");
 
-    // "From" defaults to the first account; "To" has to be chosen. Both
-    // field cards list the same accounts, so the card's own label is what
-    // tells them apart.
-    // A listbox of our own rather than a native <select> since the UX pass,
-    // so it is opened and picked from rather than set.
+    // Neither end is chosen for you. Both field cards list the same
+    // accounts, so the card's own label is what tells them apart.
+    await chooseAccount(page, "From");
     await sheet(page).getByLabel("To", { exact: true }).click();
     await page.getByRole("option", { name: "Paytm Wallet" }).click();
 

@@ -5,22 +5,22 @@ import { cache } from "react";
 import type { CurrencySettings } from "@/lib/money";
 import { DEFAULT_CURRENCY_SETTINGS } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
+import { type VerifiedUser, getVerifiedUser } from "@/lib/supabase/verify";
 import type { Database } from "@/types/database";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 /**
- * The signed-in user, validated against the auth server.
+ * The signed-in user, from a session token verified locally (see
+ * src/lib/supabase/verify.ts): no Auth round trip on a page render.
+ * Writes check with Auth instead, through `requireUser()`.
  *
- * `cache()` keeps the layout, the page and anything below them to one call per
- * request instead of each firing their own.
+ * `cache()` keeps the layout, the page and anything below them to one check
+ * per request instead of each running their own.
  */
-export const getSessionUser = cache(async () => {
+export const getSessionUser = cache(async (): Promise<VerifiedUser | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  return getVerifiedUser(supabase);
 });
 
 /** The signed-in user's profile row, or null. */
