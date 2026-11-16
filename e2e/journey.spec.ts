@@ -91,10 +91,6 @@ async function pick(page: Page, label: string, name: string) {
   await page.getByRole("radio", { name, exact: true }).click();
 }
 
-async function chooseAccount(page: Page, label: string, name = "Cash") {
-  await pick(page, label, name);
-}
-
 function monthCard(page: Page) {
   return page.getByRole("region", { name: /this month/i });
 }
@@ -181,8 +177,11 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(sheet(page)).toBeVisible();
     await typeAmount(page, "250");
     await pick(page, "Category", "Food");
-    // No account is chosen for you on a new record.
-    await chooseAccount(page, "Account");
+    // The account is chosen for you: with no expense yet, the first open
+    // account, which is the one onboarding made.
+    await expect(
+      sheet(page).getByRole("button", { name: "Account, required: Cash" }),
+    ).toBeVisible();
     await sheet(page).getByLabel("Note", { exact: true }).fill(EXPENSE_NOTE);
     await saveRecord(page);
     await expect(sheet(page)).toBeHidden();
@@ -201,6 +200,16 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await expect(monthCard(page)).toContainText("₹250.00");
   });
 
+  await test.step("an untouched sheet closes without asking", async () => {
+    // The account is pre-selected now; opening and cancelling must still
+    // count as no change, or every look at the sheet asks to discard.
+    await page.getByRole("button", { name: "Add record" }).first().click();
+    await expect(sheet(page)).toBeVisible();
+    await sheet(page).getByRole("button", { name: "Cancel" }).click();
+    await expect(sheet(page)).toBeHidden();
+    await expect(page.getByText("Discard changes?")).toHaveCount(0);
+  });
+
   await test.step("add a transfer", async () => {
     await page.getByRole("button", { name: "Add record" }).first().click();
     await expect(sheet(page)).toBeVisible();
@@ -208,10 +217,14 @@ test("signup, onboarding, records, budget, recurring, analysis, export", async (
     await sheet(page).getByRole("radio", { name: "Transfer" }).click();
     await typeAmount(page, "500");
 
-    // Neither end is chosen for you. Both field cards list the same
-    // accounts, so the card's own label is what tells them apart.
-    await chooseAccount(page, "From");
-    await pick(page, "To", "Paytm Wallet");
+    // Both ends are chosen for you: with no transfer yet, From is the first
+    // open account and To the next one, never the same as From.
+    await expect(
+      sheet(page).getByRole("button", { name: "From, required: Cash" }),
+    ).toBeVisible();
+    await expect(
+      sheet(page).getByRole("button", { name: "To, required: Paytm Wallet" }),
+    ).toBeVisible();
 
     await sheet(page).getByLabel("Note", { exact: true }).fill(TRANSFER_NOTE);
     await saveRecord(page);

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 /** The steps, named, because the claim in the hero has to be checkable. */
 const STEPS = [
   "Tap +",
-  "Pick the account and category",
+  "Pick the category",
   "Type the amount",
   "Save",
 ];
@@ -131,9 +131,9 @@ export default function LandingPage() {
           Logging an expense, in full
         </h2>
         <p className="text-text-secondary mt-1 text-sm">
-          The date is already filled in and the categories you use at this
-          time of day come first. A spend you repeat is one chip that fills in
-          the account, the category and the amount: tap +, tap it, save.
+          The account and the date are already filled in and the categories
+          you use at this time of day come first. A spend you repeat is one
+          chip that fills in the amount too: tap +, tap it, save.
         </p>
 
         <ol className="mt-4 grid gap-2 sm:grid-cols-4">

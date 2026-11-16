@@ -183,9 +183,10 @@ test.describe("the keyboard", () => {
 
     await page.getByRole("button", { name: /^Category\b/ }).click();
     await page.getByRole("radio", { name: "Groceries" }).first().click();
-    // No account is chosen for you on a new record.
-    await page.getByRole("button", { name: /^Account\b/ }).click();
-    await page.getByRole("radio").first().click();
+    // The account is already chosen: the one expenses last used.
+    await expect(
+      page.getByRole("button", { name: /^Account, required: (?!Choose)/ }),
+    ).toBeVisible();
 
     // Back in the amount, Enter saves. The sheet is not a form, so without
     // this the one key everybody presses would do nothing.

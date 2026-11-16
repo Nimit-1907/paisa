@@ -41,7 +41,7 @@ export const FEATURES: Feature[] = [
     tint: "bg-tint-rose",
     icon: Zap,
     title: "A spend in seconds",
-    body: "Pick the account and the category, type the amount on the keypad, save. The categories you usually pick at this hour come first, and the spends you repeat sit on one-tap chips that fill in all three.",
+    body: "The sheet opens on the account you last used for that kind of record, with the categories you usually pick at this hour first. Type the amount, pick the category, save. The spends you repeat sit on one-tap chips that fill in all three.",
   },
   {
     id: "budget",

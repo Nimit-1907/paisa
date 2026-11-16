@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { TransactionType } from "@/lib/schemas/transactions";
 import { minorToAmountText, parseAmount } from "@/lib/amount";
+import { guessAccounts, NO_LAST_ACCOUNTS } from "@/lib/entry-account";
 import { nowLocal } from "@/lib/dates";
 import { balanceAfterTransfer } from "@/lib/overdraw";
 import { formatWith } from "@/lib/money";
@@ -156,6 +157,36 @@ export function RecordSheet({
   const savingRef = React.useRef(false);
   // A quick-add chip filled the amount in: the next key replaces it.
   const [amountPrefilled, setAmountPrefilled] = React.useState(false);
+  // The account came from the person (a pick, the swap, a chip, or the
+  // record being edited) rather than from the guess, so switching the
+  // type tab must leave it where it is.
+  const [accountChosen, setAccountChosen] = React.useState(false);
+
+  /**
+   * Where a record of this type starts: the record's own accounts when it
+   * has them, otherwise the account this type last used (guessAccounts).
+   */
+  function startingAccounts(forType: TransactionType) {
+    if (editing?.accountId) {
+      return {
+        accountId: editing.accountId,
+        toAccountId: editing.toAccountId ?? "",
+      };
+    }
+    return guessAccounts({
+      type: forType,
+      last: entryDefaults?.lastAccounts ?? NO_LAST_ACCOUNTS,
+      activeAccountIds: accounts.map((account) => account.id),
+      current: { accountId: "", toAccountId: "" },
+      chosenByHand: false,
+    });
+  }
+
+  /** An account the person set, which the guess must not move again. */
+  function chooseAccount(id: string) {
+    setAccountId(id);
+    setAccountChosen(true);
+  }
   const [error, setError] = React.useState<string | null>(null);
   const [errorField, setErrorField] = React.useState<string | null>(null);
   const [shaking, shake] = useShake();
@@ -193,11 +224,14 @@ export function RecordSheet({
         ? minorToAmountText(editing.amount, currency.decimals)
         : defaultAmountText,
     );
-    // No account is chosen for you on a new record. The last one used is
-    // a guess, and a wrong guess books the money against the wrong bank
-    // without anybody noticing; "Choose" makes it a decision.
-    setAccountId(editing?.accountId ?? "");
-    setToAccountId(editing?.toAccountId ?? "");
+    // The account is chosen for you: the one this type of record last
+    // used, never another type's. One account for everything put salary
+    // on the credit card after a card expense, the wrong-bank guess that
+    // once made this "Choose".
+    const start = startingAccounts(editing?.type ?? defaultType);
+    setAccountId(start.accountId);
+    setToAccountId(start.toAccountId);
+    setAccountChosen(Boolean(editing?.accountId));
     setCategoryId(editing?.categoryId ?? "");
     setNote(editing?.note ?? "");
     setOccurredAt(editing?.occurredAtLocal ?? nowLocal(timeZone));
@@ -215,8 +249,9 @@ export function RecordSheet({
       amount: editing
         ? minorToAmountText(editing.amount, currency.decimals)
         : defaultAmountText,
-      accountId: editing?.accountId ?? "",
-      toAccountId: editing?.toAccountId ?? "",
+      // The guess, so a sheet opened and closed untouched is unchanged.
+      accountId: start.accountId,
+      toAccountId: start.toAccountId,
       categoryId: editing?.categoryId ?? "",
       note: editing?.note ?? "",
       occurredAt: editing?.occurredAtLocal ?? nowLocal(timeZone),
@@ -656,11 +691,21 @@ export function RecordSheet({
               value={type}
               onChange={(next) => {
                 setType(next);
-                // Both are cleared on any change of type: a category belongs
+                // The category is cleared on any change of type: it belongs
                 // to one kind, so an expense category left behind when
                 // switching to Income would be submitted invisibly.
                 setCategoryId("");
-                setToAccountId("");
+                // The account moves to the one this type last used, unless
+                // the person chose one, which stays.
+                const moved = guessAccounts({
+                  type: next,
+                  last: entryDefaults?.lastAccounts ?? NO_LAST_ACCOUNTS,
+                  activeAccountIds: accounts.map((account) => account.id),
+                  current: { accountId, toAccountId: "" },
+                  chosenByHand: accountChosen,
+                });
+                setAccountId(moved.accountId);
+                setToAccountId(moved.toAccountId);
               }}
             />
           )}
@@ -676,7 +721,7 @@ export function RecordSheet({
                 label="From"
                 accounts={accounts}
                 value={accountId}
-                onChange={setAccountId}
+                onChange={chooseAccount}
                 invalid={errorField === "accountId"}
               />
               <Button
@@ -687,7 +732,7 @@ export function RecordSheet({
                 disabled={!accountId || !toAccountId}
                 onClick={() => {
                   const from = accountId;
-                  setAccountId(toAccountId);
+                  chooseAccount(toAccountId);
                   setToAccountId(from);
                 }}
               >
@@ -711,7 +756,7 @@ export function RecordSheet({
                 label="Account"
                 accounts={accounts}
                 value={accountId}
-                onChange={setAccountId}
+                onChange={chooseAccount}
                 invalid={errorField === "accountId"}
               />
               <CategoryPicker
@@ -789,7 +834,7 @@ export function RecordSheet({
                     );
                     setAmountPrefilled(true);
                     setCategoryId(quick.categoryId);
-                    setAccountId(quick.accountId);
+                    chooseAccount(quick.accountId);
                     setError(null);
                     setErrorField(null);
                   }}
