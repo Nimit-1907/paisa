@@ -72,6 +72,10 @@ const nextConfig: NextConfig = {
     // shadcn/ui imports from the `radix-ui` meta-package; without this every
     // page that pulls in a single primitive ships all of Radix.
     optimizePackageImports: ["radix-ui", "lucide-react", "date-fns"],
+    // A screen the client already has stays usable for 30 seconds, so the
+    // dock's prefetched screens open without a round trip. Mutations call
+    // revalidatePath, which clears it, so a new record is never missing.
+    staleTimes: { dynamic: 30 },
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

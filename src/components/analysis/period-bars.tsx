@@ -21,6 +21,7 @@ import {
   useCompactMoney,
   useTooltipTrigger,
 } from "@/components/analysis/chart-shell";
+import { Deferred } from "@/components/shared/deferred";
 import {
   bucketIsPartial,
   bucketLabel,
@@ -99,78 +100,80 @@ export function PeriodBars({
       {/* The table below carries these numbers; recharts' own SVG would
           read out as a list of paths. */}
       <div aria-hidden="true">
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart
-            data={data}
-            margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
-            barGap={1}
-            // Recharts makes its surface focusable. Hidden from a screen
-            // reader and still in the tab order is the worst of both, and the
-            // table below is the accessible version of this.
-            tabIndex={-1}
-          >
-            <CartesianGrid
-              vertical={false}
-              stroke={CHART_COLORS.grid}
-              strokeDasharray="3 3"
-            />
-            <XAxis
-              dataKey="label"
-              interval={axisInterval(data.length)}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
-              height={18}
-            />
-            <YAxis
-              width={56}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
-              tickFormatter={(value: number) => compact(Math.round(value))}
-            />
+        <Deferred placeholderClassName="h-[200px]">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart
+              data={data}
+              margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+              barGap={1}
+              // Recharts makes its surface focusable. Hidden from a screen
+              // reader and still in the tab order is the worst of both, and the
+              // table below is the accessible version of this.
+              tabIndex={-1}
+            >
+              <CartesianGrid
+                vertical={false}
+                stroke={CHART_COLORS.grid}
+                strokeDasharray="3 3"
+              />
+              <XAxis
+                dataKey="label"
+                interval={axisInterval(data.length)}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
+                height={18}
+              />
+              <YAxis
+                width={56}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
+                tickFormatter={(value: number) => compact(Math.round(value))}
+              />
 
-            <Tooltip
-              trigger={trigger}
-              cursor={{ fill: CHART_COLORS.muted, opacity: 0.4 }}
-              wrapperStyle={{ outline: "none", zIndex: 20 }}
-              content={({ active, payload }) => {
-                const point = payload?.[0]?.payload as
-                  (typeof data)[number] | undefined;
-                if (!active || !point) return null;
+              <Tooltip
+                trigger={trigger}
+                cursor={{ fill: CHART_COLORS.muted, opacity: 0.4 }}
+                wrapperStyle={{ outline: "none", zIndex: 20 }}
+                content={({ active, payload }) => {
+                  const point = payload?.[0]?.payload as
+                    (typeof data)[number] | undefined;
+                  if (!active || !point) return null;
 
-                return (
-                  <ChartTooltip
-                    title={`${bucketTitle(point.on, bucket)}${
-                      point.partial ? " (part)" : ""
-                    }`}
-                    rows={[
-                      {
-                        label: "Income",
-                        value: point.incomeMinor,
-                        color: CHART_COLORS.income,
-                      },
-                      {
-                        label: "Expense",
-                        value: point.expenseMinor,
-                        color: CHART_COLORS.expense,
-                      },
-                    ]}
-                  />
-                );
-              }}
-            />
+                  return (
+                    <ChartTooltip
+                      title={`${bucketTitle(point.on, bucket)}${
+                        point.partial ? " (part)" : ""
+                      }`}
+                      rows={[
+                        {
+                          label: "Income",
+                          value: point.incomeMinor,
+                          color: CHART_COLORS.income,
+                        },
+                        {
+                          label: "Expense",
+                          value: point.expenseMinor,
+                          color: CHART_COLORS.expense,
+                        },
+                      ]}
+                    />
+                  );
+                }}
+              />
 
-            <Bar
-              dataKey={kind}
-              fill={
-                kind === "income" ? CHART_COLORS.income : CHART_COLORS.expense
-              }
-              radius={[3, 3, 0, 0]}
-              isAnimationActive={false}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+              <Bar
+                dataKey={kind}
+                fill={
+                  kind === "income" ? CHART_COLORS.income : CHART_COLORS.expense
+                }
+                radius={[3, 3, 0, 0]}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </Deferred>
       </div>
 
       <p className="text-text-secondary mt-1 px-1 text-xs">

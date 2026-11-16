@@ -84,6 +84,13 @@ function DockLink({ item, pathname }: { item: NavItem; pathname: string }) {
   return (
     <Link
       href={item.href}
+      // The whole screen, data included, is fetched while the dock is on
+      // screen, so a tap shows it at once rather than after a round trip.
+      // Only the dock's few destinations: every link doing this would be a
+      // server render per link per page view. `staleTimes` in
+      // next.config.ts keeps it for 30 seconds, and every mutation's
+      // revalidatePath throws it away, so it is never a stale balance.
+      prefetch
       aria-current={active ? "page" : undefined}
       // The label is in the markup either way: visible on the active item,
       // and a screen-reader-only name on the rest. An icon-only link whose

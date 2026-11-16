@@ -466,8 +466,11 @@ and when.
 are 150px and 182px wide; the two time charts are exactly half the row each;
 no horizontal overflow at any width.
 
-**States.** Loading is `analysis/loading.tsx`, in the shape the charts arrive
-in. Empty is "Nothing in this period" with an Add record button. Error and
+**States.** No loading boundary: the dock prefetches the whole screen, and a
+skeleton above it delayed every cold open by React's ~300ms reveal throttle
+for a page the server renders in ~60ms. The three plots mount a moment after
+the screen paints (`shared/deferred.tsx`), in placeholders of their own
+height. Empty is "Nothing in this period" with an Add record button. Error and
 offline belong to the shell. Success does not apply — nothing here writes.
 Partial data: the "average per day" divides by the days that have *happened*,
 not the days on the calendar, and says "so far"; "vs previous" says "nothing
@@ -502,7 +505,7 @@ listed in the gaps at the end of this document rather than half-built.
 **Measured** at 390px: "LEFT TO SPEND / ₹25,981 / ₹1,623.81/day for 16 more
 days / 33% / ₹13,019 of ₹39,000 budgeted".
 
-**States.** Loading is `budgets/loading.tsx`. Empty is "No budgets this month"
+**States.** No loading boundary, for the reason Analysis gives. Empty is "No budgets this month"
 with Set a budget and, when last month had any, Copy October's. Error and
 offline belong to the shell and the sheet. Success is the sheet's toast.
 Partial data: a past month gets "You stayed under budget in N of M".

@@ -24,16 +24,20 @@ function SidebarLink({
   label,
   icon: Icon,
   active,
+  prefetch,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   active: boolean;
+  /** `true` for the primary screens: see the note on the dock's links. */
+  prefetch?: true;
 }) {
   return (
     <li>
       <Link
         href={href}
+        prefetch={prefetch}
         aria-current={active ? "page" : undefined}
         className={cn(
           "rounded-control relative isolate flex min-h-11 items-center gap-3 px-3 text-sm font-semibold transition-colors",
@@ -93,6 +97,7 @@ export function SidebarNav() {
               href={item.href}
               label={item.label}
               icon={item.icon}
+              prefetch
               active={isNavItemActive(item, pathname, {
                 includeOwned: false,
               })}
