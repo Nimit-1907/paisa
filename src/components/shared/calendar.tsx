@@ -123,8 +123,8 @@ const clamp = (day: string, min: string, max: string) =>
  *
  * The chosen day is ink. With a `range`, the days between its two ends take
  * the muted surface and the ends are ink, so a From picker shows what it is
- * the start of. Today is marked with a dot under its number, in the
- * accessible name too.
+ * the start of. Today wears an ink outline, and says so in its accessible
+ * name too.
  *
  * Keyboard: the arrows move a day or a week, Page Up and Page Down a month
  * (with Shift, a year), Home and End to the ends of the week. The grid is
@@ -230,21 +230,9 @@ export function Calendar({
 
   return (
     <div className={cn("select-none", className)}>
+      {/* The caption on the left opens the month and year view; the arrows
+          sit together on the right, under one thumb. */}
       <div className="flex items-center justify-between gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-touch"
-          aria-label={view === "days" ? "Previous month" : "Previous year"}
-          disabled={
-            view === "days" ? !canGoBack : parts(month).year <= parts(min).year
-          }
-          onClick={() => (view === "days" ? goMonth(-1) : goMonth(-12))}
-        >
-          <ChevronLeft className="size-5" aria-hidden="true" />
-        </Button>
-
-        {/* The caption is the way to the month and year view. */}
         <button
           type="button"
           aria-expanded={view === "months"}
@@ -254,7 +242,10 @@ export function Calendar({
               : `${parts(month).year}. Back to days`
           }
           onClick={() => setView(view === "days" ? "months" : "days")}
-          className="rounded-control hoverable:bg-surface-muted flex h-11 min-w-0 items-center gap-1 px-3 text-sm font-semibold"
+          className={cn(
+            "rounded-control hoverable:bg-surface-muted flex h-11 min-w-0 items-center gap-1 px-2 text-[15px] font-semibold",
+            "focus-visible:outline-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-1",
+          )}
         >
           <span aria-live="polite" className="truncate">
             {view === "days" ? label : parts(month).year}
@@ -268,20 +259,36 @@ export function Calendar({
           />
         </button>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-touch"
-          aria-label={view === "days" ? "Next month" : "Next year"}
-          disabled={
-            view === "days"
-              ? !canGoForward
-              : parts(month).year >= parts(max).year
-          }
-          onClick={() => (view === "days" ? goMonth(1) : goMonth(12))}
-        >
-          <ChevronRight className="size-5" aria-hidden="true" />
-        </Button>
+        <div className="flex shrink-0 items-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-touch"
+            aria-label={view === "days" ? "Previous month" : "Previous year"}
+            disabled={
+              view === "days"
+                ? !canGoBack
+                : parts(month).year <= parts(min).year
+            }
+            onClick={() => (view === "days" ? goMonth(-1) : goMonth(-12))}
+          >
+            <ChevronLeft className="size-5" aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-touch"
+            aria-label={view === "days" ? "Next month" : "Next year"}
+            disabled={
+              view === "days"
+                ? !canGoForward
+                : parts(month).year >= parts(max).year
+            }
+            onClick={() => (view === "days" ? goMonth(1) : goMonth(12))}
+          >
+            <ChevronRight className="size-5" aria-hidden="true" />
+          </Button>
+        </div>
       </div>
 
       {view === "months" ? (
@@ -323,7 +330,7 @@ export function Calendar({
                   key={long}
                   scope="col"
                   abbr={long}
-                  className="text-text-secondary h-8 text-center text-xs font-semibold"
+                  className="text-text-secondary h-9 text-center text-[11px] font-medium"
                 >
                   {short}
                 </th>
@@ -410,7 +417,7 @@ function DayCell({
         aria-current={today ? "date" : undefined}
         onClick={onChoose}
         className={cn(
-          "rounded-control relative mx-auto flex size-11 max-w-full flex-col items-center justify-center text-[13px] font-medium tabular-nums",
+          "rounded-control relative mx-auto flex size-11 max-w-full items-center justify-center text-sm font-medium tabular-nums",
           "focus-visible:outline-ink focus-visible:outline-2 focus-visible:outline-offset-1",
           "disabled:pointer-events-none disabled:opacity-35",
           "duration-[80ms] transition-colors motion-reduce:transition-none",
@@ -419,20 +426,11 @@ function DayCell({
             : cn(
                 "hoverable:bg-hairline",
                 outside ? "text-text-secondary" : "text-text",
-                today && "font-bold",
+                today && "ring-ink font-semibold ring-[1.5px] ring-inset",
               ),
         )}
       >
         {parts(day).date}
-        {today ? (
-          <span
-            aria-hidden="true"
-            className={cn(
-              "absolute bottom-1.5 size-1 rounded-full",
-              isEnd ? "bg-on-ink" : "bg-ink",
-            )}
-          />
-        ) : null}
       </button>
     </td>
   );

@@ -77,8 +77,10 @@ Primary device: phones (360–430px wide). Must also look good on tablet/desktop
   floor. Every date is chosen through `src/components/shared/date-picker.tsx`:
   `DatePicker` (one day), `DateTimePicker` (a day and a time) and
   `DateRangeField` (preset pills plus a From and To pair). Each is a
-  field card that opens the same panel: the date typed as digits with the
-  slashes drawn for you (15112026 is 15/11/2026), the one `Calendar`
+  field card that opens the same panel (a bottom sheet on phones, a
+  popover beside the field from `lg`): the field's name and the chosen day
+  in words, with a keyboard button that swaps them for the date typed as
+  digits with the slashes drawn for you (15112026 is 15/11/2026), the one `Calendar`
   (`shared/calendar.tsx`, the user's week start, a month and year view,
   arrow keys), an optional `TimeInput` (digits plus AM/PM), and Today,
   Clear and Done. No native `type="date"`, `type="time"` or
