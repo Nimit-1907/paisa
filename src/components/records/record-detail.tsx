@@ -173,7 +173,18 @@ export function RecordDetail({
                     aria-hidden="true"
                   />
                 }
-                value={fullWhen(record.occurredAt, timeZone)}
+                value={
+                  // Two lines, date then time: on one line at 390px the
+                  // time was cut off, and the time is half the answer.
+                  <span className="block whitespace-normal">
+                    <span className="block">
+                      {whenDay(record.occurredAt, timeZone)}
+                    </span>
+                    <span className="block">
+                      {whenTime(record.occurredAt, timeZone)}
+                    </span>
+                  </span>
+                }
               />
 
               {record.note ? (
@@ -230,14 +241,21 @@ function repeatWord(frequency: TransactionRow["recurringFrequency"]): string {
   return frequency ? REPEAT_LABELS[frequency].toLowerCase() : "on a schedule";
 }
 
-/** "Mon, 9 Nov 2026 at 4:30 pm", where the user is. */
-function fullWhen(instant: string, timeZone: string): string {
+/** "Mon, 9 Nov 2026", where the user is. */
+function whenDay(instant: string, timeZone: string): string {
   return new Intl.DateTimeFormat("en-IN", {
     timeZone,
     weekday: "short",
     day: "numeric",
     month: "short",
     year: "numeric",
+  }).format(new Date(instant));
+}
+
+/** "4:30 pm", where the user is. */
+function whenTime(instant: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(instant));

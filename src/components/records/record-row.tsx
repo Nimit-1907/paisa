@@ -6,6 +6,7 @@ import { Amount } from "@/components/shared/amount";
 import { Tile } from "@/components/shared/tile";
 import { ListRow } from "@/components/shared/list-row";
 import type { TransactionRow } from "@/lib/queries/transactions";
+import { cn } from "@/lib/utils";
 
 /**
  * What colour a record's amount carries.
@@ -121,11 +122,11 @@ export function RecordRow({
                 "Zomato, tea… · ICICI Credi…", two half-words where one
                 whole one would do. The note is what identifies the record;
                 the account is context. So the account gives up the room,
-                down to a floor that still reads as a name.
+                down to a floor that still reads as a name, and only then
+                does the note shrink. (A 70% cap on the note did the
+                opposite at 360px: both were cut.)
               */}
-              <span className="max-w-[70%] shrink-0 truncate">
-                {record.note}
-              </span>
+              <span className="min-w-0 truncate">{record.note}</span>
               <span aria-hidden="true">·</span>
             </>
           ) : null}
@@ -136,7 +137,14 @@ export function RecordRow({
               <span className="truncate">{record.toAccountName}</span>
             </span>
           ) : (
-            <span className="truncate">{record.accountName}</span>
+            <span
+              className={cn(
+                "truncate",
+                record.note && "min-w-[6ch] shrink-[100]",
+              )}
+            >
+              {record.accountName}
+            </span>
           )}
         </>
       }
