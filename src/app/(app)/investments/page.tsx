@@ -1,22 +1,20 @@
 import type { Metadata } from "next";
 
-import { InvestmentsScreen } from "@/components/investments/investments-screen";
+import { InvestmentsTabs } from "@/components/investments/investments-tabs";
+import { OverviewScreen } from "@/components/investments/overview-screen";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
-import { DEFAULT_TIME_ZONE } from "@/lib/month-param";
-import { getProfile } from "@/lib/profile";
 import {
   getInvestedSince,
   getInvestmentGoals,
   getInvestments,
 } from "@/lib/queries/investments";
-import { localToday } from "@/lib/recurring-check";
+import { investmentsToday } from "@/lib/queries/investments-today";
 
 export const metadata: Metadata = { title: "Investments" };
 
 export default async function InvestmentsPage() {
-  const profile = await getProfile();
-  const today = localToday(profile?.timezone ?? DEFAULT_TIME_ZONE);
+  const today = await investmentsToday();
 
   const [investments, goals, investedThisMonth] = await Promise.all([
     getInvestments(),
@@ -25,18 +23,17 @@ export default async function InvestmentsPage() {
   ]);
 
   return (
-    <PageShell width="wide">
-      <PageHeader
-        title="Investments"
-        description="Money in and out, by goal"
-      />
-
-      <InvestmentsScreen
-        investments={investments}
-        goals={goals}
-        investedThisMonth={investedThisMonth}
-        today={today}
-      />
+    <PageShell>
+      <PageHeader title="Investments" description="Money in and out, by goal" />
+      <div className="space-y-6">
+        <InvestmentsTabs />
+        <OverviewScreen
+          investments={investments}
+          goals={goals}
+          investedThisMonth={investedThisMonth}
+          today={today}
+        />
+      </div>
     </PageShell>
   );
 }

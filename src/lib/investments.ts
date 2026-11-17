@@ -16,6 +16,7 @@ import {
   dayDifference,
   nextOccurrence,
   occurrenceOn,
+  occurrencesBetween,
   type RecurrenceSchedule,
 } from "@/lib/recurrence";
 import type { TintKey } from "@/lib/tokens";
@@ -505,4 +506,161 @@ export function goalTotals(
   }
 
   return rows;
+}
+
+// -------------------------------------------------------------- growth ---
+
+/** The horizons the Growth screen offers, in years. */
+export const HORIZONS = [1, 3, 5, 10, 20] as const;
+export type Horizon = (typeof HORIZONS)[number];
+
+/** The same calendar day `years` later; 29 Feb falls back to the 28th. */
+export function horizonDate(today: string, years: number): string {
+  const year = Number(today.slice(0, 4)) + years;
+  const month = today.slice(5, 7);
+  let day = Number(today.slice(8, 10));
+  const last = new Date(Date.UTC(year, Number(month), 0)).getUTCDate();
+  if (day > last) day = last;
+  return `${year}-${month}-${String(day).padStart(2, "0")}`;
+}
+
+export type Contributor = {
+  investment: Investment;
+  /** Instalments still to post between now and the horizon. */
+  count: number;
+  /** What they add, in minor units. */
+  added: number;
+  /** The schedule's own end, when it stops before the horizon. */
+  endsOn: string | null;
+};
+
+export type GoalProjection = {
+  goal: InvestmentGoal | null;
+  now: number;
+  added: number;
+  total: number;
+};
+
+export type Projection = {
+  until: string;
+  /** Net invested in open investments today. */
+  now: number;
+  /** What the schedules will add by `until`. */
+  added: number;
+  total: number;
+  byGoal: GoalProjection[];
+  /** Schedules that will post something, most added first. */
+  contributors: Contributor[];
+  /** Open schedules that are paused: they add nothing until resumed. */
+  paused: Investment[];
+};
+
+/**
+ * What will have gone in by a date, if every running schedule keeps
+ * running. Money put in, nothing else: no returns are assumed and no
+ * payouts are predicted, so the figure is a promise the user is making,
+ * not a forecast of a market.
+ */
+export function projectContributions(
+  investments: Investment[],
+  goals: InvestmentGoal[],
+  today: string,
+  years: number,
+): Projection {
+  const until = horizonDate(today, years);
+  const open = investments.filter((investment) => investment.status === "open");
+
+  const contributors: Contributor[] = [];
+  const paused: Investment[] = [];
+
+  for (const investment of open) {
+    const schedule = investment.schedule;
+    if (!schedule) continue;
+    if (schedule.paused) {
+      paused.push(investment);
+      continue;
+    }
+
+    const first = nextInstallment(investment, today);
+    if (!first || first > until) continue;
+
+    const dates = occurrencesBetween(
+      {
+        frequency: schedule.frequency,
+        interval: schedule.interval,
+        startDate: schedule.startDate,
+        anchorDay: schedule.anchorDay,
+        endDate: schedule.endDate,
+        skippedDates: schedule.skippedDates,
+      },
+      first,
+      until,
+      // Monthly for 20 years is 240; weekly is not offered.
+      1000,
+    );
+
+    if (dates.length === 0) continue;
+
+    contributors.push({
+      investment,
+      count: dates.length,
+      added: dates.length * schedule.amount,
+      endsOn:
+        schedule.endDate && schedule.endDate <= until ? schedule.endDate : null,
+    });
+  }
+
+  contributors.sort((a, b) => b.added - a.added);
+
+  const addedBy = new Map<string | null, number>();
+  for (const contributor of contributors) {
+    const key = contributor.investment.goalId;
+    addedBy.set(key, (addedBy.get(key) ?? 0) + contributor.added);
+  }
+
+  const known = new Set(goals.map((goal) => goal.id));
+  const nowFor = (id: string | null) =>
+    open
+      .filter((investment) =>
+        id === null
+          ? !investment.goalId || !known.has(investment.goalId)
+          : investment.goalId === id,
+      )
+      .reduce((sum, investment) => sum + investment.net, 0);
+  const addedFor = (id: string | null) =>
+    id === null
+      ? [...addedBy.entries()]
+          .filter(([key]) => key === null || !known.has(key))
+          .reduce((sum, [, value]) => sum + value, 0)
+      : (addedBy.get(id) ?? 0);
+
+  const byGoal: GoalProjection[] = goals.map((goal) => {
+    const now = nowFor(goal.id);
+    const added = addedFor(goal.id);
+    return { goal, now, added, total: now + added };
+  });
+
+  const looseNow = nowFor(null);
+  const looseAdded = addedFor(null);
+  if (looseNow !== 0 || looseAdded !== 0) {
+    byGoal.push({
+      goal: null,
+      now: looseNow,
+      added: looseAdded,
+      total: looseNow + looseAdded,
+    });
+  }
+
+  const now = open.reduce((sum, investment) => sum + investment.net, 0);
+  const added = contributors.reduce((sum, c) => sum + c.added, 0);
+
+  return {
+    until,
+    now,
+    added,
+    total: now + added,
+    byGoal,
+    contributors,
+    paused,
+  };
 }

@@ -6,17 +6,21 @@ import {
   describeCadence,
   endAfterInstallments,
   goalTotals,
+  horizonDate,
   type Investment,
   type InvestmentSchedule,
   maturedUnpaid,
   nextInstallment,
   openTotals,
+  projectContributions,
   scheduleToCadence,
 } from "@/lib/investments";
 
 const TODAY = "2026-11-17";
 
-function schedule(overrides: Partial<InvestmentSchedule> = {}): InvestmentSchedule {
+function schedule(
+  overrides: Partial<InvestmentSchedule> = {},
+): InvestmentSchedule {
   return {
     amount: 1_000_000,
     cadence: "monthly",
@@ -74,7 +78,9 @@ describe("cadence", () => {
     expect(describeCadence("quarterly", "2026-01-22")).toBe(
       "Quarterly on the 22nd",
     );
-    expect(describeCadence("monthly", "2026-01-11")).toBe("Monthly on the 11th");
+    expect(describeCadence("monthly", "2026-01-11")).toBe(
+      "Monthly on the 11th",
+    );
     expect(describeCadence("yearly", "2025-04-05")).toBe("Yearly on 5 Apr");
   });
 
@@ -89,7 +95,10 @@ describe("cadence", () => {
     expect(endAfterInstallments(base, 60)).toBe("2030-05-10");
     // Clamped through February and back, like the database.
     expect(
-      endAfterInstallments({ ...base, startDate: "2026-01-31", anchorDay: 31 }, 2),
+      endAfterInstallments(
+        { ...base, startDate: "2026-01-31", anchorDay: 31 },
+        2,
+      ),
     ).toBe("2026-02-28");
   });
 });
@@ -108,7 +117,10 @@ describe("nextInstallment", () => {
 
   it("is nothing when paused, closed, ended or absent", () => {
     expect(
-      nextInstallment(investment({ schedule: schedule({ paused: true }) }), TODAY),
+      nextInstallment(
+        investment({ schedule: schedule({ paused: true }) }),
+        TODAY,
+      ),
     ).toBeNull();
     expect(nextInstallment(investment({ status: "closed" }), TODAY)).toBeNull();
     expect(
@@ -139,7 +151,9 @@ describe("comingUp", () => {
     });
 
     const items = comingUp([sip, fd, farFd], TODAY);
-    expect(items.map((item) => [item.investment.id, item.kind, item.inDays])).toEqual([
+    expect(
+      items.map((item) => [item.investment.id, item.kind, item.inDays]),
+    ).toEqual([
       ["fd", "maturity", 11],
       ["i1", "installment", 18],
     ]);
@@ -153,21 +167,51 @@ describe("comingUp", () => {
     });
     expect(comingUp([late], TODAY)[0]?.inDays).toBe(-7);
     expect(maturedUnpaid([late], TODAY)).toHaveLength(1);
-    expect(maturedUnpaid([{ ...late, status: "closed" }], TODAY)).toHaveLength(0);
+    expect(maturedUnpaid([{ ...late, status: "closed" }], TODAY)).toHaveLength(
+      0,
+    );
   });
 });
 
 describe("totals", () => {
   const goals = [
-    { id: "ret", name: "Retirement", tint: "peri" as const, targetAmount: null },
-    { id: "home", name: "House", tint: "sand" as const, targetAmount: 100_000_000 },
+    {
+      id: "ret",
+      name: "Retirement",
+      tint: "peri" as const,
+      targetAmount: null,
+    },
+    {
+      id: "home",
+      name: "House",
+      tint: "sand" as const,
+      targetAmount: 100_000_000,
+    },
     { id: "car", name: "Car", tint: "sky" as const, targetAmount: null },
   ];
 
   const rows = [
-    investment({ id: "a", goalId: "ret", invested: 3_000_000, redeemed: 0, net: 3_000_000 }),
-    investment({ id: "b", goalId: "home", invested: 6_000_000, redeemed: 1_000_000, net: 5_000_000 }),
-    investment({ id: "c", goalId: null, invested: 2_000_000, redeemed: 0, net: 2_000_000 }),
+    investment({
+      id: "a",
+      goalId: "ret",
+      invested: 3_000_000,
+      redeemed: 0,
+      net: 3_000_000,
+    }),
+    investment({
+      id: "b",
+      goalId: "home",
+      invested: 6_000_000,
+      redeemed: 1_000_000,
+      net: 5_000_000,
+    }),
+    investment({
+      id: "c",
+      goalId: null,
+      invested: 2_000_000,
+      redeemed: 0,
+      net: 2_000_000,
+    }),
     investment({
       id: "d",
       goalId: "ret",
@@ -190,11 +234,91 @@ describe("totals", () => {
   it("groups by goal, with progress to a target or a share of the whole", () => {
     const totals = goalTotals(goals, rows);
 
-    expect(totals.map((row) => [row.goal?.name ?? "No goal", row.net, row.basis, Math.round(row.percent)])).toEqual([
+    expect(
+      totals.map((row) => [
+        row.goal?.name ?? "No goal",
+        row.net,
+        row.basis,
+        Math.round(row.percent),
+      ]),
+    ).toEqual([
       ["Retirement", 3_000_000, "share", 30],
       ["House", 5_000_000, "target", 5],
       ["Car", 0, "share", 0],
       ["No goal", 2_000_000, "share", 20],
     ]);
+  });
+});
+
+describe("projectContributions", () => {
+  const goals = [
+    {
+      id: "ret",
+      name: "Retirement",
+      tint: "peri" as const,
+      targetAmount: null,
+    },
+  ];
+
+  it("adds what the schedules will post, and nothing else", () => {
+    const sip = investment({
+      id: "sip",
+      goalId: "ret",
+      net: 12_000_000,
+      // ₹10,000 on the 5th, next on 5 Dec 2026.
+    });
+    const rd = investment({
+      id: "rd",
+      kind: "rd",
+      goalId: null,
+      net: 5_400_000,
+      schedule: schedule({
+        amount: 300_000,
+        startDate: "2025-06-10",
+        anchorDay: 10,
+        nextRunOn: "2026-12-10",
+        endDate: "2027-05-10",
+      }),
+    });
+    const fd = investment({
+      id: "fd",
+      kind: "fd",
+      schedule: null,
+      net: 20_000_000,
+    });
+
+    const oneYear = projectContributions([sip, rd, fd], goals, TODAY, 1);
+
+    expect(oneYear.until).toBe("2027-11-17");
+    // SIP: 5 Dec 2026 to 5 Nov 2027 is 12 instalments.
+    // RD: 10 Dec 2026 to 10 May 2027 is 6, then it ends.
+    expect(
+      oneYear.contributors.map((c) => [c.investment.id, c.count, c.endsOn]),
+    ).toEqual([
+      ["sip", 12, null],
+      ["rd", 6, "2027-05-10"],
+    ]);
+    expect(oneYear.added).toBe(12 * 1_000_000 + 6 * 300_000);
+    expect(oneYear.now).toBe(37_400_000);
+    expect(oneYear.total).toBe(oneYear.now + oneYear.added);
+
+    expect(
+      oneYear.byGoal.map((g) => [g.goal?.name ?? "No goal", g.now, g.added]),
+    ).toEqual([
+      ["Retirement", 12_000_000, 12_000_000],
+      ["No goal", 25_400_000, 1_800_000],
+    ]);
+  });
+
+  it("leaves paused schedules out and lists them", () => {
+    const paused = investment({ schedule: schedule({ paused: true }) });
+    const result = projectContributions([paused], [], TODAY, 5);
+    expect(result.added).toBe(0);
+    expect(result.paused).toHaveLength(1);
+  });
+
+  it("lands 29 February on the 28th in a common year", () => {
+    expect(horizonDate("2028-02-29", 1)).toBe("2029-02-28");
+    expect(horizonDate("2026-11-17", 10)).toBe("2036-11-17");
   });
 });

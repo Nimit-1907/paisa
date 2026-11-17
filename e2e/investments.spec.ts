@@ -68,7 +68,7 @@ function confirmDialog(page: Page): Locator {
 }
 
 async function deleteInvestment(page: Page, name: string, closed = false) {
-  await page.goto("/investments");
+  await page.goto("/investments/holdings");
   await hydrated(page);
   if (closed) await page.getByRole("radio", { name: /Closed/ }).click();
   await page.getByRole("link", { name: new RegExp(name) }).first().click();
@@ -118,11 +118,14 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   // ------------------------------------------------------------- a goal ---
   await page.goto("/investments");
   await hydrated(page);
+  await page.getByRole("navigation", { name: "Investments" }).getByRole("link", { name: "Goals" }).click();
+  await page.waitForURL(/\/investments\/goals$/);
+  await hydrated(page);
   await page.getByRole("button", { name: "New goal" }).click();
   await sheet(page).getByLabel("Name").fill(GOAL);
   await typeAmount(page, "Target", "100000");
   await sheet(page).getByRole("button", { name: "Add goal" }).click();
-  await expect(page.getByRole("button", { name: new RegExp(GOAL) })).toBeVisible();
+  await expect(page.getByRole("link", { name: new RegExp(GOAL) })).toBeVisible();
 
   // Into the goal, with a new amount from the next instalment; the past stays.
   await page.goto(sipUrl);
@@ -188,22 +191,40 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await expect(page.getByRole("button", { name: "Reopen investment" })).toBeVisible();
 
   // ------------------------------------------------------- the goal ---
-  await page.goto("/investments");
+  await page.goto("/investments/goals");
   await hydrated(page);
-  const goalCard = page.getByRole("button", { name: new RegExp(GOAL) });
+  const goalCard = page.getByRole("link", { name: new RegExp(GOAL) });
   await expect(goalCard).toContainText("15,000");
   await expect(goalCard).toContainText("15% of");
+  await goalCard.click();
+  await page.waitForURL(/\/investments\/goals\/[0-9a-f-]+/);
+  await expect(page.getByRole("link", { name: new RegExp(SIP) })).toBeVisible();
+
+  // ------------------------------------------------------------ growth ---
+  // The SIP adds ₹7,500 a month from here on; in a year that is 12 more.
+  await page.goto("/investments/growth");
+  await hydrated(page);
+  await page.getByRole("radio", { name: "1y" }).click();
+  const adding = page.getByRole("region", { name: "What keeps adding" });
+  await expect(adding).toContainText(SIP);
+  await expect(adding).toContainText("7,500 × 12");
+  await expect(adding).toContainText("90,000");
 
   // --------------------------------------------------------- clean up ---
   await deleteInvestment(page, SIP);
   await deleteInvestment(page, STOCKS);
   await deleteInvestment(page, FD, true);
 
-  await page.getByRole("button", { name: new RegExp(GOAL) }).click();
+  await page.goto("/investments/goals");
+  await hydrated(page);
+  await page.getByRole("link", { name: new RegExp(GOAL) }).click();
+  await page.waitForURL(/\/investments\/goals\/[0-9a-f-]+/);
+  await hydrated(page);
   await page.getByRole("button", { name: "Edit goal" }).click();
   await sheet(page).first().getByRole("button", { name: "Delete goal" }).click();
   await confirmDialog(page).getByRole("button", { name: "Delete", exact: true }).click();
-  await expect(page.getByRole("button", { name: new RegExp(GOAL) })).toHaveCount(0);
+  await page.waitForURL(/\/investments\/goals$/);
+  await expect(page.getByRole("link", { name: new RegExp(GOAL) })).toHaveCount(0);
 
   // The ledger is separate: nothing of it reached Records.
   await page.goto("/records");

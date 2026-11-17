@@ -57,7 +57,7 @@ export default async function InvestmentPage({
         description={[KIND_META[investment.kind].long, investment.platform]
           .filter(Boolean)
           .join(" · ")}
-        back={{ href: "/investments", label: "Back to investments" }}
+        back={{ href: "/investments/holdings", label: "Back to holdings" }}
       />
 
       <InvestmentDetail

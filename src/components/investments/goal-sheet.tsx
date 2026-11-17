@@ -46,6 +46,7 @@ export function GoalSheet({
   goal,
   goalCount,
   onCreated,
+  onDeleted,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,6 +54,8 @@ export function GoalSheet({
   goal: InvestmentGoal | null;
   goalCount: number;
   onCreated?: (id: string) => void;
+  /** After a delete, e.g. leave the goal's own page. */
+  onDeleted?: () => void;
 }) {
   const router = useRouter();
   const currency = useCurrency();
@@ -131,7 +134,8 @@ export function GoalSheet({
       );
       setConfirmDelete(false);
       onOpenChange(false);
-      router.refresh();
+      if (onDeleted) onDeleted();
+      else router.refresh();
     } finally {
       setSaving(false);
     }
