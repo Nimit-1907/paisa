@@ -8,6 +8,7 @@ import {
   formatCompact,
   formatMoney,
   moneyParts,
+  signGlyph,
 } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -142,7 +143,7 @@ function Parts({
 
   return (
     <span aria-hidden="true">
-      {sign}
+      {signGlyph(sign)}
       <span className="amount-unit">{symbol}</span>
       {whole}
       {fraction ? (
