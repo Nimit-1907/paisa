@@ -233,13 +233,19 @@ export function ListRow({
 
   const interactive =
     href && !parked ? (
-      <Link href={href} className={interactiveClass}>
+      <Link
+        href={href}
+        aria-current={selected ? "true" : undefined}
+        className={interactiveClass}
+      >
         {body}
       </Link>
     ) : (
       <button
         type="button"
         disabled={pending}
+        // Said, not only shaded: the row whose detail is on show.
+        aria-current={selected ? "true" : undefined}
         onClick={() => {
           // A parked row has a button showing; the first tap puts it away
           // rather than opening whatever is underneath.

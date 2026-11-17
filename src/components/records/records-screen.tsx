@@ -51,7 +51,11 @@ import {
 } from "@/components/records/use-clear-filters";
 import { ActiveFilters } from "@/components/records/active-filters";
 import { logAgainDraft, draftOf as toDraft } from "@/lib/record-draft";
-import { RecordDetail } from "@/components/records/record-detail";
+import {
+  RecordDetail,
+  RecordDetailPanel,
+} from "@/components/records/record-detail";
+import { useIsDesktop } from "@/hooks/use-media-query";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 import { cn } from "@/lib/utils";
@@ -124,6 +128,7 @@ export function RecordsScreen({
   const clearFilters = useClearFilters();
   const removeFilter = useRemoveFilter();
   const sheet = useRecordSheet();
+  const isDesktop = useIsDesktop();
   const pathname = usePathname();
   const params = useSearchParams();
 
@@ -658,264 +663,307 @@ export function RecordsScreen({
 
   return (
     <PullToRefresh onRefresh={refresh}>
-      <CollapsingHeader
-        title="Records"
-        description="Income, expenses, transfers"
-        monthNav={monthNav}
-        compact={<MonthStrip summary={summary} />}
-        onSearch={() => setSearchOpen(true)}
-      >
-        <div className="space-y-4">
-          {/* The month card and nothing above it. A recap of last month and
+      {/* On a wide screen, the list on the left and the record it is
+          showing on the right. Below lg this is one column, as before. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-6">
+        <div className="min-w-0">
+          <CollapsingHeader
+            title="Records"
+            description="Income, expenses, transfers"
+            monthNav={monthNav}
+            compact={<MonthStrip summary={summary} />}
+            onSearch={() => setSearchOpen(true)}
+          >
+            <div className="space-y-4">
+              {/* The month card and nothing above it. A recap of last month and
               a sentence about this one used to sit around it; both were
               commentary on a screen whose job is the records themselves.
               The sentence still lives on Analysis, where it belongs. */}
-          <MonthStar
-            summary={summary}
-            days={monthDays}
-            today={today}
-            daysLeft={daysLeft}
-            trend={trend}
-            pastMonth={daysLeft > 0 ? null : monthName}
-            selectedDay={selectedDay}
-            onChooseDay={chooseDay}
-            regret={regret}
-            regretHref={`/records?m=${monthKey}&worth=regret`}
-          />
-        </div>
-      </CollapsingHeader>
+              <MonthStar
+                summary={summary}
+                days={monthDays}
+                today={today}
+                daysLeft={daysLeft}
+                trend={trend}
+                pastMonth={daysLeft > 0 ? null : monthName}
+                selectedDay={selectedDay}
+                onChooseDay={chooseDay}
+                regret={regret}
+                regretHref={`/records?m=${monthKey}&worth=regret`}
+              />
+            </div>
+          </CollapsingHeader>
 
-      <div className="mt-4 space-y-4">
-        <UpcomingStrip items={upcoming} today={today} />
+          <div className="mt-4 space-y-4">
+            <UpcomingStrip items={upcoming} today={today} />
 
-        {/* Records are dated now, so only on the month that is running. */}
-        {daysLeft > 0 ? <QuickEntry timeZone={timeZone} /> : null}
+            {/* Records are dated now, so only on the month that is running. */}
+            {daysLeft > 0 ? <QuickEntry timeZone={timeZone} /> : null}
 
-        <SectionHeader
-          className="px-1"
-          title={`${visible.length}${more ? "+" : ""} ${
-            visible.length === 1 ? "record" : "records"
-          }`}
-          trailing={
-            <Button
-              variant={activeFilterCount > 0 ? "default" : "ghost"}
-              size="touch"
-              className="-my-2 px-3"
-              onClick={() => setFiltersOpen(true)}
-            >
-              <SlidersHorizontal className="size-4" aria-hidden="true" />
-              {activeFilterCount > 0
-                ? `Filters · ${activeFilterCount}`
-                : "Filter"}
-            </Button>
-          }
-        />
-
-        <ActiveFilters
-          filters={filters}
-          accounts={accounts}
-          categories={categories}
-          onRemove={removeFilter}
-          onClearAll={clearFilters}
-        />
-
-        {visible.length === 0 ? (
-          <EmptyState
-            icon={Receipt}
-            title={
-              activeFilterCount > 0
-                ? "Nothing matches those filters"
-                : daysLeft > 0
-                  ? "No records this month"
-                  : `No records in ${monthName}`
-            }
-            description={
-              activeFilterCount > 0
-                ? "Try widening the search, or clear the filters to see everything again."
-                : "Expenses, income and transfers you log will be listed here, newest first."
-            }
-            action={
-              activeFilterCount > 0 ? (
-                <Button variant="outline" size="touch" onClick={clearFilters}>
-                  Clear filters
+            <SectionHeader
+              className="px-1"
+              title={`${visible.length}${more ? "+" : ""} ${
+                visible.length === 1 ? "record" : "records"
+              }`}
+              trailing={
+                <Button
+                  variant={activeFilterCount > 0 ? "default" : "ghost"}
+                  size="touch"
+                  className="-my-2 px-3"
+                  onClick={() => setFiltersOpen(true)}
+                >
+                  <SlidersHorizontal className="size-4" aria-hidden="true" />
+                  {activeFilterCount > 0
+                    ? `Filters · ${activeFilterCount}`
+                    : "Filter"}
                 </Button>
-              ) : (
-                <Button size="touch" onClick={() => sheet.openAdd()}>
-                  <Plus className="size-4" aria-hidden="true" />
-                  Add record
-                </Button>
-              )
-            }
-          />
-        ) : (
-          <div className="space-y-4">
-            {/*
+              }
+            />
+
+            <ActiveFilters
+              filters={filters}
+              accounts={accounts}
+              categories={categories}
+              onRemove={removeFilter}
+              onClearAll={clearFilters}
+            />
+
+            {visible.length === 0 ? (
+              <EmptyState
+                icon={Receipt}
+                title={
+                  activeFilterCount > 0
+                    ? "Nothing matches those filters"
+                    : daysLeft > 0
+                      ? "No records this month"
+                      : `No records in ${monthName}`
+                }
+                description={
+                  activeFilterCount > 0
+                    ? "Try widening the search, or clear the filters to see everything again."
+                    : "Expenses, income and transfers you log will be listed here, newest first."
+                }
+                action={
+                  activeFilterCount > 0 ? (
+                    <Button
+                      variant="outline"
+                      size="touch"
+                      onClick={clearFilters}
+                    >
+                      Clear filters
+                    </Button>
+                  ) : (
+                    <Button size="touch" onClick={() => sheet.openAdd()}>
+                      <Plus className="size-4" aria-hidden="true" />
+                      Add record
+                    </Button>
+                  )
+                }
+              />
+            ) : (
+              <div className="space-y-4">
+                {/*
               The month as a ledger, the khata's layout: the date in a margin
               on the left, every record of that day beside it, and under them
               the day's total and what was left after it. One card for the
               whole month rather than a card per day, which at one record a
               day spent more height on headings than on records.
             */}
-            <ListCard as="div">
-              {days.map((day, index) => {
-                const rail = railDate(day.key);
-                const balance = balances[index];
-                return (
-                  <section
-                    key={day.key}
-                    aria-label={day.label}
-                    className="flex"
-                  >
-                    {/* The date is the way into a single day, a 48px
-                        target rather than the card's calendar alone. */}
-                    <h2 className="border-hairline w-12 shrink-0 border-r">
-                      <Link
-                        href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
-                        className="hoverable:bg-surface-muted flex h-full min-h-14 w-full flex-col items-center pt-3"
+                <ListCard as="div">
+                  {days.map((day, index) => {
+                    const rail = railDate(day.key);
+                    const balance = balances[index];
+                    return (
+                      <section
+                        key={day.key}
+                        aria-label={day.label}
+                        className="flex"
                       >
-                        <span className="text-text text-lg leading-none font-bold tabular-nums">
-                          {rail.date}
-                        </span>
-                        {/* Heard as "17 Tue", not "17Tue". */}{" "}
-                        <span
-                          className={cn(
-                            "mt-1 text-xs",
-                            day.key === today
-                              ? "text-text font-semibold"
-                              : "text-text-secondary",
-                          )}
-                        >
-                          {day.key === today ? "Today" : rail.weekday}
-                        </span>
-                        {/* The name starts with what is on screen, "17
-                            Tue", as WCAG 2.5.3 asks; the section around it
-                            carries the full date. */}
-                        <span className="sr-only">, show this day only</span>
-                      </Link>
-                    </h2>
-
-                    <div className="min-w-0 flex-1">
-                      <ul className="divide-hairline divide-y">
-                        {day.rows.map((record) => (
-                          <li key={record.id}>
-                            <RecordRow
-                              dense
-                              record={record}
-                              pending={record.id.startsWith("optimistic-")}
-                              highlight={record.id === sheet.lastSavedId}
-                              // Tapping opens the detail; the menu's Edit is
-                              // the fast path for people who know it is there.
-                              onOpen={() => setDetailId(record.id)}
-                              onEdit={() => sheet.openEdit(draftOf(record))}
-                              onLogAgain={() =>
-                                sheet.openLogAgain(
-                                  logAgainDraft(record, timeZone, new Date()),
-                                )
-                              }
-                              onDelete={() => remove(record)}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* The day's line: its total, and, on the whole
-                          month, what was left after it. Through `Amount`
-                          like every figure, so the paise follow the rows. */}
-                      <p className="text-text-secondary flex items-center gap-2 px-3 pt-0.5 pb-2 text-xs">
-                        <span
-                          aria-hidden="true"
-                          className="border-hairline min-w-4 flex-1 border-b border-dotted"
-                        />
-                        {/* A day of transfers alone nets to nothing; "+₹0"
-                            would read as income. */}
-                        {day.net === 0n ? null : (
-                          <span
-                            className={cn(
-                              "font-semibold",
-                              day.net > 0n && "text-income",
-                            )}
+                        {/* The date is the way into a single day, a 48px
+                        target rather than the card's calendar alone. */}
+                        <h2 className="border-hairline w-12 shrink-0 border-r">
+                          <Link
+                            href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
+                            className="hoverable:bg-surface-muted flex h-full min-h-14 w-full flex-col items-center pt-3"
                           >
-                            <span className="sr-only">Day total </span>
-                            <Amount value={day.net} signDisplay="always" />
-                          </span>
-                        )}
-                        {balance !== undefined ? (
-                          <>
-                            {day.net === 0n ? null : (
-                              <span aria-hidden="true">·</span>
-                            )}
+                            <span className="text-text text-lg leading-none font-bold tabular-nums">
+                              {rail.date}
+                            </span>
+                            {/* Heard as "17 Tue", not "17Tue". */}{" "}
                             <span
                               className={cn(
-                                balance < 0n ? "text-expense" : "text-text",
+                                "mt-1 text-xs",
+                                day.key === today
+                                  ? "text-text font-semibold"
+                                  : "text-text-secondary",
                               )}
                             >
-                              <Amount value={balance} />
-                              <span> left</span>
+                              {day.key === today ? "Today" : rail.weekday}
                             </span>
-                          </>
-                        ) : null}
-                      </p>
-                    </div>
-                  </section>
-                );
-              })}
-            </ListCard>
+                            {/* The name starts with what is on screen, "17
+                            Tue", as WCAG 2.5.3 asks; the section around it
+                            carries the full date. */}
+                            <span className="sr-only">
+                              , show this day only
+                            </span>
+                          </Link>
+                        </h2>
 
-            {more ? (
-              <LoadMore onVisible={loadMore} loading={loadingMore} />
-            ) : null}
+                        <div className="min-w-0 flex-1">
+                          <ul className="divide-hairline divide-y">
+                            {day.rows.map((record) => (
+                              <li key={record.id}>
+                                <RecordRow
+                                  dense
+                                  record={record}
+                                  pending={record.id.startsWith("optimistic-")}
+                                  highlight={record.id === sheet.lastSavedId}
+                                  selected={isDesktop && record.id === detailId}
+                                  // Tapping opens the detail; the menu's Edit is
+                                  // the fast path for people who know it is there.
+                                  onOpen={() => setDetailId(record.id)}
+                                  onEdit={() => sheet.openEdit(draftOf(record))}
+                                  onLogAgain={() =>
+                                    sheet.openLogAgain(
+                                      logAgainDraft(
+                                        record,
+                                        timeZone,
+                                        new Date(),
+                                      ),
+                                    )
+                                  }
+                                  onDelete={() => remove(record)}
+                                />
+                              </li>
+                            ))}
+                          </ul>
+
+                          {/* The day's line: its total, and, on the whole
+                          month, what was left after it. Through `Amount`
+                          like every figure, so the paise follow the rows. */}
+                          <p className="text-text-secondary flex items-center gap-2 px-3 pt-0.5 pb-2 text-xs">
+                            <span
+                              aria-hidden="true"
+                              className="border-hairline min-w-4 flex-1 border-b border-dotted"
+                            />
+                            {/* A day of transfers alone nets to nothing; "+₹0"
+                            would read as income. */}
+                            {day.net === 0n ? null : (
+                              <span
+                                className={cn(
+                                  "font-semibold",
+                                  day.net > 0n && "text-income",
+                                )}
+                              >
+                                <span className="sr-only">Day total </span>
+                                <Amount value={day.net} signDisplay="always" />
+                              </span>
+                            )}
+                            {balance !== undefined ? (
+                              <>
+                                {day.net === 0n ? null : (
+                                  <span aria-hidden="true">·</span>
+                                )}
+                                <span
+                                  className={cn(
+                                    balance < 0n ? "text-expense" : "text-text",
+                                  )}
+                                >
+                                  <Amount value={balance} />
+                                  <span> left</span>
+                                </span>
+                              </>
+                            ) : null}
+                          </p>
+                        </div>
+                      </section>
+                    );
+                  })}
+                </ListCard>
+
+                {more ? (
+                  <LoadMore onVisible={loadMore} loading={loadingMore} />
+                ) : null}
+              </div>
+            )}
+
+            <RecordDetail
+              // On a wide screen the panel shows it; the sheet stays shut.
+              record={isDesktop ? null : detail}
+              timeZone={timeZone}
+              onOpenChange={(next) => {
+                if (!next) setDetailId(null);
+              }}
+              onEdit={() => {
+                if (!detail) return;
+                setDetailId(null);
+                sheet.openEdit(draftOf(detail));
+              }}
+              onLogAgain={() => {
+                if (!detail) return;
+                setDetailId(null);
+                sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
+              }}
+              onDelete={() => {
+                if (!detail) return;
+                setDetailId(null);
+                remove(detail);
+              }}
+            />
+
+            <SearchOverlay
+              open={searchOpen}
+              initialQuery={filters.search ?? ""}
+              categories={categories}
+              monthKey={monthKey}
+              timeZone={timeZone}
+              onClose={() => setSearchOpen(false)}
+              onFilter={(extra) => {
+                const query = new URLSearchParams(params.toString());
+                query.delete("search");
+                for (const [key, value] of Object.entries(extra)) {
+                  query.set(key, value);
+                }
+                router.replace(`${pathname}?${query.toString()}`, {
+                  scroll: false,
+                });
+              }}
+            />
+
+            <FiltersSheet
+              open={filtersOpen}
+              onOpenChange={setFiltersOpen}
+              accounts={accounts}
+              categories={categories}
+              filters={filters}
+            />
           </div>
-        )}
+        </div>
 
-        <RecordDetail
-          record={detail}
-          timeZone={timeZone}
-          onOpenChange={(next) => {
-            if (!next) setDetailId(null);
-          }}
-          onEdit={() => {
-            if (!detail) return;
-            setDetailId(null);
-            sheet.openEdit(draftOf(detail));
-          }}
-          onLogAgain={() => {
-            if (!detail) return;
-            setDetailId(null);
-            sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
-          }}
-          onDelete={() => {
-            if (!detail) return;
-            setDetailId(null);
-            remove(detail);
-          }}
-        />
-
-        <SearchOverlay
-          open={searchOpen}
-          initialQuery={filters.search ?? ""}
-          categories={categories}
-          monthKey={monthKey}
-          timeZone={timeZone}
-          onClose={() => setSearchOpen(false)}
-          onFilter={(extra) => {
-            const query = new URLSearchParams(params.toString());
-            query.delete("search");
-            for (const [key, value] of Object.entries(extra)) {
-              query.set(key, value);
-            }
-            router.replace(`${pathname}?${query.toString()}`, {
-              scroll: false,
-            });
-          }}
-        />
-
-        <FiltersSheet
-          open={filtersOpen}
-          onOpenChange={setFiltersOpen}
-          accounts={accounts}
-          categories={categories}
-          filters={filters}
-        />
+        {isDesktop ? (
+          // Sticky on the grid cell itself: on the panel inside it, the
+          // cell is exactly as tall as the panel, with nowhere to stick.
+          <div className="sticky top-6 pt-6">
+            <RecordDetailPanel
+              record={detail}
+              timeZone={timeZone}
+              onClose={() => setDetailId(null)}
+              onEdit={() => {
+                if (!detail) return;
+                sheet.openEdit(draftOf(detail));
+              }}
+              onLogAgain={() => {
+                if (!detail) return;
+                sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
+              }}
+              onDelete={() => {
+                if (!detail) return;
+                setDetailId(null);
+                remove(detail);
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     </PullToRefresh>
   );

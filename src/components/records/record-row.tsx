@@ -185,7 +185,10 @@ export function RecordRow({
         accountUnderAmount ? (
           // As wide as the amount above it and no wider (w-0 min-w-full):
           // a long account name must not take the note's room.
-          <span className="block w-0 min-w-full truncate">{record.accountName}</span>
+          // A wide screen has the room, so there it is its own width.
+          <span className="block w-0 min-w-full truncate lg:w-auto lg:max-w-48">
+            {record.accountName}
+          </span>
         ) : undefined
       }
       trailing={

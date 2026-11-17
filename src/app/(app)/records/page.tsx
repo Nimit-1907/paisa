@@ -135,7 +135,8 @@ export default async function RecordsPage({
   // rather than here: the header collapses the card into a one-line summary
   // once it scrolls away, which means it has to know where the card ends.
   return (
-    <PageShell>
+    // Reading width, and on a wide screen room for the record panel too.
+    <PageShell className="lg:max-w-[1200px]">
       <RecordsScreen
         year={month.year}
         month={month.month}
