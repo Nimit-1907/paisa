@@ -6,6 +6,7 @@ import { SkipLink } from "@/components/layout/skip-link";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ProfileProvider } from "@/components/profile-provider";
 import { RecordSheetProvider } from "@/components/records/record-sheet-provider";
+import { InvestmentsDueToast } from "@/components/investments/investments-due-toast";
 import { RecurringCreatedToast } from "@/components/recurring/recurring-created-toast";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import {
@@ -81,7 +82,7 @@ export default async function AppLayout({
   // Still awaited: it is the one thing here that writes, it does nothing
   // (2ms) on any page but the first of a new day, and its toast says what
   // it posted.
-  const created = await runDueRecurring();
+  const due = await runDueRecurring();
 
   return (
     <ProfileProvider
@@ -116,7 +117,11 @@ export default async function AppLayout({
               button, so the separate FAB is gone. */}
           <Dock />
           <KeyboardShortcuts />
-          <RecurringCreatedToast created={created} />
+          <RecurringCreatedToast created={due.records} />
+          <InvestmentsDueToast
+            instalments={due.instalments}
+            matured={due.matured}
+          />
         </div>
       </RecordSheetProvider>
     </ProfileProvider>

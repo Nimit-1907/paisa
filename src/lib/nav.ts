@@ -9,6 +9,7 @@ import {
   Settings,
   Tags,
   Target,
+  TrendingUp,
   Upload,
   Wallet,
 } from "lucide-react";
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
       "/categories",
       "/export",
       "/import",
+      "/investments",
       "/recurring",
       "/settings",
     ],
@@ -44,6 +46,12 @@ export const NAV_ITEMS: NavItem[] = [
 
 /** Secondary destinations, listed on the More tab. */
 export const MORE_ITEMS = [
+  {
+    href: "/investments",
+    label: "Investments",
+    description: "SIPs, FDs and more: what went in and came out",
+    icon: TrendingUp,
+  },
   {
     href: "/recurring",
     label: "Recurring",

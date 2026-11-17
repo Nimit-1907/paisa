@@ -29,7 +29,7 @@ const BY_HREF = new Map<string, MoreItem>(
 );
 
 const GROUPS: { title: string; items: MoreItem[] }[] = [
-  { title: "Manage", hrefs: ["/categories", "/recurring"] },
+  { title: "Manage", hrefs: ["/investments", "/categories", "/recurring"] },
   { title: "Data", hrefs: ["/import", "/export"] },
   { title: "App", hrefs: ["/settings", "/about"] },
 ].map((group) => ({

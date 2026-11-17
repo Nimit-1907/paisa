@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
           extensions?: Json
+          variables?: Json
+          query?: string
+          operationName?: string
         }
         Returns: Json
       }
@@ -162,6 +162,197 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      investment_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          investment_id: string
+          note: string | null
+          occurred_on: string
+          price: number | null
+          scheduled: boolean
+          type: Database["public"]["Enums"]["investment_entry_type"]
+          units: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          investment_id: string
+          note?: string | null
+          occurred_on: string
+          price?: number | null
+          scheduled?: boolean
+          type: Database["public"]["Enums"]["investment_entry_type"]
+          units?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          investment_id?: string
+          note?: string | null
+          occurred_on?: string
+          price?: number | null
+          scheduled?: boolean
+          type?: Database["public"]["Enums"]["investment_entry_type"]
+          units?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_entries_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investment_summary"
+            referencedColumns: ["investment_id"]
+          },
+          {
+            foreignKeyName: "investment_entries_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_goals: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          target_amount: number | null
+          tint: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          target_amount?: number | null
+          tint?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          target_amount?: number | null
+          tint?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          anchor_day: number | null
+          closed_on: string | null
+          created_at: string
+          end_date: string | null
+          folio: string | null
+          frequency: Database["public"]["Enums"]["recurrence_frequency"] | null
+          goal_id: string | null
+          id: string
+          installments_total: number | null
+          interest_rate: number | null
+          interval_count: number | null
+          kind: Database["public"]["Enums"]["investment_kind"]
+          last_run_on: string | null
+          maturity_amount: number | null
+          maturity_date: string | null
+          name: string
+          next_run_on: string | null
+          note: string | null
+          paused: boolean
+          platform: string | null
+          sched_amount: number | null
+          skipped_dates: string[]
+          start_date: string | null
+          status: string
+          tenure_months: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anchor_day?: number | null
+          closed_on?: string | null
+          created_at?: string
+          end_date?: string | null
+          folio?: string | null
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"] | null
+          goal_id?: string | null
+          id?: string
+          installments_total?: number | null
+          interest_rate?: number | null
+          interval_count?: number | null
+          kind: Database["public"]["Enums"]["investment_kind"]
+          last_run_on?: string | null
+          maturity_amount?: number | null
+          maturity_date?: string | null
+          name: string
+          next_run_on?: string | null
+          note?: string | null
+          paused?: boolean
+          platform?: string | null
+          sched_amount?: number | null
+          skipped_dates?: string[]
+          start_date?: string | null
+          status?: string
+          tenure_months?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anchor_day?: number | null
+          closed_on?: string | null
+          created_at?: string
+          end_date?: string | null
+          folio?: string | null
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"] | null
+          goal_id?: string | null
+          id?: string
+          installments_total?: number | null
+          interest_rate?: number | null
+          interval_count?: number | null
+          kind?: Database["public"]["Enums"]["investment_kind"]
+          last_run_on?: string | null
+          maturity_amount?: number | null
+          maturity_date?: string | null
+          name?: string
+          next_run_on?: string | null
+          note?: string | null
+          paused?: boolean
+          platform?: string | null
+          sched_amount?: number | null
+          skipped_dates?: string[]
+          start_date?: string | null
+          status?: string
+          tenure_months?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "investment_goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -522,6 +713,18 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_summary: {
+        Row: {
+          entry_count: number | null
+          invested: number | null
+          investment_id: string | null
+          last_entry_on: string | null
+          net: number | null
+          redeemed: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       recurring_rule_usage: {
         Row: {
           rule_id: string | null
@@ -543,7 +746,7 @@ export type Database = {
     }
     Functions: {
       account_month_flow: {
-        Args: { p_month: string; p_account_id: string }
+        Args: { p_account_id: string; p_month: string }
         Returns: {
           money_out: number
           money_in: number
@@ -559,44 +762,44 @@ export type Database = {
       }
       balance_series: {
         Args: {
-          p_bucket: string
           p_account_id?: string
-          p_from: string
+          p_bucket: string
           p_to: string
+          p_from: string
         }
         Returns: {
-          bucket_start: string
           balance: number
+          bucket_start: string
         }[]
       }
       bucket_starts: {
-        Args: { p_bucket: string; p_from: string; p_to: string }
+        Args: { p_from: string; p_to: string; p_bucket: string }
         Returns: string[]
       }
       budget_hints: {
         Args: { p_month: string }
         Returns: {
           three_month_average: number
-          category_id: string
           last_month: number
+          category_id: string
         }[]
       }
       category_totals: {
         Args: {
-          p_from: string
-          p_to: string
           p_kind: Database["public"]["Enums"]["category_kind"]
+          p_to: string
+          p_from: string
         }
         Returns: {
-          icon: string
-          category_id: string
-          name: string
           tint: unknown
+          icon: string
+          name: string
+          category_id: string
           total: number
         }[]
       }
       change_currency: {
-        Args: { p_decimals: number; p_code: string; p_symbol: string }
+        Args: { p_decimals: number; p_symbol: string; p_code: string }
         Returns: number
       }
       check_account_owner: {
@@ -605,9 +808,9 @@ export type Database = {
       }
       check_category_owner: {
         Args: {
-          p_category_id: string
-          p_user_id: string
           p_expected_kind?: Database["public"]["Enums"]["category_kind"]
+          p_user_id: string
+          p_category_id: string
         }
         Returns: undefined
       }
@@ -622,10 +825,10 @@ export type Database = {
       default_categories: {
         Args: Record<PropertyKey, never>
         Returns: {
-          name: string
+          icon: string
           tint: unknown
           sort_order: number
-          icon: string
+          name: string
           kind: Database["public"]["Enums"]["category_kind"]
         }[]
       }
@@ -634,7 +837,7 @@ export type Database = {
         Returns: undefined
       }
       delete_recurring_rule: {
-        Args: { p_rule_id: string; p_delete_transactions?: boolean }
+        Args: { p_delete_transactions?: boolean; p_rule_id: string }
         Returns: number
       }
       entry_defaults: {
@@ -648,6 +851,10 @@ export type Database = {
       materialise_recurring: {
         Args: { p_rule_id: string; p_on: string }
         Returns: string
+      }
+      month_regret: {
+        Args: { p_month: string }
+        Returns: number
       }
       month_summary: {
         Args: { p_month: string }
@@ -669,10 +876,14 @@ export type Database = {
       period_series: {
         Args: { p_bucket: string; p_from: string; p_to: string }
         Returns: {
-          bucket_start: string
           income: number
           expense: number
+          bucket_start: string
         }[]
+      }
+      process_due_investments: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       process_due_recurring: {
         Args: Record<PropertyKey, never>
@@ -681,39 +892,48 @@ export type Database = {
       quick_adds: {
         Args: Record<PropertyKey, never>
         Returns: {
-          category_id: string
-          name: string
-          icon: string
-          tint: unknown
-          amount: number
-          account_id: string
           account_name: string
+          amount: number
+          tint: unknown
+          icon: string
+          name: string
+          category_id: string
           used: number
+          account_id: string
         }[]
+      }
+      record_investment_payout: {
+        Args: {
+          p_investment_id: string
+          p_amount: number
+          p_on: string
+          p_close?: boolean
+        }
+        Returns: string
       }
       recurrence_after: {
         Args: {
+          p_interval: number
           p_from: string
+          p_anchor_day: number
           p_start: string
           p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          p_interval: number
-          p_anchor_day: number
         }
         Returns: string
       }
       recurrence_occurrence: {
         Args:
           | {
-              p_interval: number
-              p_start: string
               p_anchor_day: number
-              p_n: number
+              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_interval: number
+              p_n: number
             }
           | {
               p_start: string
-              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
               p_interval: number
+              p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
               p_n: number
             }
         Returns: string
@@ -729,9 +949,9 @@ export type Database = {
       search_totals: {
         Args: { p_pattern: string }
         Returns: {
-          income: number
-          expense: number
           match_count: number
+          expense: number
+          income: number
         }[]
       }
       session_is_active: {
@@ -741,24 +961,28 @@ export type Database = {
       set_budget: {
         Args: {
           p_amount: number
-          p_apply_forward?: boolean
-          p_horizon?: number
           p_month: string
           p_category_id: string
+          p_apply_forward?: boolean
+          p_horizon?: number
         }
         Returns: number
       }
+      skip_investment_installment: {
+        Args: { p_investment_id: string }
+        Returns: string
+      }
       skip_recurring_occurrence: {
-        Args: { p_rule_id: string; p_on: string }
+        Args: { p_on: string; p_rule_id: string }
         Returns: string
       }
       update_settings: {
         Args: {
-          p_week_start: number
-          p_display_name: string
+          p_symbol: string
           p_theme: string
           p_code: string
-          p_symbol: string
+          p_week_start: number
+          p_display_name: string
           p_decimals: number
         }
         Returns: number
@@ -771,6 +995,19 @@ export type Database = {
     Enums: {
       account_type: "cash" | "bank" | "card" | "savings" | "wallet" | "other"
       category_kind: "income" | "expense"
+      investment_entry_type: "invest" | "redeem"
+      investment_kind:
+        | "sip"
+        | "mutual_fund"
+        | "rd"
+        | "fd"
+        | "stock"
+        | "ppf"
+        | "epf"
+        | "nps"
+        | "gold"
+        | "crypto"
+        | "other"
       recurrence_frequency: "daily" | "weekly" | "monthly" | "yearly"
       transaction_type: "income" | "expense" | "transfer"
     }
@@ -893,6 +1130,20 @@ export const Constants = {
     Enums: {
       account_type: ["cash", "bank", "card", "savings", "wallet", "other"],
       category_kind: ["income", "expense"],
+      investment_entry_type: ["invest", "redeem"],
+      investment_kind: [
+        "sip",
+        "mutual_fund",
+        "rd",
+        "fd",
+        "stock",
+        "ppf",
+        "epf",
+        "nps",
+        "gold",
+        "crypto",
+        "other",
+      ],
       recurrence_frequency: ["daily", "weekly", "monthly", "yearly"],
       transaction_type: ["income", "expense", "transfer"],
     },
