@@ -23,6 +23,9 @@ export default function manifest(): MetadataRoute.Manifest {
     share_target: {
       action: "/share",
       method: "GET",
+      // The default for GET, written out because Chrome warns on every
+      // page load when it is left implicit.
+      enctype: "application/x-www-form-urlencoded",
       params: { title: "title", text: "text", url: "url" },
     },
     icons: [
