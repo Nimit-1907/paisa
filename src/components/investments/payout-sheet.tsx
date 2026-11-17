@@ -53,7 +53,10 @@ export function PayoutSheet({
     if (!open) return;
     setAmount(
       investment.maturityAmount !== null
-        ? minorToAmountText(BigInt(investment.maturityAmount), currency.decimals)
+        ? minorToAmountText(
+            BigInt(investment.maturityAmount),
+            currency.decimals,
+          )
         : "",
     );
     // The maturity date, unless it is still ahead: a payout taken early is
@@ -114,8 +117,13 @@ export function PayoutSheet({
       }
     >
       <SheetBody>
-        <div className="grid grid-cols-2 gap-2">
-          <FormRow id="payout-amount" label="Amount received" required error={error ?? undefined}>
+        <div className="space-y-3">
+          <FormRow
+            id="payout-amount"
+            label="Amount received"
+            required
+            error={error ?? undefined}
+          >
             {(props) => (
               <AmountInput
                 {...props}
@@ -132,6 +140,7 @@ export function PayoutSheet({
             value={date}
             onChange={setDate}
             max={today}
+            className="w-full"
           />
         </div>
 
@@ -144,7 +153,11 @@ export function PayoutSheet({
                 : "Moves it to Closed. Its history stays."}
             </p>
           </div>
-          <Switch id="payout-close" checked={close} onCheckedChange={setClose} />
+          <Switch
+            id="payout-close"
+            checked={close}
+            onCheckedChange={setClose}
+          />
         </div>
       </SheetBody>
 

@@ -108,7 +108,10 @@ export function EntrySheet({
   const unitsNumber = Number(units);
   const priceParsed = parseAmount(price, currency.decimals);
   const suggested =
-    !amount.trim() && unitsNumber > 0 && priceParsed.ok && priceParsed.minor > 0n
+    !amount.trim() &&
+    unitsNumber > 0 &&
+    priceParsed.ok &&
+    priceParsed.minor > 0n
       ? Math.round(unitsNumber * Number(priceParsed.minor))
       : null;
 
@@ -166,7 +169,8 @@ export function EntrySheet({
     }
   }
 
-  const err = (name: string) => (field === name ? (error ?? undefined) : undefined);
+  const err = (name: string) =>
+    field === name ? (error ?? undefined) : undefined;
 
   return (
     <ResponsiveSheet
@@ -186,8 +190,13 @@ export function EntrySheet({
           ]}
         />
 
-        <div className="grid grid-cols-2 gap-2">
-          <FormRow id="entry-amount" label="Amount" required error={err("amount")}>
+        <div className="space-y-3">
+          <FormRow
+            id="entry-amount"
+            label="Amount"
+            required
+            error={err("amount")}
+          >
             {(props) => (
               <AmountInput
                 {...props}
@@ -204,14 +213,19 @@ export function EntrySheet({
             value={date}
             onChange={setDate}
             max={today}
+            className="w-full"
             invalid={field === "date"}
           />
         </div>
 
         {overdraws ? (
-          <p role="status" className="bg-tint-butter text-text rounded-control px-3 py-2 text-sm">
-            This takes out more than the {formatMoney(BigInt(Math.max(0, before)))}{" "}
-            still in. Fine if it grew; check it if not.
+          <p
+            role="status"
+            className="bg-tint-butter text-text rounded-control px-3 py-2 text-sm"
+          >
+            This takes out more than the{" "}
+            {formatMoney(BigInt(Math.max(0, before)))} still in. Fine if it
+            grew; check it if not.
           </p>
         ) : null}
 
@@ -260,7 +274,9 @@ export function EntrySheet({
               {...props}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder={type === "invest" ? "Top-up from bonus" : "For the car"}
+              placeholder={
+                type === "invest" ? "Top-up from bonus" : "For the car"
+              }
               maxLength={500}
             />
           )}

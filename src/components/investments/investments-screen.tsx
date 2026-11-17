@@ -76,12 +76,31 @@ export function InvestmentsScreen({
   const [sheet, setSheet] = React.useState<
     { kind: "new" } | { kind: "edit"; investment: Investment } | null
   >(null);
-  const [goalSheet, setGoalSheet] = React.useState<
-    { goal: InvestmentGoal | null } | null
-  >(null);
+  const [goalSheet, setGoalSheet] = React.useState<{
+    goal: InvestmentGoal | null;
+  } | null>(null);
   const [deleting, setDeleting] = React.useState<Investment | null>(null);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [pending, setPending] = React.useState(false);
+  // The list is below the fold on a phone: a tapped goal brings it up, or
+  // the tap looks like it did nothing.
+  const listRef = React.useRef<HTMLElement>(null);
+
+  function pickGoal(id: string) {
+    const next = goalFilter === id ? null : id;
+    setGoalFilter(next);
+    if (next !== null) {
+      requestAnimationFrame(() =>
+        listRef.current?.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "auto"
+            : "smooth",
+          block: "start",
+        }),
+      );
+    }
+  }
 
   const totals = openTotals(investments);
   const upcoming = comingUp(investments, today);
@@ -226,18 +245,24 @@ export function InvestmentsScreen({
                           </>
                         ) : (
                           <>
-                            {KIND_META[item.investment.kind].label} instalment ·{" "}
+                            <span>
+                              {KIND_META[item.investment.kind].label} instalment
+                            </span>
+                            <span aria-hidden="true">·</span>
                             {item.amount !== null ? (
                               <Amount value={BigInt(item.amount)} />
-                            ) : null}{" "}
-                            · posts itself
+                            ) : null}
+                            <span aria-hidden="true">·</span>
+                            <span>posts itself</span>
                           </>
                         )}
                       </span>
                     </Link>
                     {item.kind === "maturity" && item.inDays <= 0 ? (
                       <Button asChild size="touch" variant="outline">
-                        <Link href={`/investments/${item.investment.id}?payout=1`}>
+                        <Link
+                          href={`/investments/${item.investment.id}?payout=1`}
+                        >
                           Payout
                         </Link>
                       </Button>
@@ -265,8 +290,7 @@ export function InvestmentsScreen({
             />
             {byGoal.length === 0 ? (
               <p className="text-text-secondary bg-surface rounded-card border border-dashed px-4 py-6 text-center text-sm">
-                Make a goal, like Retirement or House, to see what each one
-                has.
+                Make a goal, like Retirement or House, to see what each one has.
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-2.5 pr-0.5">
@@ -275,13 +299,7 @@ export function InvestmentsScreen({
                     key={row.goal?.id ?? "none"}
                     row={row}
                     selected={goalFilter === (row.goal?.id ?? "none")}
-                    onSelect={() =>
-                      setGoalFilter((current) =>
-                        current === (row.goal?.id ?? "none")
-                          ? null
-                          : (row.goal?.id ?? "none"),
-                      )
-                    }
+                    onSelect={() => pickGoal(row.goal?.id ?? "none")}
                     onEdit={
                       row.goal
                         ? () => setGoalSheet({ goal: row.goal })
@@ -294,7 +312,11 @@ export function InvestmentsScreen({
           </section>
         </div>
 
-        <section aria-label="Investments" className="space-y-2">
+        <section
+          ref={listRef}
+          aria-label="Investments"
+          className="scroll-mt-4 space-y-2"
+        >
           <SectionHeader
             className="px-1"
             title={

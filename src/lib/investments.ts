@@ -67,8 +67,10 @@ export const KIND_META: Record<InvestmentKind, KindMeta> = {
     example: "Parag Parikh Flexi Cap",
   },
   mutual_fund: {
-    label: "Mutual fund",
-    long: "Mutual fund",
+    // "Mutual fund" does not fit a picker tile at 360px, and a SIP is a
+    // mutual fund too: what sets this one apart is that it is paid once.
+    label: "Lump sum",
+    long: "Mutual fund, lump sum",
     icon: "ChartPie",
     tint: "sky",
     schedule: "none",
@@ -201,8 +203,18 @@ export function scheduleToCadence(
 }
 
 const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 function ordinal(n: number): string {
@@ -229,7 +241,10 @@ export function describeCadence(
  * "after 60 instalments" can be stored as the end date the engine reads.
  */
 export function endAfterInstallments(
-  schedule: Pick<RecurrenceSchedule, "frequency" | "interval" | "startDate" | "anchorDay">,
+  schedule: Pick<
+    RecurrenceSchedule,
+    "frequency" | "interval" | "startDate" | "anchorDay"
+  >,
   count: number,
 ): string {
   return occurrenceOn(
@@ -464,7 +479,13 @@ export function goalTotals(
       };
     }
 
-    return { goal, net, count: mine.length, percent: share(net), basis: "share" };
+    return {
+      goal,
+      net,
+      count: mine.length,
+      percent: share(net),
+      basis: "share",
+    };
   });
 
   const known = new Set(goals.map((goal) => goal.id));

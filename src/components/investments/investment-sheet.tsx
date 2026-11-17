@@ -154,7 +154,9 @@ export function InvestmentSheet({
     setNote(investment.note ?? "");
     setRepeats(schedule !== null);
     setScheduleAmount(
-      schedule ? minorToAmountText(BigInt(schedule.amount), currency.decimals) : "",
+      schedule
+        ? minorToAmountText(BigInt(schedule.amount), currency.decimals)
+        : "",
     );
     setCadence(schedule?.cadence ?? "monthly");
     // The schedule is re-anchored from its next instalment, so that is the
@@ -163,13 +165,18 @@ export function InvestmentSheet({
     setEnds(schedule?.endDate ? "date" : "never");
     setCount(String(schedule?.installmentsTotal ?? 12));
     setEndDate(schedule?.endDate ?? "");
-    setRate(investment.interestRate !== null ? String(investment.interestRate) : "");
+    setRate(
+      investment.interestRate !== null ? String(investment.interestRate) : "",
+    );
     setTenure(String(investment.tenureMonths ?? 12));
     setMaturityDate(investment.maturityDate ?? "");
     setMaturityTouched(true);
     setMaturityAmount(
       investment.maturityAmount !== null
-        ? minorToAmountText(BigInt(investment.maturityAmount), currency.decimals)
+        ? minorToAmountText(
+            BigInt(investment.maturityAmount),
+            currency.decimals,
+          )
         : "",
     );
     setFirstAmount("");
@@ -209,9 +216,21 @@ export function InvestmentSheet({
           // An RD is a monthly deposit, whatever was picked for a SIP first.
           cadence: kind === "rd" ? ("monthly" as const) : cadence,
           firstDate,
-          ends,
-          count: ends === "count" ? Number(count) : null,
-          endDate: ends === "date" ? endDate || null : null,
+          // An RD runs for its tenure: one deposit a month, as many as
+          // there are months. Editing one keeps the end it already has.
+          ...(kind === "rd"
+            ? editing && endDate
+              ? { ends: "date" as const, count: null, endDate }
+              : {
+                  ends: "count" as const,
+                  count: Number(tenure) || 1,
+                  endDate: null,
+                }
+            : {
+                ends,
+                count: ends === "count" ? Number(count) : null,
+                endDate: ends === "date" ? endDate || null : null,
+              }),
         }
       : null;
 
@@ -283,11 +302,12 @@ export function InvestmentSheet({
     (!hasSchedule ||
       (scheduleAmount.trim() !== "" &&
         firstDate !== "" &&
-        (ends !== "date" || endDate !== ""))) &&
+        (kind === "rd" || ends !== "date" || endDate !== ""))) &&
     (!meta.maturity || maturityDate !== "") &&
     (!isFd || editing || firstAmount.trim() !== "");
 
-  const err = (name: string) => (field === name ? (error ?? undefined) : undefined);
+  const err = (name: string) =>
+    field === name ? (error ?? undefined) : undefined;
 
   return (
     <ResponsiveSheet
@@ -313,9 +333,12 @@ export function InvestmentSheet({
           </div>
         ) : (
           <div className="space-y-1.5">
-            <Label>
-              Kind <span aria-hidden="true">*</span>
-            </Label>
+            <span className="flex items-baseline gap-0.5">
+              <Label>Kind</Label>
+              <span aria-hidden="true" className="text-expense">
+                *
+              </span>
+            </span>
             <TilePicker
               label="Kind of investment"
               options={KIND_OPTIONS}
@@ -345,35 +368,40 @@ export function InvestmentSheet({
               aria-labelledby="investment-goal-label"
               className="flex flex-wrap gap-1.5"
             >
-              {[...goals.map((goal) => ({ id: goal.id, name: goal.name })), { id: null, name: "No goal" }].map(
-                (option) => {
-                  const active = option.id === goalId;
-                  return (
-                    <button
-                      key={option.id ?? "none"}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setGoalId(option.id)}
-                      className={cn(
-                        "pressable flex h-11 items-center rounded-full px-3.5 text-sm font-semibold",
-                        "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
-                        active
-                          ? "accent-sm bg-surface text-text"
-                          : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
-                      )}
-                    >
-                      {option.name}
-                    </button>
-                  );
-                },
-              )}
+              {[
+                ...goals.map((goal) => ({ id: goal.id, name: goal.name })),
+                { id: null, name: "No goal" },
+              ].map((option) => {
+                const active = option.id === goalId;
+                return (
+                  <button
+                    key={option.id ?? "none"}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setGoalId(option.id)}
+                    className={cn(
+                      "pressable flex h-11 items-center rounded-full px-3.5 text-sm font-semibold",
+                      "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
+                      active
+                        ? "accent-sm bg-surface text-text"
+                        : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
+                    )}
+                  >
+                    {option.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ) : null}
 
         <div className="grid grid-cols-2 gap-2">
-          <FormRow id="investment-platform" label="Platform or bank" error={err("platform")}>
+          <FormRow
+            id="investment-platform"
+            label="Platform or bank"
+            error={err("platform")}
+          >
             {(props) => (
               <Input
                 {...props}
@@ -384,7 +412,11 @@ export function InvestmentSheet({
               />
             )}
           </FormRow>
-          <FormRow id="investment-folio" label="Folio or account no." error={err("folio")}>
+          <FormRow
+            id="investment-folio"
+            label="Folio or account no."
+            error={err("folio")}
+          >
             {(props) => (
               <Input
                 {...props}
@@ -455,24 +487,32 @@ export function InvestmentSheet({
               onChange={setFirstDate}
               min={editing ? today : undefined}
               invalid={field === "firstDate"}
+              className="w-full"
             />
 
-            <div className="space-y-1.5">
-              <Label id="investment-ends-label">Ends</Label>
-              <SegmentedControl
-                label="Ends"
-                value={ends}
-                onChange={setEnds}
-                options={[
-                  { value: "never", label: "Never" },
-                  { value: "count", label: "After" },
-                  { value: "date", label: "On a date" },
-                ]}
-              />
-            </div>
+            {kind === "rd" ? null : (
+              <div className="space-y-1.5">
+                <Label id="investment-ends-label">Ends</Label>
+                <SegmentedControl
+                  label="Ends"
+                  value={ends}
+                  onChange={setEnds}
+                  options={[
+                    { value: "never", label: "Never" },
+                    { value: "count", label: "After N" },
+                    { value: "date", label: "On a date" },
+                  ]}
+                />
+              </div>
+            )}
 
-            {ends === "count" ? (
-              <FormRow id="investment-count" label="Instalments" required error={err("count")}>
+            {kind !== "rd" && ends === "count" ? (
+              <FormRow
+                id="investment-count"
+                label="Instalments"
+                required
+                error={err("count")}
+              >
                 {(props) => (
                   <Stepper
                     id={props.id}
@@ -485,7 +525,7 @@ export function InvestmentSheet({
               </FormRow>
             ) : null}
 
-            {ends === "date" ? (
+            {kind !== "rd" && ends === "date" ? (
               <DatePicker
                 id="investment-end-date"
                 label="Last instalment"
@@ -494,12 +534,16 @@ export function InvestmentSheet({
                 onChange={setEndDate}
                 min={firstDate || undefined}
                 invalid={field === "endDate"}
+                className="w-full"
               />
             ) : null}
 
             {firstDate && scheduleAmount ? (
               <p className="text-text-secondary text-xs" aria-live="polite">
-                {describeCadence(kind === "rd" ? "monthly" : cadence, firstDate)}
+                {describeCadence(
+                  kind === "rd" ? "monthly" : cadence,
+                  firstDate,
+                )}
                 {!editing && firstDate <= today
                   ? ". Instalments up to today post as soon as you save."
                   : "."}
@@ -536,12 +580,13 @@ export function InvestmentSheet({
                 value={firstEntryDate}
                 onChange={setFirstEntryDate}
                 max={today}
+                className="w-full"
               />
             </div>
             {isFd ? null : (
               <p className="text-text-secondary text-xs">
-                Held it before Paisa? Put in the total you invested and when
-                you started. You can add more entries later.
+                Held it before Paisa? Put in the total you invested and when you
+                started. You can add more entries later.
               </p>
             )}
           </fieldset>
@@ -549,11 +594,13 @@ export function InvestmentSheet({
 
         {meta.maturity ? (
           <fieldset className="rounded-control space-y-3 border p-3">
-            <legend className="px-1 text-sm font-semibold">
-              Maturity
-            </legend>
+            <legend className="px-1 text-sm font-semibold">Maturity</legend>
             <div className="grid grid-cols-2 gap-2">
-              <FormRow id="investment-rate" label="Rate % a year" error={err("rate")}>
+              <FormRow
+                id="investment-rate"
+                label="Rate % a year"
+                error={err("rate")}
+              >
                 {(props) => (
                   <Input
                     {...props}
@@ -590,6 +637,7 @@ export function InvestmentSheet({
                   setMaturityDate(next);
                 }}
                 invalid={field === "maturityDate" || field === "maturity"}
+                className="w-full"
               />
               <FormRow
                 id="investment-maturity-amount"
@@ -626,7 +674,10 @@ export function InvestmentSheet({
           )}
         </FormRow>
 
-        {(field === "firstDate" || field === "endDate" || field === "schedule") && error ? (
+        {(field === "firstDate" ||
+          field === "endDate" ||
+          field === "schedule") &&
+        error ? (
           <p role="alert" className="text-expense text-sm">
             {error}
           </p>

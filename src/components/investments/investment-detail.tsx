@@ -52,16 +52,15 @@ import { dayDifference } from "@/lib/recurrence";
 import { cn } from "@/lib/utils";
 
 type EntryAction =
-  | { type: "upsert"; entry: InvestmentEntry }
-  | { type: "remove"; id: string };
+  { type: "upsert"; entry: InvestmentEntry } | { type: "remove"; id: string };
 
 function applyEntry(state: InvestmentEntry[], action: EntryAction) {
   if (action.type === "remove") {
     return state.filter((entry) => entry.id !== action.id);
   }
   const rest = state.filter((entry) => entry.id !== action.entry.id);
-  return [action.entry, ...rest].sort(
-    (a, b) => b.occurredOn.localeCompare(a.occurredOn),
+  return [action.entry, ...rest].sort((a, b) =>
+    b.occurredOn.localeCompare(a.occurredOn),
   );
 }
 
@@ -195,7 +194,10 @@ export function InvestmentDetail({
         }
       />
 
-      {open ? (
+      {/* A deposit takes its money in by schedule (RD) or once (FD), and
+          gives it back as a payout, so it has no Invest or Redeem: those
+          are on the maturity card as Record payout. */}
+      {open && !investment.maturityDate ? (
         <div className="grid grid-cols-2 gap-2">
           <Button
             size="touch"
@@ -213,7 +215,7 @@ export function InvestmentDetail({
             Redeem
           </Button>
         </div>
-      ) : (
+      ) : open ? null : (
         <Button
           size="touch"
           variant="outline"
@@ -268,11 +270,12 @@ export function InvestmentDetail({
               <div className="border-t p-3">
                 <Button
                   size="touch"
-                  variant={maturityDays !== null && maturityDays <= 0 ? "default" : "outline"}
                   className="w-full"
                   onClick={() => setPayoutOpen(true)}
                 >
-                  Record payout
+                  {maturityDays !== null && maturityDays > 0
+                    ? "Record payout or early closure"
+                    : "Record payout"}
                 </Button>
               </div>
             ) : null}
@@ -293,7 +296,11 @@ export function InvestmentDetail({
                 <Amount value={BigInt(schedule.amount)} />
               </Row>
               <Row label="Repeats">
-                {describeCadence(schedule.cadence, schedule.startDate, schedule.anchorDay)}
+                {describeCadence(
+                  schedule.cadence,
+                  schedule.startDate,
+                  schedule.anchorDay,
+                )}
               </Row>
               <Row label="Next">
                 {next
@@ -385,7 +392,9 @@ export function InvestmentDetail({
               )}
             </Row>
             <Row label="Platform or bank">
-              {investment.platform ?? <span className="text-text-secondary">None</span>}
+              {investment.platform ?? (
+                <span className="text-text-secondary">None</span>
+              )}
             </Row>
             <Row label="Folio or account no.">
               {investment.folio ? (
@@ -421,7 +430,9 @@ export function InvestmentDetail({
                         aria-hidden="true"
                         className={cn(
                           "rounded-control text-text flex size-9 items-center justify-center",
-                          entry.type === "invest" ? "bg-tint-mint" : "bg-tint-peach",
+                          entry.type === "invest"
+                            ? "bg-tint-mint"
+                            : "bg-tint-peach",
                         )}
                       >
                         {entry.type === "invest" ? (
@@ -447,9 +458,16 @@ export function InvestmentDetail({
                       </span>
                     }
                     trailing={
-                      <span className={entry.type === "redeem" ? "text-income" : undefined}>
+                      <span
+                        className={
+                          entry.type === "redeem" ? "text-income" : undefined
+                        }
+                      >
                         {entry.type === "invest" ? "+" : "−"}
-                        <Amount value={BigInt(entry.amount)} signDisplay="never" />
+                        <Amount
+                          value={BigInt(entry.amount)}
+                          signDisplay="never"
+                        />
                       </span>
                     }
                     swipeRight={{ label: "Edit", icon: Pencil, onAction: edit }}
@@ -477,7 +495,11 @@ export function InvestmentDetail({
       </section>
 
       <div className={cn("grid gap-2", open ? "grid-cols-3" : "grid-cols-2")}>
-        <Button size="touch" variant="outline" onClick={() => setEditOpen(true)}>
+        <Button
+          size="touch"
+          variant="outline"
+          onClick={() => setEditOpen(true)}
+        >
           <Pencil className="size-4" aria-hidden="true" />
           Edit
         </Button>
@@ -534,7 +556,8 @@ export function InvestmentDetail({
         onOpenChange={(next) => {
           setPayoutOpen(next);
           // Leave the ?payout=1 behind, so a refresh does not reopen it.
-          if (!next && openPayout) router.replace(`/investments/${investment.id}`);
+          if (!next && openPayout)
+            router.replace(`/investments/${investment.id}`);
         }}
         investment={investment}
         today={today}
@@ -583,7 +606,9 @@ export function InvestmentDetail({
         description={
           typeof confirm === "object" && confirm !== null
             ? `${confirm.entry.type === "invest" ? "Invested" : "Redeemed"} ${formatMoney(BigInt(confirm.entry.amount))} on ${formatDay(confirm.entry.occurredOn)}.${
-                confirm.entry.scheduled ? " The schedule will not post it again." : ""
+                confirm.entry.scheduled
+                  ? " The schedule will not post it again."
+                  : ""
               }`
             : ""
         }
@@ -597,11 +622,19 @@ export function InvestmentDetail({
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-11 items-center justify-between gap-3 px-4 py-2.5 text-sm">
       <dt className="text-text-secondary shrink-0">{label}</dt>
-      <dd className="min-w-0 text-right font-semibold break-words">{children}</dd>
+      <dd className="min-w-0 text-right font-semibold break-words">
+        {children}
+      </dd>
     </div>
   );
 }

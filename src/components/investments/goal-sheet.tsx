@@ -25,7 +25,16 @@ import type { InvestmentGoal } from "@/lib/investments";
 import { type TintKey, TINT_KEYS } from "@/lib/tokens";
 
 /** A new goal takes the next tint along, so two goals rarely share one. */
-const GOAL_TINTS: TintKey[] = ["peri", "sand", "mint", "butter", "sky", "lilac", "peach", "teal"];
+const GOAL_TINTS: TintKey[] = [
+  "peri",
+  "sand",
+  "mint",
+  "butter",
+  "sky",
+  "lilac",
+  "peach",
+  "teal",
+];
 
 /**
  * A goal: what the money is for. The target is optional; with one, the
@@ -63,7 +72,9 @@ export function GoalSheet({
     setError(null);
     setField(null);
     setName(goal?.name ?? "");
-    setTint(goal?.tint ?? GOAL_TINTS[goalCount % GOAL_TINTS.length] ?? TINT_KEYS[0]);
+    setTint(
+      goal?.tint ?? GOAL_TINTS[goalCount % GOAL_TINTS.length] ?? TINT_KEYS[0],
+    );
     setTarget(
       goal?.targetAmount
         ? minorToAmountText(BigInt(goal.targetAmount), currency.decimals)
@@ -115,7 +126,9 @@ export function GoalSheet({
         toast.error(result.error);
         return;
       }
-      toast.success(`Goal ${goal.name} deleted. Its investments are under No goal.`);
+      toast.success(
+        `Goal ${goal.name} deleted. Its investments are under No goal.`,
+      );
       setConfirmDelete(false);
       onOpenChange(false);
       router.refresh();
