@@ -33,6 +33,7 @@ import type {
   RecordSubmit,
 } from "@/components/records/record-sheet";
 import { useRecordSheet } from "@/components/records/record-sheet-provider";
+import { QuickEntry } from "@/components/records/quick-entry";
 import { RecordRow } from "@/components/records/record-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -422,6 +423,15 @@ export function RecordsScreen({
     [sheet, removeById],
   );
 
+  // The receipt toast's Undo has deleted a record just saved: out of the
+  // list, and kept out if a refresh still carries it.
+  const forget = React.useCallback((id: string) => {
+    deleted.current.add(id);
+    setLoaded((current) => current.filter((row) => row.id !== id));
+  }, []);
+
+  React.useEffect(() => sheet.setForgetHandler(forget), [sheet, forget]);
+
   async function loadMore() {
     if (loadingMore || !more) return;
 
@@ -666,6 +676,9 @@ export function RecordsScreen({
 
       <div className="mt-4 space-y-4">
         <UpcomingStrip items={upcoming} today={today} />
+
+        {/* Records are dated now, so only on the month that is running. */}
+        {daysLeft > 0 ? <QuickEntry timeZone={timeZone} /> : null}
 
         <SectionHeader
           className="px-1"

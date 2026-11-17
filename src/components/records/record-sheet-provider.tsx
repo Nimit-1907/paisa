@@ -49,6 +49,12 @@ type RecordSheetContextValue = {
   setSubmitHandler: (handler: RecordSubmit | null) => () => void;
   setDeleteHandler: (handler: ((id: string) => void) | null) => () => void;
   /**
+   * Lets the screen drop a row quietly once the receipt toast's Undo has
+   * deleted it. Without it the list kept the row: a refresh merges new rows
+   * in, it never takes rows out.
+   */
+  setForgetHandler: (handler: ((id: string) => void) | null) => () => void;
+  /**
    * The record saved a moment ago, so the list can point at it.
    *
    * Clears itself after a second and a half: it marks "this one is new", not
@@ -57,6 +63,13 @@ type RecordSheetContextValue = {
   lastSavedId: string | null;
   /** False when there is no account to book a record to. */
   ready: boolean;
+  /** The pickers' data once it has loaded, for quick entry. */
+  sheetData: SheetData | null;
+  /**
+   * Saves a new record without opening the sheet, through the same path as
+   * Save: the screen's optimistic row, the receipt toast and its Undo.
+   */
+  save: RecordSubmit;
 };
 
 const RecordSheetContext = React.createContext<RecordSheetContextValue>({
@@ -65,8 +78,11 @@ const RecordSheetContext = React.createContext<RecordSheetContextValue>({
   openLogAgain: () => {},
   setSubmitHandler: () => () => {},
   setDeleteHandler: () => () => {},
+  setForgetHandler: () => () => {},
   lastSavedId: null,
   ready: false,
+  sheetData: null,
+  save: async () => ({ ok: false, error: "Not ready yet." }),
 });
 
 /**
@@ -114,6 +130,10 @@ export function RecordSheetProvider({
   const [addType, setAddType] = React.useState<TransactionType>("expense");
   const handlerRef = React.useRef<RecordSubmit | null>(null);
   const deleteRef = React.useRef<((id: string) => void) | null>(null);
+  const forgetRef = React.useRef<((id: string) => void) | null>(null);
+  // `submit` is declared below the context value; the value reaches it
+  // through this, so it does not have to be rebuilt on every save.
+  const submitRef = React.useRef<RecordSubmit | null>(null);
 
   const defaultSubmit = React.useCallback<RecordSubmit>(
     async (values, context) => {
@@ -154,11 +174,22 @@ export function RecordSheetProvider({
           if (deleteRef.current === handler) deleteRef.current = null;
         };
       },
+      setForgetHandler: (handler) => {
+        forgetRef.current = handler;
+        return () => {
+          if (forgetRef.current === handler) forgetRef.current = null;
+        };
+      },
       lastSavedId,
       // Ready while the pickers are still loading: a tap in those few
       // milliseconds opens the sheet, which appears as soon as they land.
       // Not ready only once it is known there is no account to book to.
       ready: loaded === null || accounts.length > 0,
+      sheetData: loaded,
+      save: (values, context) =>
+        submitRef.current
+          ? submitRef.current(values, context)
+          : Promise.resolve({ ok: false, error: "Not ready yet." }),
     }),
     [loaded, accounts.length, lastSavedId],
   );
@@ -225,6 +256,7 @@ export function RecordSheetProvider({
             try {
               const undone = await deleteTransaction({ id: saved });
               if (!undone.ok) toast.error(undone.error);
+              else forgetRef.current?.(saved);
             } catch (thrown) {
               console.error("[records]", thrown);
               toast.error("Could not undo that. Check your connection.");
@@ -270,6 +302,8 @@ export function RecordSheetProvider({
       tap,
     ],
   );
+
+  submitRef.current = submit;
 
   // A sheet opened while the pickers loaded, which then came back with no
   // account to book to: close it rather than leave an empty form open.
