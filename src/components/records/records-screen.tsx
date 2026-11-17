@@ -39,6 +39,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { parseAmount } from "@/lib/amount";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
+import { comparedWith } from "@/lib/month-trend";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -459,6 +460,9 @@ export function RecordsScreen({
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
 
+  /** "1–17 Oct", what the trend pill compares against. */
+  const previousLabel = comparedWith(year, month, today);
+
   /*
    * How much of the month is left, counted from the days the card draws.
    *
@@ -467,16 +471,6 @@ export function RecordsScreen({
    * disagree with the bars above it, and on a past month `today` is not in
    * it, which is exactly when the per-day line should not appear.
    */
-  /** "Oct", the month the trend pill compares against. */
-  const previousLabel = React.useMemo(
-    () =>
-      new Intl.DateTimeFormat("en-IN", {
-        timeZone: "UTC",
-        month: "short",
-      }).format(new Date(Date.UTC(year, month - 2, 1))),
-    [year, month],
-  );
-
   const daysLeft = React.useMemo(() => {
     const index = monthDays.findIndex((day) => day.on === today);
     return index < 0 ? 0 : monthDays.length - index;
