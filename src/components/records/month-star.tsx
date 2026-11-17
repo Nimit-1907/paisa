@@ -1,12 +1,17 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ChevronRight,
+  ThumbsDown,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 
+import { leftLabel } from "@/lib/month-trend";
 import { Amount } from "@/components/shared/amount";
 import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
 import { Pill } from "@/components/shared/pill";
@@ -39,6 +44,9 @@ export function MonthStar({
   today,
   daysLeft,
   trend,
+  pastMonth = null,
+  regret = "0",
+  regretHref,
   flat = false,
 }: {
   summary: { income: string; expense: string; net: string };
@@ -49,6 +57,12 @@ export function MonthStar({
   daysLeft: number;
   /** "12% less than Oct", when there is a previous month to compare with. */
   trend?: { text: string; better: boolean } | null;
+  /** "Jul" when the month is over, null while it is running. */
+  pastMonth?: string | null;
+  /** Minor units marked "not worth it" this month, as text. */
+  regret?: string;
+  /** Where the regret line goes: the list narrowed to regrets. */
+  regretHref?: string;
   /**
    * Drops the accent for the one visit where the recap card is showing.
    * Exactly one bold card per screen; two would be none.
@@ -71,7 +85,7 @@ export function MonthStar({
       // Not "Left to spend": that is the Budgets figure, what is left of
       // the limits. This one is income less spending, a different number,
       // and the two screens disagreeing under one name read as a bug.
-      label={net < 0n ? "Overspent this month" : "Left this month"}
+      label={leftLabel(net < 0n, pastMonth)}
       trend={
         trend ? (
           <Pill tone={trend.better ? "income" : "expense"}>
@@ -105,7 +119,8 @@ export function MonthStar({
             label="Income"
             value={
               <span className="text-income">
-                +
+                {/* No sign on nothing: "+₹0" is a gain of zero. */}
+                {BigInt(summary.income) > 0n ? "+" : null}
                 <Amount
                   value={BigInt(summary.income)}
                   signDisplay="never"
@@ -120,7 +135,7 @@ export function MonthStar({
             label="Spent"
             value={
               <span className="text-expense">
-                −
+                {BigInt(summary.expense) > 0n ? "−" : null}
                 <Amount
                   value={BigInt(summary.expense)}
                   signDisplay="never"
@@ -163,6 +178,27 @@ export function MonthStar({
             />
           ))}
         </div>
+      ) : null}
+
+      {BigInt(regret) > 0n && regretHref ? (
+        // Only when something was regretted: a "₹0 regretted" line would be
+        // a nag on every month that went fine.
+        <Link
+          href={regretHref}
+          className="text-text-secondary hoverable:text-text -mx-4 mt-2 -mb-3 flex h-11 items-center gap-2 border-t px-4 text-sm"
+        >
+          <ThumbsDown
+            className="text-expense size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="min-w-0 flex-1 truncate">
+            <span className="text-text font-semibold">
+              <Amount value={BigInt(regret)} signDisplay="never" whole />
+            </span>{" "}
+            regretted
+          </span>
+          <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
+        </Link>
       ) : null}
     </HeroStat>
   );

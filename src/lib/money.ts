@@ -469,3 +469,15 @@ export function friendlyAmount(minor: bigint, decimals: number): bigint {
   const rounded = ((whole + step - 1n) / step) * step;
   return rounded * unit;
 }
+
+/**
+ * The sign as it is drawn on screen.
+ *
+ * `moneyParts` writes "-", which is right for strings that leave the app.
+ * On screen the hyphen is narrower and sits lower than "+", so a day total
+ * in hyphens beside rows in minus signs read as two different things. The
+ * PDF keeps the hyphen: its font is not guaranteed to have U+2212.
+ */
+export function signGlyph(sign: string): string {
+  return sign === "-" ? "−" : sign;
+}

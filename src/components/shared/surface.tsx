@@ -40,21 +40,24 @@ export function Card({
  * without it a row's background squares off the radius it sits inside.
  */
 export function ListCard({
+  as: Tag = "ul",
   className,
   children,
 }: {
+  /** `div` when its children are groups (a ledger's days), not rows. */
+  as?: "ul" | "div";
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <ul
+    <Tag
       className={cn(
         "bg-surface rounded-card divide-hairline divide-y overflow-hidden border",
         className,
       )}
     >
       {children}
-    </ul>
+    </Tag>
   );
 }
 

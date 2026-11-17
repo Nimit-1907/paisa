@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import { ChevronRight, Plus, Receipt, SlidersHorizontal } from "lucide-react";
+import { Plus, Receipt, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -23,7 +23,6 @@ import { CollapsingHeader } from "@/components/layout/collapsing-header";
 import { ListCard } from "@/components/shared/surface";
 import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
-import { Amount } from "@/components/shared/amount";
 import { SectionHeader } from "@/components/shared/section-header";
 import { PullToRefresh } from "@/components/records/pull-to-refresh";
 import { UpcomingStrip } from "@/components/records/upcoming-strip";
@@ -33,12 +32,15 @@ import type {
   RecordSubmit,
 } from "@/components/records/record-sheet";
 import { useRecordSheet } from "@/components/records/record-sheet-provider";
+import { QuickEntry } from "@/components/records/quick-entry";
 import { RecordRow } from "@/components/records/record-row";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseAmount } from "@/lib/amount";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
+import { comparedWith } from "@/lib/month-trend";
+import { railDate } from "@/lib/ledger";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -48,7 +50,11 @@ import {
 } from "@/components/records/use-clear-filters";
 import { ActiveFilters } from "@/components/records/active-filters";
 import { logAgainDraft, draftOf as toDraft } from "@/lib/record-draft";
-import { RecordDetail } from "@/components/records/record-detail";
+import {
+  RecordDetail,
+  RecordDetailPanel,
+} from "@/components/records/record-detail";
+import { useIsDesktop } from "@/hooks/use-media-query";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 import { cn } from "@/lib/utils";
@@ -69,6 +75,8 @@ export type RecordsScreenProps = {
   monthDays: DaySpend[];
   /** Last month's expense total, minor units as text, for the trend pill. */
   previousExpense: string;
+  /** Minor units marked "not worth it" this month, as text. */
+  regret: string;
   /** `yyyy-mm`, for the link behind each bar. */
   monthKey: string;
   accounts: AccountOption[];
@@ -104,6 +112,7 @@ export function RecordsScreen({
   summary,
   monthDays,
   previousExpense,
+  regret,
   monthKey,
   accounts,
   categories,
@@ -118,6 +127,7 @@ export function RecordsScreen({
   const clearFilters = useClearFilters();
   const removeFilter = useRemoveFilter();
   const sheet = useRecordSheet();
+  const isDesktop = useIsDesktop();
   const pathname = usePathname();
   const params = useSearchParams();
 
@@ -202,6 +212,8 @@ export function RecordsScreen({
         row.categoryId,
         row.accountId,
         row.note,
+        // A tag set from the record's sheet changes nothing else.
+        String(row.worthIt),
       ].join(":"),
     )
     .join("|");
@@ -240,6 +252,10 @@ export function RecordsScreen({
    * Registered while this screen is mounted, so a record added from the FAB
    * lands in this list optimistically instead of only after a refresh.
    */
+  /** The list as shown, for the submit handler, which must not re-create. */
+  const visibleRef = React.useRef(visible);
+  visibleRef.current = visible;
+
   const submit = React.useCallback<RecordSubmit>(
     (values, context) =>
       new Promise((resolve) => {
@@ -251,6 +267,13 @@ export function RecordsScreen({
             const optimistic = toOptimisticRow(
               values,
               context.editingId,
+              // An edit keeps the record's "Worth it?"; the sheet does not
+              // carry it, the record does.
+              context.editingId
+                ? (visibleRef.current.find(
+                    (row) => row.id === context.editingId,
+                  )?.worthIt ?? null)
+                : null,
               accounts,
               categories,
               timeZone,
@@ -373,6 +396,7 @@ export function RecordsScreen({
                     note: record.note,
                     occurredAt: instantToLocal(record.occurredAt, timeZone),
                     recurringRuleId: record.recurringRuleId,
+                    worthIt: record.worthIt,
                   });
 
                   if (!undone.ok) toast.error(undone.error);
@@ -403,6 +427,15 @@ export function RecordsScreen({
     () => sheet.setDeleteHandler(removeById),
     [sheet, removeById],
   );
+
+  // The receipt toast's Undo has deleted a record just saved: out of the
+  // list, and kept out if a refresh still carries it.
+  const forget = React.useCallback((id: string) => {
+    deleted.current.add(id);
+    setLoaded((current) => current.filter((row) => row.id !== id));
+  }, []);
+
+  React.useEffect(() => sheet.setForgetHandler(forget), [sheet, forget]);
 
   async function loadMore() {
     if (loadingMore || !more) return;
@@ -459,6 +492,15 @@ export function RecordsScreen({
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
 
+  /** "Jul", for the card's label on a month that is over. */
+  const monthName = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "UTC",
+    month: "short",
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+
+  /** "1–17 Oct", what the trend pill compares against. */
+  const previousLabel = comparedWith(year, month, today);
+
   /*
    * How much of the month is left, counted from the days the card draws.
    *
@@ -467,16 +509,6 @@ export function RecordsScreen({
    * disagree with the bars above it, and on a past month `today` is not in
    * it, which is exactly when the per-day line should not appear.
    */
-  /** "Oct", the month the trend pill compares against. */
-  const previousLabel = React.useMemo(
-    () =>
-      new Intl.DateTimeFormat("en-IN", {
-        timeZone: "UTC",
-        month: "short",
-      }).format(new Date(Date.UTC(year, month - 2, 1))),
-    [year, month],
-  );
-
   const daysLeft = React.useMemo(() => {
     const index = monthDays.findIndex((day) => day.on === today);
     return index < 0 ? 0 : monthDays.length - index;
@@ -596,199 +628,260 @@ export function RecordsScreen({
 
   return (
     <PullToRefresh onRefresh={refresh}>
-      <CollapsingHeader
-        title="Records"
-        description="Income, expenses, transfers"
-        monthNav={monthNav}
-        compact={<MonthStrip summary={summary} />}
-        onSearch={() => setSearchOpen(true)}
-      >
-        <div className="space-y-4">
-          {/* The month card and nothing above it. A recap of last month and
+      {/* On a wide screen, the list on the left and the record it is
+          showing on the right. Below lg this is one column, as before. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-6">
+        <div className="min-w-0">
+          <CollapsingHeader
+            title="Records"
+            description="Income, expenses, transfers"
+            monthNav={monthNav}
+            compact={<MonthStrip summary={summary} />}
+            onSearch={() => setSearchOpen(true)}
+          >
+            <div className="space-y-4">
+              {/* The month card and nothing above it. A recap of last month and
               a sentence about this one used to sit around it; both were
               commentary on a screen whose job is the records themselves.
               The sentence still lives on Analysis, where it belongs. */}
-          <MonthStar
-            summary={summary}
-            days={monthDays}
-            today={today}
-            daysLeft={daysLeft}
-            trend={trend}
-          />
-        </div>
-      </CollapsingHeader>
+              <MonthStar
+                summary={summary}
+                days={monthDays}
+                today={today}
+                daysLeft={daysLeft}
+                trend={trend}
+                pastMonth={daysLeft > 0 ? null : monthName}
+                regret={regret}
+                regretHref={`/records?m=${monthKey}&worth=regret`}
+              />
+            </div>
+          </CollapsingHeader>
 
-      <div className="mt-4 space-y-4">
-        <UpcomingStrip items={upcoming} today={today} />
+          <div className="mt-4 space-y-4">
+            <UpcomingStrip items={upcoming} today={today} />
 
-        <SectionHeader
-          className="px-1"
-          title={`${visible.length}${more ? "+" : ""} ${
-            visible.length === 1 ? "record" : "records"
-          }`}
-          trailing={
-            <Button
-              variant={activeFilterCount > 0 ? "default" : "ghost"}
-              size="touch"
-              className="-my-2 px-3"
-              onClick={() => setFiltersOpen(true)}
-            >
-              <SlidersHorizontal className="size-4" aria-hidden="true" />
-              {activeFilterCount > 0
-                ? `Filters · ${activeFilterCount}`
-                : "Filter"}
-            </Button>
-          }
-        />
+            {/* Records are dated now, so only on the month that is running. */}
+            {daysLeft > 0 ? <QuickEntry timeZone={timeZone} /> : null}
 
-        <ActiveFilters
-          filters={filters}
-          accounts={accounts}
-          categories={categories}
-          onRemove={removeFilter}
-          onClearAll={clearFilters}
-        />
-
-        {visible.length === 0 ? (
-          <EmptyState
-            icon={Receipt}
-            title={
-              activeFilterCount > 0
-                ? "Nothing matches those filters"
-                : "No records this month"
-            }
-            description={
-              activeFilterCount > 0
-                ? "Try widening the search, or clear the filters to see everything again."
-                : "Expenses, income and transfers you log will be listed here, newest first."
-            }
-            action={
-              activeFilterCount > 0 ? (
-                <Button variant="outline" size="touch" onClick={clearFilters}>
-                  Clear filters
+            <SectionHeader
+              className="px-1"
+              title={`${visible.length}${more ? "+" : ""} ${
+                visible.length === 1 ? "record" : "records"
+              }`}
+              trailing={
+                <Button
+                  variant={activeFilterCount > 0 ? "default" : "ghost"}
+                  size="touch"
+                  className="-my-2 px-3"
+                  onClick={() => setFiltersOpen(true)}
+                >
+                  <SlidersHorizontal className="size-4" aria-hidden="true" />
+                  {activeFilterCount > 0
+                    ? `Filters · ${activeFilterCount}`
+                    : "Filter"}
                 </Button>
-              ) : (
-                <Button size="touch" onClick={() => sheet.openAdd()}>
-                  <Plus className="size-4" aria-hidden="true" />
-                  Add record
-                </Button>
-              )
-            }
-          />
-        ) : (
-          <div className="space-y-4">
-            {days.map((day) => (
-              <section key={day.key} aria-label={day.label}>
-                <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
-                  <h2 className="min-w-0">
-                    {/*
-                    The day heading is the way into a single day. It used to
-                    be the bars on the card above, which were seven pixels
-                    wide; this is the same destination with a target you can
-                    actually hit.
-                  */}
-                    <Link
-                      href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
-                      className="text-text hoverable:text-text-secondary rounded-control inline-flex min-h-11 items-center gap-1 text-sm font-semibold"
-                    >
-                      {day.label}
-                      <ChevronRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  </h2>
-                  {/* Through `Amount` like every other figure, so the day's
-                      total trims its paise on the same rule the rows below
-                      it do, the two disagreeing is worse than either. */}
-                  {day.net === 0n ? null : (
-                    <span
-                      className={cn(
-                        "text-xs font-semibold",
-                        day.net > 0n ? "text-income" : "text-text-secondary",
-                      )}
-                    >
-                      <Amount value={day.net} signDisplay="always" />
-                    </span>
-                  )}
-                </div>
+              }
+            />
 
-                <ListCard>
-                  {day.rows.map((record) => (
-                    <li key={record.id}>
-                      <RecordRow
-                        record={record}
-                        pending={record.id.startsWith("optimistic-")}
-                        highlight={record.id === sheet.lastSavedId}
-                        // Tapping opens the detail; the menu's Edit is the
-                        // fast path for people who know it is there.
-                        onOpen={() => setDetailId(record.id)}
-                        onEdit={() => sheet.openEdit(draftOf(record))}
-                        onLogAgain={() =>
-                          sheet.openLogAgain(
-                            logAgainDraft(record, timeZone, new Date()),
-                          )
-                        }
-                        onDelete={() => remove(record)}
-                      />
-                    </li>
-                  ))}
+            <ActiveFilters
+              filters={filters}
+              accounts={accounts}
+              categories={categories}
+              onRemove={removeFilter}
+              onClearAll={clearFilters}
+            />
+
+            {visible.length === 0 ? (
+              <EmptyState
+                icon={Receipt}
+                title={
+                  activeFilterCount > 0
+                    ? "Nothing matches those filters"
+                    : daysLeft > 0
+                      ? "No records this month"
+                      : `No records in ${monthName}`
+                }
+                description={
+                  activeFilterCount > 0
+                    ? "Try widening the search, or clear the filters to see everything again."
+                    : "Expenses, income and transfers you log will be listed here, newest first."
+                }
+                action={
+                  activeFilterCount > 0 ? (
+                    <Button
+                      variant="outline"
+                      size="touch"
+                      onClick={clearFilters}
+                    >
+                      Clear filters
+                    </Button>
+                  ) : (
+                    <Button size="touch" onClick={() => sheet.openAdd()}>
+                      <Plus className="size-4" aria-hidden="true" />
+                      Add record
+                    </Button>
+                  )
+                }
+              />
+            ) : (
+              <div className="space-y-4">
+                {/*
+              The month as a ledger, the khata's layout: the date in a margin
+              on the left, every record of that day beside it. One card for the
+              whole month rather than a card per day, which at one record a
+              day spent more height on headings than on records.
+            */}
+                <ListCard as="div">
+                  {days.map((day) => {
+                    const rail = railDate(day.key);
+                    return (
+                      <section
+                        key={day.key}
+                        aria-label={day.label}
+                        className="flex"
+                      >
+                        {/* The date is the way into a single day, a 48px
+                        target rather than the card's calendar alone. */}
+                        <h2 className="border-hairline w-12 shrink-0 border-r">
+                          <Link
+                            href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
+                            className="hoverable:bg-surface-muted flex h-full min-h-14 w-full flex-col items-center pt-3"
+                          >
+                            <span className="text-text text-lg leading-none font-bold tabular-nums">
+                              {rail.date}
+                            </span>
+                            {/* Heard as "17 Tue", not "17Tue". */}{" "}
+                            {/* The weekday on every day, today included:
+                                the section's own label already says Today. */}
+                            <span className="text-text-secondary mt-1 text-xs">
+                              {rail.weekday}
+                            </span>
+                            {/* The name starts with what is on screen, "17
+                            Tue", as WCAG 2.5.3 asks; the section around it
+                            carries the full date. */}
+                            <span className="sr-only">
+                              , show this day only
+                            </span>
+                          </Link>
+                        </h2>
+
+                        <div className="min-w-0 flex-1">
+                          <ul className="divide-hairline divide-y">
+                            {day.rows.map((record) => (
+                              <li key={record.id}>
+                                <RecordRow
+                                  dense
+                                  record={record}
+                                  pending={record.id.startsWith("optimistic-")}
+                                  highlight={record.id === sheet.lastSavedId}
+                                  selected={isDesktop && record.id === detailId}
+                                  // Tapping opens the detail; the menu's Edit is
+                                  // the fast path for people who know it is there.
+                                  onOpen={() => setDetailId(record.id)}
+                                  onEdit={() => sheet.openEdit(draftOf(record))}
+                                  onLogAgain={() =>
+                                    sheet.openLogAgain(
+                                      logAgainDraft(
+                                        record,
+                                        timeZone,
+                                        new Date(),
+                                      ),
+                                    )
+                                  }
+                                  onDelete={() => remove(record)}
+                                />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </section>
+                    );
+                  })}
                 </ListCard>
-              </section>
-            ))}
 
-            {more ? (
-              <LoadMore onVisible={loadMore} loading={loadingMore} />
-            ) : null}
+                {more ? (
+                  <LoadMore onVisible={loadMore} loading={loadingMore} />
+                ) : null}
+              </div>
+            )}
+
+            <RecordDetail
+              // On a wide screen the panel shows it; the sheet stays shut.
+              record={isDesktop ? null : detail}
+              timeZone={timeZone}
+              onOpenChange={(next) => {
+                if (!next) setDetailId(null);
+              }}
+              onEdit={() => {
+                if (!detail) return;
+                setDetailId(null);
+                sheet.openEdit(draftOf(detail));
+              }}
+              onLogAgain={() => {
+                if (!detail) return;
+                setDetailId(null);
+                sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
+              }}
+              onDelete={() => {
+                if (!detail) return;
+                setDetailId(null);
+                remove(detail);
+              }}
+            />
+
+            <SearchOverlay
+              open={searchOpen}
+              initialQuery={filters.search ?? ""}
+              categories={categories}
+              monthKey={monthKey}
+              timeZone={timeZone}
+              onClose={() => setSearchOpen(false)}
+              onFilter={(extra) => {
+                const query = new URLSearchParams(params.toString());
+                query.delete("search");
+                for (const [key, value] of Object.entries(extra)) {
+                  query.set(key, value);
+                }
+                router.replace(`${pathname}?${query.toString()}`, {
+                  scroll: false,
+                });
+              }}
+            />
+
+            <FiltersSheet
+              open={filtersOpen}
+              onOpenChange={setFiltersOpen}
+              accounts={accounts}
+              categories={categories}
+              filters={filters}
+            />
           </div>
-        )}
+        </div>
 
-        <RecordDetail
-          record={detail}
-          timeZone={timeZone}
-          onOpenChange={(next) => {
-            if (!next) setDetailId(null);
-          }}
-          onEdit={() => {
-            if (!detail) return;
-            setDetailId(null);
-            sheet.openEdit(draftOf(detail));
-          }}
-          onLogAgain={() => {
-            if (!detail) return;
-            setDetailId(null);
-            sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
-          }}
-          onDelete={() => {
-            if (!detail) return;
-            setDetailId(null);
-            remove(detail);
-          }}
-        />
-
-        <SearchOverlay
-          open={searchOpen}
-          initialQuery={filters.search ?? ""}
-          categories={categories}
-          monthKey={monthKey}
-          timeZone={timeZone}
-          onClose={() => setSearchOpen(false)}
-          onFilter={(extra) => {
-            const query = new URLSearchParams(params.toString());
-            query.delete("search");
-            for (const [key, value] of Object.entries(extra)) {
-              query.set(key, value);
-            }
-            router.replace(`${pathname}?${query.toString()}`, {
-              scroll: false,
-            });
-          }}
-        />
-
-        <FiltersSheet
-          open={filtersOpen}
-          onOpenChange={setFiltersOpen}
-          accounts={accounts}
-          categories={categories}
-          filters={filters}
-        />
+        {isDesktop ? (
+          // Sticky on the grid cell itself: on the panel inside it, the
+          // cell is exactly as tall as the panel, with nowhere to stick.
+          <div className="sticky top-6 pt-6">
+            <RecordDetailPanel
+              record={detail}
+              timeZone={timeZone}
+              onClose={() => setDetailId(null)}
+              onEdit={() => {
+                if (!detail) return;
+                sheet.openEdit(draftOf(detail));
+              }}
+              onLogAgain={() => {
+                if (!detail) return;
+                sheet.openLogAgain(logAgainDraft(detail, timeZone, new Date()));
+              }}
+              onDelete={() => {
+                if (!detail) return;
+                setDetailId(null);
+                remove(detail);
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     </PullToRefresh>
   );
@@ -951,6 +1044,7 @@ function toOptimisticRow(
     occurredAt: string;
   },
   editingId: string | null,
+  worthIt: boolean | null,
   accounts: AccountOption[],
   categories: CategoryOption[],
   timeZone: string,
@@ -987,6 +1081,7 @@ function toOptimisticRow(
     // is gone before that answer comes back.
     recurringRuleId: null,
     recurringFrequency: null,
+    worthIt,
   };
 }
 

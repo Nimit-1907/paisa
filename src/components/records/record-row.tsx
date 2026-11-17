@@ -1,11 +1,19 @@
 "use client";
 
-import { ArrowRight, CopyPlus, Pencil, Repeat, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  CopyPlus,
+  Pencil,
+  Repeat,
+  ThumbsDown,
+  Trash2,
+} from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
 import { Tile } from "@/components/shared/tile";
 import { ListRow } from "@/components/shared/list-row";
 import type { TransactionRow } from "@/lib/queries/transactions";
+import { cn } from "@/lib/utils";
 
 /**
  * What colour a record's amount carries.
@@ -40,6 +48,7 @@ export function RecordRow({
   pending = false,
   highlight = false,
   selected = false,
+  dense = false,
   onOpen,
   onEdit,
   onLogAgain,
@@ -52,6 +61,8 @@ export function RecordRow({
   highlight?: boolean;
   /** Shown in the detail pane beside the list, on a wide screen. */
   selected?: boolean;
+  /** The ledger's tighter row. */
+  dense?: boolean;
   /** Tapping the row. Opens the detail. */
   onOpen: () => void;
   /** The menu's Edit, which skips the detail. */
@@ -63,11 +74,19 @@ export function RecordRow({
   const amount = BigInt(record.amount);
   const transfer = record.type === "transfer";
 
+  // On the ledger, a spend or income with a note moves its account under
+  // the amount; everywhere else it follows the note on the second line.
+  const accountUnderAmount = dense && !transfer && Boolean(record.note);
+  // A ledger transfer splits its two accounts the same way: From on the
+  // second line, To under the amount, so neither is cut to "HDFC S…".
+  const splitTransfer = dense && transfer;
+
   const tone: keyof typeof TONE_CLASS =
     record.type === "income" ? "income" : transfer ? "transfer" : "expense";
 
   return (
     <ListRow
+      dense={dense}
       pending={pending}
       highlight={highlight}
       selected={selected}
@@ -103,42 +122,87 @@ export function RecordRow({
         )
       }
       titleBadge={
-        record.recurringRuleId ? (
-          <Repeat
-            className="text-text-secondary size-3 shrink-0"
-            aria-label="Repeats"
-          />
+        record.recurringRuleId || record.worthIt === false ? (
+          <>
+            {record.recurringRuleId ? (
+              <Repeat
+                className="text-text-secondary size-3 shrink-0"
+                role="img"
+                aria-label="Repeats"
+              />
+            ) : null}
+            {record.worthIt === false ? (
+              <ThumbsDown
+                className="text-expense size-3 shrink-0"
+                role="img"
+                aria-label="Regretted"
+              />
+            ) : null}
+          </>
         ) : null
       }
       subtitle={
-        <>
-          {record.note && !transfer ? (
-            <>
-              {/*
+        accountUnderAmount ? (
+          // The ledger's row is narrower: the note has the line to itself
+          // and the account sits under the amount.
+          <span className="min-w-0 truncate">{record.note}</span>
+        ) : splitTransfer ? (
+          <span className="min-w-0 truncate">
+            <span className="sr-only">From </span>
+            {record.accountName}
+          </span>
+        ) : (
+          <>
+            {record.note && !transfer ? (
+              <>
+                {/*
                 The note shrinks last. Two truncating siblings share a
                 shortfall in proportion to their width, so at 360px both got
                 cut and "Zomato, team lunch · ICICI Credit Card" came out as
                 "Zomato, tea… · ICICI Credi…", two half-words where one
                 whole one would do. The note is what identifies the record;
                 the account is context. So the account gives up the room,
-                down to a floor that still reads as a name.
+                down to a floor that still reads as a name, and only then
+                does the note shrink. (A 70% cap on the note did the
+                opposite at 360px: both were cut.)
               */}
-              <span className="max-w-[70%] shrink-0 truncate">
-                {record.note}
+                <span className="min-w-0 truncate">{record.note}</span>
+                <span aria-hidden="true">·</span>
+              </>
+            ) : null}
+            {transfer ? (
+              <span className="flex min-w-0 items-center gap-0.5">
+                <span className="truncate">{record.accountName}</span>
+                <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+                <span className="truncate">{record.toAccountName}</span>
               </span>
-              <span aria-hidden="true">·</span>
-            </>
-          ) : null}
-          {transfer ? (
-            <span className="flex min-w-0 items-center gap-0.5">
-              <span className="truncate">{record.accountName}</span>
-              <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
-              <span className="truncate">{record.toAccountName}</span>
-            </span>
-          ) : (
-            <span className="truncate">{record.accountName}</span>
-          )}
-        </>
+            ) : (
+              <span
+                className={cn(
+                  "truncate",
+                  record.note && "min-w-[6ch] shrink-[100]",
+                )}
+              >
+                {record.accountName}
+              </span>
+            )}
+          </>
+        )
+      }
+      trailingMeta={
+        accountUnderAmount ? (
+          // The account's whole name: the note is what gives way. Capped
+          // only so an unusually long name cannot take the whole row.
+          <span className="block max-w-36 truncate lg:max-w-48">
+            {record.accountName}
+          </span>
+        ) : splitTransfer ? (
+          <span className="flex max-w-36 items-center justify-end gap-0.5 lg:max-w-48">
+            <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+            <span className="sr-only">to </span>
+            <span className="truncate">{record.toAccountName}</span>
+          </span>
+        ) : undefined
       }
       trailing={
         // The sign and the figure share one coloured wrapper. Colouring only

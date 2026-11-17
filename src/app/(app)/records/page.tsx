@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/page-shell";
 import { RecordsScreen } from "@/components/records/records-screen";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
-import { getMonthContext, parseFilters } from "@/lib/month-param";
+import { countFilters } from "@/lib/filter-summary";
+import { parseFilters } from "@/lib/filter-params";
+import { getMonthContext } from "@/lib/month-param";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import {
@@ -12,10 +14,12 @@ import {
 } from "@/lib/queries/recurring";
 import {
   getMonthDays,
+  getMonthRegret,
   getMonthSummary,
   getMonthTransactions,
 } from "@/lib/queries/transactions";
 import { addDays } from "@/lib/recurrence";
+import { expenseThrough } from "@/lib/month-trend";
 import { localToday } from "@/lib/recurring-check";
 import { upcomingBetween } from "@/lib/recurring-rule";
 import { transactionFiltersSchema } from "@/lib/schemas/transactions";
@@ -46,12 +50,12 @@ export default async function RecordsPage({
 
   // Parsed through the same schema the actions use, so a hand-edited URL
   // cannot reach the query with something the filters do not allow.
-  const parsedFilters = transactionFiltersSchema.safeParse(parseFilters(single));
+  const parsedFilters = transactionFiltersSchema.safeParse(
+    parseFilters(single),
+  );
   const filters = parsedFilters.success ? parsedFilters.data : {};
 
-  const activeFilterCount = Object.values(filters).filter((value) =>
-    Array.isArray(value) ? value.length > 0 : Boolean(value),
-  ).length;
+  const activeFilterCount = countFilters(filters);
 
   // The week ahead is only shown on the month the user is actually in: on
   // October, "due in 3 days" would be about a month they are not looking at.
@@ -87,31 +91,41 @@ export default async function RecordsPage({
   const [
     page,
     summary,
-    previousSummary,
+    previousDays,
+    regret,
     monthDays,
     accounts,
     categories,
     rules,
     created,
   ] = await Promise.all([
-      getMonthTransactions({
-        year: month.year,
-        month: month.month,
-        timeZone,
-        decimals: currency.decimals,
-        filters,
-      }),
-      getMonthSummary(month.year, month.month),
-      // Last month's totals, for the trend pill on the month card. Already
-      // in the same Promise.all, so it costs no extra round trip.
-      getMonthSummary(previousMonth.year, previousMonth.month),
-      // The shape of the month, for the bars on the card.
-      getMonthDays(month.year, month.month),
-      getActiveAccounts().then((result) => result.rows),
-      getActiveCategories(),
-      rulesPromise,
-      createdPromise,
-    ]);
+    getMonthTransactions({
+      year: month.year,
+      month: month.month,
+      timeZone,
+      decimals: currency.decimals,
+      filters,
+    }),
+    getMonthSummary(month.year, month.month),
+    // Last month day by day, for the trend pill on the month card. Already
+    // in the same Promise.all, so it costs no extra round trip.
+    getMonthDays(previousMonth.year, previousMonth.month),
+    // What was marked "not worth it", for the line on the month card.
+    getMonthRegret(month.year, month.month),
+    // The shape of the month, for the bars on the card.
+    getMonthDays(month.year, month.month),
+    getActiveAccounts().then((result) => result.rows),
+    getActiveCategories(),
+    rulesPromise,
+    createdPromise,
+  ]);
+
+  // On the month you are in, last month counts only up to today's date:
+  // the 1st to the 17th against the 1st to the 17th, not against all 31.
+  const previousExpense = expenseThrough(
+    previousDays,
+    isCurrentMonth ? Number(today.slice(8, 10)) : null,
+  );
 
   const upcoming = isCurrentMonth
     ? upcomingBetween(rules, today, weekAhead, created)
@@ -121,7 +135,8 @@ export default async function RecordsPage({
   // rather than here: the header collapses the card into a one-line summary
   // once it scrolls away, which means it has to know where the card ends.
   return (
-    <PageShell>
+    // Reading width, and on a wide screen room for the record panel too.
+    <PageShell className="lg:max-w-[1200px]">
       <RecordsScreen
         year={month.year}
         month={month.month}
@@ -134,7 +149,8 @@ export default async function RecordsPage({
           net: summary.net.toString(),
         }}
         monthDays={monthDays}
-        previousExpense={previousSummary.expense.toString()}
+        previousExpense={previousExpense.toString()}
+        regret={regret.toString()}
         monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}

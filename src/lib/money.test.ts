@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  signGlyph,
   MoneyParseError,
   formatMoney,
   friendlyAmount,
@@ -340,5 +341,16 @@ describe("formatMoney with trimmed paise", () => {
     expect(formatMoney(45000n, { paise: "trim" })).toBe("₹450");
     expect(formatMoney(45050n, { paise: "trim" })).toBe("₹450.50");
     expect(formatMoney(-45000n, { paise: "trim" })).toBe("-₹450");
+  });
+});
+
+describe("signGlyph", () => {
+  it("draws a minus as the minus sign, the width of the plus", () => {
+    expect(signGlyph("-")).toBe("−");
+  });
+
+  it("leaves a plus and no sign alone", () => {
+    expect(signGlyph("+")).toBe("+");
+    expect(signGlyph("")).toBe("");
   });
 });

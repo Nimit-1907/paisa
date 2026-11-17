@@ -548,6 +548,7 @@ export type Database = {
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           user_id: string
+          worth_it: boolean | null
         }
         Insert: {
           account_id: string
@@ -562,6 +563,7 @@ export type Database = {
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id: string
+          worth_it?: boolean | null
         }
         Update: {
           account_id?: string
@@ -576,6 +578,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
+          worth_it?: boolean | null
         }
         Relationships: [
           {

@@ -68,10 +68,14 @@ type Results = {
  * The results are grouped by month with the total above them, and tapping
  * one opens it in the sheet, where Edit and Delete already live.
  *
- * Nothing is searched as you type. A query per keystroke over three years of
- * records is a lot of work to show a list nobody is reading yet, and the
- * keyboard's own search key is the gesture people already use.
+ * Matches appear as you type, once two letters have sat still for
+ * `LIVE_DELAY` ms: a box that shows nothing until Enter read as broken.
+ * Only a deliberate search, Enter or a tapped result, is remembered in
+ * Recent, so "sw" and "swi" never land there.
  */
+/** How long typing has to pause before the box searches by itself. */
+const LIVE_DELAY = 300;
+
 export function SearchOverlay({
   open,
   initialQuery,
@@ -116,10 +120,14 @@ export function SearchOverlay({
    */
   const ticket = React.useRef(0);
 
+  /** The term whose answer is on screen or on its way. */
+  const searched = React.useRef("");
+
   React.useEffect(() => {
     if (!open) return;
 
     ticket.current += 1;
+    searched.current = "";
     setQuery(initialQuery);
     setResults(null);
     setError(null);
@@ -174,53 +182,76 @@ export function SearchOverlay({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
-  const submit = React.useCallback(async (term: string) => {
-    const trimmed = term.trim();
-    if (!trimmed) return;
+  const submit = React.useCallback(
+    async (term: string, { live = false }: { live?: boolean } = {}) => {
+      const trimmed = term.trim();
+      if (!trimmed) return;
 
-    const mine = (ticket.current += 1);
+      const mine = (ticket.current += 1);
+      searched.current = trimmed;
 
-    setQuery(trimmed);
-    setRecent(rememberSearch(trimmed));
-    setSearching(true);
-    setError(null);
-
-    try {
-      const result = await searchRecords({ term: trimmed });
-      if (ticket.current !== mine) return;
-
-      if (!result.ok) {
-        setError({ term: trimmed, message: result.error });
-        setResults(null);
-        return;
+      // A live search leaves the field alone, a trailing space mid-word
+      // included, and stays out of Recent.
+      if (!live) {
+        setQuery(trimmed);
+        setRecent(rememberSearch(trimmed));
       }
+      setSearching(true);
+      setError(null);
 
-      setResults({
-        term: trimmed,
-        rows: result.data.rows,
-        matchCount: result.data.matchCount,
-        hasMore: result.data.hasMore,
-        income: BigInt(result.data.income),
-        expense: BigInt(result.data.expense),
-      });
-    } catch (thrown) {
-      if (ticket.current !== mine) return;
-      console.error("[records]", thrown);
-      setError({
-        term: trimmed,
-        message: "Could not search your records. Check your connection.",
-      });
-      setResults(null);
-    } finally {
-      if (ticket.current === mine) setSearching(false);
-    }
-  }, []);
+      try {
+        const result = await searchRecords({ term: trimmed });
+        if (ticket.current !== mine) return;
+
+        if (!result.ok) {
+          setError({ term: trimmed, message: result.error });
+          setResults(null);
+          return;
+        }
+
+        setResults({
+          term: trimmed,
+          rows: result.data.rows,
+          matchCount: result.data.matchCount,
+          hasMore: result.data.hasMore,
+          income: BigInt(result.data.income),
+          expense: BigInt(result.data.expense),
+        });
+      } catch (thrown) {
+        if (ticket.current !== mine) return;
+        console.error("[records]", thrown);
+        setError({
+          term: trimmed,
+          message: "Could not search your records. Check your connection.",
+        });
+        setResults(null);
+      } finally {
+        if (ticket.current === mine) setSearching(false);
+      }
+    },
+    [],
+  );
+
+  // Search as you type, after a pause. Skipped when the term is the one
+  // already on screen, which is the case straight after Enter.
+  React.useEffect(() => {
+    if (!open) return;
+    const trimmed = query.trim();
+    if (trimmed.length < 2 || trimmed === searched.current) return;
+
+    const id = window.setTimeout(
+      () => void submit(trimmed, { live: true }),
+      LIVE_DELAY,
+    );
+    return () => window.clearTimeout(id);
+  }, [open, query, submit]);
 
   if (!open) return null;
 
   /** Back to the suggestions, without closing the whole screen. */
   function clear() {
     ticket.current += 1;
+    searched.current = "";
     setQuery("");
     setResults(null);
     setError(null);
@@ -353,6 +384,9 @@ export function SearchOverlay({
                   // The sheet is the one place a record can be read,
                   // changed and deleted; sending a search result anywhere
                   // else would mean a second copy of all three.
+                  // Opening a match is the search having worked, so it is
+                  // remembered even when Enter was never pressed.
+                  setRecent(rememberSearch(results.term));
                   onClose();
                   sheet.openEdit(draftOf(record, timeZone));
                 }}
@@ -576,7 +610,9 @@ function SearchResults({
                           ? "text-income"
                           : record.type === "transfer"
                             ? "text-transfer"
-                            : "text-text",
+                            : // Red, as on the list: the same record
+                              // in two colours read as two kinds.
+                              "text-expense",
                       )}
                     >
                       {record.type === "income"

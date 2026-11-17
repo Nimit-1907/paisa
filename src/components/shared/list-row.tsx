@@ -59,6 +59,8 @@ type ListRowProps = {
   menu?: RowAction[];
   /** Shown on hover where there is a real pointer. Never the only route. */
   hoverActions?: React.ReactNode;
+  /** 56px rather than 64, for a list read as a ledger. Still over 44. */
+  dense?: boolean;
 
   className?: string;
 };
@@ -93,6 +95,7 @@ export function ListRow({
   swipeRight,
   menu,
   hoverActions,
+  dense = false,
   className,
 }: ListRowProps) {
   const [offset, setOffset] = React.useState(0);
@@ -179,7 +182,12 @@ export function ListRow({
   }
 
   const body = (
-    <span className="flex min-h-16 w-full items-center gap-3 px-3 py-2 text-left">
+    <span
+      className={cn(
+        "flex w-full items-center gap-3 px-3 text-left",
+        dense ? "min-h-14 py-1.5" : "min-h-16 py-2",
+      )}
+    >
       {leading ? <span className="shrink-0">{leading}</span> : null}
 
       <span className="min-w-0 flex-1">
@@ -225,13 +233,19 @@ export function ListRow({
 
   const interactive =
     href && !parked ? (
-      <Link href={href} className={interactiveClass}>
+      <Link
+        href={href}
+        aria-current={selected ? "true" : undefined}
+        className={interactiveClass}
+      >
         {body}
       </Link>
     ) : (
       <button
         type="button"
         disabled={pending}
+        // Said, not only shaded: the row whose detail is on show.
+        aria-current={selected ? "true" : undefined}
         onClick={() => {
           // A parked row has a button showing; the first tap puts it away
           // rather than opening whatever is underneath.
