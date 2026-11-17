@@ -2,26 +2,26 @@ import { expect, test } from "@playwright/test";
 
 import { signIn } from "./sign-in";
 
-test("records read as a ledger: a date rail, and each day's total and balance", async ({
+test("records read as a ledger: dates in a rail, records beside them, no day totals", async ({
   page,
 }) => {
   await signIn(page);
 
-  // Today's day is labelled in the rail and opens that day alone.
-  const today = page.getByRole("link", { name: /Today.*show this day only/ });
+  // Today's rail shows its weekday like every other day, and opens that
+  // day alone.
+  const today = page
+    .locator('main section[aria-label="Today"]')
+    .getByRole("link", { name: /show this day only/ });
   await expect(today).toBeVisible();
-  await expect(today).toContainText("Today");
+  await expect(today).not.toContainText("Today");
 
-  // Each day ends on its total and what was left after it.
-  const firstDay = page.locator('main section[aria-label="Today"]');
-  await expect(firstDay.getByText(/ left$/)).toBeVisible();
+  // The rows only: no day total, no running balance under them.
+  const list = page.locator("main section[aria-label]");
+  await expect(list.getByText("Day total")).toHaveCount(0);
+  await expect(list.getByText(/ left$/)).toHaveCount(0);
 
-  // Narrowed to one day, there is no running balance to speak of.
   await today.click();
   await expect(
     page.getByRole("button", { name: /^Remove filter: on / }),
   ).toBeVisible();
-  await expect(
-    page.locator("main section[aria-label]").getByText(/ left$/),
-  ).toHaveCount(0);
 });

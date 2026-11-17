@@ -129,11 +129,6 @@ const clamp = (day: string, min: string, max: string) =>
  * Keyboard: the arrows move a day or a week, Page Up and Page Down a month
  * (with Shift, a year), Home and End to the ends of the week. The grid is
  * the ARIA date-grid pattern: one cell in the tab order at a time.
- *
- * With `month`, it is the same grid fixed to one month: no caption and no
- * arrows (the screen around it owns the month), only that month's weeks,
- * and the neighbouring months' days left blank. Records draws its month
- * card's calendar this way, with `heat` shading each day by what went out.
  */
 export function Calendar({
   selected,
@@ -142,10 +137,6 @@ export function Calendar({
   max = "9999-12-31",
   today,
   onSelect,
-  month: fixedMonth,
-  heat,
-  describeDay,
-  gridLabel,
   className,
 }: {
   /** The day this calendar is choosing, `yyyy-mm-dd`, or "" for none. */
@@ -159,22 +150,13 @@ export function Calendar({
   /** Today where the user is. */
   today: string;
   onSelect: (day: string) => void;
-  /** Fixes the grid to this month, `yyyy-mm-01`, with no caption. */
-  month?: string;
-  /** How dark to draw each day, 0 to 4, by `yyyy-mm-dd`. */
-  heat?: Partial<Record<string, 0 | 1 | 2 | 3 | 4>>;
-  /** Said after the day's name, ", spent ₹2,122". */
-  describeDay?: (day: string) => string;
-  /** The grid's name, when the month alone does not say what it is for. */
-  gridLabel?: string;
   className?: string;
 }) {
   const weekStart = useWeekStart();
   const [view, setView] = React.useState<"days" | "months">("days");
-  const [shownMonth, setMonth] = React.useState(() =>
+  const [month, setMonth] = React.useState(() =>
     monthStart(clamp(selected || today, min, max)),
   );
-  const month = fixedMonth ?? shownMonth;
   // The roving tab stop: the one day button that is tabbable.
   const [focusDay, setFocusDay] = React.useState(() =>
     clamp(selected || today, min, max),
@@ -208,10 +190,7 @@ export function Calendar({
   // Six weeks from the first weekStart-day on or before the 1st.
   const lead = (weekday(month) - weekStart + 7) % 7;
   const first = addDays(month, -lead);
-  // Six weeks always in the picker, so it never changes height; a fixed
-  // month draws only the weeks it has.
-  const weekCount = fixedMonth ? Math.ceil((lead + daysInMonth(month)) / 7) : 6;
-  const weeks = Array.from({ length: weekCount }, (_, week) =>
+  const weeks = Array.from({ length: 6 }, (_, week) =>
     Array.from({ length: 7 }, (_, index) => addDays(first, week * 7 + index)),
   );
 
@@ -251,63 +230,59 @@ export function Calendar({
 
   return (
     <div className={cn("select-none", className)}>
-      {fixedMonth ? null : (
-        <div className="flex items-center justify-between gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-touch"
-            aria-label={view === "days" ? "Previous month" : "Previous year"}
-            disabled={
-              view === "days"
-                ? !canGoBack
-                : parts(month).year <= parts(min).year
-            }
-            onClick={() => (view === "days" ? goMonth(-1) : goMonth(-12))}
-          >
-            <ChevronLeft className="size-5" aria-hidden="true" />
-          </Button>
+      <div className="flex items-center justify-between gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-touch"
+          aria-label={view === "days" ? "Previous month" : "Previous year"}
+          disabled={
+            view === "days" ? !canGoBack : parts(month).year <= parts(min).year
+          }
+          onClick={() => (view === "days" ? goMonth(-1) : goMonth(-12))}
+        >
+          <ChevronLeft className="size-5" aria-hidden="true" />
+        </Button>
 
-          {/* The caption is the way to the month and year view. */}
-          <button
-            type="button"
-            aria-expanded={view === "months"}
-            aria-label={
-              view === "days"
-                ? `${label}. Choose a month or year`
-                : `${parts(month).year}. Back to days`
-            }
-            onClick={() => setView(view === "days" ? "months" : "days")}
-            className="rounded-control hoverable:bg-surface-muted flex h-11 min-w-0 items-center gap-1 px-3 text-sm font-semibold"
-          >
-            <span aria-live="polite" className="truncate">
-              {view === "days" ? label : parts(month).year}
-            </span>
-            <ChevronDown
-              className={cn(
-                "text-text-secondary size-4 shrink-0 transition-transform duration-[120ms] motion-reduce:transition-none",
-                view === "months" && "rotate-180",
-              )}
-              aria-hidden="true"
-            />
-          </button>
+        {/* The caption is the way to the month and year view. */}
+        <button
+          type="button"
+          aria-expanded={view === "months"}
+          aria-label={
+            view === "days"
+              ? `${label}. Choose a month or year`
+              : `${parts(month).year}. Back to days`
+          }
+          onClick={() => setView(view === "days" ? "months" : "days")}
+          className="rounded-control hoverable:bg-surface-muted flex h-11 min-w-0 items-center gap-1 px-3 text-sm font-semibold"
+        >
+          <span aria-live="polite" className="truncate">
+            {view === "days" ? label : parts(month).year}
+          </span>
+          <ChevronDown
+            className={cn(
+              "text-text-secondary size-4 shrink-0 transition-transform duration-[120ms] motion-reduce:transition-none",
+              view === "months" && "rotate-180",
+            )}
+            aria-hidden="true"
+          />
+        </button>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-touch"
-            aria-label={view === "days" ? "Next month" : "Next year"}
-            disabled={
-              view === "days"
-                ? !canGoForward
-                : parts(month).year >= parts(max).year
-            }
-            onClick={() => (view === "days" ? goMonth(1) : goMonth(12))}
-          >
-            <ChevronRight className="size-5" aria-hidden="true" />
-          </Button>
-        </div>
-      )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-touch"
+          aria-label={view === "days" ? "Next month" : "Next year"}
+          disabled={
+            view === "days"
+              ? !canGoForward
+              : parts(month).year >= parts(max).year
+          }
+          onClick={() => (view === "days" ? goMonth(1) : goMonth(12))}
+        >
+          <ChevronRight className="size-5" aria-hidden="true" />
+        </Button>
+      </div>
 
       {view === "months" ? (
         <MonthGrid
@@ -337,7 +312,7 @@ export function Calendar({
           ref={gridRef}
           // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role -- the WAI-ARIA date picker pattern is a table with role="grid": its rows, headers and cells are what a screen reader navigates by.
           role="grid"
-          aria-label={gridLabel ? `${gridLabel}, ${label}` : label}
+          aria-label={label}
           onKeyDown={onKeyDown}
           className="mt-1 w-full table-fixed border-collapse"
         >
@@ -363,9 +338,6 @@ export function Calendar({
                     key={day}
                     day={day}
                     outside={monthStart(day) !== month}
-                    blank={Boolean(fixedMonth) && monthStart(day) !== month}
-                    heat={heat?.[day] ?? 0}
-                    description={describeDay?.(day)}
                     selected={day === selected}
                     range={range}
                     today={day === today}
@@ -386,21 +358,9 @@ export function Calendar({
   );
 }
 
-/** The calendar's shading by level. Tokens only; the figure stays ink. */
-const HEAT_CLASS = [
-  "",
-  "bg-expense/10",
-  "bg-expense/20",
-  "bg-expense/35",
-  "bg-expense/50",
-] as const;
-
 function DayCell({
   day,
   outside,
-  blank,
-  heat,
-  description,
   selected,
   range,
   today,
@@ -410,9 +370,6 @@ function DayCell({
 }: {
   day: string;
   outside: boolean;
-  blank: boolean;
-  heat: 0 | 1 | 2 | 3 | 4;
-  description?: string;
   selected: boolean;
   range?: { from: string; to: string };
   today: boolean;
@@ -429,10 +386,6 @@ function DayCell({
   // one stretch. Each end only paints the half that faces the other.
   const bandLeft = Boolean(from && to && from !== to && day === to);
   const bandRight = Boolean(from && to && from !== to && day === from);
-
-  // Another month's day in a fixed-month grid: an empty cell, so the
-  // weekdays still line up.
-  if (blank) return <td aria-hidden="true" className="h-11 p-0" />;
 
   return (
     // A `td` in a `role="grid"` table is a gridcell already.
@@ -453,7 +406,7 @@ function DayCell({
         data-day={day}
         tabIndex={tabbable ? 0 : -1}
         disabled={disabled}
-        aria-label={`${DAY_NAME.format(asDate(day))}${today ? ", today" : ""}${description ?? ""}`}
+        aria-label={`${DAY_NAME.format(asDate(day))}${today ? ", today" : ""}`}
         aria-current={today ? "date" : undefined}
         onClick={onChoose}
         className={cn(
@@ -464,7 +417,7 @@ function DayCell({
           isEnd
             ? "bg-ink text-on-ink font-semibold"
             : cn(
-                heat ? HEAT_CLASS[heat] : "hoverable:bg-hairline",
+                "hoverable:bg-hairline",
                 outside ? "text-text-secondary" : "text-text",
                 today && "font-bold",
               ),

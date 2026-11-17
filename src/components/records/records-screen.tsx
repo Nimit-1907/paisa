@@ -23,7 +23,6 @@ import { CollapsingHeader } from "@/components/layout/collapsing-header";
 import { ListCard } from "@/components/shared/surface";
 import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
-import { Amount } from "@/components/shared/amount";
 import { SectionHeader } from "@/components/shared/section-header";
 import { PullToRefresh } from "@/components/records/pull-to-refresh";
 import { UpcomingStrip } from "@/components/records/upcoming-strip";
@@ -41,7 +40,7 @@ import { parseAmount } from "@/lib/amount";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import { comparedWith } from "@/lib/month-trend";
-import { balancesAfter, railDate } from "@/lib/ledger";
+import { railDate } from "@/lib/ledger";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -480,16 +479,6 @@ export function RecordsScreen({
     [visible, timeZone, today],
   );
 
-  /**
-   * What was left after each day, for the ledger. Only on the whole month:
-   * narrowed by a filter, "left" would be about records that are hidden.
-   */
-  const balances = React.useMemo(
-    () =>
-      activeFilterCount > 0 ? [] : balancesAfter(days, BigInt(summary.net)),
-    [days, summary.net, activeFilterCount],
-  );
-
   /*
    * Held by id rather than by value.
    *
@@ -502,30 +491,6 @@ export function RecordsScreen({
   const detail = detailId
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
-
-  /** The day the list is narrowed to, when it is exactly one. */
-  const selectedDay =
-    filters.from && filters.from === filters.to ? filters.from : null;
-
-  /**
-   * A day tapped on the month card's calendar narrows the list to it, and
-   * the same day again takes that off. Every other filter stays.
-   */
-  const chooseDay = React.useCallback(
-    (day: string) => {
-      const next = new URLSearchParams(params.toString());
-      next.set("m", monthKey);
-      if (day === selectedDay) {
-        next.delete("from");
-        next.delete("to");
-      } else {
-        next.set("from", day);
-        next.set("to", day);
-      }
-      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
-    },
-    [params, monthKey, selectedDay, router, pathname],
-  );
 
   /** "Jul", for the card's label on a month that is over. */
   const monthName = new Intl.DateTimeFormat("en-IN", {
@@ -686,8 +651,6 @@ export function RecordsScreen({
                 daysLeft={daysLeft}
                 trend={trend}
                 pastMonth={daysLeft > 0 ? null : monthName}
-                selectedDay={selectedDay}
-                onChooseDay={chooseDay}
                 regret={regret}
                 regretHref={`/records?m=${monthKey}&worth=regret`}
               />
@@ -764,15 +727,13 @@ export function RecordsScreen({
               <div className="space-y-4">
                 {/*
               The month as a ledger, the khata's layout: the date in a margin
-              on the left, every record of that day beside it, and under them
-              the day's total and what was left after it. One card for the
+              on the left, every record of that day beside it. One card for the
               whole month rather than a card per day, which at one record a
               day spent more height on headings than on records.
             */}
                 <ListCard as="div">
-                  {days.map((day, index) => {
+                  {days.map((day) => {
                     const rail = railDate(day.key);
-                    const balance = balances[index];
                     return (
                       <section
                         key={day.key}
@@ -790,15 +751,10 @@ export function RecordsScreen({
                               {rail.date}
                             </span>
                             {/* Heard as "17 Tue", not "17Tue". */}{" "}
-                            <span
-                              className={cn(
-                                "mt-1 text-xs",
-                                day.key === today
-                                  ? "text-text font-semibold"
-                                  : "text-text-secondary",
-                              )}
-                            >
-                              {day.key === today ? "Today" : rail.weekday}
+                            {/* The weekday on every day, today included:
+                                the section's own label already says Today. */}
+                            <span className="text-text-secondary mt-1 text-xs">
+                              {rail.weekday}
                             </span>
                             {/* The name starts with what is on screen, "17
                             Tue", as WCAG 2.5.3 asks; the section around it
@@ -837,44 +793,6 @@ export function RecordsScreen({
                               </li>
                             ))}
                           </ul>
-
-                          {/* The day's line: its total, and, on the whole
-                          month, what was left after it. Through `Amount`
-                          like every figure, so the paise follow the rows. */}
-                          <p className="text-text-secondary flex items-center gap-2 px-3 pt-0.5 pb-2 text-xs">
-                            <span
-                              aria-hidden="true"
-                              className="border-hairline min-w-4 flex-1 border-b border-dotted"
-                            />
-                            {/* A day of transfers alone nets to nothing; "+₹0"
-                            would read as income. */}
-                            {day.net === 0n ? null : (
-                              <span
-                                className={cn(
-                                  "font-semibold",
-                                  day.net > 0n && "text-income",
-                                )}
-                              >
-                                <span className="sr-only">Day total </span>
-                                <Amount value={day.net} signDisplay="always" />
-                              </span>
-                            )}
-                            {balance !== undefined ? (
-                              <>
-                                {day.net === 0n ? null : (
-                                  <span aria-hidden="true">·</span>
-                                )}
-                                <span
-                                  className={cn(
-                                    balance < 0n ? "text-expense" : "text-text",
-                                  )}
-                                >
-                                  <Amount value={balance} />
-                                  <span> left</span>
-                                </span>
-                              </>
-                            ) : null}
-                          </p>
                         </div>
                       </section>
                     );

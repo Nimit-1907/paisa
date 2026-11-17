@@ -77,6 +77,9 @@ export function RecordRow({
   // On the ledger, a spend or income with a note moves its account under
   // the amount; everywhere else it follows the note on the second line.
   const accountUnderAmount = dense && !transfer && Boolean(record.note);
+  // A ledger transfer splits its two accounts the same way: From on the
+  // second line, To under the amount, so neither is cut to "HDFC S…".
+  const splitTransfer = dense && transfer;
 
   const tone: keyof typeof TONE_CLASS =
     record.type === "income" ? "income" : transfer ? "transfer" : "expense";
@@ -143,6 +146,11 @@ export function RecordRow({
           // The ledger's row is narrower: the note has the line to itself
           // and the account sits under the amount.
           <span className="min-w-0 truncate">{record.note}</span>
+        ) : splitTransfer ? (
+          <span className="min-w-0 truncate">
+            <span className="sr-only">From </span>
+            {record.accountName}
+          </span>
         ) : (
           <>
             {record.note && !transfer ? (
@@ -183,11 +191,16 @@ export function RecordRow({
       }
       trailingMeta={
         accountUnderAmount ? (
-          // As wide as the amount above it and no wider (w-0 min-w-full):
-          // a long account name must not take the note's room.
-          // A wide screen has the room, so there it is its own width.
-          <span className="block w-0 min-w-full truncate lg:w-auto lg:max-w-48">
+          // The account's whole name: the note is what gives way. Capped
+          // only so an unusually long name cannot take the whole row.
+          <span className="block max-w-36 truncate lg:max-w-48">
             {record.accountName}
+          </span>
+        ) : splitTransfer ? (
+          <span className="flex max-w-36 items-center justify-end gap-0.5 lg:max-w-48">
+            <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+            <span className="sr-only">to </span>
+            <span className="truncate">{record.toAccountName}</span>
           </span>
         ) : undefined
       }
