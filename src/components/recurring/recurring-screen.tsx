@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import {
   CalendarDays,
+  Check,
   CalendarRange,
   EllipsisVertical,
   type LucideIcon,
@@ -67,7 +68,7 @@ export function RecurringScreen({
   /** `yyyy-mm-dd` where the user is, for "Today"/"Tomorrow" wording. */
   today: string;
 }) {
-  const { pending, pause, resume, skip, remove } = useRuleActions();
+  const { pending, pause, resume, skip, remove, payNow } = useRuleActions();
   const [editing, setEditing] = React.useState<RecurringRule | null>(null);
   // A new rule: the sheet open with no rule in it.
   const [creating, setCreating] = React.useState(false);
@@ -157,17 +158,13 @@ export function RecurringScreen({
               icon={<CalendarDays className="size-3.5" aria-hidden="true" />}
               tint="bg-tint-sky"
               label="Per week"
-              value={
-                <Amount value={totals.weekly} signDisplay="never" whole />
-              }
+              value={<Amount value={totals.weekly} signDisplay="never" whole />}
             />
             <HeroSplit
               icon={<CalendarRange className="size-3.5" aria-hidden="true" />}
               tint="bg-tint-lilac"
               label="Per year"
-              value={
-                <Amount value={totals.yearly} signDisplay="never" whole />
-              }
+              value={<Amount value={totals.yearly} signDisplay="never" whole />}
             />
           </>
         }
@@ -189,6 +186,7 @@ export function RecurringScreen({
               }}
               onPause={() => void pause(rule)}
               onSkip={rule.dueOn ? () => void skip(rule) : undefined}
+              onPayNow={rule.dueOn ? () => void payNow(rule) : undefined}
             />
           ))}
         </Section>
@@ -265,7 +263,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section aria-label={title}>
       <SectionHeader className="mb-1.5 px-1" title={title} count={count} />
 
       {count === 0 ? (
@@ -289,6 +287,7 @@ function RuleItem({
   onPause,
   onResume,
   onSkip,
+  onPayNow,
 }: {
   rule: RecurringRule;
   pending: boolean;
@@ -297,6 +296,8 @@ function RuleItem({
   onPause?: () => void;
   onResume?: () => void;
   onSkip?: () => void;
+  /** Due soon only: record the next occurrence now. */
+  onPayNow?: () => void;
 }) {
   const title = ruleTitle(rule);
 
@@ -337,6 +338,22 @@ function RuleItem({
         </span>
       </Link>
 
+      {/* The visible route; the menu below has it too. */}
+      {onPayNow ? (
+        <Button
+          variant="outline"
+          size="touch"
+          className="my-auto ml-2 shrink-0 px-3"
+          disabled={pending}
+          onClick={onPayNow}
+          aria-label={`Pay now: ${title}`}
+        >
+          {/* Short, so the rule's name keeps its room at 360px; the
+              accessible name says the whole thing. */}
+          Pay
+        </Button>
+      ) : null}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -352,6 +369,10 @@ function RuleItem({
 
         <DropdownMenuContent align="end" className="w-56">
           <MenuItem icon={Pencil} label="Edit" onSelect={onEdit} />
+
+          {onPayNow ? (
+            <MenuItem icon={Check} label="Pay now" onSelect={onPayNow} />
+          ) : null}
 
           {onSkip ? (
             <MenuItem

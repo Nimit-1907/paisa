@@ -9,19 +9,13 @@ import { getMonthContext } from "@/lib/month-param";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import {
-  getCreatedOccurrences,
-  getRecurringRules,
-} from "@/lib/queries/recurring";
-import {
   getMonthDays,
   getMonthRegret,
   getMonthSummary,
   getMonthTransactions,
 } from "@/lib/queries/transactions";
-import { addDays } from "@/lib/recurrence";
 import { expenseThrough } from "@/lib/month-trend";
 import { localToday } from "@/lib/recurring-check";
-import { upcomingBetween } from "@/lib/recurring-rule";
 import { transactionFiltersSchema } from "@/lib/schemas/transactions";
 
 export const metadata: Metadata = { title: "Records" };
@@ -57,68 +51,37 @@ export default async function RecordsPage({
 
   const activeFilterCount = countFilters(filters);
 
-  // The week ahead is only shown on the month the user is actually in: on
-  // October, "due in 3 days" would be about a month they are not looking at.
+  // The month the user is actually in, which compares itself with the same
+  // days of last month rather than the whole of it.
   const isCurrentMonth =
     month.year === month.maxYear && month.month === month.maxMonth;
   const today = localToday(timeZone);
 
-  const weekAhead = addDays(today, 7);
-
-  const rulesPromise = isCurrentMonth
-    ? getRecurringRules()
-    : Promise.resolve([]);
-
-  // Which of those occurrences already have a record, so the week ahead never
-  // offers "Pay now" for something already in the list below it. Chained
-  // rather than awaited after the rest, so it overlaps the month's own
-  // queries instead of adding a round trip to every page load. With no active
-  // rules it answers without touching the database.
   const previousMonth = {
     year: month.month === 1 ? month.year - 1 : month.year,
     month: month.month === 1 ? 12 : month.month - 1,
   };
 
-  const createdPromise = rulesPromise.then((loaded) =>
-    getCreatedOccurrences(
-      loaded.filter((rule) => rule.active).map((rule) => rule.id),
-      today,
-      weekAhead,
-      timeZone,
-    ),
-  );
-
-  const [
-    page,
-    summary,
-    previousDays,
-    regret,
-    monthDays,
-    accounts,
-    categories,
-    rules,
-    created,
-  ] = await Promise.all([
-    getMonthTransactions({
-      year: month.year,
-      month: month.month,
-      timeZone,
-      decimals: currency.decimals,
-      filters,
-    }),
-    getMonthSummary(month.year, month.month),
-    // Last month day by day, for the trend pill on the month card. Already
-    // in the same Promise.all, so it costs no extra round trip.
-    getMonthDays(previousMonth.year, previousMonth.month),
-    // What was marked "not worth it", for the line on the month card.
-    getMonthRegret(month.year, month.month),
-    // The shape of the month, for the bars on the card.
-    getMonthDays(month.year, month.month),
-    getActiveAccounts().then((result) => result.rows),
-    getActiveCategories(),
-    rulesPromise,
-    createdPromise,
-  ]);
+  const [page, summary, previousDays, regret, monthDays, accounts, categories] =
+    await Promise.all([
+      getMonthTransactions({
+        year: month.year,
+        month: month.month,
+        timeZone,
+        decimals: currency.decimals,
+        filters,
+      }),
+      getMonthSummary(month.year, month.month),
+      // Last month day by day, for the trend pill on the month card. Already
+      // in the same Promise.all, so it costs no extra round trip.
+      getMonthDays(previousMonth.year, previousMonth.month),
+      // What was marked "not worth it", for the line on the month card.
+      getMonthRegret(month.year, month.month),
+      // The shape of the month, for the bars on the card.
+      getMonthDays(month.year, month.month),
+      getActiveAccounts().then((result) => result.rows),
+      getActiveCategories(),
+    ]);
 
   // On the month you are in, last month counts only up to today's date:
   // the 1st to the 17th against the 1st to the 17th, not against all 31.
@@ -126,10 +89,6 @@ export default async function RecordsPage({
     previousDays,
     isCurrentMonth ? Number(today.slice(8, 10)) : null,
   );
-
-  const upcoming = isCurrentMonth
-    ? upcomingBetween(rules, today, weekAhead, created)
-    : [];
 
   // The header and the month card are rendered by the screen
   // rather than here: the header collapses the card into a one-line summary
@@ -156,7 +115,6 @@ export default async function RecordsPage({
         categories={toCategoryOptions(categories)}
         filters={filters}
         activeFilterCount={activeFilterCount}
-        upcoming={upcoming}
         today={today}
         monthNav={month}
       />

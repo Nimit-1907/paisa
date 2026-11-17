@@ -42,6 +42,7 @@ async function typeAmount(page: Page, label: string | RegExp, amount: string) {
 async function pickDate(page: Page, id: string, label: string, digits: string) {
   await page.locator(`#${id}`).click();
   const panel = page.getByRole("dialog", { name: label, exact: true });
+  await panel.getByRole("button", { name: "Type the date" }).click();
   await panel.getByLabel(`${label}, as day, month and year`).fill(digits);
   await panel.getByRole("button", { name: "Done", exact: true }).click();
   await expect(panel).toBeHidden();

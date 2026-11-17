@@ -25,7 +25,6 @@ import { MonthStrip } from "@/components/records/month-strip";
 import { type DaySpend, MonthStar } from "@/components/records/month-star";
 import { SectionHeader } from "@/components/shared/section-header";
 import { PullToRefresh } from "@/components/records/pull-to-refresh";
-import { UpcomingStrip } from "@/components/records/upcoming-strip";
 import type {
   AccountOption,
   CategoryOption,
@@ -43,7 +42,6 @@ import { comparedWith } from "@/lib/month-trend";
 import { railDate } from "@/lib/ledger";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
-import type { UpcomingOccurrence } from "@/lib/recurring-rule";
 import {
   useClearFilters,
   useRemoveFilter,
@@ -57,7 +55,6 @@ import {
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
-import { cn } from "@/lib/utils";
 
 type OptimisticAction =
   | { kind: "add"; row: TransactionRow }
@@ -83,8 +80,6 @@ export type RecordsScreenProps = {
   categories: CategoryOption[];
   filters: TransactionFilters;
   activeFilterCount: number;
-  /** Scheduled items in the next seven days; empty unless this is this month. */
-  upcoming: UpcomingOccurrence[];
   /** Today where the user is, `yyyy-mm-dd`. */
   today: string;
   /** Bounds for the month stepper in the sticky header. */
@@ -118,7 +113,6 @@ export function RecordsScreen({
   categories,
   filters,
   activeFilterCount,
-  upcoming,
   today,
   monthNav,
 }: RecordsScreenProps) {
@@ -658,8 +652,6 @@ export function RecordsScreen({
           </CollapsingHeader>
 
           <div className="mt-4 space-y-4">
-            <UpcomingStrip items={upcoming} today={today} />
-
             {/* Records are dated now, so only on the month that is running. */}
             {daysLeft > 0 ? <QuickEntry timeZone={timeZone} /> : null}
 
@@ -832,20 +824,8 @@ export function RecordsScreen({
             <SearchOverlay
               open={searchOpen}
               initialQuery={filters.search ?? ""}
-              categories={categories}
-              monthKey={monthKey}
               timeZone={timeZone}
               onClose={() => setSearchOpen(false)}
-              onFilter={(extra) => {
-                const query = new URLSearchParams(params.toString());
-                query.delete("search");
-                for (const [key, value] of Object.entries(extra)) {
-                  query.set(key, value);
-                }
-                router.replace(`${pathname}?${query.toString()}`, {
-                  scroll: false,
-                });
-              }}
             />
 
             <FiltersSheet
@@ -854,6 +834,8 @@ export function RecordsScreen({
               accounts={accounts}
               categories={categories}
               filters={filters}
+              monthKey={monthKey}
+              today={today}
             />
           </div>
         </div>

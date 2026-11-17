@@ -1,7 +1,5 @@
 import "server-only";
 
-import { instantToLocal, localToInstant } from "@/lib/dates";
-import { addDays } from "@/lib/recurrence";
 import { fromDb } from "@/lib/money";
 import { nextOccurrence } from "@/lib/recurrence";
 import { type RecurringRule, scheduleOf } from "@/lib/recurring-rule";
@@ -15,10 +13,7 @@ export function isUuid(value: string): boolean {
   return UUID.test(value);
 }
 
-export type {
-  RecurringRule,
-  UpcomingOccurrence,
-} from "@/lib/recurring-rule";
+export type { RecurringRule } from "@/lib/recurring-rule";
 
 const SELECT = `
   id, type, amount, note, frequency, interval_count, start_date, anchor_day,
@@ -141,55 +136,6 @@ export async function getRecurringRule(
   );
 }
 
-/**
- * The occurrences that already have a record, as `ruleId:yyyy-mm-dd`.
- *
- * The upcoming list is computed from the schedule, which knows nothing about
- * what has been written. Normally the cursor keeps the two in step, but a rule
- * can owe an occurrence while a later one has been paid early, and offering
- * "Pay now" for a record that already exists is a confusing no-op.
- */
-export async function getCreatedOccurrences(
-  ruleIds: string[],
-  from: string,
-  to: string,
-  timeZone: string,
-): Promise<Set<string>> {
-  const ids = ruleIds.filter(isUuid);
-  if (ids.length === 0) return new Set();
-
-  const start = localToInstant(`${from}T00:00`, timeZone);
-  // Exclusive, at the start of the day after: a record at 23:59:30 on the
-  // last day still belongs to that day.
-  const end = localToInstant(`${addDays(to, 1)}T00:00`, timeZone);
-  if (!start || !end) return new Set();
-
-  const supabase = await createClient();
-
-  // Scoped to the rules on screen, so the result is bounded by their number
-  // times the length of the window and cannot quietly hit PostgREST's row
-  // cap, which would report an occurrence as uncreated when it is not.
-  const { data, error } = await supabase
-    .from("transactions")
-    .select("recurring_rule_id, occurred_at")
-    .in("recurring_rule_id", ids)
-    .gte("occurred_at", start.toISOString())
-    .lt("occurred_at", end.toISOString())
-    .limit(1000);
-
-  if (error) throw new Error(error.message);
-
-  return new Set(
-    data.map(
-      (row) =>
-        `${row.recurring_rule_id}:${instantToLocal(
-          row.occurred_at,
-          timeZone,
-        ).slice(0, 10)}`,
-    ),
-  );
-}
-
 export type GeneratedRecord = {
   id: string;
   amount: string;
@@ -222,4 +168,3 @@ export async function getRuleTransactions(
     occurredAt: row.occurred_at,
   }));
 }
-
