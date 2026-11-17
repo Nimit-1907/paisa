@@ -7,6 +7,7 @@ import type {
   AccountOption,
   CategoryOption,
 } from "@/components/records/record-sheet";
+import { dateChip } from "@/lib/filter-summary";
 import { formatWith, tryToMinor } from "@/lib/money";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
 
@@ -25,7 +26,7 @@ const TYPE_LABELS = {
  * than through the sheet.
  *
  * Every chip reads as a sentence fragment, "Food", "over ₹1,000",
- * "from 1 Nov", because a bare value with no preposition is a guessing game
+ * "on 16 Nov", because a bare value with no preposition is a guessing game
  * about which field it belongs to.
  */
 export function ActiveFilters({
@@ -38,13 +39,14 @@ export function ActiveFilters({
   filters: TransactionFilters;
   accounts: AccountOption[];
   categories: CategoryOption[];
-  /** Drops one filter, by the query parameter it lives in. */
-  onRemove: (key: string, value?: string) => void;
+  /** Drops one filter, by the query parameter (or parameters) it lives in. */
+  onRemove: (key: string | string[], value?: string) => void;
   onClearAll: () => void;
 }) {
   const currency = useCurrency();
 
-  const chips: { key: string; value?: string; label: string }[] = [];
+  const chips: { key: string | string[]; value?: string; label: string }[] =
+    [];
 
   if (filters.search) {
     chips.push({ key: "q", label: `“${filters.search}”` });
@@ -88,12 +90,8 @@ export function ActiveFilters({
   if (filters.maxAmount) {
     chips.push({ key: "max", label: `under ${money(filters.maxAmount)}` });
   }
-  if (filters.from) {
-    chips.push({ key: "from", label: `from ${shortDay(filters.from)}` });
-  }
-  if (filters.to) {
-    chips.push({ key: "to", label: `to ${shortDay(filters.to)}` });
-  }
+  const dates = dateChip(filters.from, filters.to);
+  if (dates) chips.push({ key: dates.keys, label: dates.label });
 
   if (chips.length === 0) return null;
 
@@ -101,7 +99,7 @@ export function ActiveFilters({
     <div className="flex flex-wrap items-center gap-1.5">
       {chips.map((chip) => (
         <button
-          key={`${chip.key}:${chip.value ?? ""}`}
+          key={`${String(chip.key)}:${chip.value ?? ""}`}
           type="button"
           onClick={() => onRemove(chip.key, chip.value)}
           aria-label={`Remove filter: ${chip.label}`}
@@ -123,18 +121,4 @@ export function ActiveFilters({
       ) : null}
     </div>
   );
-}
-
-/** "1 Nov" from a `yyyy-mm-dd`, without pulling in a date library. */
-function shortDay(day: string): string {
-  const [year, month, date] = day.split("-").map(Number);
-  if (!year || !month || !date) return day;
-
-  // UTC throughout: this is a calendar date with no time in it, and
-  // constructing it locally can land on the day before.
-  return new Intl.DateTimeFormat("en-IN", {
-    timeZone: "UTC",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(Date.UTC(year, month - 1, date)));
 }

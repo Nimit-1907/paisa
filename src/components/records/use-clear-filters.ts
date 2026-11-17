@@ -40,10 +40,13 @@ export function useRemoveFilter() {
   const pathname = usePathname();
   const params = useSearchParams();
 
-  return (key: string, value?: string) => {
+  return (key: string | string[], value?: string) => {
     const next = new URLSearchParams(params.toString());
 
-    if (value === undefined) {
+    if (Array.isArray(key)) {
+      // A chip that stands for several parameters, the date range.
+      for (const each of key) next.delete(each);
+    } else if (value === undefined) {
       next.delete(key);
     } else {
       const rest = (next.get(key) ?? "")
