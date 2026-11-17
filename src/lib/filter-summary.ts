@@ -12,10 +12,13 @@ export function dateChip(
   to: string | undefined,
 ): { keys: string[]; label: string } | null {
   if (from && to) {
-    if (from === to) return { keys: ["from", "to"], label: `on ${shortDay(from)}` };
+    if (from === to)
+      return { keys: ["from", "to"], label: `on ${shortDay(from)}` };
 
     const sameMonth = from.slice(0, 7) === to.slice(0, 7);
-    const start = sameMonth ? String(Number(from.slice(8, 10))) : shortDay(from);
+    const start = sameMonth
+      ? String(Number(from.slice(8, 10)))
+      : shortDay(from);
     return { keys: ["from", "to"], label: `${start}–${shortDay(to)}` };
   }
   if (from) return { keys: ["from"], label: `from ${shortDay(from)}` };
@@ -33,6 +36,7 @@ export function countFilters(filters: TransactionFilters): number {
   if (filters.minAmount) count += 1;
   if (filters.maxAmount) count += 1;
   if (filters.from || filters.to) count += 1;
+  if (filters.worth) count += 1;
   return count;
 }
 

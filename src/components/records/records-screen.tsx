@@ -70,6 +70,8 @@ export type RecordsScreenProps = {
   monthDays: DaySpend[];
   /** Last month's expense total, minor units as text, for the trend pill. */
   previousExpense: string;
+  /** Minor units marked "not worth it" this month, as text. */
+  regret: string;
   /** `yyyy-mm`, for the link behind each bar. */
   monthKey: string;
   accounts: AccountOption[];
@@ -105,6 +107,7 @@ export function RecordsScreen({
   summary,
   monthDays,
   previousExpense,
+  regret,
   monthKey,
   accounts,
   categories,
@@ -203,6 +206,8 @@ export function RecordsScreen({
         row.categoryId,
         row.accountId,
         row.note,
+        // A tag set from the record's sheet changes nothing else.
+        String(row.worthIt),
       ].join(":"),
     )
     .join("|");
@@ -241,6 +246,10 @@ export function RecordsScreen({
    * Registered while this screen is mounted, so a record added from the FAB
    * lands in this list optimistically instead of only after a refresh.
    */
+  /** The list as shown, for the submit handler, which must not re-create. */
+  const visibleRef = React.useRef(visible);
+  visibleRef.current = visible;
+
   const submit = React.useCallback<RecordSubmit>(
     (values, context) =>
       new Promise((resolve) => {
@@ -252,6 +261,13 @@ export function RecordsScreen({
             const optimistic = toOptimisticRow(
               values,
               context.editingId,
+              // An edit keeps the record's "Worth it?"; the sheet does not
+              // carry it, the record does.
+              context.editingId
+                ? (visibleRef.current.find(
+                    (row) => row.id === context.editingId,
+                  )?.worthIt ?? null)
+                : null,
               accounts,
               categories,
               timeZone,
@@ -374,6 +390,7 @@ export function RecordsScreen({
                     note: record.note,
                     occurredAt: instantToLocal(record.occurredAt, timeZone),
                     recurringRuleId: record.recurringRuleId,
+                    worthIt: record.worthIt,
                   });
 
                   if (!undone.ok) toast.error(undone.error);
@@ -641,6 +658,8 @@ export function RecordsScreen({
             pastMonth={daysLeft > 0 ? null : monthName}
             selectedDay={selectedDay}
             onChooseDay={chooseDay}
+            regret={regret}
+            regretHref={`/records?m=${monthKey}&worth=regret`}
           />
         </div>
       </CollapsingHeader>
@@ -980,6 +999,7 @@ function toOptimisticRow(
     occurredAt: string;
   },
   editingId: string | null,
+  worthIt: boolean | null,
   accounts: AccountOption[],
   categories: CategoryOption[],
   timeZone: string,
@@ -1016,6 +1036,7 @@ function toOptimisticRow(
     // is gone before that answer comes back.
     recurringRuleId: null,
     recurringFrequency: null,
+    worthIt,
   };
 }
 

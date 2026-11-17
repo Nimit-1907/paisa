@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          operationName?: string
           query?: string
-          variables?: Json
+          operationName?: string
           extensions?: Json
+          variables?: Json
         }
         Returns: Json
       }
@@ -357,6 +357,7 @@ export type Database = {
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           user_id: string
+          worth_it: boolean | null
         }
         Insert: {
           account_id: string
@@ -371,6 +372,7 @@ export type Database = {
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id: string
+          worth_it?: boolean | null
         }
         Update: {
           account_id?: string
@@ -385,6 +387,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
+          worth_it?: boolean | null
         }
         Relationships: [
           {
@@ -545,8 +548,8 @@ export type Database = {
       account_month_flow: {
         Args: { p_month: string; p_account_id: string }
         Returns: {
-          money_out: number
           money_in: number
+          money_out: number
         }[]
       }
       assert_bucket: {
@@ -605,9 +608,9 @@ export type Database = {
       }
       check_category_owner: {
         Args: {
-          p_category_id: string
           p_user_id: string
           p_expected_kind?: Database["public"]["Enums"]["category_kind"]
+          p_category_id: string
         }
         Returns: undefined
       }
@@ -623,10 +626,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           name: string
-          tint: unknown
-          sort_order: number
-          icon: string
           kind: Database["public"]["Enums"]["category_kind"]
+          sort_order: number
+          tint: unknown
+          icon: string
         }[]
       }
       delete_own_account: {
@@ -649,14 +652,18 @@ export type Database = {
         Args: { p_rule_id: string; p_on: string }
         Returns: string
       }
+      month_regret: {
+        Args: { p_month: string }
+        Returns: number
+      }
       month_summary: {
         Args: { p_month: string }
         Returns: {
-          net: number
           categories: Json
-          total_expense: number
-          total_income: number
           month_start: string
+          net: number
+          total_income: number
+          total_expense: number
         }[]
       }
       note_suggestions: {
@@ -704,17 +711,17 @@ export type Database = {
       recurrence_occurrence: {
         Args:
           | {
-              p_interval: number
-              p_start: string
-              p_anchor_day: number
-              p_n: number
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
+              p_interval: number
+              p_n: number
+              p_anchor_day: number
+              p_start: string
             }
           | {
-              p_start: string
               p_frequency: Database["public"]["Enums"]["recurrence_frequency"]
               p_interval: number
               p_n: number
+              p_start: string
             }
         Returns: string
       }
@@ -754,9 +761,9 @@ export type Database = {
       }
       update_settings: {
         Args: {
-          p_week_start: number
-          p_display_name: string
           p_theme: string
+          p_display_name: string
+          p_week_start: number
           p_code: string
           p_symbol: string
           p_decimals: number

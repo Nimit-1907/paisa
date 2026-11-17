@@ -19,8 +19,14 @@ describe("dateChip", () => {
   });
 
   it("keeps an open start or end as from or to", () => {
-    expect(dateChip("2026-11-16", undefined)).toEqual({ keys: ["from"], label: "from 16 Nov" });
-    expect(dateChip(undefined, "2026-11-16")).toEqual({ keys: ["to"], label: "to 16 Nov" });
+    expect(dateChip("2026-11-16", undefined)).toEqual({
+      keys: ["from"],
+      label: "from 16 Nov",
+    });
+    expect(dateChip(undefined, "2026-11-16")).toEqual({
+      keys: ["to"],
+      label: "to 16 Nov",
+    });
   });
 
   it("is nothing with no dates", () => {
@@ -35,11 +41,23 @@ describe("countFilters", () => {
 
   it("counts every other set filter once and ignores empty lists", () => {
     expect(
-      countFilters({ search: "rent", types: ["expense"], accountIds: [], minAmount: "100", from: "2026-11-01" }),
+      countFilters({
+        search: "rent",
+        types: ["expense"],
+        accountIds: [],
+        minAmount: "100",
+        from: "2026-11-01",
+      }),
     ).toBe(4);
   });
 
   it("is zero with nothing set", () => {
     expect(countFilters({})).toBe(0);
+  });
+});
+
+describe("countFilters worth", () => {
+  it("counts Regretted as one filter", () => {
+    expect(countFilters({ worth: "regret" })).toBe(1);
   });
 });

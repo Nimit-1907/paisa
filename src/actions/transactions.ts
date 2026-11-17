@@ -30,6 +30,7 @@ import {
   type TransactionFilters,
   transactionFiltersSchema,
   transactionIdSchema,
+  worthItSchema,
   updateTransactionSchema,
 } from "@/lib/schemas/transactions";
 import { createClient } from "@/lib/supabase/server";
@@ -216,6 +217,39 @@ export async function deleteTransaction(input: {
 }
 
 /**
+ * "Worth it?" on a spend: worth it, a regret, or taking the tag off.
+ *
+ * Only a spend can carry it: the update is scoped to `type = 'expense'`,
+ * and the database refuses it on anything else as well.
+ */
+export async function setWorthIt(input: {
+  id: string;
+  worthIt: boolean | null;
+}): Promise<ActionResult<undefined>> {
+  const parsed = parseInput(worthItSchema, input);
+  if (!parsed.ok) return parsed;
+
+  const supabase = await createClient();
+  const user = await requireUser(supabase);
+  if (!user.ok) return user;
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .update({ worth_it: parsed.data.worthIt })
+    .eq("id", parsed.data.id)
+    .eq("user_id", user.id)
+    .eq("type", "expense")
+    .select("id")
+    .maybeSingle();
+
+  if (error) return failFromDb(error, "Could not save that.");
+  if (!data) return fail("That spend no longer exists.");
+
+  revalidateRecords();
+  return ok(undefined);
+}
+
+/**
  * Puts back a record the user has just deleted, id and all.
  *
  * Undo has to restore the same row rather than a copy: anything that
@@ -248,6 +282,9 @@ export async function restoreTransaction(
       note: parsed.data.note ?? null,
       occurred_at: prepared.value.occurredAt,
       recurring_rule_id: parsed.data.recurringRuleId ?? null,
+      // Only a spend carries it; anything else restores without.
+      worth_it:
+        parsed.data.type === "expense" ? (parsed.data.worthIt ?? null) : null,
     })
     .select("id")
     .single();

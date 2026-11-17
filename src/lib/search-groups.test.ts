@@ -21,6 +21,7 @@ function row(
     categoryTint: null,
     recurringRuleId: null,
     recurringFrequency: null,
+    worthIt: null,
     ...overrides,
   };
 }

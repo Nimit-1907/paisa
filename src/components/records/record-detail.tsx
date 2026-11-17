@@ -21,6 +21,7 @@ import {
   SheetBody,
   SheetFooter,
 } from "@/components/shared/responsive-sheet";
+import { WorthItToggle } from "@/components/records/worth-it-toggle";
 import { Button } from "@/components/ui/button";
 import { REPEAT_LABELS } from "@/lib/schemas/transactions";
 import type { TransactionRow } from "@/lib/queries/transactions";
@@ -202,6 +203,10 @@ export function RecordDetail({
                 />
               ) : null}
             </div>
+
+            {record.type === "expense" ? (
+              <WorthItToggle recordId={record.id} value={record.worthIt} />
+            ) : null}
           </SheetBody>
 
           {/* The record's three actions, side by side and the same size, so

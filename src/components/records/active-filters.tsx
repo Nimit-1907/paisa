@@ -90,6 +90,13 @@ export function ActiveFilters({
   if (filters.maxAmount) {
     chips.push({ key: "max", label: `under ${money(filters.maxAmount)}` });
   }
+  if (filters.worth) {
+    chips.push({
+      key: "worth",
+      label: filters.worth === "regret" ? "Regretted" : "Worth it",
+    });
+  }
+
   const dates = dateChip(filters.from, filters.to);
   if (dates) chips.push({ key: dates.keys, label: dates.label });
 

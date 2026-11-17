@@ -4,7 +4,8 @@ import { PageShell } from "@/components/layout/page-shell";
 import { RecordsScreen } from "@/components/records/records-screen";
 import { toAccountOptions, toCategoryOptions } from "@/lib/entry-options";
 import { countFilters } from "@/lib/filter-summary";
-import { getMonthContext, parseFilters } from "@/lib/month-param";
+import { parseFilters } from "@/lib/filter-params";
+import { getMonthContext } from "@/lib/month-param";
 import { getActiveAccounts } from "@/lib/queries/accounts";
 import { getActiveCategories } from "@/lib/queries/categories";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/lib/queries/recurring";
 import {
   getMonthDays,
+  getMonthRegret,
   getMonthSummary,
   getMonthTransactions,
 } from "@/lib/queries/transactions";
@@ -48,7 +50,9 @@ export default async function RecordsPage({
 
   // Parsed through the same schema the actions use, so a hand-edited URL
   // cannot reach the query with something the filters do not allow.
-  const parsedFilters = transactionFiltersSchema.safeParse(parseFilters(single));
+  const parsedFilters = transactionFiltersSchema.safeParse(
+    parseFilters(single),
+  );
   const filters = parsedFilters.success ? parsedFilters.data : {};
 
   const activeFilterCount = countFilters(filters);
@@ -88,30 +92,33 @@ export default async function RecordsPage({
     page,
     summary,
     previousDays,
+    regret,
     monthDays,
     accounts,
     categories,
     rules,
     created,
   ] = await Promise.all([
-      getMonthTransactions({
-        year: month.year,
-        month: month.month,
-        timeZone,
-        decimals: currency.decimals,
-        filters,
-      }),
-      getMonthSummary(month.year, month.month),
-      // Last month day by day, for the trend pill on the month card. Already
-      // in the same Promise.all, so it costs no extra round trip.
-      getMonthDays(previousMonth.year, previousMonth.month),
-      // The shape of the month, for the bars on the card.
-      getMonthDays(month.year, month.month),
-      getActiveAccounts().then((result) => result.rows),
-      getActiveCategories(),
-      rulesPromise,
-      createdPromise,
-    ]);
+    getMonthTransactions({
+      year: month.year,
+      month: month.month,
+      timeZone,
+      decimals: currency.decimals,
+      filters,
+    }),
+    getMonthSummary(month.year, month.month),
+    // Last month day by day, for the trend pill on the month card. Already
+    // in the same Promise.all, so it costs no extra round trip.
+    getMonthDays(previousMonth.year, previousMonth.month),
+    // What was marked "not worth it", for the line on the month card.
+    getMonthRegret(month.year, month.month),
+    // The shape of the month, for the bars on the card.
+    getMonthDays(month.year, month.month),
+    getActiveAccounts().then((result) => result.rows),
+    getActiveCategories(),
+    rulesPromise,
+    createdPromise,
+  ]);
 
   // On the month you are in, last month counts only up to today's date:
   // the 1st to the 17th against the 1st to the 17th, not against all 31.
@@ -142,6 +149,7 @@ export default async function RecordsPage({
         }}
         monthDays={monthDays}
         previousExpense={previousExpense.toString()}
+        regret={regret.toString()}
         monthKey={`${month.year}-${String(month.month).padStart(2, "0")}`}
         accounts={toAccountOptions(accounts)}
         categories={toCategoryOptions(categories)}

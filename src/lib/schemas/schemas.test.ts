@@ -20,7 +20,9 @@ import {
 import { updateRecurringRuleSchema } from "@/lib/schemas/recurring";
 import {
   createTransactionSchema,
+  restoreTransactionSchema,
   transactionFiltersSchema,
+  worthItSchema,
 } from "@/lib/schemas/transactions";
 
 /**
@@ -495,5 +497,54 @@ describe("googleSignInSchema", () => {
     expect(
       googleSignInSchema.safeParse({ next: `/${"a".repeat(2048)}` }).success,
     ).toBe(false);
+  });
+});
+
+describe("worthItSchema", () => {
+  const id = "b8000000-0000-4000-8000-0000000000f1";
+
+  it("takes worth it, a regret, or taking the tag off", () => {
+    expect(worthItSchema.safeParse({ id, worthIt: true }).success).toBe(true);
+    expect(worthItSchema.safeParse({ id, worthIt: false }).success).toBe(true);
+    expect(worthItSchema.safeParse({ id, worthIt: null }).success).toBe(true);
+  });
+
+  it("refuses anything else", () => {
+    expect(worthItSchema.safeParse({ id, worthIt: "yes" }).success).toBe(false);
+    expect(worthItSchema.safeParse({ id: "x", worthIt: true }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("transactionFiltersSchema worth", () => {
+  it("narrows to regrets or to worth it", () => {
+    expect(transactionFiltersSchema.parse({ worth: "regret" }).worth).toBe(
+      "regret",
+    );
+    expect(transactionFiltersSchema.parse({ worth: "worth" }).worth).toBe(
+      "worth",
+    );
+  });
+
+  it("refuses an unknown value", () => {
+    expect(transactionFiltersSchema.safeParse({ worth: "maybe" }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("restoreTransactionSchema worthIt", () => {
+  it("carries the tag back with an undone delete", () => {
+    const parsed = restoreTransactionSchema.safeParse({
+      id: "b8000000-0000-4000-8000-0000000000f1",
+      type: "expense",
+      amount: "450",
+      accountId: "b8000000-0000-4000-8000-000000000010",
+      categoryId: "b8000000-0000-4000-8000-000000000011",
+      occurredAt: "2026-11-17T12:00",
+      worthIt: false,
+    });
+    expect(parsed.success && parsed.data.worthIt).toBe(false);
   });
 });

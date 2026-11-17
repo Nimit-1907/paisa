@@ -71,6 +71,7 @@ export function FiltersSheet({
   const [maxAmount, setMaxAmount] = React.useState("");
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
+  const [worth, setWorth] = React.useState<"" | "worth" | "regret">("");
 
   React.useEffect(() => {
     if (!open) return;
@@ -87,6 +88,7 @@ export function FiltersSheet({
     setMaxAmount(filters.maxAmount ?? "");
     setFrom(filters.from ?? "");
     setTo(filters.to ?? "");
+    setWorth(filters.worth ?? "");
   }, [open, filters]);
 
   function toggle<T>(list: T[], value: T): T[] {
@@ -112,6 +114,7 @@ export function FiltersSheet({
     set("max", maxAmount.trim());
     set("from", from);
     set("to", to);
+    set("worth", worth);
 
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     onOpenChange(false);
@@ -177,6 +180,22 @@ export function FiltersSheet({
                 value,
                 label: TYPE_LABELS[value],
               })),
+            ]}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Worth it?</Label>
+          <SegmentedControl
+            label="Worth it?"
+            value={worth || "all"}
+            onChange={(next) =>
+              setWorth(next === "all" ? "" : (next as "worth" | "regret"))
+            }
+            options={[
+              { value: "all", label: "All" },
+              { value: "worth", label: "Worth it" },
+              { value: "regret", label: "Regretted" },
             ]}
           />
         </div>

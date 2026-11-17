@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ChevronRight,
+  ThumbsDown,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -44,6 +48,8 @@ export function MonthStar({
   pastMonth = null,
   selectedDay = null,
   onChooseDay,
+  regret = "0",
+  regretHref,
   flat = false,
 }: {
   summary: { income: string; expense: string; net: string };
@@ -60,6 +66,10 @@ export function MonthStar({
   selectedDay?: string | null;
   /** A day tapped on the calendar. */
   onChooseDay?: (day: string) => void;
+  /** Minor units marked "not worth it" this month, as text. */
+  regret?: string;
+  /** Where the regret line goes: the list narrowed to regrets. */
+  regretHref?: string;
   /**
    * Drops the accent for the one visit where the recap card is showing.
    * Exactly one bold card per screen; two would be none.
@@ -177,6 +187,27 @@ export function MonthStar({
           gridLabel="Spending by day"
           onSelect={(day) => onChooseDay?.(day)}
         />
+      ) : null}
+
+      {BigInt(regret) > 0n && regretHref ? (
+        // Only when something was regretted: a "₹0 regretted" line would be
+        // a nag on every month that went fine.
+        <Link
+          href={regretHref}
+          className="text-text-secondary hoverable:text-text -mx-4 mt-2 -mb-3 flex h-11 items-center gap-2 border-t px-4 text-sm"
+        >
+          <ThumbsDown
+            className="text-expense size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="min-w-0 flex-1 truncate">
+            <span className="text-text font-semibold">
+              <Amount value={BigInt(regret)} signDisplay="never" whole />
+            </span>{" "}
+            regretted
+          </span>
+          <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
+        </Link>
       ) : null}
     </HeroStat>
   );

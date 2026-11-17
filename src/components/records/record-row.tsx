@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, CopyPlus, Pencil, Repeat, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  CopyPlus,
+  Pencil,
+  Repeat,
+  ThumbsDown,
+  Trash2,
+} from "lucide-react";
 
 import { Amount } from "@/components/shared/amount";
 import { Tile } from "@/components/shared/tile";
@@ -104,11 +111,23 @@ export function RecordRow({
         )
       }
       titleBadge={
-        record.recurringRuleId ? (
-          <Repeat
-            className="text-text-secondary size-3 shrink-0"
-            aria-label="Repeats"
-          />
+        record.recurringRuleId || record.worthIt === false ? (
+          <>
+            {record.recurringRuleId ? (
+              <Repeat
+                className="text-text-secondary size-3 shrink-0"
+                role="img"
+                aria-label="Repeats"
+              />
+            ) : null}
+            {record.worthIt === false ? (
+              <ThumbsDown
+                className="text-expense size-3 shrink-0"
+                role="img"
+                aria-label="Regretted"
+              />
+            ) : null}
+          </>
         ) : null
       }
       subtitle={

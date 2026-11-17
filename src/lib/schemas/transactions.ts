@@ -114,12 +114,20 @@ export const updateTransactionSchema = z
 
 export const transactionIdSchema = z.object({ id: uuid });
 
+/** "Worth it?" on a spend: true, false (a regret), or null to take it off. */
+export const worthItSchema = z.object({
+  id: uuid,
+  worthIt: z.boolean().nullable(),
+});
+
 /** Re-inserting a deleted row, id and all, so undo restores exactly it. */
 export const restoreTransactionSchema = z
   .object({
     ...transactionFields,
     id: uuid,
     recurringRuleId: uuid.nullable().optional(),
+    // So an undone delete keeps its "Worth it?".
+    worthIt: z.boolean().nullable().optional(),
   })
   .superRefine(checkShape);
 
@@ -146,6 +154,8 @@ export const transactionFiltersSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
+  /** Spends marked worth it, or regretted. */
+  worth: z.enum(["worth", "regret"]).optional(),
 });
 
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
@@ -160,4 +170,5 @@ export const FILTER_PARAM_KEYS = [
   "max",
   "from",
   "to",
+  "worth",
 ] as const;

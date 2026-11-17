@@ -30,6 +30,8 @@ export type TransactionRow = {
    */
   recurringFrequency:
     Database["public"]["Enums"]["recurrence_frequency"] | null;
+  /** "Worth it?" on a spend: true, false (a regret), or null, not said. */
+  worthIt: boolean | null;
 };
 
 export type TransactionPage = {
@@ -44,7 +46,7 @@ const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const SELECT = `
-  id, type, amount, note, occurred_at, recurring_rule_id,
+  id, type, amount, note, occurred_at, recurring_rule_id, worth_it,
   account_id, to_account_id, category_id,
   category:categories(name, icon, tint),
   rule:recurring_rules(frequency),
@@ -59,6 +61,7 @@ type JoinedRow = {
   note: string | null;
   occurred_at: string;
   recurring_rule_id: string | null;
+  worth_it: boolean | null;
   account_id: string;
   to_account_id: string | null;
   category_id: string | null;
@@ -91,6 +94,7 @@ function toRow(row: JoinedRow): TransactionRow {
     categoryTint: row.category?.tint ?? null,
     recurringRuleId: row.recurring_rule_id,
     recurringFrequency: row.rule?.frequency ?? null,
+    worthIt: row.worth_it,
   };
 }
 
@@ -169,6 +173,10 @@ export async function getMonthTransactions({
 
   if (filters?.categoryIds?.length) {
     query = query.in("category_id", filters.categoryIds);
+  }
+
+  if (filters?.worth) {
+    query = query.eq("worth_it", filters.worth === "worth");
   }
 
   const min = filters?.minAmount
@@ -302,6 +310,24 @@ export async function getMonthSummary(
   const expense = fromDb(data?.total_expense ?? 0);
 
   return { income, expense, net: income - expense };
+}
+
+/**
+ * What was regretted in a month, in minor units: the spends marked "not
+ * worth it". Zero when none are.
+ */
+export async function getMonthRegret(
+  year: number,
+  month: number,
+): Promise<bigint> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("month_regret", {
+    p_month: `${year}-${String(month).padStart(2, "0")}-01`,
+  });
+
+  if (error) throw new Error(error.message);
+  return fromDb(data ?? 0);
 }
 
 /** One record, for the edit sheet. */
