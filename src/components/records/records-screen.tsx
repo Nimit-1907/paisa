@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Link from "next/link";
 
-import { ChevronRight, Plus, Receipt, SlidersHorizontal } from "lucide-react";
+import { Plus, Receipt, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -41,6 +41,7 @@ import { parseAmount } from "@/lib/amount";
 import { instantToLocal, localToInstant } from "@/lib/dates";
 import { fromMinor } from "@/lib/money";
 import { comparedWith } from "@/lib/month-trend";
+import { balancesAfter, railDate } from "@/lib/ledger";
 import { dayDifference } from "@/lib/recurrence";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import type { UpcomingOccurrence } from "@/lib/recurring-rule";
@@ -474,6 +475,16 @@ export function RecordsScreen({
     [visible, timeZone, today],
   );
 
+  /**
+   * What was left after each day, for the ledger. Only on the whole month:
+   * narrowed by a filter, "left" would be about records that are hidden.
+   */
+  const balances = React.useMemo(
+    () =>
+      activeFilterCount > 0 ? [] : balancesAfter(days, BigInt(summary.net)),
+    [days, summary.net, activeFilterCount],
+  );
+
   /*
    * Held by id rather than by value.
    *
@@ -738,62 +749,117 @@ export function RecordsScreen({
           />
         ) : (
           <div className="space-y-4">
-            {days.map((day) => (
-              <section key={day.key} aria-label={day.label}>
-                <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
-                  <h2 className="min-w-0">
-                    {/*
-                    The day heading is the way into a single day. It used to
-                    be the bars on the card above, which were seven pixels
-                    wide; this is the same destination with a target you can
-                    actually hit.
-                  */}
-                    <Link
-                      href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
-                      className="text-text hoverable:text-text-secondary rounded-control inline-flex min-h-11 items-center gap-1 text-sm font-semibold"
-                    >
-                      {day.label}
-                      <ChevronRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  </h2>
-                  {/* Through `Amount` like every other figure, so the day's
-                      total trims its paise on the same rule the rows below
-                      it do, the two disagreeing is worse than either. */}
-                  {day.net === 0n ? null : (
-                    <span
-                      className={cn(
-                        "text-xs font-semibold",
-                        day.net > 0n ? "text-income" : "text-text-secondary",
-                      )}
-                    >
-                      <Amount value={day.net} signDisplay="always" />
-                    </span>
-                  )}
-                </div>
+            {/*
+              The month as a ledger, the khata's layout: the date in a margin
+              on the left, every record of that day beside it, and under them
+              the day's total and what was left after it. One card for the
+              whole month rather than a card per day, which at one record a
+              day spent more height on headings than on records.
+            */}
+            <ListCard as="div">
+              {days.map((day, index) => {
+                const rail = railDate(day.key);
+                const balance = balances[index];
+                return (
+                  <section
+                    key={day.key}
+                    aria-label={day.label}
+                    className="flex"
+                  >
+                    {/* The date is the way into a single day, a 48px
+                        target rather than the card's calendar alone. */}
+                    <h2 className="border-hairline w-12 shrink-0 border-r">
+                      <Link
+                        href={`/records?m=${monthKey}&from=${day.key}&to=${day.key}`}
+                        className="hoverable:bg-surface-muted flex h-full min-h-14 w-full flex-col items-center pt-3"
+                      >
+                        <span className="text-text text-lg leading-none font-bold tabular-nums">
+                          {rail.date}
+                        </span>
+                        {/* Heard as "17 Tue", not "17Tue". */}{" "}
+                        <span
+                          className={cn(
+                            "mt-1 text-xs",
+                            day.key === today
+                              ? "text-text font-semibold"
+                              : "text-text-secondary",
+                          )}
+                        >
+                          {day.key === today ? "Today" : rail.weekday}
+                        </span>
+                        {/* The name starts with what is on screen, "17
+                            Tue", as WCAG 2.5.3 asks; the section around it
+                            carries the full date. */}
+                        <span className="sr-only">, show this day only</span>
+                      </Link>
+                    </h2>
 
-                <ListCard>
-                  {day.rows.map((record) => (
-                    <li key={record.id}>
-                      <RecordRow
-                        record={record}
-                        pending={record.id.startsWith("optimistic-")}
-                        highlight={record.id === sheet.lastSavedId}
-                        // Tapping opens the detail; the menu's Edit is the
-                        // fast path for people who know it is there.
-                        onOpen={() => setDetailId(record.id)}
-                        onEdit={() => sheet.openEdit(draftOf(record))}
-                        onLogAgain={() =>
-                          sheet.openLogAgain(
-                            logAgainDraft(record, timeZone, new Date()),
-                          )
-                        }
-                        onDelete={() => remove(record)}
-                      />
-                    </li>
-                  ))}
-                </ListCard>
-              </section>
-            ))}
+                    <div className="min-w-0 flex-1">
+                      <ul className="divide-hairline divide-y">
+                        {day.rows.map((record) => (
+                          <li key={record.id}>
+                            <RecordRow
+                              dense
+                              record={record}
+                              pending={record.id.startsWith("optimistic-")}
+                              highlight={record.id === sheet.lastSavedId}
+                              // Tapping opens the detail; the menu's Edit is
+                              // the fast path for people who know it is there.
+                              onOpen={() => setDetailId(record.id)}
+                              onEdit={() => sheet.openEdit(draftOf(record))}
+                              onLogAgain={() =>
+                                sheet.openLogAgain(
+                                  logAgainDraft(record, timeZone, new Date()),
+                                )
+                              }
+                              onDelete={() => remove(record)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* The day's line: its total, and, on the whole
+                          month, what was left after it. Through `Amount`
+                          like every figure, so the paise follow the rows. */}
+                      <p className="text-text-secondary flex items-center gap-2 px-3 pt-0.5 pb-2 text-xs">
+                        <span
+                          aria-hidden="true"
+                          className="border-hairline min-w-4 flex-1 border-b border-dotted"
+                        />
+                        {/* A day of transfers alone nets to nothing; "+₹0"
+                            would read as income. */}
+                        {day.net === 0n ? null : (
+                          <span
+                            className={cn(
+                              "font-semibold",
+                              day.net > 0n && "text-income",
+                            )}
+                          >
+                            <span className="sr-only">Day total </span>
+                            <Amount value={day.net} signDisplay="always" />
+                          </span>
+                        )}
+                        {balance !== undefined ? (
+                          <>
+                            {day.net === 0n ? null : (
+                              <span aria-hidden="true">·</span>
+                            )}
+                            <span
+                              className={cn(
+                                balance < 0n ? "text-expense" : "text-text",
+                              )}
+                            >
+                              <Amount value={balance} />
+                              <span> left</span>
+                            </span>
+                          </>
+                        ) : null}
+                      </p>
+                    </div>
+                  </section>
+                );
+              })}
+            </ListCard>
 
             {more ? (
               <LoadMore onVisible={loadMore} loading={loadingMore} />

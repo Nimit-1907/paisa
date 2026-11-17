@@ -48,6 +48,7 @@ export function RecordRow({
   pending = false,
   highlight = false,
   selected = false,
+  dense = false,
   onOpen,
   onEdit,
   onLogAgain,
@@ -60,6 +61,8 @@ export function RecordRow({
   highlight?: boolean;
   /** Shown in the detail pane beside the list, on a wide screen. */
   selected?: boolean;
+  /** The ledger's tighter row. */
+  dense?: boolean;
   /** Tapping the row. Opens the detail. */
   onOpen: () => void;
   /** The menu's Edit, which skips the detail. */
@@ -71,11 +74,16 @@ export function RecordRow({
   const amount = BigInt(record.amount);
   const transfer = record.type === "transfer";
 
+  // On the ledger, a spend or income with a note moves its account under
+  // the amount; everywhere else it follows the note on the second line.
+  const accountUnderAmount = dense && !transfer && Boolean(record.note);
+
   const tone: keyof typeof TONE_CLASS =
     record.type === "income" ? "income" : transfer ? "transfer" : "expense";
 
   return (
     <ListRow
+      dense={dense}
       pending={pending}
       highlight={highlight}
       selected={selected}
@@ -131,10 +139,15 @@ export function RecordRow({
         ) : null
       }
       subtitle={
-        <>
-          {record.note && !transfer ? (
-            <>
-              {/*
+        accountUnderAmount ? (
+          // The ledger's row is narrower: the note has the line to itself
+          // and the account sits under the amount.
+          <span className="min-w-0 truncate">{record.note}</span>
+        ) : (
+          <>
+            {record.note && !transfer ? (
+              <>
+                {/*
                 The note shrinks last. Two truncating siblings share a
                 shortfall in proportion to their width, so at 360px both got
                 cut and "Zomato, team lunch · ICICI Credit Card" came out as
@@ -145,27 +158,35 @@ export function RecordRow({
                 does the note shrink. (A 70% cap on the note did the
                 opposite at 360px: both were cut.)
               */}
-              <span className="min-w-0 truncate">{record.note}</span>
-              <span aria-hidden="true">·</span>
-            </>
-          ) : null}
-          {transfer ? (
-            <span className="flex min-w-0 items-center gap-0.5">
-              <span className="truncate">{record.accountName}</span>
-              <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
-              <span className="truncate">{record.toAccountName}</span>
-            </span>
-          ) : (
-            <span
-              className={cn(
-                "truncate",
-                record.note && "min-w-[6ch] shrink-[100]",
-              )}
-            >
-              {record.accountName}
-            </span>
-          )}
-        </>
+                <span className="min-w-0 truncate">{record.note}</span>
+                <span aria-hidden="true">·</span>
+              </>
+            ) : null}
+            {transfer ? (
+              <span className="flex min-w-0 items-center gap-0.5">
+                <span className="truncate">{record.accountName}</span>
+                <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+                <span className="truncate">{record.toAccountName}</span>
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  "truncate",
+                  record.note && "min-w-[6ch] shrink-[100]",
+                )}
+              >
+                {record.accountName}
+              </span>
+            )}
+          </>
+        )
+      }
+      trailingMeta={
+        accountUnderAmount ? (
+          // As wide as the amount above it and no wider (w-0 min-w-full):
+          // a long account name must not take the note's room.
+          <span className="block w-0 min-w-full truncate">{record.accountName}</span>
+        ) : undefined
       }
       trailing={
         // The sign and the figure share one coloured wrapper. Colouring only
