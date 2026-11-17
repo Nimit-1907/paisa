@@ -460,6 +460,30 @@ export function RecordsScreen({
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
 
+  /** The day the list is narrowed to, when it is exactly one. */
+  const selectedDay =
+    filters.from && filters.from === filters.to ? filters.from : null;
+
+  /**
+   * A day tapped on the month card's calendar narrows the list to it, and
+   * the same day again takes that off. Every other filter stays.
+   */
+  const chooseDay = React.useCallback(
+    (day: string) => {
+      const next = new URLSearchParams(params.toString());
+      next.set("m", monthKey);
+      if (day === selectedDay) {
+        next.delete("from");
+        next.delete("to");
+      } else {
+        next.set("from", day);
+        next.set("to", day);
+      }
+      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    },
+    [params, monthKey, selectedDay, router, pathname],
+  );
+
   /** "Jul", for the card's label on a month that is over. */
   const monthName = new Intl.DateTimeFormat("en-IN", {
     timeZone: "UTC",
@@ -615,6 +639,8 @@ export function RecordsScreen({
             daysLeft={daysLeft}
             trend={trend}
             pastMonth={daysLeft > 0 ? null : monthName}
+            selectedDay={selectedDay}
+            onChooseDay={chooseDay}
           />
         </div>
       </CollapsingHeader>

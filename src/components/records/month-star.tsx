@@ -7,12 +7,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { useFormatMoney } from "@/components/profile-provider";
+import { Calendar } from "@/components/shared/calendar";
 import { leftLabel } from "@/lib/month-trend";
+import { heatLevel } from "@/lib/spend-heat";
 import { Amount } from "@/components/shared/amount";
 import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
 import { Pill } from "@/components/shared/pill";
 import { useCountUp } from "@/lib/motion";
-import { cn } from "@/lib/utils";
 
 export type DaySpend = {
   /** `yyyy-mm-dd`. */
@@ -24,15 +26,14 @@ export type DaySpend = {
 /**
  * The month card: the number you came for, over the shape of the month.
  *
- * One figure in the display face, and under it a thin bar for every day,
- * taller where more went out. It is the one element in this app that is
- * meant to be recognisable, and it earns the space by being useful: the
- * shape answers "was it one bad week or all of it?" before any chart is
- * opened, and every bar is a link to that day's records.
+ * One figure in the display face, and under it the month as a calendar,
+ * each day shaded darker where more went out. It is the one element in
+ * this app that is meant to be recognisable, and it earns the space by
+ * being useful: it answers "was it one bad week or all of it?" before any
+ * chart is opened, and every day narrows the list to that day.
  *
- * Bars are scaled to the busiest ordinary day rather than the busiest day,
- * so one rent payment does not flatten the other thirty. The outlier runs
- * off the top, which is also the honest way to draw it.
+ * Shading is scaled to the busiest ordinary day rather than the busiest
+ * day, so one rent payment does not wash out the other thirty.
  */
 export function MonthStar({
   summary,
@@ -41,6 +42,8 @@ export function MonthStar({
   daysLeft,
   trend,
   pastMonth = null,
+  selectedDay = null,
+  onChooseDay,
   flat = false,
 }: {
   summary: { income: string; expense: string; net: string };
@@ -53,12 +56,17 @@ export function MonthStar({
   trend?: { text: string; better: boolean } | null;
   /** "Jul" when the month is over, null while it is running. */
   pastMonth?: string | null;
+  /** The day the list is narrowed to, when it is one day. */
+  selectedDay?: string | null;
+  /** A day tapped on the calendar. */
+  onChooseDay?: (day: string) => void;
   /**
    * Drops the accent for the one visit where the recap card is showing.
    * Exactly one bold card per screen; two would be none.
    */
   flat?: boolean;
 }) {
+  const format = useFormatMoney();
   const net = BigInt(summary.net);
   const shown = useCountUp(net < 0n ? -net : net);
 
@@ -139,35 +147,36 @@ export function MonthStar({
     >
       {days.length > 0 ? (
         /*
-         * Decoration, deliberately.
-         *
-         * Each bar was a link to that day's records, which is a lovely idea
-         * and an inaccessible one: thirty bars across 328px makes each
-         * target about seven pixels wide, against the 24 that WCAG 2.5.8
-         * asks for and the 44 this app promises. The behaviour moved to the
-         * day headings in the list below, which are full width.
-         *
-         * Today's bar is periwinkle *and* carries an ink border. The two
-         * fills are 1.03:1 apart in light mode, they differ in hue, not
-         * brightness, so without the border, colour vision would be the
-         * only way to find today. See src/lib/tokens.test.ts.
+         * The month as a calendar, each day shaded by what went out, and
+         * each one a 44px button that narrows the list to that day. It
+         * replaced thirty bars that were decoration only: at 328px each
+         * bar was seven pixels wide, too small to tap. Days still to come
+         * are there but cannot be chosen.
          */
-        <div aria-hidden="true" className="mt-3 flex h-10 items-end gap-[2px]">
-          {days.map((day) => (
-            <span
-              key={day.on}
-              className={cn(
-                "flex-1 rounded-[2px]",
-                day.on === today
-                  ? "bg-accent border-ink border-[1.5px]"
-                  : "bg-bar-muted",
-              )}
-              style={{
-                height: `${barHeight(Number(BigInt(day.expense)), scale)}%`,
-              }}
-            />
-          ))}
-        </div>
+        <Calendar
+          className="-mx-4 mt-3"
+          month={days[0]!.on.slice(0, 8) + "01"}
+          selected={selectedDay ?? ""}
+          today={today}
+          min={days[0]!.on}
+          max={today && today < days.at(-1)!.on ? today : days.at(-1)!.on}
+          heat={Object.fromEntries(
+            days.map((day) => [
+              day.on,
+              heatLevel(Number(BigInt(day.expense)), scale),
+            ]),
+          )}
+          describeDay={(day) => {
+            const spent = BigInt(
+              days.find((each) => each.on === day)?.expense ?? "0",
+            );
+            return spent > 0n
+              ? `, spent ${format(spent, { paise: "trim" })}`
+              : ", nothing spent";
+          }}
+          gridLabel="Spending by day"
+          onSelect={(day) => onChooseDay?.(day)}
+        />
       ) : null}
     </HeroStat>
   );
@@ -190,9 +199,4 @@ export function ordinaryPeak(values: number[]): number {
   );
 
   return spending[index] || 1;
-}
-
-/** Percent of the track, floored so an empty day is still a mark. */
-export function barHeight(spent: number, scale: number): number {
-  return Math.min(100, Math.max(8, (spent / scale) * 100));
 }
