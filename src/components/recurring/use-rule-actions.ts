@@ -8,9 +8,11 @@ import { toast } from "sonner";
 
 import {
   deleteRecurringRule,
+  payOccurrenceNow,
   setRecurringRulePaused,
   skipNextOccurrence,
 } from "@/actions/recurring";
+import { deleteTransaction } from "@/actions/transactions";
 import type { ActionResult } from "@/lib/action-result";
 import type { RecurringRule } from "@/lib/recurring-rule";
 import { dayLabel } from "@/lib/relative-day";
@@ -104,5 +106,61 @@ export function useRuleActions() {
     [run],
   );
 
-  return { pending, pause, resume, skip, remove };
+  /**
+   * The next occurrence, recorded now on its own day, with Undo.
+   *
+   * Undo deletes the record it made; the database then puts that day back
+   * on the rule's schedule (20261118120000_paid_early_undo.sql), so a
+   * mistaken tap costs nothing.
+   */
+  const payNow = React.useCallback(
+    async (rule: RecurringRule) => {
+      if (!rule.dueOn) return;
+      setPending(true);
+
+      try {
+        const result = await payOccurrenceNow({ id: rule.id, on: rule.dueOn });
+        if (!result.ok) {
+          toast.error(result.error);
+          return;
+        }
+
+        const made = result.data.transactionId;
+        if (!made) {
+          toast.success("That one was already added");
+          router.refresh();
+          return;
+        }
+
+        toast.success("Paid early", {
+          description: `Added to your records for ${dayLabel(rule.dueOn)}`,
+          action: {
+            label: "Undo",
+            onClick: () => {
+              void (async () => {
+                try {
+                  const undone = await deleteTransaction({ id: made });
+                  if (!undone.ok) toast.error(undone.error);
+                } catch (thrown) {
+                  console.error("[recurring]", thrown);
+                  toast.error("Could not undo that. Check your connection.");
+                } finally {
+                  router.refresh();
+                }
+              })();
+            },
+          },
+        });
+        router.refresh();
+      } catch (thrown) {
+        console.error("[recurring]", thrown);
+        toast.error("Could not add that record. Check your connection.");
+      } finally {
+        setPending(false);
+      }
+    },
+    [router],
+  );
+
+  return { pending, pause, resume, skip, remove, payNow };
 }

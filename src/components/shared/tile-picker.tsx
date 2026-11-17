@@ -73,7 +73,9 @@ export function TilePicker({
             )}
           >
             <Tile tint={option.tint} icon={option.icon} size="md" />
-            <span className="text-text w-full truncate text-center text-xs font-medium">
+            {/* Two lines before an ellipsis: "HDFC Savings" cut to "HDFC
+                Sav…" left four accounts that all began the same way. */}
+            <span className="text-text line-clamp-2 w-full text-center text-xs leading-tight font-medium break-words">
               {option.name}
             </span>
           </button>

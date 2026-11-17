@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { AmountInput } from "@/components/shared/amount-input";
 import { Label } from "@/components/ui/label";
 import { useClearFilters } from "@/components/records/use-clear-filters";
+import { monthBounds, monthPresets } from "@/lib/filter-dates";
 import {
   TRANSACTION_TYPES,
   type TransactionFilters,
@@ -50,12 +51,18 @@ export function FiltersSheet({
   accounts,
   categories,
   filters,
+  monthKey,
+  today,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   accounts: AccountOption[];
   categories: CategoryOption[];
   filters: TransactionFilters;
+  /** The month on screen, `yyyy-mm`: dates are chosen inside it. */
+  monthKey: string;
+  /** Today where the user is, `yyyy-mm-dd`. */
+  today: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -90,6 +97,24 @@ export function FiltersSheet({
     setTo(filters.to ?? "");
     setWorth(filters.worth ?? "");
   }, [open, filters]);
+
+  const bounds = monthBounds(monthKey, today);
+
+  const type = types[0];
+  const categoryGroups = (
+    [
+      { kind: "expense", label: "Spending categories" },
+      { kind: "income", label: "Income categories" },
+    ] as const
+  )
+    .filter((group) => !type || type === group.kind)
+    .map((group) => ({
+      ...group,
+      // One kind on its own needs no qualifier.
+      label: type ? "Categories" : group.label,
+      options: categories.filter((category) => category.kind === group.kind),
+    }))
+    .filter((group) => group.options.length > 0);
 
   function toggle<T>(list: T[], value: T): T[] {
     return list.includes(value)
@@ -129,8 +154,8 @@ export function FiltersSheet({
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Search and filter"
-      description="Narrows the records for this month."
+      title="Filter"
+      description="Narrows this month's records."
     >
       <SheetBody>
         <FormRow id="filter-search" label="Note contains">
@@ -171,9 +196,20 @@ export function FiltersSheet({
           <SegmentedControl
             label="Type"
             value={types[0] ?? "all"}
-            onChange={(next) =>
-              setTypes(next === "all" ? [] : [next as TransactionType])
-            }
+            onChange={(next) => {
+              const chosen = next === "all" ? [] : [next as TransactionType];
+              setTypes(chosen);
+              // Keep only the categories the new type can have.
+              if (chosen[0]) {
+                setCategoryIds((current) =>
+                  current.filter(
+                    (id) =>
+                      categories.find((category) => category.id === id)
+                        ?.kind === chosen[0],
+                  ),
+                );
+              }
+            }}
             options={[
               { value: "all", label: "All" },
               ...TRANSACTION_TYPES.map((value) => ({
@@ -216,24 +252,33 @@ export function FiltersSheet({
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Categories</Label>
-          {/* The same grid the add sheet uses. Forty category names in a
-              wrapping row is a wall of text; the tiles are how people
-              actually find the one they want. */}
-          <TilePicker
-            label="Categories"
-            multiple
-            value={categoryIds}
-            onChange={(id) => setCategoryIds(toggle(categoryIds, id))}
-            options={categories.map((category) => ({
-              id: category.id,
-              name: category.name,
-              icon: category.icon,
-              tint: category.tint,
-            }))}
-          />
-        </div>
+        {/*
+          Only the categories the chosen type can have: with Expense, Salary
+          was on offer, and a filter that can only ever be empty is a trap.
+          With All, spending and income are two labelled grids, so the two
+          "Gifts" and the two "Others" can be told apart. A transfer has no
+          category, so with Transfer there is no grid.
+        */}
+        {categoryGroups.map((group) => (
+          <div key={group.kind} className="space-y-1.5">
+            <Label>{group.label}</Label>
+            {/* The same grid the add sheet uses. Forty category names in a
+                wrapping row is a wall of text; the tiles are how people
+                actually find the one they want. */}
+            <TilePicker
+              label={group.label}
+              multiple
+              value={categoryIds}
+              onChange={(id) => setCategoryIds(toggle(categoryIds, id))}
+              options={group.options.map((category) => ({
+                id: category.id,
+                name: category.name,
+                icon: category.icon,
+                tint: category.tint,
+              }))}
+            />
+          </div>
+        ))}
 
         <div className="grid grid-cols-2 gap-2">
           <FormRow id="filter-min" label={`Min (${currency.symbol})`}>
@@ -243,7 +288,7 @@ export function FiltersSheet({
                 value={minAmount}
                 onChange={setMinAmount}
                 showSymbol={false}
-                placeholder="0"
+                placeholder="Any"
               />
             )}
           </FormRow>
@@ -272,6 +317,9 @@ export function FiltersSheet({
             aria-labelledby="filter-dates-label"
             from={from}
             to={to}
+            presets={monthPresets(monthKey, today)}
+            min={bounds.min}
+            max={bounds.max}
             clearable
             placeholder="Any"
             onChange={(next) => {

@@ -782,7 +782,9 @@ export function DateRangeField({
   from,
   to,
   onChange,
+  min,
   max,
+  presets,
   clearable = false,
   placeholder = "Choose a date",
   className,
@@ -794,8 +796,15 @@ export function DateRangeField({
   from: string;
   to: string;
   onChange: (next: { from: string; to: string }) => void;
+  /** The first day either end may be. */
+  min?: string;
   /** The last day either end may be. */
   max?: string;
+  /**
+   * Pills to show in place of the usual ranges, for a field that only
+   * covers part of the calendar (the Records filter, one month).
+   */
+  presets?: { label: string; from: string; to: string }[];
   clearable?: boolean;
   placeholder?: string;
   className?: string;
@@ -813,6 +822,7 @@ export function DateRangeField({
         from={from}
         to={to}
         today={today}
+        presets={presets}
         onSelect={(next) => {
           const same = next.from === from && next.to === to;
           onChange(clearable && same ? { from: "", to: "" } : next);
@@ -825,6 +835,7 @@ export function DateRangeField({
           label="From"
           value={from}
           range={range}
+          min={min}
           max={to || max}
           clearable={clearable}
           placeholder={placeholder}
@@ -835,7 +846,7 @@ export function DateRangeField({
           label="To"
           value={to}
           range={range}
-          min={from || undefined}
+          min={from || min}
           max={max}
           clearable={clearable}
           placeholder={placeholder}
@@ -851,18 +862,21 @@ export function RangePresetPills({
   from,
   to,
   today,
+  presets,
   onSelect,
   className,
 }: {
   from: string;
   to: string;
   today: string;
+  /** In place of the usual ranges. */
+  presets?: { label: string; from: string; to: string }[];
   onSelect: (range: { from: string; to: string }) => void;
   className?: string;
 }) {
   return (
     <div className={cn("flex flex-wrap gap-1.5", className)}>
-      {rangePresets(today).map((preset) => {
+      {(presets ?? rangePresets(today)).map((preset) => {
         const active = from === preset.from && to === preset.to;
 
         return (

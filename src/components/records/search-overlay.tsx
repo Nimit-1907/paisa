@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 
 import { searchRecords } from "@/actions/transactions";
-import { useCurrency } from "@/components/profile-provider";
 import { useRecordSheet } from "@/components/records/record-sheet-provider";
 import { Amount } from "@/components/shared/amount";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -25,7 +24,6 @@ import { ListCard } from "@/components/shared/surface";
 import { Tile } from "@/components/shared/tile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatWith } from "@/lib/money";
 import type { TransactionRow } from "@/lib/queries/transactions";
 import { draftOf } from "@/lib/record-draft";
 import { groupByMonth } from "@/lib/search-groups";
@@ -34,7 +32,6 @@ import {
   recentSearches,
   rememberSearch,
 } from "@/lib/recent-searches";
-import type { CategoryOption } from "@/components/records/record-sheet";
 import { cn } from "@/lib/utils";
 
 type Results = {
@@ -79,24 +76,15 @@ const LIVE_DELAY = 300;
 export function SearchOverlay({
   open,
   initialQuery,
-  categories,
-  monthKey,
   timeZone,
   onClose,
-  onFilter,
 }: {
   open: boolean;
   /** Whatever is already being searched for, so this reopens where it was. */
   initialQuery: string;
-  /** The ones used this month, most-used first, for the suggestion chips. */
-  categories: CategoryOption[];
-  monthKey: string;
   timeZone: string;
   onClose: () => void;
-  /** A one-tap filter: a category, a date range, an amount floor. */
-  onFilter: (params: Record<string, string>) => void;
 }) {
-  const currency = useCurrency();
   const sheet = useRecordSheet();
   const [query, setQuery] = React.useState(initialQuery);
   const [recent, setRecent] = React.useState<string[]>([]);
@@ -430,44 +418,11 @@ export function SearchOverlay({
                 </section>
               ) : null}
 
-              <section>
-                <SectionHeader title="Or narrow it down" className="mb-2" />
-
-                <div className="flex flex-wrap gap-1.5">
-                  <Chip onClick={() => onFilter({ m: monthKey })}>
-                    This month
-                  </Chip>
-                  {/* In the user's own currency, with the paise trimmed: a
-                      bare "1,000" on a money screen is a number without a
-                      unit. */}
-                  <Chip onClick={() => onFilter({ min: "1000" })}>
-                    Over{" "}
-                    {formatWith(
-                      currency,
-                      1000n * 10n ** BigInt(currency.decimals),
-                      { paise: "trim" },
-                    )}
-                  </Chip>
-                  <Chip onClick={() => onFilter({ type: "income" })}>
-                    Income only
-                  </Chip>
-
-                  {categories.slice(0, 6).map((category) => (
-                    <Chip
-                      key={category.id}
-                      onClick={() => onFilter({ category: category.id })}
-                    >
-                      <Tile
-                        size="sm"
-                        tint={category.tint}
-                        icon={category.icon}
-                        className="-ml-1.5"
-                      />
-                      {category.name}
-                    </Chip>
-                  ))}
-                </div>
-              </section>
+              {/* Filtering lives on the Filter button; this screen only
+                  searches, across every month. */}
+              <p className="text-text-secondary px-1 text-sm">
+                Searches the notes of every record, in every month.
+              </p>
             </>
           )}
         </div>
