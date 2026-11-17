@@ -7,6 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { leftLabel } from "@/lib/month-trend";
 import { Amount } from "@/components/shared/amount";
 import { HeroSplit, HeroStat } from "@/components/shared/hero-stat";
 import { Pill } from "@/components/shared/pill";
@@ -39,6 +40,7 @@ export function MonthStar({
   today,
   daysLeft,
   trend,
+  pastMonth = null,
   flat = false,
 }: {
   summary: { income: string; expense: string; net: string };
@@ -49,6 +51,8 @@ export function MonthStar({
   daysLeft: number;
   /** "12% less than Oct", when there is a previous month to compare with. */
   trend?: { text: string; better: boolean } | null;
+  /** "Jul" when the month is over, null while it is running. */
+  pastMonth?: string | null;
   /**
    * Drops the accent for the one visit where the recap card is showing.
    * Exactly one bold card per screen; two would be none.
@@ -71,7 +75,7 @@ export function MonthStar({
       // Not "Left to spend": that is the Budgets figure, what is left of
       // the limits. This one is income less spending, a different number,
       // and the two screens disagreeing under one name read as a bug.
-      label={net < 0n ? "Overspent this month" : "Left this month"}
+      label={leftLabel(net < 0n, pastMonth)}
       trend={
         trend ? (
           <Pill tone={trend.better ? "income" : "expense"}>
@@ -105,7 +109,8 @@ export function MonthStar({
             label="Income"
             value={
               <span className="text-income">
-                +
+                {/* No sign on nothing: "+₹0" is a gain of zero. */}
+                {BigInt(summary.income) > 0n ? "+" : null}
                 <Amount
                   value={BigInt(summary.income)}
                   signDisplay="never"
@@ -120,7 +125,7 @@ export function MonthStar({
             label="Spent"
             value={
               <span className="text-expense">
-                −
+                {BigInt(summary.expense) > 0n ? "−" : null}
                 <Amount
                   value={BigInt(summary.expense)}
                   signDisplay="never"

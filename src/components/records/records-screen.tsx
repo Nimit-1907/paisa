@@ -460,6 +460,12 @@ export function RecordsScreen({
     ? (visible.find((row) => row.id === detailId) ?? null)
     : null;
 
+  /** "Jul", for the card's label on a month that is over. */
+  const monthName = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "UTC",
+    month: "short",
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+
   /** "1–17 Oct", what the trend pill compares against. */
   const previousLabel = comparedWith(year, month, today);
 
@@ -608,6 +614,7 @@ export function RecordsScreen({
             today={today}
             daysLeft={daysLeft}
             trend={trend}
+            pastMonth={daysLeft > 0 ? null : monthName}
           />
         </div>
       </CollapsingHeader>
@@ -649,7 +656,9 @@ export function RecordsScreen({
             title={
               activeFilterCount > 0
                 ? "Nothing matches those filters"
-                : "No records this month"
+                : daysLeft > 0
+                  ? "No records this month"
+                  : `No records in ${monthName}`
             }
             description={
               activeFilterCount > 0

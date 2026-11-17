@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { comparedWith, expenseThrough } from "./month-trend";
+import { comparedWith, expenseThrough, leftLabel } from "./month-trend";
 
 const oct = Array.from({ length: 31 }, (_, i) => ({
   on: `2026-10-${String(i + 1).padStart(2, "0")}`,
@@ -17,7 +17,9 @@ describe("expenseThrough", () => {
   });
 
   it("takes the whole of a shorter month when today is past its end", () => {
-    const sept = oct.slice(0, 30).map((d) => ({ ...d, on: d.on.replace("-10-", "-09-") }));
+    const sept = oct
+      .slice(0, 30)
+      .map((d) => ({ ...d, on: d.on.replace("-10-", "-09-") }));
     expect(expenseThrough(sept, 31)).toBe(3000n);
   });
 
@@ -45,5 +47,17 @@ describe("comparedWith", () => {
 
   it("goes back across a new year", () => {
     expect(comparedWith(2027, 1, "2027-01-05")).toBe("1–5 Dec");
+  });
+});
+
+describe("leftLabel", () => {
+  it("speaks of this month while it is running", () => {
+    expect(leftLabel(false, null)).toBe("Left this month");
+    expect(leftLabel(true, null)).toBe("Overspent this month");
+  });
+
+  it("names a month that is over", () => {
+    expect(leftLabel(false, "Jul")).toBe("Left in Jul");
+    expect(leftLabel(true, "Jul")).toBe("Overspent in Jul");
   });
 });

@@ -42,3 +42,16 @@ export function comparedWith(
 
   return through === 1 ? `1 ${name}` : `1–${through} ${name}`;
 }
+
+/**
+ * The month card's label. `pastMonth` is the month's short name when it is
+ * over, null while it is running: on July, "Left this month" was about a
+ * month the person was not in.
+ */
+export function leftLabel(
+  overspent: boolean,
+  pastMonth: string | null,
+): string {
+  const when = pastMonth ? `in ${pastMonth}` : "this month";
+  return `${overspent ? "Overspent" : "Left"} ${when}`;
+}
