@@ -49,7 +49,6 @@ export function BudgetsScreen({
   /** True only for a month that has ended, which is when it can be judged. */
   isPastMonth: boolean;
 }) {
-
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<BudgetDraft | null>(null);
 
@@ -70,6 +69,10 @@ export function BudgetsScreen({
   const remaining = totalBudget - totalSpent;
   const tone = budgetTone(totalSpent, totalBudget);
   const percent = budgetPercent(totalSpent, totalBudget);
+  // Spending in categories with no budget, Rent say. The card compares
+  // budgeted categories only, so it says how much it left out rather than
+  // disagree with Records in silence.
+  const unbudgeted = BigInt(data.monthExpense) - totalSpent;
 
   function openFor(categoryId: string, amount = "") {
     setDraft({ categoryId, amount });
@@ -114,68 +117,80 @@ export function BudgetsScreen({
   }
 
   return (
-    <div className="space-y-6">
-      {/*
+    // On a wide screen the month's figure stays on the left while the
+    // categories run down the right, instead of one 900px column.
+    <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-6 lg:space-y-0">
+      <div className="space-y-6 lg:sticky lg:top-4">
+        {/*
         The sentence someone opens this screen for is "how much a day have I
         got left", so it is the caption directly under the figure rather than
         the tail of a muted line. The ring keeps its job, the shape of the
         month at a glance, as the hero's aside, at a weight that does not
         argue with the number beside it.
       */}
-      {/*
+        {/*
         One figure, one bar, one line. The hero used to carry a per-day
         sentence in small paise, a second "of budgeted" line and two
         buttons; the screen read as a dashboard. Adding a budget now lives
         on the list it adds to.
       */}
-      <HeroStat
-        label={remaining >= 0n ? "Left to spend" : "Over budget"}
-        value={
-          <span className={remaining >= 0n ? "text-text" : "text-expense"}>
-            <Amount
-              value={remaining < 0n ? -remaining : remaining}
-              signDisplay="never"
-              whole
-            />
-          </span>
-        }
-        trend={
-          <Pill tone={tone === "over" ? "expense" : "quiet"}>
-            {Math.round(percent)}% used
-          </Pill>
-        }
-      >
-        <ProgressBar
-          percent={percent}
-          label="Share of this month's budgets spent"
-          className="mt-3"
-        />
-
-        <p className="text-text-secondary mt-2 text-xs">
-          <Amount value={totalSpent} signDisplay="never" whole /> of{" "}
-          <Amount value={totalBudget} signDisplay="never" whole /> spent
-          {data.daysLeft > 0 && remaining > 0n ? (
-            <>
-              {" · "}
+        <HeroStat
+          label={remaining >= 0n ? "Left to spend" : "Over budget"}
+          value={
+            <span className={remaining >= 0n ? "text-text" : "text-expense"}>
               <Amount
-                value={remaining / BigInt(data.daysLeft)}
+                value={remaining < 0n ? -remaining : remaining}
                 signDisplay="never"
                 whole
-              />{" "}
-              a day for {data.daysLeft}{" "}
-              {data.daysLeft === 1 ? "day" : "days"}
-            </>
-          ) : null}
-        </p>
-      </HeroStat>
+              />
+            </span>
+          }
+          trend={
+            <Pill tone={tone === "over" ? "expense" : "quiet"}>
+              {Math.round(percent)}% used
+            </Pill>
+          }
+        >
+          <ProgressBar
+            percent={percent}
+            pace={data.pace}
+            label="Share of this month's budgets spent"
+            className="mt-3"
+          />
 
-      {isPastMonth && kept > 0 ? (
-        <p className="text-income flex items-center gap-2 px-1 text-sm font-semibold">
-          <Check className="size-4 shrink-0" aria-hidden="true" />
-          You stayed under budget in {kept} of {data.lines.length}{" "}
-          {data.lines.length === 1 ? "category" : "categories"}.
-        </p>
-      ) : null}
+          <p className="text-text-secondary mt-2 text-xs">
+            <Amount value={totalSpent} signDisplay="never" whole /> of{" "}
+            <Amount value={totalBudget} signDisplay="never" whole /> spent
+            {data.daysLeft > 0 && remaining > 0n ? (
+              <>
+                {" · "}
+                <Amount
+                  value={remaining / BigInt(data.daysLeft)}
+                  signDisplay="never"
+                  whole
+                />{" "}
+                a day for {data.daysLeft} {data.daysLeft === 1 ? "day" : "days"}
+              </>
+            ) : null}
+          </p>
+
+          {unbudgeted > 0n ? (
+            <p className="text-text-secondary mt-1 text-xs">
+              Budgeted categories only.{" "}
+              <Amount value={unbudgeted} signDisplay="never" whole /> more went
+              on ones without a budget.
+            </p>
+          ) : null}
+        </HeroStat>
+
+        {isPastMonth && kept > 0 ? (
+          <p className="text-income flex items-center gap-2 px-1 text-sm font-semibold">
+            <Check className="size-4 shrink-0" aria-hidden="true" />
+            You stayed under budget in {kept} of {data.lines.length}{" "}
+            {data.lines.length === 1 ? "category" : "categories"}.
+          </p>
+        ) : null}
+      </div>
 
       <section>
         <SectionHeader
@@ -200,6 +215,7 @@ export function BudgetsScreen({
             <li key={line.categoryId}>
               <BudgetRow
                 line={line}
+                pace={data.pace}
                 onOpen={() => openFor(line.categoryId, line.budget)}
               />
             </li>
@@ -214,15 +230,20 @@ export function BudgetsScreen({
 
 function BudgetRow({
   line,
+  pace,
   onOpen,
 }: {
   line: BudgetMonth["lines"][number];
+  pace: number | null;
   onOpen: () => void;
 }) {
   const budget = BigInt(line.budget);
   const spent = BigInt(line.spent);
   const tone = budgetTone(spent, budget);
   const over = spent - budget;
+  const percent = budgetPercent(spent, budget);
+  const ahead =
+    pace !== null && pace < 100 && tone !== "over" && percent > pace;
 
   return (
     <button
@@ -245,8 +266,11 @@ function BudgetRow({
         </span>
 
         <ProgressBar
-          percent={budgetPercent(spent, budget)}
-          label={`${line.name}: ${Math.round(budgetPercent(spent, budget))}% of the budget spent`}
+          percent={percent}
+          pace={pace}
+          label={`${line.name}: ${Math.round(percent)}% of the budget spent${
+            ahead ? ", ahead of the month" : ""
+          }`}
           className="mt-1.5 h-1.5"
         />
 
@@ -265,6 +289,7 @@ function BudgetRow({
           ) : (
             <>
               <Amount value={budget - spent} signDisplay="never" whole /> left
+              {ahead ? " · ahead of the month" : null}
             </>
           )}
         </span>

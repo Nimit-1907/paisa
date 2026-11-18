@@ -24,6 +24,12 @@ export type BudgetMonth = {
   monthExpense: string;
   /** Days remaining in the month, today included. Zero outside this month. */
   daysLeft: number;
+  /**
+   * How much of the month has gone, 0–100, today included: the share of a
+   * budget you could have spent by now and still be on track. 100 for a
+   * month that is over, null for one that has not begun.
+   */
+  pace: number | null;
 };
 
 type SummaryCategory = {
@@ -62,7 +68,9 @@ export async function getBudgetMonth({
   const [budgets, summary] = await Promise.all([
     supabase
       .from("budgets")
-      .select("category_id, amount, category:categories(name, icon, tint, archived)")
+      .select(
+        "category_id, amount, category:categories(name, icon, tint, archived)",
+      )
       .eq("month", start),
     supabase.rpc("month_summary", { p_month: start }).maybeSingle(),
   ]);
@@ -82,7 +90,7 @@ export async function getBudgetMonth({
     category: {
       name: string;
       icon: string | null;
-    tint: string | null;
+      tint: string | null;
       archived: boolean;
     } | null;
   };
@@ -125,6 +133,11 @@ export async function getBudgetMonth({
     daysLeft: isCurrentMonth
       ? daysInMonth(year, month) - Number(today.slice(8, 10)) + 1
       : 0,
+    pace: isCurrentMonth
+      ? (Number(today.slice(8, 10)) / daysInMonth(year, month)) * 100
+      : start < today
+        ? 100
+        : null,
   };
 }
 
