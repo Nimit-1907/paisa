@@ -25,24 +25,22 @@ import { Bricolage_Grotesque, Inter } from "next/font/google";
  * says why below.
  */
 export const body = Inter({
-  // Not preloaded, and `optional` rather than `swap`. Inter is 85 kB, the
-  // largest thing on the page. Preloaded, it raced the stylesheet and held
-  // the first paint back 420ms on a slow phone connection; swapped in
-  // late, it re-laid every paragraph at ~4s, and that repaint is what the
-  // browser reported as the page's LCP. `optional` uses Inter if it is
-  // already there (any visit after the first, or a fast connection) and
-  // otherwise keeps the system sans for that visit. latin-ext still loads
-  // on demand, through its unicode-range, for the ₹ sign.
+  // Not preloaded: Inter is 85 kB, the largest thing on the page, and
+  // preloaded it raced the stylesheet and held the first paint back 420ms
+  // on a slow phone connection. latin-ext loads on demand, through its
+  // unicode-range, for the ₹ sign.
   //
-  // Measured, cold, Slow 4G and 4x CPU: LCP 908/3996/876ms on Records,
-  // Analysis and Budgets before; 728/684/668ms after. Inlining the CSS
-  // instead (experimental.inlineCss) was tried and lost: it ships the
-  // stylesheet twice, in the HTML and in the RSC payload, and Budgets
-  // went to 1040ms.
+  // `swap`, not `optional`. `optional` kept the system sans for the whole
+  // visit whenever Inter missed its 100ms window, so a first visit could
+  // show Import or Login in a different face from everything else. With
+  // next/font's size-adjusted fallback the swap moves nothing, and it
+  // costs nothing: measured cold, Slow 4G and 4x CPU, LCP on Records,
+  // Analysis and Budgets was 700/640/620ms with `optional` and
+  // 700/652/628ms with `swap`, inside the run-to-run noise.
   subsets: ["latin"],
   preload: false,
   variable: "--font-body",
-  display: "optional",
+  display: "swap",
 });
 
 export const display = Bricolage_Grotesque({
