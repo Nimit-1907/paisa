@@ -11,7 +11,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(3);
+select plan(5);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -93,6 +93,28 @@ select is(
     where id = 'b9000000-0000-4000-8000-000000000100'),
   current_date + 3,
   'deleting the early payment puts it back on the schedule'
+);
+
+select is(
+  (select last_run_on from public.recurring_rules
+    where id = 'b9000000-0000-4000-8000-000000000100'),
+  null::date,
+  'with no record left, the rule has never run'
+);
+
+-- The gym, paid early and undone, goes back to its last real record.
+select public.materialise_recurring(
+  'b9000000-0000-4000-8000-000000000101', current_date + 3
+);
+delete from public.transactions
+ where recurring_rule_id = 'b9000000-0000-4000-8000-000000000101'
+   and occurred_at > now();
+
+select is(
+  (select last_run_on from public.recurring_rules
+    where id = 'b9000000-0000-4000-8000-000000000101'),
+  current_date - 4,
+  'undoing an early payment puts Last created back on the last real record'
 );
 
 -- A payment whose day has come and gone is a record somebody deleted on

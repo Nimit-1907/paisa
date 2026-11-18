@@ -239,12 +239,20 @@ export default async function RecurringRulePage({
                 ) : null}
               </span>
 
+              {/* Signed and coloured the way Records draws it. */}
               <span
                 className={cn(
                   "amount shrink-0 text-sm font-semibold",
                   rule.type === "income" && "text-income",
+                  rule.type === "expense" && "text-expense",
+                  rule.type === "transfer" && "text-transfer",
                 )}
               >
+                {rule.type === "income"
+                  ? "+"
+                  : rule.type === "expense"
+                    ? "−"
+                    : ""}
                 <Amount value={BigInt(record.amount)} signDisplay="never" />
               </span>
             </li>
