@@ -117,6 +117,15 @@ export function CategoriesScreen({
             title={`${active.length} ${
               active.length === 1 ? "category" : "categories"
             }`}
+            // The figures under each name are this month's: said once
+            // here rather than left to be guessed.
+            description={
+              reordering
+                ? undefined
+                : kind === "income"
+                  ? "Earned this month under each"
+                  : "Spent this month under each"
+            }
             trailing={
               <Button
                 variant={reordering ? "default" : "ghost"}
@@ -183,7 +192,8 @@ export function CategoriesScreen({
                       className="bg-surface hoverable:bg-surface-muted rounded-card pressable flex w-full flex-col items-center gap-1.5 border px-1 py-3 transition-colors"
                     >
                       <CategoryBadge category={category} size="lg" />
-                      <span className="w-full truncate text-center text-xs font-semibold">
+                      {/* Two lines, hyphenated, rather than "Entertain…". */}
+                      <span className="line-clamp-2 w-full text-center text-xs font-semibold break-words hyphens-auto">
                         {category.name}
                       </span>
                       {/* This month, under the name. A grid of names answers
@@ -252,7 +262,8 @@ export function CategoriesScreen({
                       className="bg-surface hoverable:bg-surface-muted flex w-full flex-col items-center gap-2 rounded-card border border-dashed px-2 py-3 transition-colors  "
                     >
                       <CategoryBadge category={category} size="lg" />
-                      <span className="w-full truncate text-center text-xs font-semibold">
+                      {/* Two lines, hyphenated, rather than "Entertain…". */}
+                      <span className="line-clamp-2 w-full text-center text-xs font-semibold break-words hyphens-auto">
                         {category.name}
                       </span>
                     </button>

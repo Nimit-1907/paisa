@@ -43,13 +43,17 @@ export default function AboutPage() {
           </p>
 
           <p className="text-text-secondary mt-3 text-xs">
-            Nothing here is locked in. The{" "}
-            <Link href="/export" className="text-text underline">
-              Export
-            </Link>{" "}
-            screen will hand you every record as a CSV, or one month as a PDF,
-            whenever you want it.
+            Nothing here is locked in. Export hands you every record as a CSV,
+            or one month as a PDF, whenever you want it.
           </p>
+          {/* Its own line at full height, not a 15px word inside a
+              sentence. */}
+          <Link
+            href="/export"
+            className="text-text inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4"
+          >
+            Go to Export
+          </Link>
         </Card>
 
         <ListCard>

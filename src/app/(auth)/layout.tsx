@@ -29,15 +29,18 @@ export default function AuthLayout({
           screen.
         */}
         <aside className="bg-surface-muted hidden flex-col items-center justify-center gap-8 border-r p-10 lg:flex">
-          <Link href="/" className=" rounded-control flex items-center gap-2 ">
+          <Link
+            href="/"
+            className="rounded-control flex min-h-11 items-center gap-2 px-2"
+          >
             <span className="font-display text-text text-xl">Paisa</span>
           </Link>
 
           <AppPreview />
 
           <p className="text-text-secondary max-w-[34ch] text-center text-sm text-balance">
-            A spend in seconds. No bank login, no ads, and your records
-            stay yours.
+            A spend in seconds. No bank login, no ads, and your records stay
+            yours.
           </p>
         </aside>
 

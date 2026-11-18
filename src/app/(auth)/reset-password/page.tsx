@@ -23,7 +23,7 @@ export default async function ResetPasswordPage() {
         footer={
           <Link
             href="/login"
-            className="text-text font-semibold underline underline-offset-4"
+            className="inline-flex min-h-11 items-center text-text font-semibold underline underline-offset-4"
           >
             Back to sign in
           </Link>

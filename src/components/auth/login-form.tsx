@@ -114,7 +114,7 @@ export function LoginForm({ next }: { next?: string }) {
         action={
           <Link
             href="/forgot-password"
-            className="text-text-secondary hoverable:text-text -my-2 rounded px-1 py-2 text-sm"
+            className="text-text-secondary hoverable:text-text rounded-control -my-3 inline-flex min-h-11 items-center px-1 text-sm"
           >
             Forgot password?
           </Link>

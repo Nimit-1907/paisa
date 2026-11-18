@@ -20,6 +20,9 @@ export const MAX_RECENT = 5;
 /** The longest query worth keeping, past this it is a paste, not a search. */
 const MAX_LENGTH = 80;
 
+/** A single letter is a typo or a search still being typed, not a habit. */
+const MIN_LENGTH = 2;
+
 function read(raw: string | null): string[] {
   if (!raw) return [];
 
@@ -52,17 +55,21 @@ export function recentSearches(): string[] {
  * Remembers a query, newest first, with no duplicates.
  *
  * Matched case-insensitively so "Swiggy" typed after "swiggy" moves the one
- * entry up rather than making a second.
+ * entry up rather than making a second. A shorter search the new one
+ * starts with ("swi" before "swiggy") was the same search half typed, and
+ * goes.
  */
 export function rememberSearch(query: string): string[] {
   const term = query.trim().slice(0, MAX_LENGTH);
-  if (!term) return recentSearches();
+  if (term.length < MIN_LENGTH) return recentSearches();
 
+  const lower = term.toLowerCase();
   const next = [
     term,
-    ...recentSearches().filter(
-      (item) => item.toLowerCase() !== term.toLowerCase(),
-    ),
+    ...recentSearches().filter((item) => {
+      const other = item.toLowerCase();
+      return other !== lower && !lower.startsWith(other);
+    }),
   ].slice(0, MAX_RECENT);
 
   try {

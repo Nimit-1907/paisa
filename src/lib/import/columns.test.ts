@@ -19,6 +19,25 @@ describe("normaliseHeader", () => {
 });
 
 describe("autoMap", () => {
+  it("finds the Type column of Paisa's own export", () => {
+    const mapping = autoMap([
+      "Date",
+      "Time",
+      "Type",
+      "Category",
+      "Account",
+      "To account",
+      "Amount",
+      "Note",
+    ]);
+    expect(mapping).toMatchObject({
+      date: 0,
+      type: 2,
+      amount: 6,
+      description: 7,
+    });
+  });
+
   it("maps a single amount column", () => {
     expect(autoMap(["Date", "Narration", "Amount"])).toEqual({
       date: 0,
@@ -26,6 +45,7 @@ describe("autoMap", () => {
       amount: 2,
       debit: null,
       credit: null,
+      type: null,
       mode: "single",
     });
   });
@@ -47,6 +67,7 @@ describe("autoMap", () => {
       amount: null,
       debit: 4,
       credit: 5,
+      type: null,
       mode: "split",
     });
   });
@@ -71,10 +92,24 @@ describe("autoMap", () => {
   });
 
   it("is case-insensitive and matches every listed synonym", () => {
-    for (const name of ["date", "TXN DATE", "Transaction date", "Value Date", "Posting Date"]) {
+    for (const name of [
+      "date",
+      "TXN DATE",
+      "Transaction date",
+      "Value Date",
+      "Posting Date",
+    ]) {
       expect(autoMap([name]).date, name).toBe(0);
     }
-    for (const name of ["description", "Narration", "REMARKS", "Particulars", "Details", "Note", "memo"]) {
+    for (const name of [
+      "description",
+      "Narration",
+      "REMARKS",
+      "Particulars",
+      "Details",
+      "Note",
+      "memo",
+    ]) {
       expect(autoMap([name]).description, name).toBe(0);
     }
   });
@@ -86,6 +121,7 @@ describe("autoMap", () => {
       amount: null,
       debit: null,
       credit: null,
+      type: null,
       mode: "single",
     });
   });

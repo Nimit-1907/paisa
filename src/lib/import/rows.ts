@@ -1,7 +1,11 @@
 import { readAmount } from "@/lib/import/amount-text";
 import type { ColumnMapping } from "@/lib/import/columns";
 import type { ParsedCsv } from "@/lib/import/csv";
-import { DATE_FORMATS, type DateFormat, readDate } from "@/lib/import/date-text";
+import {
+  DATE_FORMATS,
+  type DateFormat,
+  readDate,
+} from "@/lib/import/date-text";
 
 /**
  * A parsed file and its mapping, into the rows the preview shows.
@@ -39,24 +43,49 @@ export function mappingProblem(mapping: ColumnMapping): string | null {
   if (mapping.date === null) return "Choose the Date column.";
 
   const amounts =
-    mapping.mode === "single" ? [mapping.amount] : [mapping.debit, mapping.credit];
+    mapping.mode === "single"
+      ? [mapping.amount]
+      : [mapping.debit, mapping.credit];
 
   if (mapping.mode === "single" && mapping.amount === null) {
     return "Choose the Amount column.";
   }
-  if (mapping.mode === "split" && (mapping.debit === null || mapping.credit === null)) {
+  if (
+    mapping.mode === "split" &&
+    (mapping.debit === null || mapping.credit === null)
+  ) {
     return "Choose both the Debit and the Credit column.";
   }
 
-  const used = [mapping.date, mapping.description, ...amounts].filter(
-    (column): column is number => column !== null,
-  );
-  if (new Set(used).size !== used.length) return "Each column can be used once.";
+  const typeColumn = mapping.mode === "single" ? mapping.type : null;
+  const used = [
+    mapping.date,
+    mapping.description,
+    typeColumn,
+    ...amounts,
+  ].filter((column): column is number => column !== null);
+  if (new Set(used).size !== used.length)
+    return "Each column can be used once.";
 
   return null;
 }
 
 const quote = (text: string) => `"${text.trim()}"`;
+
+/** What a type cell says, or null when it says nothing this can use. */
+export function readType(
+  text: string,
+): "expense" | "income" | "transfer" | null {
+  const value = text.trim().toLowerCase().replace(/\.$/, "");
+  if (["expense", "debit", "dr", "withdrawal", "spent"].includes(value)) {
+    return "expense";
+  }
+  if (["income", "credit", "cr", "deposit", "received"].includes(value)) {
+    return "income";
+  }
+  if (value === "transfer") return "transfer";
+  return null;
+}
 
 export function buildImportRows(
   file: ParsedCsv,
@@ -69,7 +98,8 @@ export function buildImportRows(
 ): BuiltRows {
   const built: BuiltRows = { rows: [], unreadable: [], notRecords: 0 };
   const formatLabel =
-    DATE_FORMATS.find((format) => format.value === dateFormat)?.label ?? dateFormat;
+    DATE_FORMATS.find((format) => format.value === dateFormat)?.label ??
+    dateFormat;
 
   // A `;`-separated file comes from a locale whose decimal mark is a comma.
   const amountOptions = { decimalComma: file.delimiter === ";" };
@@ -98,10 +128,24 @@ export function buildImportRows(
       }
 
       const negative = read.minor < 0n;
-      // A Dr, Cr or trailing minus is the bank saying which way the money
-      // went; the convention is only for numbers that do not say.
+      const said = readType(cell(cells, mapping.type));
+
+      if (said === "transfer") {
+        // A transfer moves money between two of your own accounts, and an
+        // import goes into one. Counted as not a record, not as an error.
+        built.notRecords += 1;
+        continue;
+      }
+
+      // A type column says it outright. Otherwise a Dr, Cr or trailing
+      // minus is the bank saying which way the money went; the convention
+      // is only for numbers that do not say.
       const spent =
-        read.marked || sign === "negative-spent" ? negative : !negative;
+        said !== null
+          ? said === "expense"
+          : read.marked || sign === "negative-spent"
+            ? negative
+            : !negative;
       type = spent ? "expense" : "income";
       amount = negative ? -read.minor : read.minor;
     } else {

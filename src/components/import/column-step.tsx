@@ -41,7 +41,9 @@ function ColumnSelect({
       {(field) => (
         <Select
           value={value === null ? NONE : String(value)}
-          onValueChange={(next) => onChange(next === NONE ? null : Number(next))}
+          onValueChange={(next) =>
+            onChange(next === NONE ? null : Number(next))
+          }
         >
           <SelectTrigger {...field}>
             {value === null
@@ -95,7 +97,8 @@ export function ColumnStep({
   onAccount: (next: string) => void;
   problem: string | null;
 }) {
-  const set = (patch: Partial<ColumnMapping>) => onMapping({ ...mapping, ...patch });
+  const set = (patch: Partial<ColumnMapping>) =>
+    onMapping({ ...mapping, ...patch });
 
   return (
     <Card className="space-y-4 p-4">
@@ -134,7 +137,10 @@ export function ColumnStep({
               onValueChange={(next) => onDateFormat(next as DateFormat)}
             >
               <SelectTrigger {...field}>
-                {DATE_FORMATS.find((format) => format.value === dateFormat)?.label}
+                {
+                  DATE_FORMATS.find((format) => format.value === dateFormat)
+                    ?.label
+                }
               </SelectTrigger>
               <SelectContent>
                 {DATE_FORMATS.map((format) => (
@@ -168,15 +174,26 @@ export function ColumnStep({
             value={mapping.amount}
             onChange={(amount) => set({ amount })}
           />
-          <SegmentedControl<SignConvention>
-            label="Which amounts are spending"
-            value={sign}
-            onChange={onSign}
-            options={[
-              { value: "negative-spent", label: "Negative is spent" },
-              { value: "positive-spent", label: "Positive is spent" },
-            ]}
+          <ColumnSelect
+            id="import-type"
+            label="Type (expense or income)"
+            headers={headers}
+            value={mapping.type}
+            onChange={(type) => set({ type })}
           />
+          {/* Only asked when no column says it: with a Type column, the
+              sign of the amount decides nothing. */}
+          {mapping.type === null ? (
+            <SegmentedControl<SignConvention>
+              label="Which amounts are spending"
+              value={sign}
+              onChange={onSign}
+              options={[
+                { value: "negative-spent", label: "Negative is spent" },
+                { value: "positive-spent", label: "Positive is spent" },
+              ]}
+            />
+          ) : null}
         </>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">

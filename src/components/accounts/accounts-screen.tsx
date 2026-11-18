@@ -317,7 +317,9 @@ function AccountRow({
         <Tile tint={account.tint} icon={account.icon} size="md" />
 
         <span className="min-w-0 flex-1">
-          <span className="text-text block truncate text-sm font-semibold">
+          {/* Wraps to a second line rather than cut "ICICI Credit C…" with
+              room to spare: the name is what the row is for. */}
+          <span className="text-text line-clamp-2 text-sm font-semibold break-words">
             {account.name}
           </span>
           {subtitle ? (

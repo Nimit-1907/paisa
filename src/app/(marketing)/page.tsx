@@ -32,12 +32,7 @@ export const metadata: Metadata = {
 };
 
 /** The steps, named, because the claim in the hero has to be checkable. */
-const STEPS = [
-  "Tap +",
-  "Pick the category",
-  "Type the amount",
-  "Save",
-];
+const STEPS = ["Tap +", "Pick the category", "Type the amount", "Save"];
 
 /**
  * The three blocks, each with a crop of the screen it is about.
@@ -131,9 +126,9 @@ export default function LandingPage() {
           Logging an expense, in full
         </h2>
         <p className="text-text-secondary mt-1 text-sm">
-          The account and the date are already filled in and the categories
-          you use at this time of day come first. A spend you repeat is one
-          chip that fills in the amount too: tap +, tap it, save.
+          The account and the date are already filled in and the categories you
+          use at this time of day come first. A spend you repeat is one chip
+          that fills in the amount too: tap +, tap it, save.
         </p>
 
         <ol className="mt-4 grid gap-2 sm:grid-cols-4">
@@ -168,7 +163,10 @@ export default function LandingPage() {
         </ul>
 
         <p className="mt-4 text-sm">
-          <Link href="/features" className="text-text underline">
+          <Link
+            href="/features"
+            className="inline-flex min-h-11 items-center text-text underline"
+          >
             Everything else it does
           </Link>
         </p>
@@ -230,7 +228,10 @@ export default function LandingPage() {
         </div>
 
         <p className="mt-4 text-sm">
-          <Link href="/faq" className="text-text underline">
+          <Link
+            href="/faq"
+            className="inline-flex min-h-11 items-center text-text underline"
+          >
             All the questions
           </Link>
         </p>

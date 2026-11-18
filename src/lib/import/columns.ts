@@ -16,6 +16,12 @@ export type ColumnMapping = {
   /** Used when `mode` is "split": a debit is spent, a credit received. */
   debit: number | null;
   credit: number | null;
+  /**
+   * A column that says which way each row went, "expense" or "income" (or
+   * Dr/Cr). Paisa's own export has one, and its amounts carry no sign, so
+   * without it every row came back as the same type.
+   */
+  type: number | null;
   mode: AmountMode;
 };
 
@@ -25,6 +31,7 @@ const SYNONYMS = {
   amount: ["amount", "amt"],
   debit: ["debit", "withdrawal", "withdrawal amt", "dr"],
   credit: ["credit", "deposit", "deposit amt", "cr"],
+  type: ["type", "transaction type", "txn type", "dr cr"],
   description: [
     "description",
     "narration",
@@ -70,6 +77,7 @@ export function autoMap(headers: string[]): ColumnMapping {
   const credit = find("credit");
   const split = debit !== null && credit !== null;
   const amount = find("amount");
+  const type = find("type");
 
   return {
     date,
@@ -77,6 +85,7 @@ export function autoMap(headers: string[]): ColumnMapping {
     amount,
     debit: split ? debit : null,
     credit: split ? credit : null,
+    type: split ? null : type,
     mode: split ? "split" : "single",
   };
 }

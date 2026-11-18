@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { notFound } from "next/navigation";
 
@@ -28,6 +29,9 @@ import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
 import { Tile } from "@/components/shared/tile";
 import { dateFormat } from "@/lib/date-format";
+
+/** How many records the page lists before pointing at Records. */
+const ACCOUNT_RECORDS_SHOWN = 50;
 
 export async function generateMetadata({
   params,
@@ -63,7 +67,7 @@ export default async function AccountDetailPage({
   const [balance, flow, transactions, usageCount] = await Promise.all([
     getAccountBalance(id),
     getAccountMonthFlow(id, range.monthStart),
-    getAccountTransactions(id),
+    getAccountTransactions(id, ACCOUNT_RECORDS_SHOWN),
     getAccountUsage(id),
   ]);
 
@@ -88,6 +92,21 @@ export default async function AccountDetailPage({
     month: "short",
     timeZone: profile?.timezone ?? "Asia/Kolkata",
   });
+
+  // Grouped by month, newest first, the way Records reads: fifty rows in
+  // one undivided list gave no sense of when anything happened.
+  const monthName = dateFormat({
+    month: "long",
+    year: "numeric",
+    timeZone: profile?.timezone ?? "Asia/Kolkata",
+  });
+  const months: { label: string; rows: typeof transactions }[] = [];
+  for (const transaction of transactions) {
+    const label = monthName.format(new Date(transaction.occurredAt));
+    const last = months[months.length - 1];
+    if (last && last.label === label) last.rows.push(transaction);
+    else months.push({ label, rows: [transaction] });
+  }
 
   return (
     <PageShell>
@@ -140,62 +159,97 @@ export default async function AccountDetailPage({
         }
       />
 
-      <SectionHeader className="mt-5 mb-1.5 px-1" title="Records" />
-
       {transactions.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="Nothing here yet"
-          description="Records booked against this account will show up here."
-          action={<AddRecordButton />}
-        />
+        <>
+          <SectionHeader className="mt-5 mb-1.5 px-1" title="Records" />
+          <EmptyState
+            icon={Receipt}
+            title="Nothing here yet"
+            description="Records booked against this account will show up here."
+            action={<AddRecordButton />}
+          />
+        </>
       ) : (
-        <ListCard>
-          {transactions.map((transaction) => (
-            <li
-              key={transaction.id}
-              className="flex min-h-14 items-center gap-3 px-3 py-2"
+        <>
+          {months.map((group) => (
+            <section
+              key={group.label}
+              aria-label={group.label}
+              className="mt-5"
             >
-              <Tile
-                tint={
-                  transaction.type === "transfer"
-                    ? "sky"
-                    : transaction.categoryTint
-                }
-                icon={
-                  transaction.type === "transfer"
-                    ? "ArrowLeftRight"
-                    : transaction.categoryIcon
-                }
+              <SectionHeader
+                className="mb-1.5 px-1"
+                title={group.label}
+                count={group.rows.length}
               />
+              <ListCard>
+                {group.rows.map((transaction) => (
+                  <li
+                    key={transaction.id}
+                    className="flex min-h-14 items-center gap-3 px-3 py-2"
+                  >
+                    <Tile
+                      tint={
+                        transaction.type === "transfer"
+                          ? "sky"
+                          : transaction.categoryTint
+                      }
+                      icon={
+                        transaction.type === "transfer"
+                          ? "ArrowLeftRight"
+                          : transaction.categoryIcon
+                      }
+                    />
 
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">
-                  {transaction.note ??
-                    transaction.categoryName ??
-                    (transaction.type === "transfer" ? "Transfer" : "Record")}
-                </span>
-                <span className="text-text-secondary block truncate text-xs">
-                  {dateFormatter.format(new Date(transaction.occurredAt))}
-                  {transaction.counterparty
-                    ? ` · ${transaction.signedAmount > 0n ? "from" : "to"} ${transaction.counterparty}`
-                    : transaction.categoryName
-                      ? ` · ${transaction.categoryName}`
-                      : ""}
-                </span>
-              </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">
+                        {transaction.note ??
+                          transaction.categoryName ??
+                          (transaction.type === "transfer"
+                            ? "Transfer"
+                            : "Record")}
+                      </span>
+                      <span className="text-text-secondary block truncate text-xs">
+                        {dateFormatter.format(new Date(transaction.occurredAt))}
+                        {transaction.counterparty
+                          ? ` · ${transaction.signedAmount > 0n ? "from" : "to"} ${transaction.counterparty}`
+                          : transaction.categoryName
+                            ? ` · ${transaction.categoryName}`
+                            : ""}
+                      </span>
+                    </span>
 
-              <span
-                className={cn(
-                  "amount shrink-0 text-sm font-semibold",
-                  transaction.signedAmount > 0n ? "text-income" : "text-text",
-                )}
-              >
-                <Amount value={transaction.signedAmount} signDisplay="always" />
-              </span>
-            </li>
+                    <span
+                      className={cn(
+                        "amount shrink-0 text-sm font-semibold",
+                        transaction.signedAmount > 0n
+                          ? "text-income"
+                          : "text-text",
+                      )}
+                    >
+                      <Amount
+                        value={transaction.signedAmount}
+                        signDisplay="always"
+                      />
+                    </span>
+                  </li>
+                ))}
+              </ListCard>
+            </section>
           ))}
-        </ListCard>
+
+          {transactions.length >= ACCOUNT_RECORDS_SHOWN ? (
+            <p className="text-text-secondary mt-3 px-1 text-xs">
+              The latest {ACCOUNT_RECORDS_SHOWN} records.{" "}
+              <Link
+                href={`/records?account=${account.id}`}
+                className="text-text inline-flex min-h-11 items-center font-semibold underline underline-offset-2"
+              >
+                See this account in Records
+              </Link>
+            </p>
+          ) : null}
+        </>
       )}
     </PageShell>
   );

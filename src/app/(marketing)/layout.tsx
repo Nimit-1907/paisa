@@ -80,7 +80,7 @@ export default function MarketingLayout({
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="hoverable:text-text inline-flex min-h-11 items-center rounded  "
+                      className="hoverable:text-text rounded-control inline-flex min-h-11 min-w-11 items-center justify-center"
                     >
                       {link.label}
                     </Link>

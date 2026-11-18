@@ -81,13 +81,24 @@ describe("rememberSearch", () => {
   });
 
   it("keeps only the most recent few", () => {
-    for (const term of ["a", "b", "c", "d", "e", "f", "g"]) {
+    for (const term of ["aa", "bb", "cc", "dd", "ee", "ff", "gg"]) {
       rememberSearch(term);
     }
     const kept = recentSearches();
     expect(kept).toHaveLength(MAX_RECENT);
-    expect(kept[0]).toBe("g");
-    expect(kept).not.toContain("a");
+    expect(kept[0]).toBe("gg");
+    expect(kept).not.toContain("aa");
+  });
+
+  it("ignores a single letter", () => {
+    rememberSearch("rent");
+    expect(rememberSearch("s")).toEqual(["rent"]);
+  });
+
+  it("replaces the same search half typed", () => {
+    rememberSearch("rent");
+    rememberSearch("swi");
+    expect(rememberSearch("Swiggy")).toEqual(["Swiggy", "rent"]);
   });
 
   it("truncates a paste rather than storing it", () => {
