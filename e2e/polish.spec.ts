@@ -48,7 +48,10 @@ async function smallTargets(page: Page) {
     for (const node of document.querySelectorAll<HTMLElement>(
       "main button, main a, nav button, nav a",
     )) {
-      const box = node.getBoundingClientRect();
+      // A control inside a <label> is tapped through the label: the
+      // Settings switches are a 32px picture on a full-width 44px row, and
+      // the row is what a thumb hits.
+      const box = (node.closest("label") ?? node).getBoundingClientRect();
       // Skip what is not on screen: a collapsed sheet's buttons are still in
       // the DOM and measure zero.
       if (box.width === 0 || box.height === 0) continue;
