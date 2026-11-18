@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { formatCompact } from "@/lib/money";
 import {
   bucketFor,
+  comparablePeriod,
+  shortRange,
   bucketIsPartial,
   bucketLabel,
   bucketTitle,
@@ -67,7 +69,11 @@ describe("periodContaining", () => {
 describe("shiftPeriod", () => {
   const week: Period = { kind: "week", from: "2026-11-09", to: "2026-11-15" };
   const month: Period = { kind: "month", from: "2026-01-01", to: "2026-01-31" };
-  const custom: Period = { kind: "custom", from: "2026-11-10", to: "2026-11-24" };
+  const custom: Period = {
+    kind: "custom",
+    from: "2026-11-10",
+    to: "2026-11-24",
+  };
 
   it("steps a week by seven days", () => {
     expect(shiftPeriod(week, 1)).toEqual({
@@ -95,8 +101,9 @@ describe("shiftPeriod", () => {
   });
 
   it("steps a year", () => {
-    expect(shiftPeriod({ kind: "year", from: "2026-01-01", to: "2026-12-31" }, -2))
-      .toEqual({ kind: "year", from: "2024-01-01", to: "2024-12-31" });
+    expect(
+      shiftPeriod({ kind: "year", from: "2026-01-01", to: "2026-12-31" }, -2),
+    ).toEqual({ kind: "year", from: "2024-01-01", to: "2024-12-31" });
   });
 
   it("steps a custom range by its own length", () => {
@@ -123,14 +130,24 @@ describe("shiftPeriod", () => {
 
 describe("bucketFor", () => {
   it("uses days for a week and a month, months for a year", () => {
-    expect(bucketFor({ kind: "week", from: "2026-11-09", to: "2026-11-15" })).toBe("day");
-    expect(bucketFor({ kind: "month", from: "2026-11-01", to: "2026-11-30" })).toBe("day");
-    expect(bucketFor({ kind: "year", from: "2026-01-01", to: "2026-12-31" })).toBe("month");
+    expect(
+      bucketFor({ kind: "week", from: "2026-11-09", to: "2026-11-15" }),
+    ).toBe("day");
+    expect(
+      bucketFor({ kind: "month", from: "2026-11-01", to: "2026-11-30" }),
+    ).toBe("day");
+    expect(
+      bucketFor({ kind: "year", from: "2026-01-01", to: "2026-12-31" }),
+    ).toBe("month");
   });
 
   it("switches a custom range to months once days stop being legible", () => {
-    expect(bucketFor({ kind: "custom", from: "2026-01-01", to: "2026-03-01" })).toBe("day");
-    expect(bucketFor({ kind: "custom", from: "2026-01-01", to: "2026-09-01" })).toBe("month");
+    expect(
+      bucketFor({ kind: "custom", from: "2026-01-01", to: "2026-03-01" }),
+    ).toBe("day");
+    expect(
+      bucketFor({ kind: "custom", from: "2026-01-01", to: "2026-09-01" }),
+    ).toBe("month");
   });
 });
 
@@ -152,27 +169,37 @@ describe("parsePeriod", () => {
   });
 
   it("reads a custom range", () => {
-    expect(parsePeriod({ p: "custom", from: "2026-11-01", to: "2026-11-10" }, today))
-      .toEqual({ kind: "custom", from: "2026-11-01", to: "2026-11-10" });
+    expect(
+      parsePeriod({ p: "custom", from: "2026-11-01", to: "2026-11-10" }, today),
+    ).toEqual({ kind: "custom", from: "2026-11-01", to: "2026-11-10" });
   });
 
   it("refuses a custom range that is backwards, broken or centuries long", () => {
     const fallback = { kind: "month", from: "2026-11-01", to: "2026-11-30" };
 
-    expect(parsePeriod({ p: "custom", from: "2026-11-10", to: "2026-11-01" }, today))
-      .toEqual(fallback);
-    expect(parsePeriod({ p: "custom", from: "nope", to: "2026-11-01" }, today))
-      .toEqual(fallback);
-    expect(parsePeriod({ p: "custom", from: "1900-01-01", to: "2026-11-01" }, today))
-      .toEqual(fallback);
+    expect(
+      parsePeriod({ p: "custom", from: "2026-11-10", to: "2026-11-01" }, today),
+    ).toEqual(fallback);
+    expect(
+      parsePeriod({ p: "custom", from: "nope", to: "2026-11-01" }, today),
+    ).toEqual(fallback);
+    expect(
+      parsePeriod({ p: "custom", from: "1900-01-01", to: "2026-11-01" }, today),
+    ).toEqual(fallback);
   });
 
   it("refuses a date that does not exist", () => {
     const fallback = { kind: "month", from: "2026-11-01", to: "2026-11-30" };
 
-    expect(parsePeriod({ p: "month", d: "2026-13-45" }, today)).toEqual(fallback);
-    expect(parsePeriod({ p: "month", d: "2026-02-30" }, today)).toEqual(fallback);
-    expect(parsePeriod({ p: "week", d: "2026-00-10" }, today).kind).toBe("week");
+    expect(parsePeriod({ p: "month", d: "2026-13-45" }, today)).toEqual(
+      fallback,
+    );
+    expect(parsePeriod({ p: "month", d: "2026-02-30" }, today)).toEqual(
+      fallback,
+    );
+    expect(parsePeriod({ p: "week", d: "2026-00-10" }, today).kind).toBe(
+      "week",
+    );
     expect(
       parsePeriod({ p: "custom", from: "2026-02-30", to: "2026-03-05" }, today),
     ).toEqual(fallback);
@@ -197,20 +224,29 @@ describe("parsePeriod", () => {
 
 describe("labels", () => {
   it("names each kind the way the header reads it", () => {
-    expect(periodLabel({ kind: "month", from: "2026-11-01", to: "2026-11-30" }))
-      .toBe("November 2026");
-    expect(periodLabel({ kind: "year", from: "2026-01-01", to: "2026-12-31" }))
-      .toBe("2026");
-    expect(periodLabel({ kind: "week", from: "2026-11-09", to: "2026-11-15" }))
-      .toBe("9 – 15 Nov 2026");
-    expect(periodLabel({ kind: "custom", from: "2026-11-10", to: "2026-12-03" }))
-      .toBe("10 Nov – 3 Dec 2026");
-    expect(periodLabel({ kind: "custom", from: "2025-12-28", to: "2026-01-04" }))
-      .toBe("28 Dec 2025 – 4 Jan 2026");
+    expect(
+      periodLabel({ kind: "month", from: "2026-11-01", to: "2026-11-30" }),
+    ).toBe("November 2026");
+    expect(
+      periodLabel({ kind: "year", from: "2026-01-01", to: "2026-12-31" }),
+    ).toBe("2026");
+    expect(
+      periodLabel({ kind: "week", from: "2026-11-09", to: "2026-11-15" }),
+    ).toBe("9 – 15 Nov 2026");
+    expect(
+      periodLabel({ kind: "custom", from: "2026-11-10", to: "2026-12-03" }),
+    ).toBe("10 Nov – 3 Dec 2026");
+    expect(
+      periodLabel({ kind: "custom", from: "2025-12-28", to: "2026-01-04" }),
+    ).toBe("28 Dec 2025 – 4 Jan 2026");
   });
 
   it("knows which month buckets a custom range only half covers", () => {
-    const range: Period = { kind: "custom", from: "2026-10-15", to: "2027-01-31" };
+    const range: Period = {
+      kind: "custom",
+      from: "2026-10-15",
+      to: "2027-01-31",
+    };
 
     expect(bucketIsPartial(range, "2026-10-01", "month")).toBe(true);
     expect(bucketIsPartial(range, "2026-11-01", "month")).toBe(false);
@@ -218,7 +254,11 @@ describe("labels", () => {
     // Days are never partial, a day is either in the range or it is not.
     expect(bucketIsPartial(range, "2026-10-15", "day")).toBe(false);
 
-    const cut: Period = { kind: "custom", from: "2026-10-01", to: "2027-01-20" };
+    const cut: Period = {
+      kind: "custom",
+      from: "2026-10-01",
+      to: "2027-01-20",
+    };
     expect(bucketIsPartial(cut, "2026-10-01", "month")).toBe(false);
     expect(bucketIsPartial(cut, "2027-01-01", "month")).toBe(true);
   });
@@ -262,5 +302,58 @@ describe("formatCompact", () => {
 
   it("respects a currency with no decimal places", () => {
     expect(formatCompact(1200n, { symbol: "¥", decimals: 0 })).toBe("¥1.2K");
+  });
+});
+
+describe("comparablePeriod", () => {
+  const november = {
+    kind: "month" as const,
+    from: "2026-11-01",
+    to: "2026-11-30",
+  };
+
+  it("cuts last month to the days that have passed of this one", () => {
+    expect(comparablePeriod(november, "2026-11-18")).toEqual({
+      kind: "custom",
+      from: "2026-10-01",
+      to: "2026-10-18",
+    });
+  });
+
+  it("never runs past the end of a shorter month", () => {
+    const march = {
+      kind: "month" as const,
+      from: "2026-03-01",
+      to: "2026-03-31",
+    };
+    expect(comparablePeriod(march, "2026-03-31").to).toBe("2026-02-28");
+  });
+
+  it("compares a finished period with the whole one before", () => {
+    expect(comparablePeriod(november, "2026-12-05")).toEqual({
+      kind: "month",
+      from: "2026-10-01",
+      to: "2026-10-31",
+    });
+  });
+});
+
+describe("shortRange", () => {
+  it("names a window briefly", () => {
+    expect(
+      shortRange({ kind: "custom", from: "2026-10-01", to: "2026-10-18" }),
+    ).toBe("1–18 Oct");
+    expect(
+      shortRange({ kind: "custom", from: "2026-10-01", to: "2026-10-01" }),
+    ).toBe("1 Oct");
+    expect(
+      shortRange({ kind: "month", from: "2026-10-01", to: "2026-10-31" }),
+    ).toBe("Oct");
+    expect(
+      shortRange({ kind: "week", from: "2026-09-28", to: "2026-10-04" }),
+    ).toBe("28 Sep–4 Oct");
+    expect(
+      shortRange({ kind: "custom", from: "2025-01-01", to: "2025-11-18" }),
+    ).toBe("1 Jan–18 Nov 2025");
   });
 });

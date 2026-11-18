@@ -1,4 +1,9 @@
-import { addDays, dayDifference, daysInMonth, weekdayOf } from "@/lib/recurrence";
+import {
+  addDays,
+  dayDifference,
+  daysInMonth,
+  weekdayOf,
+} from "@/lib/recurrence";
 
 /**
  * The window Analysis is looking at.
@@ -120,7 +125,11 @@ export function shiftPeriod(
 
   switch (period.kind) {
     case "week":
-      return periodContaining("week", addDays(period.from, 7 * delta), weekStart);
+      return periodContaining(
+        "week",
+        addDays(period.from, 7 * delta),
+        weekStart,
+      );
     case "month": {
       const { year, month } = parts(period.from);
       const total = year * 12 + (month - 1) + delta;
@@ -154,6 +163,59 @@ export function shiftPeriod(
  */
 export function previousPeriod(period: Period, weekStart = 1): Period {
   return shiftPeriod(period, -1, weekStart);
+}
+
+/**
+ * The period to compare with: the one before, cut to as many days as have
+ * passed of this one.
+ *
+ * On 18 November, the month so far is 18 days. Set against all 31 of
+ * October it always looks like a saving, so it is set against 1–18 October.
+ * A period that is over, or has not begun, compares with the whole of the
+ * one before.
+ */
+export function comparablePeriod(
+  period: Period,
+  today: string,
+  weekStart = 1,
+): Period {
+  const before = previousPeriod(period, weekStart);
+  if (!periodContains(period, today)) return before;
+
+  const to = addDays(before.from, dayDifference(period.from, today));
+  return {
+    kind: "custom",
+    from: before.from,
+    to: to < before.to ? to : before.to,
+  };
+}
+
+/**
+ * A short name for a comparison window: "1–18 Oct", "9 Nov", "28 Sep–4 Oct",
+ * "1 Jan–18 Nov 2025".
+ */
+export function shortRange(period: Period): string {
+  const from = parts(period.from);
+  const to = parts(period.to);
+
+  if (period.kind === "month") return `${MONTHS[from.month - 1]}`;
+  if (period.kind === "year") return String(from.year);
+
+  const year = from.year === to.year ? "" : ` ${from.year}`;
+  const tail =
+    period.kind === "custom" && from.month === 1 && from.date === 1
+      ? ` ${to.year}`
+      : "";
+
+  if (period.from === period.to) {
+    return `${from.date} ${MONTHS[from.month - 1]}${tail}`;
+  }
+  if (from.year === to.year && from.month === to.month) {
+    return `${from.date}–${to.date} ${MONTHS[to.month - 1]}${tail}`;
+  }
+  return `${from.date} ${MONTHS[from.month - 1]}${year}–${to.date} ${
+    MONTHS[to.month - 1]
+  }${year ? ` ${to.year}` : tail}`;
 }
 
 /**

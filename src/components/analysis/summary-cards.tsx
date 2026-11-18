@@ -51,7 +51,9 @@ export function SummaryCards({
       <Card
         icon={CalendarDays}
         label="Average per day"
-        value={<Amount value={perDay} signDisplay="never" />}
+        // Whole rupees: an average is an estimate, and ₹2,196.33 claims a
+        // precision it does not have beside figures that are all whole.
+        value={<Amount value={perDay} signDisplay="never" whole />}
         hint={`over ${over} ${over === 1 ? "day" : "days"}${
           data.daysElapsed < data.days ? " so far" : ""
         }`}
@@ -88,7 +90,7 @@ export function SummaryCards({
 
       <Card
         icon={change !== null && change >= 0 ? TrendingUp : TrendingDown}
-        label="vs previous"
+        label={`vs ${data.previousLabel}`}
         value={
           change === null
             ? "None"

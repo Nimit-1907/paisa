@@ -3,9 +3,11 @@ import "server-only";
 import { fromDb } from "@/lib/money";
 import {
   bucketFor,
+  comparablePeriod,
   type Period,
   periodLength,
   previousPeriod,
+  shortRange,
 } from "@/lib/period";
 import { dayDifference } from "@/lib/recurrence";
 import { createClient } from "@/lib/supabase/server";
@@ -41,8 +43,15 @@ export type AnalysisData = {
   balances: BalancePoint[];
   /** The selected kind's total across the period. */
   total: string;
-  /** The same total for the period before, for the change card. */
+  /**
+   * The same total for the period before, for the change card. While the
+   * period is running, only as many days of it as have passed of this one.
+   */
   previousTotal: string;
+  /** What the change card compares with: "1–18 Oct", "Oct", "2025". */
+  previousLabel: string;
+  /** Whether the comparison was cut short to match a running period. */
+  previousPartial: boolean;
   /** Income and expense across the whole period, for the bar chart's legend. */
   incomeTotal: string;
   expenseTotal: string;
@@ -90,46 +99,46 @@ export async function getAnalysis({
 }): Promise<AnalysisData> {
   const supabase = await createClient();
   const bucket = bucketFor(period);
-  const before = previousPeriod(period);
+  const before = comparablePeriod(period, today);
 
   const [categories, series, balances, previousCategories, previous] =
     await Promise.all([
-    supabase.rpc("category_totals", {
-      p_from: period.from,
-      p_to: period.to,
-      p_kind: kind,
-    }),
-    supabase.rpc("period_series", {
-      p_from: period.from,
-      p_to: period.to,
-      p_bucket: bucket,
-    }),
-    supabase.rpc("balance_series", {
-      p_from: period.from,
-      p_to: period.to,
-      p_bucket: bucket,
-      // Omitted rather than null: the argument has a default, and the
-      // generated type says so.
-      p_account_id: accountId ?? undefined,
-    }),
-    // The same breakdown for the period before, so the headline can say what
-    // changed rather than only what is.
-    supabase.rpc("category_totals", {
-      p_from: before.from,
-      p_to: before.to,
-      p_kind: kind,
-    }),
-    supabase.rpc("period_series", {
-      p_from: before.from,
-      p_to: before.to,
-      // One bucket's worth of arithmetic is all the change card needs, and a
-      // year of daily rows to produce one number is a waste of a query.
-      // The bucket only decides the grouping; the rows are filtered by the
-      // range either way, so one bucket a month is the cheapest way to get a
-      // total that is exactly the same number.
-      p_bucket: "month",
-    }),
-  ]);
+      supabase.rpc("category_totals", {
+        p_from: period.from,
+        p_to: period.to,
+        p_kind: kind,
+      }),
+      supabase.rpc("period_series", {
+        p_from: period.from,
+        p_to: period.to,
+        p_bucket: bucket,
+      }),
+      supabase.rpc("balance_series", {
+        p_from: period.from,
+        p_to: period.to,
+        p_bucket: bucket,
+        // Omitted rather than null: the argument has a default, and the
+        // generated type says so.
+        p_account_id: accountId ?? undefined,
+      }),
+      // The same breakdown for the period before, so the headline can say what
+      // changed rather than only what is.
+      supabase.rpc("category_totals", {
+        p_from: before.from,
+        p_to: before.to,
+        p_kind: kind,
+      }),
+      supabase.rpc("period_series", {
+        p_from: before.from,
+        p_to: before.to,
+        // One bucket's worth of arithmetic is all the change card needs, and a
+        // year of daily rows to produce one number is a waste of a query.
+        // The bucket only decides the grouping; the rows are filtered by the
+        // range either way, so one bucket a month is the cheapest way to get a
+        // total that is exactly the same number.
+        p_bucket: "month",
+      }),
+    ]);
 
   if (categories.error) throw new Error(categories.error.message);
   if (previousCategories.error) {
@@ -194,6 +203,8 @@ export async function getAnalysis({
     })),
     total: total.toString(),
     previousTotal: previousTotal.toString(),
+    previousLabel: shortRange(before),
+    previousPartial: before.to !== previousPeriod(period).to,
     incomeTotal: incomeTotal.toString(),
     expenseTotal: expenseTotal.toString(),
     peak: busiest

@@ -20,6 +20,11 @@ export type InsightInput = {
   topPrevious: bigint | null;
   /** Everything of this kind, this period. */
   total: bigint;
+  /**
+   * The period is still running and was compared with only as many days of
+   * the one before: "than the same days last month".
+   */
+  partial?: boolean;
 };
 
 const WHEN: Record<PeriodKind, string> = {
@@ -54,6 +59,10 @@ export function describeInsight(input: InsightInput): string | null {
   const { top, periodKind, kind } = input;
   if (!top || top.total <= 0n) return null;
 
+  const before = input.partial
+    ? `the same days ${BEFORE[periodKind].replace("the period before", "of the period before")}`
+    : BEFORE[periodKind];
+
   const noun = kind === "income" ? "source of income" : "biggest expense";
   const opening = `${top.name} is your ${noun} ${WHEN[periodKind]}`;
 
@@ -66,11 +75,11 @@ export function describeInsight(input: InsightInput): string | null {
   // it as news would teach the reader to stop believing the sentence.
   if (change !== null && Math.abs(change) >= 5) {
     const direction = change > 0 ? "higher" : "lower";
-    return `${opening}, ${Math.abs(change)}% ${direction} than ${BEFORE[periodKind]}.`;
+    return `${opening}, ${Math.abs(change)}% ${direction} than ${before}.`;
   }
 
   if (change !== null) {
-    return `${opening}, about the same as ${BEFORE[periodKind]}.`;
+    return `${opening}, about the same as ${before}.`;
   }
 
   const share = sharePercent(top.total, input.total);

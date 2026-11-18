@@ -21,6 +21,7 @@ import {
   useCompactMoney,
   useTooltipTrigger,
 } from "@/components/analysis/chart-shell";
+import { ordinaryPeak } from "@/components/records/month-star";
 import { Deferred } from "@/components/shared/deferred";
 import {
   bucketIsPartial,
@@ -83,6 +84,23 @@ export function PeriodBars({
     [series, bucket, period],
   );
 
+  /*
+   * One rent day five times the rest drew the month as a row of stubs.
+   * Scaled to the busiest ordinary day instead, the way the Records card is,
+   * and the outlier runs off the top with a line under the chart naming it.
+   * Only when there is an outlier worth the trade: otherwise the plain
+   * maximum is the honest scale.
+   */
+  const scale = React.useMemo(() => {
+    const values = data.map((point) => point[kind]);
+    const max = Math.max(0, ...values);
+    const ordinary = ordinaryPeak(values);
+    if (max <= ordinary * 2.5) return null;
+
+    const tallest = data.find((point) => point[kind] === max) ?? null;
+    return { top: Math.ceil(ordinary * 1.4), tallest };
+  }, [data, kind]);
+
   return (
     <ChartCard
       title={bucket === "day" ? "Day by day" : "Month by month"}
@@ -126,6 +144,8 @@ export function PeriodBars({
               />
               <YAxis
                 width={56}
+                domain={scale ? [0, scale.top] : undefined}
+                allowDataOverflow={scale !== null}
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
@@ -175,6 +195,19 @@ export function PeriodBars({
           </ResponsiveContainer>
         </Deferred>
       </div>
+
+      {scale?.tallest ? (
+        <p className="text-text-secondary mt-1 px-1 text-xs">
+          {bucketTitle(scale.tallest.on, bucket)} runs off the top:{" "}
+          <span className="text-text font-semibold">
+            {compact(
+              kind === "income"
+                ? scale.tallest.incomeMinor
+                : scale.tallest.expenseMinor,
+            )}
+          </span>
+        </p>
+      ) : null}
 
       <p className="text-text-secondary mt-1 px-1 text-xs">
         <span className="text-income font-semibold">

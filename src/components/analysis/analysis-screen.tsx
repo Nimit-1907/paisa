@@ -86,6 +86,7 @@ export function AnalysisScreen({
       : null,
     topPrevious: data.topPrevious === null ? null : BigInt(data.topPrevious),
     total: BigInt(data.total),
+    partial: data.previousPartial,
   });
 
   const nothing =
@@ -95,21 +96,23 @@ export function AnalysisScreen({
 
   return (
     <div className="space-y-4">
-      <PeriodSelector period={period} today={today} weekStart={weekStart} />
+      <div className="space-y-4 lg:flex lg:items-center lg:gap-4 lg:space-y-0">
+        <PeriodSelector period={period} today={today} weekStart={weekStart} />
 
-      {/* The shared control, not a tinted one of its own. A segment that
+        {/* The shared control, not a tinted one of its own. A segment that
           changes colour with its own value competes with the figures it is
           filtering, which are the things the colour is actually about. */}
-      <SegmentedControl
-        className="max-w-md"
-        label="Income or expense"
-        value={kind}
-        onChange={chooseKind}
-        options={[
-          { value: "expense", label: "Expense" },
-          { value: "income", label: "Income" },
-        ]}
-      />
+        <SegmentedControl
+          className="max-w-md lg:w-64 lg:shrink-0"
+          label="Income or expense"
+          value={kind}
+          onChange={chooseKind}
+          options={[
+            { value: "expense", label: "Expense" },
+            { value: "income", label: "Income" },
+          ]}
+        />
+      </div>
 
       {nothing ? (
         <EmptyState

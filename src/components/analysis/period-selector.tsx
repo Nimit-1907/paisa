@@ -111,12 +111,15 @@ export function PeriodSelector({
           : null;
 
   return (
-    <div className="space-y-2">
+    // One toolbar on a wide screen: the kind, the period, then (from the
+    // screen) Expense or Income, instead of three short rows at the left of
+    // a 1200px page.
+    <div className="space-y-2 lg:flex lg:min-w-0 lg:flex-1 lg:items-center lg:gap-4 lg:space-y-0">
       <SegmentedControl
         // Capped on a wide screen. A four-way control stretched across
         // 1200px puts a centimetre of empty track between each label and
         // reads as a navigation bar rather than as a choice.
-        className="max-w-md"
+        className="max-w-md lg:w-md lg:shrink-0"
         label="Period"
         value={period.kind}
         onChange={choose}
@@ -126,7 +129,7 @@ export function PeriodSelector({
         }))}
       />
 
-      <div className="flex items-center justify-between gap-1">
+      <div className="flex items-center justify-between gap-1 lg:min-w-0 lg:flex-1">
         <Button
           variant="ghost"
           size="icon-touch"
