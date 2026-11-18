@@ -4,13 +4,11 @@ import Link from "next/link";
 
 import { ChevronRight, User } from "lucide-react";
 
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageShell } from "@/components/layout/page-shell";
 import { InstallButton } from "@/components/pwa/install-button";
 import { SectionHeader } from "@/components/shared/section-header";
-import { Card, HeroCard, ListCard } from "@/components/shared/surface";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { HeroCard, ListCard } from "@/components/shared/surface";
 import { MORE_ITEMS } from "@/lib/nav";
 import { getProfile, getSessionUser } from "@/lib/profile";
 
@@ -71,7 +69,7 @@ export default async function MorePage() {
       {/*
         From lg up the sidebar lists every one of these destinations and
         carries the theme toggle, so the page keeps only what the sidebar
-        does not: who is signed in, install and sign out.
+        does not: who is signed in, and install.
       */}
       {GROUPS.map((group) => (
         <section key={group.title} className="mt-5 lg:hidden">
@@ -93,7 +91,9 @@ export default async function MorePage() {
                       <span className="block text-sm font-semibold">
                         {item.label}
                       </span>
-                      <span className="text-text-secondary block truncate text-xs">
+                      {/* Wraps rather than cuts: the description is the
+                          only thing saying what is behind the row. */}
+                      <span className="text-text-secondary block text-xs">
                         {item.description}
                       </span>
                     </span>
@@ -109,28 +109,12 @@ export default async function MorePage() {
         </section>
       ))}
 
-      <section className="mt-5 lg:hidden">
-        <SectionHeader className="mb-1.5 px-1" title="Appearance" />
-
-        <Card className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">Theme</p>
-            <p className="text-text-secondary text-xs">
-              Light, dark or follow your device
-            </p>
-          </div>
-          <ThemeToggle />
-        </Card>
-      </section>
-
-      <section className="mt-5">
-        <SectionHeader className="mb-1.5 px-1" title="Account" />
-
-        <div className="space-y-2">
-          <InstallButton />
-          <SignOutButton className="w-full" />
-        </div>
-      </section>
+      {/* Theme and Sign out live in Settings alone: one place for each,
+          and this screen stays an index of where to go. Install is here
+          because it is about the app on this device, not the account. */}
+      <div className="mt-5">
+        <InstallButton />
+      </div>
     </PageShell>
   );
 }

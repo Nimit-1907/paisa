@@ -15,13 +15,18 @@ import { cn } from "@/lib/utils";
  *
  * `variant="sheet"` lets go at `lg`, where a sheet has become a centred
  * dialog and there is nothing left to stick to.
+ *
+ * `variant="dock"` is for a page under the floating dock: a raised strip
+ * that rides just above it on a phone, and near the bottom edge from `lg`
+ * where the dock has become the sidebar. Settings shows its Save in one,
+ * and only while there is something to save.
  */
 export function StickyActionBar({
   variant = "page",
   className,
   children,
 }: {
-  variant?: "page" | "sheet";
+  variant?: "page" | "sheet" | "dock";
   className?: string;
   children: React.ReactNode;
 }) {
@@ -33,6 +38,8 @@ export function StickyActionBar({
         "bg-surface sticky bottom-0 z-10 flex gap-2 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         variant === "sheet" &&
           "lg:static lg:border-0 lg:bg-transparent lg:px-0 lg:pb-0",
+        variant === "dock" &&
+          "rounded-card bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-30 border px-3 pb-3 lg:bottom-4",
         className,
       )}
       // Lifted by however much of the window the on-screen keyboard is

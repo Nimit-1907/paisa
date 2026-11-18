@@ -19,11 +19,18 @@ import {
 } from "@/components/shared/responsive-sheet";
 import { Pill } from "@/components/shared/pill";
 import { SectionHeader } from "@/components/shared/section-header";
+import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Card } from "@/components/shared/surface";
 import { Button } from "@/components/ui/button";
 import { FormRow } from "@/components/ui/form-row";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   type Currency,
   findCurrency,
@@ -33,13 +40,13 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const WEEK_DAYS = [
-  { value: 0, label: "Sun" },
-  { value: 1, label: "Mon" },
-  { value: 2, label: "Tue" },
-  { value: 3, label: "Wed" },
-  { value: 4, label: "Thu" },
-  { value: 5, label: "Fri" },
-  { value: 6, label: "Sat" },
+  { value: 1, label: "Monday" },
+  { value: 0, label: "Sunday" },
+  { value: 6, label: "Saturday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
 ];
 
 const THEMES = [
@@ -248,35 +255,26 @@ export function SettingsScreen({
         <SectionHeader className="mb-1.5 px-1" title="Preferences" />
 
         <Card className="space-y-4 p-4">
+          {/* A select, not seven chips: seven 44px chips do not fit a
+              360px card on one line, and almost everybody picks one of
+              the first three. */}
           <div className="space-y-1.5">
-            <Label id="week-start-label">Week starts on</Label>
-            <div
-              role="radiogroup"
-              aria-labelledby="week-start-label"
-              className="flex flex-wrap gap-1"
+            <Label htmlFor="week-start">Week starts on</Label>
+            <Select
+              value={String(weekStart)}
+              onValueChange={(next) => setWeekStart(Number(next))}
             >
-              {WEEK_DAYS.map((day) => {
-                const active = weekStart === day.value;
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setWeekStart(day.value)}
-                    className={cn(
-                      "pressable h-11 min-w-11 rounded-full px-2.5 text-xs font-semibold",
-                      "duration-[120ms] transition-[background-color,box-shadow,border-color] motion-reduce:transition-none",
-                      active
-                        ? "accent-sm bg-surface text-text"
-                        : "bg-surface-muted text-text-secondary hoverable:bg-hairline border border-transparent",
-                    )}
-                  >
+              <SelectTrigger id="week-start">
+                {WEEK_DAYS.find((day) => day.value === weekStart)?.label}
+              </SelectTrigger>
+              <SelectContent>
+                {WEEK_DAYS.map((day) => (
+                  <SelectItem key={day.value} value={String(day.value)}>
                     {day.label}
-                  </button>
-                );
-              })}
-            </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {preferences}
@@ -325,28 +323,6 @@ export function SettingsScreen({
         </Card>
       </section>
 
-      <div className="space-y-4">
-        {error && !errorField ? (
-          <p role="alert" className="text-expense text-sm">
-            {error}
-          </p>
-        ) : null}
-
-        <Button
-          size="touch"
-          className="w-full"
-          disabled={saving || !dirty}
-          onClick={() => void save()}
-        >
-          {saving ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <Check className="size-4" aria-hidden="true" />
-          )}
-          {dirty ? "Save changes" : "Saved"}
-        </Button>
-      </div>
-
       <section>
         <SectionHeader className="mb-1.5 px-1" title="Security" />
         <ChangePasswordCard />
@@ -364,6 +340,50 @@ export function SettingsScreen({
         />
         <DeleteAccountCard email={profile.email} />
       </section>
+
+      {/* Only while there is something to save: a full-width grey "Saved"
+          sat on the page for ever and read as a broken button. */}
+      {dirty || saving ? (
+        <StickyActionBar variant="dock" className="flex-col">
+          {error && !errorField ? (
+            <p role="alert" className="text-expense text-sm">
+              {error}
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="touch"
+              className="flex-1"
+              disabled={saving}
+              onClick={() => {
+                setDisplayName(profile.displayName);
+                setCurrencyCode(profile.currencyCode);
+                setWeekStart(profile.weekStart);
+                setThemeValue(profile.theme);
+                setTheme(profile.theme);
+                setError(null);
+                setErrorField(null);
+              }}
+            >
+              Discard
+            </Button>
+            <Button
+              size="touch"
+              className="flex-1"
+              disabled={saving}
+              onClick={() => void save()}
+            >
+              {saving ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Check className="size-4" aria-hidden="true" />
+              )}
+              Save changes
+            </Button>
+          </div>
+        </StickyActionBar>
+      ) : null}
 
       <CurrencySheet
         open={pickerOpen}

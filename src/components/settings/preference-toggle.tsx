@@ -5,6 +5,7 @@ import * as React from "react";
 import { Check, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { Switch } from "@/components/ui/switch";
 import type { ActionResult } from "@/lib/action-result";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ export function PreferenceToggle({
   /** Fired as the switch moves, for a setting you feel rather than read. */
   onOptimistic?: (next: boolean) => void;
 }) {
+  const id = React.useId();
   const [on, setOn] = React.useState(enabled);
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -87,7 +89,12 @@ export function PreferenceToggle({
   }
 
   return (
-    <label className="flex min-h-11 cursor-pointer items-start gap-3">
+    // The whole row is the target, 44px and up; the switch is the picture
+    // of the state, not a 20px box to aim at.
+    <label
+      htmlFor={id}
+      className="flex min-h-11 cursor-pointer items-center gap-3"
+    >
       <span className="bg-surface-muted text-text-secondary rounded-control flex size-10 shrink-0 items-center justify-center">
         <Icon className="size-5" aria-hidden="true" />
       </span>
@@ -114,19 +121,17 @@ export function PreferenceToggle({
           </span>
         </span>
 
-        <span className="text-text-secondary mt-0.5 block text-xs">{description}</span>
+        <span className="text-text-secondary mt-0.5 block text-xs">
+          {description}
+        </span>
       </span>
 
-      <input
-        type="checkbox"
-        role="switch"
+      <Switch
+        id={id}
         checked={on}
         disabled={saving}
-        onChange={() => void toggle()}
-        className={cn(
-          "accent-primary mt-0.5 size-5 shrink-0 cursor-pointer",
-          saving && "opacity-50",
-        )}
+        onCheckedChange={() => void toggle()}
+        className={cn("shrink-0", saving && "opacity-50")}
       />
     </label>
   );
