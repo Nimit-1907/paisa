@@ -55,6 +55,7 @@ import {
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { SearchOverlay } from "@/components/records/search-overlay";
 import type { TransactionFilters } from "@/lib/schemas/transactions";
+import { type DateFormat, dateFormat } from "@/lib/date-format";
 
 type OptimisticAction =
   | { kind: "add"; row: TransactionRow }
@@ -487,7 +488,7 @@ export function RecordsScreen({
     : null;
 
   /** "Jul", for the card's label on a month that is over. */
-  const monthName = new Intl.DateTimeFormat("en-IN", {
+  const monthName = dateFormat({
     timeZone: "UTC",
     month: "short",
   }).format(new Date(Date.UTC(year, month - 1, 1)));
@@ -940,7 +941,7 @@ function mergeRows(
 // Intl formatters are expensive to build, and the timezone rarely changes.
 const dayFormatters = new Map<
   string,
-  { day: Intl.DateTimeFormat; label: Intl.DateTimeFormat }
+  { day: Intl.DateTimeFormat; label: DateFormat }
 >();
 
 function formattersFor(timeZone: string) {
@@ -954,7 +955,7 @@ function formattersFor(timeZone: string) {
       month: "2-digit",
       day: "2-digit",
     }),
-    label: new Intl.DateTimeFormat("en-IN", {
+    label: dateFormat({
       timeZone,
       weekday: "short",
       day: "numeric",

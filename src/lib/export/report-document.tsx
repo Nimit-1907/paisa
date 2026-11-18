@@ -1,14 +1,9 @@
-import {
-  Document,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import type { CurrencySettings } from "@/lib/money";
 import { formatWith } from "@/lib/money";
 import type { ExportRow } from "@/lib/queries/export";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * The monthly statement.
@@ -117,11 +112,14 @@ export function ReportDocument({ data }: { data: ReportData }) {
   const { currency } = data;
   const net = data.income - data.expense;
 
-  const date = new Intl.DateTimeFormat("en-GB", {
-    timeZone: data.timeZone,
-    day: "2-digit",
-    month: "short",
-  });
+  const date = dateFormat(
+    {
+      timeZone: data.timeZone,
+      day: "2-digit",
+      month: "short",
+    },
+    "en-GB",
+  );
 
   return (
     <Document
@@ -178,7 +176,9 @@ export function ReportDocument({ data }: { data: ReportData }) {
           ) : (
             data.categories.map((category) => {
               const left =
-                category.budget === null ? null : category.budget - category.total;
+                category.budget === null
+                  ? null
+                  : category.budget - category.total;
 
               return (
                 <View key={category.name} style={styles.row} wrap={false}>
@@ -241,11 +241,17 @@ export function ReportDocument({ data }: { data: ReportData }) {
                 <Text style={[styles.muted, { flex: 2.4 }]}>
                   {row.accountName}
                 </Text>
-                <Text style={[styles.muted, { flex: 3 }]}>{row.note ?? ""}</Text>
+                <Text style={[styles.muted, { flex: 3 }]}>
+                  {row.note ?? ""}
+                </Text>
                 <Text style={[styles.right, { flex: 2 }]}>
                   {/* The sign carries the direction: this prints in black and
                       white, where a colour would carry nothing at all. */}
-                  {row.type === "income" ? "+" : row.type === "expense" ? "-" : ""}
+                  {row.type === "income"
+                    ? "+"
+                    : row.type === "expense"
+                      ? "-"
+                      : ""}
                   <Money currency={currency} amount={row.amount} sign="never" />
                 </Text>
               </View>

@@ -85,14 +85,20 @@ export function GoalsScreen({
 
 function GoalCard({ row }: { row: GoalTotal }) {
   const formatMoney = useFormatMoney();
-  const name = row.goal?.name ?? "No goal";
+  // Investments with no goal are a bucket, not a goal: named as one and
+  // drawn with a dashed edge, so the card does not read as a goal you set.
+  const name = row.goal?.name ?? "Not in a goal";
+  const unassigned = row.goal === null;
   const percent = Math.round(row.percent);
   const target = row.goal?.targetAmount ?? null;
 
   return (
     <Link
       href={`/investments/goals/${row.goal?.id ?? "none"}`}
-      className="bg-surface rounded-card pressable hoverable:bg-surface-muted flex flex-col gap-2.5 border p-4"
+      className={cn(
+        "bg-surface rounded-card pressable hoverable:bg-surface-muted flex flex-col gap-2.5 border p-4",
+        unassigned && "border-dashed",
+      )}
     >
       <span className="flex min-w-0 items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2">
@@ -114,22 +120,26 @@ function GoalCard({ row }: { row: GoalTotal }) {
         <Amount value={BigInt(row.net)} whole />
       </span>
 
-      <ProgressBar
-        percent={row.percent}
-        label={
-          row.basis === "target"
-            ? `${name}: ${percent}% of target`
-            : `${name}: ${percent}% of everything invested`
-        }
-      />
-
-      <span className="text-text-secondary text-xs">
-        {row.basis === "target" && target
-          ? percent >= 100
-            ? `Target of ${formatMoney(BigInt(target), { whole: true })} reached`
-            : `${percent}% of ${formatMoney(BigInt(target), { whole: true })}, ${formatMoney(BigInt(Math.max(0, target - row.net)), { whole: true })} to go`
-          : `${percent}% of everything invested`}
-      </span>
+      {/* A bar only against a target. A share of everything invested
+          drawn the same way read as progress towards something. */}
+      {row.basis === "target" && target ? (
+        <>
+          <ProgressBar
+            percent={row.percent}
+            label={`${name}: ${percent}% of target`}
+          />
+          <span className="text-text-secondary text-xs">
+            {percent >= 100
+              ? `Target of ${formatMoney(BigInt(target), { whole: true })} reached`
+              : `${percent}% of ${formatMoney(BigInt(target), { whole: true })}, ${formatMoney(BigInt(Math.max(0, target - row.net)), { whole: true })} to go`}
+          </span>
+        </>
+      ) : (
+        <span className="text-text-secondary text-xs">
+          {unassigned ? "" : "No target · "}
+          {percent}% of everything invested
+        </span>
+      )}
     </Link>
   );
 }

@@ -25,6 +25,7 @@ import {
   projectContributions,
 } from "@/lib/investments";
 import { cn } from "@/lib/utils";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * Years from now, in money put in.
@@ -229,7 +230,7 @@ export function GrowthScreen({
 }
 
 function formatMonthYear(day: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone: "UTC",
     month: "short",
     year: "numeric",

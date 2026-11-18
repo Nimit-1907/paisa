@@ -38,11 +38,11 @@ describe("comparedWith", () => {
   });
 
   it("stops at the end of a shorter last month", () => {
-    expect(comparedWith(2026, 10, "2026-10-31")).toBe("1–30 Sept");
+    expect(comparedWith(2026, 10, "2026-10-31")).toBe("1–30 Sep");
   });
 
   it("names the whole month for a month that is over", () => {
-    expect(comparedWith(2026, 10, "2026-11-17")).toBe("Sept");
+    expect(comparedWith(2026, 10, "2026-11-17")).toBe("Sep");
   });
 
   it("goes back across a new year", () => {

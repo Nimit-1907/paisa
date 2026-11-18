@@ -1,4 +1,5 @@
 import { addDays } from "@/lib/recurrence";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * The date presets in the Filter sheet, kept inside the month on screen.
@@ -12,7 +13,7 @@ import { addDays } from "@/lib/recurrence";
  */
 export type DatePreset = { label: string; from: string; to: string };
 
-const SHORT_MONTH = new Intl.DateTimeFormat("en-IN", {
+const SHORT_MONTH = dateFormat({
   timeZone: "UTC",
   month: "short",
 });

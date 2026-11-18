@@ -29,6 +29,7 @@ import { localToday } from "@/lib/recurring-check";
 import { ruleTitle, scheduleOf, upcomingFor } from "@/lib/recurring-rule";
 import { dayLabel, daysAway } from "@/lib/relative-day";
 import { cn } from "@/lib/utils";
+import { dateFormat } from "@/lib/date-format";
 
 export async function generateMetadata({
   params,
@@ -77,7 +78,7 @@ export default async function RecurringRulePage({
   const next = upcomingFor(rule, 5);
   const title = ruleTitle(rule);
 
-  const recordDate = new Intl.DateTimeFormat("en-IN", {
+  const recordDate = dateFormat({
     timeZone,
     day: "numeric",
     month: "short",

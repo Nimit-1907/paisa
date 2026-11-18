@@ -24,13 +24,16 @@ export function ComingUpList({ items }: { items: ComingUpItem[] }) {
       {items.map((item) => (
         <li
           key={`${item.investment.id}-${item.kind}`}
-          className="flex min-h-16 items-center gap-3 px-3 py-2"
+          className="flex items-center gap-2 pr-3"
         >
-          <DateTile day={item.date} />
+          {/* The whole row is the link, date tile included: the text alone
+              was a 36px target. */}
           <Link
             href={`/investments/${item.investment.id}`}
-            className="min-w-0 flex-1"
+            className="hoverable:bg-surface-muted flex min-h-16 min-w-0 flex-1 items-center gap-3 py-2 pl-3 transition-colors"
           >
+          <DateTile day={item.date} />
+          <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold">
               {item.investment.name}
             </span>
@@ -62,6 +65,7 @@ export function ComingUpList({ items }: { items: ComingUpItem[] }) {
                 </>
               )}
             </span>
+          </span>
           </Link>
           {item.kind === "maturity" && item.inDays <= 0 ? (
             <Button asChild size="touch" variant="outline">

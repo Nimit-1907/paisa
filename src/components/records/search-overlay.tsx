@@ -33,6 +33,7 @@ import {
   rememberSearch,
 } from "@/lib/recent-searches";
 import { cn } from "@/lib/utils";
+import { dateFormat } from "@/lib/date-format";
 
 type Results = {
   term: string;
@@ -593,7 +594,7 @@ function SearchResults({
 
 /** "9 Nov", enough to place a row inside its month. */
 function dayLabel(instant: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone,
     day: "numeric",
     month: "short",

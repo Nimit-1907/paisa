@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/select";
 import type { ImportCategory } from "@/components/import/types";
 import type { ImportRow } from "@/lib/import/rows";
+import { dateFormat } from "@/lib/date-format";
 
-const DAY = new Intl.DateTimeFormat("en-IN", {
+const DAY = dateFormat({
   timeZone: "UTC",
   day: "numeric",
   month: "short",

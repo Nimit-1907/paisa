@@ -31,6 +31,7 @@ import {
 } from "@/lib/date-entry";
 import { localToday } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { dateFormat } from "@/lib/date-format";
 
 /*
  * The app's one way to choose a date.
@@ -60,7 +61,7 @@ export function useToday(): string {
 export function formatDay(day: string): string {
   // An empty or half-typed value is "", not a RangeError from format().
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return "";
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone: "UTC",
     day: "numeric",
     month: "short",
@@ -798,7 +799,7 @@ export function DateTimePicker({
 function dayButtonLabel(day: string, today: string): string {
   const [y = "1970", m = "01", d = "01"] = day.split("-");
   const date = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
-  const short = new Intl.DateTimeFormat("en-IN", {
+  const short = dateFormat({
     day: "numeric",
     month: "short",
     timeZone: "UTC",
@@ -814,7 +815,7 @@ function dayButtonLabel(day: string, today: string): string {
     .slice(0, 10);
   if (day === yesterday) return `Yesterday, ${short}`;
 
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     weekday: "short",
     day: "numeric",
     month: "short",

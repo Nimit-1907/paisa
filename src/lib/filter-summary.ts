@@ -1,4 +1,5 @@
 import type { TransactionFilters } from "@/lib/schemas/transactions";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * The date filter as one chip.
@@ -47,7 +48,7 @@ export function shortDay(day: string): string {
 
   // UTC throughout: this is a calendar date with no time in it, and
   // constructing it locally can land on the day before.
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone: "UTC",
     day: "numeric",
     month: "short",

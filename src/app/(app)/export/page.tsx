@@ -8,6 +8,7 @@ import { periodContaining } from "@/lib/period";
 import { getProfile } from "@/lib/profile";
 import { getRecordsSpan } from "@/lib/queries/transactions";
 import { localToday } from "@/lib/recurring-check";
+import { dateFormat } from "@/lib/date-format";
 
 export const metadata: Metadata = { title: "Export" };
 
@@ -50,7 +51,7 @@ function spanLabel(
 ): string | null {
   if (!first || !last) return null;
 
-  const format = new Intl.DateTimeFormat("en-IN", {
+  const format = dateFormat({
     timeZone,
     month: "short",
     year: "numeric",
@@ -79,10 +80,7 @@ export default async function ExportPage() {
 
   return (
     <PageShell>
-      <PageHeader
-        title="Export"
-        description="Download your records"
-      />
+      <PageHeader title="Export" description="Download your records" />
 
       <ExportScreen
         defaultFrom={thisMonth.from}

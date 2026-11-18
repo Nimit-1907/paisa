@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 
+import { deleteDemoRowsNamed } from "./cleanup";
 import { signIn } from "./sign-in";
 
 /**
@@ -16,6 +17,12 @@ const GOAL = `E2E Goal ${RUN}`;
 const SIP = `E2E SIP ${RUN}`;
 const STOCKS = `E2E Stocks ${RUN}`;
 const FD = `E2E FD ${RUN}`;
+
+// Whatever a failed run left behind, so the demo account never collects
+// "E2E SIP" rows. The test's own deletes still run, and are still checked.
+test.afterAll(async () => {
+  await deleteDemoRowsNamed("E2E ", ["investments", "investment_goals"]);
+});
 
 function sheet(page: Page): Locator {
   return page.getByRole("dialog");
@@ -72,11 +79,16 @@ async function deleteInvestment(page: Page, name: string, closed = false) {
   await page.goto("/investments/holdings");
   await hydrated(page);
   if (closed) await page.getByRole("radio", { name: /Closed/ }).click();
-  await page.getByRole("link", { name: new RegExp(name) }).first().click();
+  await page
+    .getByRole("link", { name: new RegExp(name) })
+    .first()
+    .click();
   await page.waitForURL(/\/investments\/[0-9a-f-]+/);
   await hydrated(page);
   await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await confirmDialog(page).getByRole("button", { name: "Delete", exact: true }).click();
+  await confirmDialog(page)
+    .getByRole("button", { name: "Delete", exact: true })
+    .click();
   await page.waitForURL(/\/investments$/);
 }
 
@@ -99,14 +111,21 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await sheet(page).getByRole("radio", { name: "SIP" }).click();
   await sheet(page).getByLabel("Name").fill(SIP);
   await typeAmount(page, "Amount", "5000");
-  await pickDate(page, "investment-first-date", "First instalment", ddmmyyyy(first));
+  await pickDate(
+    page,
+    "investment-first-date",
+    "First instalment",
+    ddmmyyyy(first),
+  );
   await sheet(page).getByRole("button", { name: "Add investment" }).click();
 
   // Three instalments up to today: the 1st of each of the last three months.
   await page.waitForURL(/\/investments\/[0-9a-f-]+/);
   await hydrated(page);
   await expect(page.getByText("with 3 instalments up to today")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Net invested" })).toContainText("15,000");
+  await expect(
+    page.getByRole("region", { name: "Net invested" }),
+  ).toContainText("15,000");
   await expect(page.getByText("Auto", { exact: true })).toHaveCount(3);
   const sipUrl = page.url();
 
@@ -119,14 +138,19 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   // ------------------------------------------------------------- a goal ---
   await page.goto("/investments");
   await hydrated(page);
-  await page.getByRole("navigation", { name: "Investments" }).getByRole("link", { name: "Goals" }).click();
+  await page
+    .getByRole("navigation", { name: "Investments" })
+    .getByRole("link", { name: "Goals" })
+    .click();
   await page.waitForURL(/\/investments\/goals$/);
   await hydrated(page);
   await page.getByRole("button", { name: "New goal" }).click();
   await sheet(page).getByLabel("Name").fill(GOAL);
   await typeAmount(page, "Target", "100000");
   await sheet(page).getByRole("button", { name: "Add goal" }).click();
-  await expect(page.getByRole("link", { name: new RegExp(GOAL) })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: new RegExp(GOAL) }),
+  ).toBeVisible();
 
   // Into the goal, with a new amount from the next instalment; the past stays.
   await page.goto(sipUrl);
@@ -135,9 +159,15 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await sheet(page).getByRole("radio", { name: GOAL }).click();
   await typeAmount(page, "Amount", "7500");
   await sheet(page).getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("region", { name: "Schedule" })).toContainText("7,500");
-  await expect(page.getByRole("region", { name: "Details" })).toContainText(GOAL);
-  await expect(page.getByRole("region", { name: "Net invested" })).toContainText("15,000");
+  await expect(page.getByRole("region", { name: "Schedule" })).toContainText(
+    "7,500",
+  );
+  await expect(page.getByRole("region", { name: "Details" })).toContainText(
+    GOAL,
+  );
+  await expect(
+    page.getByRole("region", { name: "Net invested" }),
+  ).toContainText("15,000");
 
   // ------------------------------------ a lump sum, partly redeemed ---
   await page.goto("/investments");
@@ -170,8 +200,17 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await sheet(page).getByRole("radio", { name: "FD" }).click();
   await sheet(page).getByLabel("Name").fill(FD);
   await typeAmount(page, "Amount", "100000");
-  const deposited = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-  await pickDate(page, "investment-first-entry-date", "On", ddmmyyyy(deposited));
+  const deposited = new Date(
+    now.getFullYear() - 1,
+    now.getMonth(),
+    now.getDate(),
+  );
+  await pickDate(
+    page,
+    "investment-first-entry-date",
+    "On",
+    ddmmyyyy(deposited),
+  );
   await pickDate(page, "investment-maturity-date", "Matures on", ddmmyyyy(now));
   await typeAmount(page, "Maturity amount", "107100");
   await sheet(page).getByRole("button", { name: "Add investment" }).click();
@@ -189,7 +228,9 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await expect(sheet(page).getByLabel("Amount received")).toHaveValue(/107/);
   await sheet(page).getByRole("button", { name: "Save payout" }).click();
   await expect(page.getByText("Closed", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Reopen investment" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Reopen investment" }),
+  ).toBeVisible();
 
   // ------------------------------------------------------- the goal ---
   await page.goto("/investments/goals");
@@ -222,13 +263,22 @@ test("an investment ledger: goals, a SIP that posts itself, a redemption and a p
   await page.waitForURL(/\/investments\/goals\/[0-9a-f-]+/);
   await hydrated(page);
   await page.getByRole("button", { name: "Edit goal" }).click();
-  await sheet(page).first().getByRole("button", { name: "Delete goal" }).click();
-  await confirmDialog(page).getByRole("button", { name: "Delete", exact: true }).click();
+  await sheet(page)
+    .first()
+    .getByRole("button", { name: "Delete goal" })
+    .click();
+  await confirmDialog(page)
+    .getByRole("button", { name: "Delete", exact: true })
+    .click();
   await page.waitForURL(/\/investments\/goals$/);
-  await expect(page.getByRole("link", { name: new RegExp(GOAL) })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: new RegExp(GOAL) })).toHaveCount(
+    0,
+  );
 
   // The ledger is separate: nothing of it reached Records.
   await page.goto("/records");
   await hydrated(page);
-  await expect(page.getByText(new RegExp(`E2E (SIP|Stocks|FD) ${RUN}`))).toHaveCount(0);
+  await expect(
+    page.getByText(new RegExp(`E2E (SIP|Stocks|FD) ${RUN}`)),
+  ).toHaveCount(0);
 });

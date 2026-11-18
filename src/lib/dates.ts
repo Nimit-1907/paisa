@@ -1,3 +1,5 @@
+import { dateFormat } from "@/lib/date-format";
+
 /**
  * Month boundaries in the user's timezone.
  *
@@ -288,7 +290,7 @@ export function describeLocal(local: string, todayLocal: string): string {
 
   const [ry = "1970", rm = "01", rd = "01"] = date.split("-");
   const day = new Date(Date.UTC(Number(ry), Number(rm) - 1, Number(rd)));
-  const label = new Intl.DateTimeFormat("en-IN", {
+  const label = dateFormat({
     day: "numeric",
     month: "short",
     year: ry === y ? undefined : "numeric",

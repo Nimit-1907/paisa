@@ -20,6 +20,7 @@ import {
   type InvestmentGoal,
   KIND_META,
 } from "@/lib/investments";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * A list of investments, each a row that opens its page, with Edit and
@@ -148,7 +149,8 @@ export function InvestmentRow({
           "Closed"
         ) : investment.redeemed > 0 ? (
           <>
-            out <Amount value={BigInt(investment.redeemed)} compact />
+            {/* In full, like every other figure on the row. */}
+            out <Amount value={BigInt(investment.redeemed)} />
           </>
         ) : (
           `${investment.entryCount} ${investment.entryCount === 1 ? "entry" : "entries"}`
@@ -175,7 +177,7 @@ export function InvestmentRow({
 }
 
 export function formatShortDay(day: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone: "UTC",
     day: "numeric",
     month: "short",

@@ -1,4 +1,5 @@
 import { dayDifference } from "@/lib/recurrence";
+import { type DateFormat, dateFormat } from "@/lib/date-format";
 
 /**
  * How a calendar day reads next to today: "tomorrow", "in 3 days",
@@ -10,12 +11,12 @@ import { dayDifference } from "@/lib/recurrence";
  * how a bill due tomorrow ends up labelled "today".
  */
 
-let formatter: Intl.DateTimeFormat | null = null;
+let formatter: DateFormat | null = null;
 
 /** Just the date: "Sat 21 Nov". */
 export function dayLabel(day: string): string {
   // Built once: Intl formatters are expensive, and this one never varies.
-  formatter ??= new Intl.DateTimeFormat("en-IN", {
+  formatter ??= dateFormat({
     timeZone: "UTC",
     weekday: "short",
     day: "numeric",

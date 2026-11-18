@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
+import { dateFormat } from "@/lib/date-format";
 
 /** "Nov", three letters, in the user's locale rather than in English. */
 function monthAbbrev(day: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone: "UTC",
     month: "short",
   }).format(new Date(`${day}T00:00:00Z`));

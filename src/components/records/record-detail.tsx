@@ -28,6 +28,7 @@ import { WorthItToggle } from "@/components/records/worth-it-toggle";
 import { Button } from "@/components/ui/button";
 import { REPEAT_LABELS } from "@/lib/schemas/transactions";
 import type { TransactionRow } from "@/lib/queries/transactions";
+import { dateFormat } from "@/lib/date-format";
 
 /**
  * One record, read rather than edited.
@@ -353,7 +354,7 @@ function repeatWord(frequency: TransactionRow["recurringFrequency"]): string {
 
 /** "Mon, 9 Nov 2026", where the user is. */
 function whenDay(instant: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-IN", {
+  return dateFormat({
     timeZone,
     weekday: "short",
     day: "numeric",

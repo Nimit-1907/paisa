@@ -1,3 +1,5 @@
+import { dateFormat } from "@/lib/date-format";
+
 /**
  * What went out over a month, up to and including one day of it.
  *
@@ -27,7 +29,7 @@ export function comparedWith(
   month: number,
   today: string,
 ): string {
-  const name = new Intl.DateTimeFormat("en-IN", {
+  const name = dateFormat({
     timeZone: "UTC",
     month: "short",
   }).format(new Date(Date.UTC(year, month - 2, 1)));

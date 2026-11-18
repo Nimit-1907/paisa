@@ -27,6 +27,7 @@ import {
 import { ACCOUNT_TYPE_LABELS } from "@/lib/schemas/accounts";
 import { cn } from "@/lib/utils";
 import { Tile } from "@/components/shared/tile";
+import { dateFormat } from "@/lib/date-format";
 
 export async function generateMetadata({
   params,
@@ -82,7 +83,7 @@ export default async function AccountDetailPage({
     usageCount,
   };
 
-  const dateFormatter = new Intl.DateTimeFormat("en-IN", {
+  const dateFormatter = dateFormat({
     day: "numeric",
     month: "short",
     timeZone: profile?.timezone ?? "Asia/Kolkata",
